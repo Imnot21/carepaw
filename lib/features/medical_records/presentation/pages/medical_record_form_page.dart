@@ -13,7 +13,6 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/widgets/common/cp_button.dart';
 import 'package:carepaw/core/widgets/common/cp_text_field.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/effects/glass_container.dart';

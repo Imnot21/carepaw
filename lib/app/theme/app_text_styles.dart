@@ -218,8 +218,8 @@ class AppTextStyles {
     style,
     const LinearGradient(
       colors: [
-        Color(0xFF6D28D9),
-        Color(0xFF8B5CF6),
+        Color(0xFF0066CC),
+        Color(0xFF3385D6),
         Color(0xFF14B8A6),
       ],
       begin: Alignment.topLeft,
@@ -245,7 +245,7 @@ class AppTextStyles {
       );
 
   /// Primary glow text
-  static TextStyle primaryGlow(TextStyle style) => glow(style, const Color(0xFF6D28D9));
+  static TextStyle primaryGlow(TextStyle style) => glow(style, const Color(0xFF0066CC));
 
   /// Success glow text
   static TextStyle successGlow(TextStyle style) => glow(style, const Color(0xFF10B981));
@@ -256,14 +256,24 @@ class AppTextStyles {
   /// Error glow text
   static TextStyle errorGlow(TextStyle style) => glow(style, const Color(0xFFEF4444));
 
-  /// Subtle text (for secondary content)
+  /// Subtle text (for secondary content) - light theme
   static TextStyle subtle(TextStyle style) => style.copyWith(
         color: const Color(0xFF98A2B3),
       );
 
-  /// Muted text (for tertiary content)
+  /// Subtle text (for secondary content) - dark theme
+  static TextStyle subtleDark(TextStyle style) => style.copyWith(
+        color: const Color(0xFFD0D5DD),
+      );
+
+  /// Muted text (for tertiary content) - light theme
   static TextStyle muted(TextStyle style) => style.copyWith(
         color: const Color(0xFF667085),
+      );
+
+  /// Muted text (for tertiary content) - dark theme
+  static TextStyle mutedDark(TextStyle style) => style.copyWith(
+        color: const Color(0xFF98A2B3),
       );
 
   /// High contrast text
@@ -274,9 +284,9 @@ class AppTextStyles {
 
   /// Link text
   static TextStyle link(TextStyle style) => style.copyWith(
-        color: const Color(0xFF6D28D9),
+        color: const Color(0xFF0066CC),
         decoration: TextDecoration.underline,
-        decorationColor: const Color(0xFF6D28D9),
+        decorationColor: const Color(0xFF0066CC),
         decorationThickness: 1.5,
       );
 
@@ -302,12 +312,12 @@ class AppTextStyles {
 
   /// Primary text
   static TextStyle primary(TextStyle style) => style.copyWith(
-        color: const Color(0xFF6D28D9),
+        color: const Color(0xFF0066CC),
       );
 
   /// Secondary text
   static TextStyle secondary(TextStyle style) => style.copyWith(
-        color: const Color(0xFF7C3AED),
+        color: const Color(0xFF8A929E), // Silver
       );
 
   /// Tertiary text
@@ -324,15 +334,31 @@ extension TextStyleX on TextStyle {
         fontWeight: weight,
       );
 
-  /// Make text subtle
+  /// Make text subtle (light theme)
   TextStyle get subtle => copyWith(
         color: const Color(0xFF98A2B3),
       );
 
-  /// Make text muted
+  /// Make text subtle (dark theme)
+  TextStyle subtleDark() => copyWith(
+        color: const Color(0xFFD0D5DD),
+      );
+
+  /// Make text subtle - theme aware (requires BuildContext or brightness)
+  TextStyle subtleOf(Brightness brightness) => brightness == Brightness.dark ? subtleDark() : subtle;
+
+  /// Make text muted (light theme)
   TextStyle get muted => copyWith(
         color: const Color(0xFF667085),
       );
+
+  /// Make text muted (dark theme)
+  TextStyle mutedDark() => copyWith(
+        color: const Color(0xFF98A2B3),
+      );
+
+  /// Make text muted - theme aware (requires BuildContext or brightness)
+  TextStyle mutedOf(Brightness brightness) => brightness == Brightness.dark ? mutedDark() : muted;
 
   /// Make text bold
   TextStyle get bold => copyWith(fontWeight: FontWeight.w700);
@@ -360,8 +386,8 @@ extension TextStyleX on TextStyle {
   TextStyle get primaryGradient => gradient(
     const LinearGradient(
       colors: [
-        Color(0xFF6D28D9),
-        Color(0xFF8B5CF6),
+        Color(0xFF0066CC),
+        Color(0xFF3385D6),
         Color(0xFF14B8A6),
       ],
       begin: Alignment.topLeft,
@@ -386,7 +412,7 @@ extension TextStyleX on TextStyle {
       );
 
   /// Add primary glow
-  TextStyle get primaryGlow => glow(const Color(0xFF6D28D9));
+  TextStyle get primaryGlow => glow(const Color(0xFF0066CC));
 
   /// Add underline for links
   TextStyle get underline => copyWith(

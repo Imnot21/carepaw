@@ -528,12 +528,12 @@ class _InventoryListPageState extends State<InventoryListPage> {
           colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
         );
       case InventoryCategory.supply:
-        return const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+        return LinearGradient(
+          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
         );
       case InventoryCategory.equipment:
-        return const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+        return LinearGradient(
+          colors: [AppColors.categoryEquipment, AppColors.categoryEquipmentDark],
         );
       case InventoryCategory.food:
         return const LinearGradient(
@@ -563,6 +563,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
         builder: (_) => InventoryFormPage(item: item),
       ),
     ).then((_) {
+      if (!mounted) return;
       if (_searchQuery.isEmpty && _selectedCategory == null) {
         context.read<InventoryBloc>().add(const LoadInventoryItems());
       }
@@ -575,6 +576,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
         builder: (_) => InventoryDetailPage(item: item),
       ),
     ).then((_) {
+      if (!mounted) return;
       if (_searchQuery.isEmpty && _selectedCategory == null) {
         context.read<InventoryBloc>().add(const LoadInventoryItems());
       }
@@ -637,15 +639,15 @@ class _InventoryListPageState extends State<InventoryListPage> {
   Color _getCategoryColor(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return AppColors.primary;
+        return AppColors.categoryMedicine;
       case InventoryCategory.vaccine:
-        return const Color(0xFF06B6D4);
+        return AppColors.categoryVaccine;
       case InventoryCategory.supply:
-        return const Color(0xFF8B5CF6);
+        return AppColors.categorySupply;
       case InventoryCategory.equipment:
-        return const Color(0xFF6366F1);
+        return AppColors.categoryEquipment;
       case InventoryCategory.food:
-        return const Color(0xFFF59E0B);
+        return AppColors.categoryFood;
     }
   }
 }

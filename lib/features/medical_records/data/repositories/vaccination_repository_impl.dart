@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/vaccinations_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
@@ -7,7 +7,6 @@ import 'package:carepaw/features/medical_records/domain/entities/vaccination.dar
 import 'package:carepaw/core/repositories/base_repository.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart' as pet_domain;
 import 'package:carepaw/features/authentication/domain/entities/user.dart' as user_domain;
-import 'package:carepaw/core/database/tables.dart';
 
 /// Vaccination repository implementation - data layer
 /// Converts between Drift entities and domain entities
@@ -15,9 +14,8 @@ class VaccinationRepositoryImpl implements VaccinationRepository {
   final VaccinationsDao _dao;
   final SyncRepository _syncRepo;
 
-  VaccinationRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = VaccinationsDao(database),
-        _syncRepo = syncRepo;
+  VaccinationRepositoryImpl(CarePawDatabase database, {required this._syncRepo})
+      : _dao = VaccinationsDao(database);
 
   @override
   Future<domain.Vaccination?> findById(int id) async {

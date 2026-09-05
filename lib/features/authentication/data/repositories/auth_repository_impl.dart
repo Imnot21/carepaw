@@ -1,9 +1,11 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart' as db;
 import 'package:carepaw/core/database/dao/users_dao.dart';
 import 'package:carepaw/core/security/password_hasher.dart';
 import 'package:carepaw/core/security/secure_storage.dart';
 import 'package:carepaw/core/storage/local_storage.dart';
+import 'package:carepaw/core/sync/background_sync.dart' show SyncController;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart'
     as auth_entities;
@@ -35,8 +37,10 @@ class _ResetTokenData {
 /// - [SecureStorage] for token storage
 /// - [LocalStorage] for session flags
 /// - [PasswordHasher] for password verification
+/// - [SyncController] for immediate auth sync to Firebase
 class AuthRepositoryImpl implements AuthRepository {
   final UsersDao _usersDao;
+  SyncController? _syncController;
 
   // Stream controller for auth state changes
   final _authStateController = StreamController<auth_entities.AuthResult?>.broadcast();
@@ -45,8 +49,14 @@ class AuthRepositoryImpl implements AuthRepository {
   static final Map<String, _ResetTokenData> _resetTokens = {};
 
   AuthRepositoryImpl(
-    db.CarePawDatabase database,
-  ) : _usersDao = UsersDao(database);
+    db.CarePawDatabase database, {
+    this._syncController,
+  })  : _usersDao = UsersDao(database);
+
+  /// Set sync controller after construction (to break circular dependency)
+  void setSyncController(SyncController syncController) {
+    _syncController = syncController;
+  }
 
   @override
   Future<AuthResult> login({
@@ -54,10 +64,23 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      // Find user by email
-      final userEntity = await _usersDao.getByEmail(email);
+      // Find user by email in local database
+      var userEntity = await _usersDao.getByEmail(email);
+
+      // If not found locally, try to sync from Firebase (for users created in Firebase Console)
       if (userEntity == null) {
-        throw UserNotFoundFailure();
+        // Try to ensure local user exists by syncing from Firebase
+        final syncController = _syncController;
+        if (syncController != null) {
+          final localUserId = await syncController.ensureLocalUserExists(email);
+          if (localUserId != null) {
+            userEntity = await _usersDao.getById(localUserId);
+          }
+        }
+        // If still not found, throw error
+        if (userEntity == null) {
+          throw UserNotFoundFailure();
+        }
       }
 
       // Check if user is active
@@ -68,6 +91,13 @@ class AuthRepositoryImpl implements AuthRepository {
       // Verify password
       final isValid = PasswordHasher.verify(password, userEntity.passwordHash);
       if (!isValid) {
+        // If password doesn't match but user has Firebase UID, they might be a Firebase Console user
+        // who needs to use "Forgot Password" to set a local password
+        if (userEntity.firebaseUid != null && userEntity.firebaseUid!.isNotEmpty) {
+          throw InvalidCredentialsFailure(
+            message: 'This account was created via Firebase. Please use "Forgot Password" to set a local password.',
+          );
+        }
         throw InvalidCredentialsFailure();
       }
 
@@ -115,20 +145,25 @@ class AuthRepositoryImpl implements AuthRepository {
     UserRole role = UserRole.petOwner,
   }) async {
     try {
+      if (kDebugMode) print('[AuthRepo] Register request: email=$email, fullName=$fullName, role=$role');
+
       // Check if email already exists
       final existingUser = await _usersDao.getByEmail(email);
       if (existingUser != null) {
+        if (kDebugMode) print('[AuthRepo] Email already in use: $email');
         throw EmailAlreadyInUseFailure();
       }
 
       // Validate password strength
       final passwordError = Validators.validatePassword(password);
       if (passwordError != null) {
+        if (kDebugMode) print('[AuthRepo] Weak password: $passwordError');
         throw WeakPasswordFailure(message: passwordError);
       }
 
       // Hash password
       final passwordHash = PasswordHasher.hash(password);
+      if (kDebugMode) print('[AuthRepo] Password hashed, creating user...');
 
       // Create user
       final userId = await _usersDao.createUser(
@@ -144,11 +179,16 @@ class AuthRepositoryImpl implements AuthRepository {
         ),
       );
 
+      if (kDebugMode) print('[AuthRepo] User created with ID: $userId');
+
       // Fetch created user
       final userEntity = await _usersDao.getById(userId);
       if (userEntity == null) {
+        if (kDebugMode) print('[AuthRepo] ERROR: Failed to fetch created user');
         throw UnexpectedFailure(message: 'Failed to create user');
       }
+
+      if (kDebugMode) print('[AuthRepo] User fetched: ${userEntity.email}, firebaseUid: ${userEntity.firebaseUid ?? "NULL"}');
 
       // Generate tokens
       final authResult = _generateAuthResult(userEntity);
@@ -162,10 +202,27 @@ class AuthRepositoryImpl implements AuthRepository {
       // Emit auth state
       _authStateController.add(authResult);
 
+      // Trigger immediate auth sync to Firebase (fire and forget)
+      if (_syncController != null) {
+        if (kDebugMode) print('[AuthRepo] Triggering immediate auth sync...');
+        _syncController!.syncAuthNow().then((result) {
+          if (kDebugMode) {
+            print('[AuthRepo] Immediate auth sync after registration: $result');
+          }
+        }).catchError((e) {
+          if (kDebugMode) {
+            print('[AuthRepo] Immediate auth sync error (non-blocking): $e');
+          }
+        });
+      } else {
+        if (kDebugMode) print('[AuthRepo] WARNING: _syncController is NULL - sync will not happen!');
+      }
+
       return authResult;
     } on AuthFailure {
       rethrow;
     } catch (e) {
+      if (kDebugMode) print('[AuthRepo] Register exception: $e');
       throw ErrorHandler.handleException(e);
     }
   }

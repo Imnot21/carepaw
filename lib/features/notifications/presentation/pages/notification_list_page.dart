@@ -611,7 +611,7 @@ class _NotificationListPageState extends State<NotificationListPage>
       case domain.NotificationType.queueUpdate:
         return const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]);
       case domain.NotificationType.prescriptionReady:
-        return const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]);
+        return LinearGradient(colors: [AppColors.categorySupply, AppColors.categorySupplyDark]);
       case domain.NotificationType.inventoryLow:
         return const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]);
       case domain.NotificationType.system:
@@ -626,7 +626,7 @@ class _NotificationListPageState extends State<NotificationListPage>
       case domain.NotificationType.queueUpdate:
         return const Color(0xFFF59E0B);
       case domain.NotificationType.prescriptionReady:
-        return const Color(0xFF8B5CF6);
+        return AppColors.categorySupply;
       case domain.NotificationType.inventoryLow:
         return const Color(0xFF10B981);
       case domain.NotificationType.system:

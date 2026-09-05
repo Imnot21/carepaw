@@ -405,7 +405,7 @@ class _PetFormPageState extends State<PetFormPage> with SingleTickerProviderStat
     }
   }
 
-  /// Get all form sections - simplified to 3 progressive sections
+  /// Get all form sections - 2 sections: Basic Info + Health/ID
   List<_FormSection> _getFormSections() {
     return [
       _FormSection(
@@ -425,23 +425,17 @@ class _PetFormPageState extends State<PetFormPage> with SingleTickerProviderStat
             prefixIcon: Icons.pets_outlined,
           ),
           const SizedBox(height: 16),
-          // Species selector
+          // Species selector (affects breed options)
           _PetSpeciesSelector(
             selectedSpecies: _selectedSpecies,
             onChanged: (value) => setState(() => _selectedSpecies = value),
           ),
-        ],
-      ),
-      _FormSection(
-        title: 'Details',
-        icon: Icons.pets_rounded,
-        buildFields: (context) => [
-          // Breed selector with common breeds
+          const SizedBox(height: 16),
+          // Breed selector with common breeds (depends on species)
           _PetBreedSelector(
             label: 'Breed',
             selectedSpecies: _selectedSpecies,
             controller: _breedController,
-            onSpeciesChanged: (species) => setState(() => _selectedSpecies = species),
           ),
           const SizedBox(height: 16),
           // Color
@@ -798,13 +792,11 @@ class _PetBreedSelector extends StatefulWidget {
   final String label;
   final PetSpecies selectedSpecies;
   final TextEditingController controller;
-  final ValueChanged<PetSpecies> onSpeciesChanged;
 
   const _PetBreedSelector({
     required this.label,
     required this.selectedSpecies,
     required this.controller,
-    required this.onSpeciesChanged,
   });
 
   @override
@@ -952,51 +944,6 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
             textInputAction: TextInputAction.next,
           ),
         ],
-        const SizedBox(height: 12),
-        // Species chips row (for quick species change)
-        Text(
-          'Species *',
-          style: AppTextStyles.labelLarge.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: PetSpecies.values.map((species) {
-            final isSelected = species == widget.selectedSpecies;
-            final color = PetUtils.getSpeciesColor(species);
-            return ScaleOnTap(
-              onTap: () => widget.onSpeciesChanged(species),
-              child: FilterChip(
-                selected: isSelected,
-                onSelected: (_) => widget.onSpeciesChanged(species),
-                avatar: Icon(
-                  PetUtils.getSpeciesIcon(species),
-                  size: 18,
-                  color: isSelected ? Colors.white : color,
-                ),
-                label: Text(
-                  PetUtils.formatSpecies(species),
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                ),
-                selectedColor: color,
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                checkmarkColor: Colors.white,
-                side: BorderSide(
-                  color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
       ],
     );
   }

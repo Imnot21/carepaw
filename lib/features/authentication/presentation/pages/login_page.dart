@@ -162,7 +162,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         const SizedBox(height: 8),
                         Text(
                           'Sign in to your CarePaw account',
-                          style: AppTextStyles.bodyLarge.subtle,
+                          style: AppTextStyles.bodyLarge.subtleOf(Theme.of(context).brightness),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
@@ -253,7 +253,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
                                 'or',
-                                style: AppTextStyles.bodySmall.muted,
+                                style: AppTextStyles.bodySmall.mutedOf(Theme.of(context).brightness),
                               ),
                             ),
                             const Expanded(child: Divider()),
@@ -267,7 +267,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           children: [
                             Text(
                               'Don\'t have an account? ',
-                              style: AppTextStyles.bodyMedium.subtle,
+                              style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
                             ),
                             TextButton(
                               onPressed: _navigateToRegister,

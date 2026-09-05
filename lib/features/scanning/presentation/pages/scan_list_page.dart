@@ -19,7 +19,6 @@ import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
@@ -36,7 +35,6 @@ class ScanListPage extends StatefulWidget {
 class _ScanListPageState extends State<ScanListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  ScanType? _selectedType;
 
   @override
   void initState() {
@@ -303,7 +301,6 @@ class _ScanListPageState extends State<ScanListPage>
     final isPending = record.status == ScanStatus.pending;
     final isConfirmed = record.status == ScanStatus.confirmed;
     final isRejected = record.status == ScanStatus.rejected;
-    final hasHighConfidence = record.hasHighConfidence;
 
     return FloatingAnimation(
       delay: Duration(milliseconds: 50 * (index % 10)),
@@ -543,8 +540,11 @@ class _ScanListPageState extends State<ScanListPage>
     Color color;
     if (confidence >= 0.8) {
       color = AppColors.success;
-    } else if (confidence >= 0.6) color = AppColors.warning;
-    else color = AppColors.error;
+    } else if (confidence >= 0.6) {
+      color = AppColors.warning;
+    } else {
+      color = AppColors.error;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -579,8 +579,8 @@ class _ScanListPageState extends State<ScanListPage>
       case ScanType.medicineBox:
         return AppColors.gradientPrimary;
       case ScanType.prescription:
-        return const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+        return LinearGradient(
+          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
         );
       case ScanType.labReport:
         return const LinearGradient(
@@ -598,9 +598,9 @@ class _ScanListPageState extends State<ScanListPage>
       case ScanType.receipt:
         return const Color(0xFF10B981);
       case ScanType.medicineBox:
-        return AppColors.primary;
+        return AppColors.categoryMedicine;
       case ScanType.prescription:
-        return const Color(0xFF8B5CF6);
+        return AppColors.categorySupply;
       case ScanType.labReport:
         return const Color(0xFF06B6D4);
       default:
@@ -627,7 +627,7 @@ class _ScanListPageState extends State<ScanListPage>
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const ScanCameraPage()),
     ).then((_) {
-      context.read<ScanBloc>().add(const LoadScanRecords());
+      if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
     });
   }
 
@@ -637,7 +637,7 @@ class _ScanListPageState extends State<ScanListPage>
         builder: (_) => ScanDetailPage(record: record),
       ),
     ).then((_) {
-      context.read<ScanBloc>().add(const LoadScanRecords());
+      if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
     });
   }
 

@@ -1,0 +1,32 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- CarePaw Logo - Modern, friendly veterinary app -->
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#2E7D32"/>
+
+  <!-- Paw print - main symbol -->
+  <g transform="translate(256, 256)">
+    <!-- Center pad (metacarpal) -->
+    <ellipse cx="0" cy="-20" rx="55" ry="50" fill="white" fill-opacity="0.95"/>
+
+    <!-- Four toe pads -->
+    <!-- Top left -->
+    <ellipse cx="-55" cy="-75" rx="30" ry="28" fill="white" fill-opacity="0.95"/>
+    <!-- Top right -->
+    <ellipse cx="55" cy="-75" rx="30" ry="28" fill="white" fill-opacity="0.95"/>
+    <!-- Bottom left -->
+    <ellipse cx="-75" cy="15" rx="28" ry="26" fill="white" fill-opacity="0.95"/>
+    <!-- Bottom right -->
+    <ellipse cx="75" cy="15" rx="28" ry="26" fill="white" fill-opacity="0.95"/>
+  </g>
+
+  <!-- Subtle heart in negative space of center pad -->
+  <g transform="translate(256, 236)">
+    <path d="M0,-8 C-12,-18 -20,-8 -20,8 C-20,20 0,30 0,38 C0,30 20,20 20,8 C20,-8 12,-18 0,-8 Z" fill="#2E7D32" opacity="0.3"/>
+  </g>
+
+  <!-- "CAREPAW" text at bottom -->
+  <text x="256" y="430" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="700" fill="white" text-anchor="middle" letter-spacing="4">CAREPAW</text>
+
+  <!-- Subtitle -->
+  <text x="256" y="470" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="white" text-anchor="middle" fill-opacity="0.8">Smart Veterinary Care</text>
+</svg>

@@ -1,21 +1,19 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/inventory_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart' as domain;
 import 'package:carepaw/core/repositories/base_repository.dart';
-import 'package:carepaw/core/database/entities.dart';
 
 /// Inventory item repository implementation - data layer
 /// Converts between Drift entities and domain entities
 class InventoryItemRepositoryImpl implements InventoryItemRepository {
   final InventoryDao _dao;
-  final SyncRepository _syncRepo;
+  final SyncRepository syncRepo;
 
-  InventoryItemRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = InventoryDao(database),
-        _syncRepo = syncRepo;
+  InventoryItemRepositoryImpl(CarePawDatabase database, {required this.syncRepo})
+      : _dao = InventoryDao(database);
 
   @override
   Future<domain.InventoryItem?> findById(int id) async {
@@ -185,7 +183,7 @@ class InventoryItemRepositoryImpl implements InventoryItemRepository {
         'createdAt': entity.createdAt.toIso8601String(),
         'updatedAt': entity.updatedAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.insert,
@@ -213,7 +211,7 @@ class InventoryItemRepositoryImpl implements InventoryItemRepository {
         'createdAt': entity.createdAt.toIso8601String(),
         'updatedAt': entity.updatedAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.update,
@@ -226,7 +224,7 @@ class InventoryItemRepositoryImpl implements InventoryItemRepository {
   @override
   Future<void> deleteWithSync(int id, String tableName) async {
     await _dao.softDeleteItem(id);
-    await _syncRepo.queueForSync(
+    await syncRepo.queueForSync(
       tableName: tableName,
       recordId: id,
       operation: SyncOperation.delete,

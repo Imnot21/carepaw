@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
-import '../../widgets/effects/glass_container.dart';
-import '../../widgets/effects/floating_animation.dart';
 
 /// CarePaw empty state widget with premium styling.
 ///

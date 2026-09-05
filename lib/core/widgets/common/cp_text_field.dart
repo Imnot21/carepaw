@@ -96,15 +96,23 @@ class _CpTextFieldState extends State<CpTextField> {
   @override
   Widget build(BuildContext context) {
     if (widget.usePremiumStyle) {
-      return _buildPremiumField();
+      return _buildPremiumField(context);
     }
-    return _buildStandardField();
+    return _buildStandardField(context);
   }
 
-  Widget _buildPremiumField() {
+  Widget _buildPremiumField(BuildContext context) {
     final hasError = _errorText != null || widget.error != null;
     final isFocused = widget.focusNode?.hasFocus ?? false;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Theme-aware colors
+    final labelColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final inputColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final hintColor = isDark ? AppColors.textHintDark : AppColors.textHint;
+    final helperColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final iconColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final disabledColor = isDark ? AppColors.disabledDark : AppColors.disabled;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +122,7 @@ class _CpTextFieldState extends State<CpTextField> {
           Text(
             widget.label!,
             style: AppTextStyles.labelLarge.copyWith(
-              color: widget.enabled ? AppColors.textPrimary : AppColors.disabled,
+              color: widget.enabled ? labelColor : disabledColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -159,7 +167,7 @@ class _CpTextFieldState extends State<CpTextField> {
               autocorrect: widget.autocorrect,
               enableSuggestions: widget.enableSuggestions,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: widget.enabled ? AppColors.textPrimary : AppColors.disabled,
+                color: widget.enabled ? inputColor : disabledColor,
               ),
               decoration: InputDecoration(
                 hintText: widget.hint,
@@ -173,14 +181,14 @@ class _CpTextFieldState extends State<CpTextField> {
                         padding: const EdgeInsets.all(14),
                         child: IconTheme(
                           data: IconThemeData(
-                            color: isFocused ? AppColors.primary : AppColors.textSecondary,
+                            color: isFocused ? AppColors.primary : iconColor,
                             size: 22,
                           ),
                           child: widget.prefixIcon!,
                         ),
                       )
                     : null,
-                suffixIcon: _buildSuffixIcon(isFocused),
+                suffixIcon: _buildSuffixIcon(isFocused, isDark),
                 filled: true,
                 fillColor: Colors.transparent,
                 border: InputBorder.none,
@@ -190,13 +198,13 @@ class _CpTextFieldState extends State<CpTextField> {
                 focusedErrorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textHint,
+                  color: hintColor,
                 ),
                 errorStyle: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.error,
                 ),
                 helperStyle: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: helperColor,
                 ),
               ),
             ),
@@ -221,7 +229,7 @@ class _CpTextFieldState extends State<CpTextField> {
             child: Text(
               widget.helper!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: helperColor,
               ),
             ),
           ),
@@ -230,8 +238,18 @@ class _CpTextFieldState extends State<CpTextField> {
     );
   }
 
-  Widget _buildStandardField() {
+  Widget _buildStandardField(BuildContext context) {
     final isFocused = widget.focusNode?.hasFocus ?? false;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final labelColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final inputColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final hintColor = isDark ? AppColors.textHintDark : AppColors.textHint;
+    final helperColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final disabledColor = isDark ? AppColors.disabledDark : AppColors.disabled;
+    final fillColor = isDark ? AppColors.surfaceContainerDark : AppColors.surface;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.border;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -240,7 +258,7 @@ class _CpTextFieldState extends State<CpTextField> {
           Text(
             widget.label!,
             style: AppTextStyles.labelLarge.copyWith(
-              color: widget.enabled ? AppColors.textPrimary : AppColors.disabled,
+              color: widget.enabled ? labelColor : disabledColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -265,7 +283,7 @@ class _CpTextFieldState extends State<CpTextField> {
           autocorrect: widget.autocorrect,
           enableSuggestions: widget.enableSuggestions,
           style: AppTextStyles.bodyLarge.copyWith(
-            color: widget.enabled ? AppColors.textPrimary : AppColors.disabled,
+            color: widget.enabled ? inputColor : disabledColor,
           ),
           decoration: InputDecoration(
             hintText: widget.hint,
@@ -276,20 +294,20 @@ class _CpTextFieldState extends State<CpTextField> {
             contentPadding: widget.contentPadding ??
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             prefixIcon: widget.prefixIcon,
-            suffixIcon: _buildSuffixIcon(isFocused),
+            suffixIcon: _buildSuffixIcon(isFocused, isDark),
             filled: true,
-            fillColor: widget.enabled ? AppColors.surface : AppColors.background,
+            fillColor: widget.enabled ? fillColor : (isDark ? AppColors.backgroundDark : AppColors.background),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+              borderSide: BorderSide(color: isDark ? AppColors.primaryLight : AppColors.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -301,16 +319,16 @@ class _CpTextFieldState extends State<CpTextField> {
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.divider),
+              borderSide: BorderSide(color: isDark ? AppColors.dividerDark : AppColors.divider),
             ),
             hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textHint,
+              color: hintColor,
             ),
             errorStyle: AppTextStyles.bodySmall.copyWith(
               color: AppColors.error,
             ),
             helperStyle: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: helperColor,
             ),
           ),
         ),
@@ -318,12 +336,13 @@ class _CpTextFieldState extends State<CpTextField> {
     );
   }
 
-  Widget? _buildSuffixIcon(bool isFocused) {
+  Widget? _buildSuffixIcon(bool isFocused, bool isDark) {
+    final iconColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
     if (widget.obscureText) {
       return IconButton(
         icon: Icon(
           _obscureText ? Icons.visibility_off : Icons.visibility,
-          color: isFocused ? AppColors.primary : AppColors.textSecondary,
+          color: isFocused ? AppColors.primary : iconColor,
         ),
         onPressed: () {
           setState(() {
@@ -337,7 +356,7 @@ class _CpTextFieldState extends State<CpTextField> {
             padding: const EdgeInsets.all(14),
             child: IconTheme(
               data: IconThemeData(
-                color: isFocused ? AppColors.primary : AppColors.textSecondary,
+                color: isFocused ? AppColors.primary : iconColor,
                 size: 22,
               ),
               child: widget.suffixIcon!,

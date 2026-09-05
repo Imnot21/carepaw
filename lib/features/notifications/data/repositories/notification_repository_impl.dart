@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/notifications_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
@@ -10,11 +10,10 @@ import 'package:carepaw/core/repositories/base_repository.dart';
 /// Converts between Drift entities and domain entities
 class NotificationRepositoryImpl implements NotificationRepository {
   final NotificationsDao _dao;
-  final SyncRepository _syncRepo;
+  final SyncRepository syncRepo;
 
-  NotificationRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = NotificationsDao(database),
-        _syncRepo = syncRepo;
+  NotificationRepositoryImpl(CarePawDatabase database, {required this.syncRepo})
+      : _dao = NotificationsDao(database);
 
   @override
   Future<domain.Notification?> findById(int id) async {
@@ -235,7 +234,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         'readAt': entity.readAt?.toIso8601String(),
         'createdAt': entity.createdAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.insert,
@@ -261,7 +260,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         'readAt': entity.readAt?.toIso8601String(),
         'createdAt': entity.createdAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.update,
@@ -274,7 +273,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<void> deleteWithSync(int id, String tableName) async {
     // Would need a DAO method for delete
-    await _syncRepo.queueForSync(
+    await syncRepo.queueForSync(
       tableName: tableName,
       recordId: id,
       operation: SyncOperation.delete,

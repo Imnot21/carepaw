@@ -1,10 +1,11 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'dart:io';
 
 import 'tables.dart';
+
+// Platform-specific database connection factory
+import 'database_connection_stub.dart'
+    if (dart.library.io) 'database_connection_native.dart'
+    if (dart.library.js_interop) 'database_connection.dart';
 
 part 'database.g.dart';
 
@@ -27,41 +28,49 @@ part 'database.g.dart';
     AuditLogs,
     SyncMetadata,
     DeviceInfo,
+    LocalFiles,
   ],
-  // Enable foreign keys enforcement
-  // This is automatically enabled in Drift 2.x
 )
 class CarePawDatabase extends _$CarePawDatabase {
-  CarePawDatabase() : super(_openConnection());
+  CarePawDatabase() : super(openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        // Enable foreign key constraints
-        await customStatement('PRAGMA foreign_keys = ON');
+        // Enable foreign key constraints (only for native SQLite)
+        if (!_kIsWeb) {
+          await customStatement('PRAGMA foreign_keys = ON');
+        }
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Future migrations will be added here
-        // For now, we only have schema version 1
+        if (from < 2) {
+          // Migration from v1 to v2: Re-create all tables to ensure they exist
+          // This handles cases where database was created with incomplete schema
+          await m.createAll();
+        }
+        if (from < 3) {
+          // Migration from v2 to v3: Add firebase_uid column to users table
+          await m.addColumn(users, users.firebaseUid as GeneratedColumn<Object>);
+          // Create unique index for firebase_uid (only for native SQLite)
+          if (!_kIsWeb) {
+            await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid) WHERE firebase_uid IS NOT NULL');
+          }
+        }
       },
       beforeOpen: (OpeningDetails details) async {
-        // Ensure foreign keys are enabled on every connection
-        await customStatement('PRAGMA foreign_keys = ON');
+        // Ensure foreign keys are enabled on every connection (only for native SQLite)
+        if (!_kIsWeb) {
+          await customStatement('PRAGMA foreign_keys = ON');
+        }
       },
     );
   }
 }
 
-/// Open SQLite connection
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'carepaw.sqlite'));
-    return NativeDatabase.createInBackground(file);
-  });
-}
+/// Check if running on web
+const bool _kIsWeb = identical(0, 0.0);

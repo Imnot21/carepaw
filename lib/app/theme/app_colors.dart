@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../features/pets/domain/entities/pet.dart';
 
-/// CarePaw color palette - Premium purple primary with sophisticated depth.
+/// CarePaw color palette - Professional blue primary with silver accents.
 ///
 /// Design principles:
-/// - Bold purple primary for brand identity with premium depth
-/// - Multi-layered surface system for glassmorphism effects
-/// - Rich gradients and shadow system for elevation
+/// - Professional blue primary for trust and medical credibility
+/// - Silver/gray accents for modern, clean aesthetic
+/// - Multi-layered surface system for depth effects
 /// - High contrast for accessibility (WCAG AA minimum)
 /// - Pet-inspired accent colors with refined saturation
 class AppColors {
@@ -15,30 +15,36 @@ class AppColors {
   /// Transparent color for cases where no color is desired
   static const Color transparent = Color(0x00000000);
 
-  // ============ Primary Colors - Premium Purple ============
-  /// Primary brand color - Rich, deep purple with premium feel
-  static const Color primary = Color(0xFF6D28D9);
+  // ============ Primary Colors - Professional Blue ============
+  /// Primary brand color - Professional medical blue
+  static const Color primary = Color(0xFF0066CC);
 
   /// Primary variant - Deeper for emphasis and pressed states
-  static const Color primaryDark = Color(0xFF5B21B6);
+  static const Color primaryDark = Color(0xFF0052A3);
 
   /// Primary variant - Lighter for hover/focus states
-  static const Color primaryLight = Color(0xFF8B5CF6);
+  static const Color primaryLight = Color(0xFF3385D6);
 
   /// Primary glow - For subtle glow effects
-  static const Color primaryGlow = Color(0x336D28D9);
+  static const Color primaryGlow = Color(0x330066CC);
 
   /// Primary container - Very light for chips, badges
-  static const Color primaryContainer = Color(0xFFF3E8FF);
-  static const Color onPrimaryContainer = Color(0xFF4C1D95);
+  static const Color primaryContainer = Color(0xFFE6F0FA);
+  static const Color onPrimaryContainer = Color(0xFF003D7A);
 
-  // ============ Secondary Colors - Sophisticated Purple ============
-  /// Secondary brand color - Muted purple for secondary actions
-  static const Color secondary = Color(0xFF9D6FFF);
-  static const Color secondaryDark = Color(0xFF7C3AED);
-  static const Color secondaryLight = Color(0xFFC4B5FD);
-  static const Color secondaryContainer = Color(0xFFF5F0FF);
-  static const Color onSecondaryContainer = Color(0xFF4C1D95);
+  // ============ Secondary Colors - Silver/Gray ============
+  /// Secondary brand color - Silver for secondary actions
+  static const Color secondary = Color(0xFF8A929E);
+
+  /// Secondary variant - Darker silver
+  static const Color secondaryDark = Color(0xFF6B7280);
+
+  /// Secondary variant - Lighter silver
+  static const Color secondaryLight = Color(0xFFD1D5DB);
+
+  /// Secondary container - Very light for chips, badges
+  static const Color secondaryContainer = Color(0xFFF3F4F6);
+  static const Color onSecondaryContainer = Color(0xFF374151);
 
   // ============ Accent Colors - Refined Complementary ============
   /// Tertiary - Refined teal for accents and success states
@@ -74,67 +80,67 @@ class AppColors {
   static const Color errorDark = Color(0xFFDC2626);
   static const Color errorGlow = Color(0x33EF4444);
 
-  /// Info - Refined blue
+  /// Info - Professional blue (matches primary family)
   static const Color info = Color(0xFF3B82F6);
   static const Color infoLight = Color(0xFFDBEAFE);
   static const Color infoDark = Color(0xFF2563EB);
   static const Color infoGlow = Color(0x333B82F6);
 
-  // ============ Neutral Colors - Premium Grays ============
-  /// Background - Warm off-white for premium feel
-  static const Color background = Color(0xFFFAFAFB);
+  // ============ Neutral Colors - Silver/Gray System ============
+  /// Background - Clean off-white for professional feel
+  static const Color background = Color(0xFFFAFAFA);
 
   /// Surface - Pure white for cards
   static const Color surface = Color(0xFFFFFFFF);
 
-  /// Surface tinted - Subtle purple tint for depth
-  static const Color surfaceTinted = Color(0xFFF8F5FF);
+  /// Surface tinted - Subtle blue tint for depth
+  static const Color surfaceTinted = Color(0xFFF0F5FA);
 
-  /// Surface variant - Subtle gray for sections
-  static const Color surfaceVariant = Color(0xFFF1F3F5);
+  /// Surface variant - Subtle silver/gray for sections
+  static const Color surfaceVariant = Color(0xFFF3F4F6);
 
   /// Surface container - Slightly elevated
-  static const Color surfaceContainer = Color(0xFFE8EBEF);
+  static const Color surfaceContainer = Color(0xFFE5E7EB);
 
   /// Surface container high - For hover states
-  static const Color surfaceContainerHigh = Color(0xFFDEE2E6);
+  static const Color surfaceContainerHigh = Color(0xFFD1D5DB);
 
   /// Surface container highest - For pressed states
-  static const Color surfaceContainerHighest = Color(0xFFD0D5DD);
+  static const Color surfaceContainerHighest = Color(0xFF9CA3AF);
 
   /// Text colors - Rich dark gray (not harsh black)
-  static const Color textPrimary = Color(0xFF101828);
-  static const Color textSecondary = Color(0xFF475467);
-  static const Color textTertiary = Color(0xFF667085);
-  static const Color textHint = Color(0xFF98A2B3);
+  static const Color textPrimary = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF374151);
+  static const Color textTertiary = Color(0xFF6B7280);
+  static const Color textHint = Color(0xFF9CA3AF);
   static const Color textOnPrimary = Color(0xFFFFFFFF);
   static const Color textOnSurface = Color(0xFFFFFFFF);
   static const Color textOnDark = Color(0xFFFFFFFF);
 
-  /// Divider and border - Refined subtle grays
-  static const Color divider = Color(0xFFE4E7EC);
-  static const Color border = Color(0xFFD0D5DD);
-  static const Color borderFocus = Color(0xFF6D28D9);
-  static const Color borderStrong = Color(0xFF98A2B3);
+  /// Divider and border - Refined subtle silver/grays
+  static const Color divider = Color(0xFFE5E7EB);
+  static const Color border = Color(0xFFD1D5DB);
+  static const Color borderFocus = Color(0xFF0066CC);
+  static const Color borderStrong = Color(0xFF9CA3AF);
 
   /// Disabled state
-  static const Color disabled = Color(0xFFBCC1C9);
-  static const Color disabledBackground = Color(0xFFF2F4F7);
+  static const Color disabled = Color(0xFF9CA3AF);
+  static const Color disabledBackground = Color(0xFFF3F4F6);
 
   // ============ Premium Shadow System ============
   /// Shadow level 1 - Subtle (cards, inputs)
-  static const Color shadow1 = Color(0x0A101828);
+  static const Color shadow1 = Color(0x0A111827);
   /// Shadow level 2 - Low (buttons, chips)
-  static const Color shadow2 = Color(0x10101828);
+  static const Color shadow2 = Color(0x10111827);
   /// Shadow level 3 - Medium (modals, dropdowns)
-  static const Color shadow3 = Color(0x15101828);
+  static const Color shadow3 = Color(0x15111827);
   /// Shadow level 4 - High (tooltips, popovers)
-  static const Color shadow4 = Color(0x20101828);
+  static const Color shadow4 = Color(0x20111827);
   /// Shadow level 5 - Maximum (drawers, sheets)
-  static const Color shadow5 = Color(0x28101828);
+  static const Color shadow5 = Color(0x28111827);
 
   /// Colored shadows for premium effects
-  static const Color shadowPrimary = Color(0x336D28D9);
+  static const Color shadowPrimary = Color(0x330066CC);
   static const Color shadowSuccess = Color(0x3310B981);
   static const Color shadowWarning = Color(0x33F59E0B);
   static const Color shadowError = Color(0x33EF4444);
@@ -156,21 +162,21 @@ class AppColors {
   // ============ Gradient System ============
   /// Primary gradient - For hero sections, primary buttons
   static const LinearGradient gradientPrimary = LinearGradient(
-    colors: [Color(0xFF6D28D9), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF0066CC), Color(0xFF3385D6)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   /// Primary gradient reverse
   static const LinearGradient gradientPrimaryReverse = LinearGradient(
-    colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+    colors: [Color(0xFF3385D6), Color(0xFF0066CC)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   /// Secondary gradient
   static const LinearGradient gradientSecondary = LinearGradient(
-    colors: [Color(0xFF7C3AED), Color(0xFF9D6FFF)],
+    colors: [Color(0xFF6B7280), Color(0xFF8A929E)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -198,21 +204,21 @@ class AppColors {
 
   /// Surface gradient - Subtle for cards
   static const LinearGradient gradientSurface = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF8F5FF)],
+    colors: [Color(0xFFFFFFFF), Color(0xFFF0F5FA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   /// Dark surface gradient
   static const LinearGradient gradientSurfaceDark = LinearGradient(
-    colors: [Color(0xFF24272D), Color(0xFF2D3138)],
+    colors: [Color(0xFF1F2937), Color(0xFF111827)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   /// Hero gradient - For splash screens, onboarding
   static const LinearGradient gradientHero = LinearGradient(
-    colors: [Color(0xFF6D28D9), Color(0xFF8B5CF6), Color(0xFF14B8A6)],
+    colors: [Color(0xFF0066CC), Color(0xFF3385D6), Color(0xFF14B8A6)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     stops: [0.0, 0.5, 1.0],
@@ -249,27 +255,27 @@ class AppColors {
   static const Color reptileAccentDark = Color(0xFF4ADE80);
   static const Color reptileAccentGlow = Color(0x3386EFAC);
 
-  /// Other - Soft gray
-  static const Color otherAccent = Color(0xFFB8B4AE);
-  static const Color otherAccentLight = Color(0xFFF0EFEE);
-  static const Color otherAccentDark = Color(0xFF9E9A94);
-  static const Color otherAccentGlow = Color(0x33B8B4AE);
+  /// Other - Soft silver
+  static const Color otherAccent = Color(0xFF9CA3AF);
+  static const Color otherAccentLight = Color(0xFFF3F4F6);
+  static const Color otherAccentDark = Color(0xFF6B7280);
+  static const Color otherAccentGlow = Color(0x339CA3AF);
 
   // ============ Queue Status Colors ============
   static const Color queueWaiting = Color(0xFFF59E0B);
   static const Color queueWaitingLight = Color(0xFFFEF3C7);
   static const Color queueActive = Color(0xFF10B981);
   static const Color queueActiveLight = Color(0xFFD1FAE5);
-  static const Color queueCompleted = Color(0xFF667085);
-  static const Color queueCompletedLight = Color(0xFFF2F4F7);
+  static const Color queueCompleted = Color(0xFF6B7280);
+  static const Color queueCompletedLight = Color(0xFFF3F4F6);
 
   // ============ Appointment Status Colors ============
   static const Color appointmentPending = Color(0xFFF59E0B);
   static const Color appointmentConfirmed = Color(0xFF10B981);
-  static const Color appointmentInProgress = Color(0xFF3B82F6);
-  static const Color appointmentCompleted = Color(0xFF8B5CF6);
+  static const Color appointmentInProgress = Color(0xFF0066CC);
+  static const Color appointmentCompleted = Color(0xFF8A929E);
   static const Color appointmentCancelled = Color(0xFFEF4444);
-  static const Color appointmentNoShow = Color(0xFF98A2B3);
+  static const Color appointmentNoShow = Color(0xFF9CA3AF);
 
   // ============ Inventory Status Colors ============
   static const Color stockNormal = Color(0xFF10B981);
@@ -278,29 +284,41 @@ class AppColors {
   static const Color stockExpiring = Color(0xFFF97316);
   static const Color stockExpired = Color(0xFFDC2626);
 
+  // ============ Inventory Category Colors ============
+  static const Color categoryMedicine = Color(0xFF0066CC); // Primary blue
+  static const Color categoryMedicineDark = Color(0xFF3385D6);
+  static const Color categoryVaccine = Color(0xFF06B6D4);  // Cyan
+  static const Color categoryVaccineDark = Color(0xFF0891B2);
+  static const Color categorySupply = Color(0xFF3B82F6);   // Blue (replaces purple)
+  static const Color categorySupplyDark = Color(0xFF2563EB);
+  static const Color categoryEquipment = Color(0xFF6366F1); // Indigo
+  static const Color categoryEquipmentDark = Color(0xFF4F46E5);
+  static const Color categoryFood = Color(0xFFF59E0B);     // Amber
+  static const Color categoryFoodDark = Color(0xFFD97706);
+
   // ============ Dark Theme Colors ============
-  static const Color backgroundDark = Color(0xFF0B0D10);
-  static const Color surfaceDark = Color(0xFF16181D);
-  static const Color surfaceTintedDark = Color(0xFF1E1A2A);
-  static const Color surfaceVariantDark = Color(0xFF1F2128);
-  static const Color surfaceContainerDark = Color(0xFF262930);
-  static const Color surfaceContainerHighDark = Color(0xFF2F333C);
-  static const Color surfaceContainerHighestDark = Color(0xFF3D414C);
-  static const Color textPrimaryDark = Color(0xFFF2F4F7);
-  static const Color textSecondaryDark = Color(0xFFD0D5DD);
-  static const Color textTertiaryDark = Color(0xFF98A2B3);
-  static const Color textHintDark = Color(0xFF7A869A);
-  static const Color dividerDark = Color(0xFF2F333C);
-  static const Color borderDark = Color(0xFF3D414C);
-  static const Color borderStrongDark = Color(0xFF50596D);
-  static const Color disabledDark = Color(0xFF667085);
-  static const Color disabledBackgroundDark = Color(0xFF2F333C);
+  static const Color backgroundDark = Color(0xFF0F172A);
+  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color surfaceTintedDark = Color(0xFF1E3A5F);
+  static const Color surfaceVariantDark = Color(0xFF334155);
+  static const Color surfaceContainerDark = Color(0xFF475569);
+  static const Color surfaceContainerHighDark = Color(0xFF64748B);
+  static const Color surfaceContainerHighestDark = Color(0xFF94A3B8);
+  static const Color textPrimaryDark = Color(0xFFF8FAFC);
+  static const Color textSecondaryDark = Color(0xFFE2E8F0);
+  static const Color textTertiaryDark = Color(0xFF94A3B8);
+  static const Color textHintDark = Color(0xFF64748B);
+  static const Color dividerDark = Color(0xFF334155);
+  static const Color borderDark = Color(0xFF475569);
+  static const Color borderStrongDark = Color(0xFF64748B);
+  static const Color disabledDark = Color(0xFF64748B);
+  static const Color disabledBackgroundDark = Color(0xFF334155);
   static const Color shadowDark1 = Color(0x10000000);
   static const Color shadowDark2 = Color(0x15000000);
   static const Color shadowDark3 = Color(0x20000000);
   static const Color shadowDark4 = Color(0x30000000);
   static const Color shadowDark5 = Color(0x40000000);
-  static const Color glassDarkOverlay = Color(0xCC14161A);
+  static const Color glassDarkOverlay = Color(0xCC0F172A);
 }
 
 /// Extension to get species colors

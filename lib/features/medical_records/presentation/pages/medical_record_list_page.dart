@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart';
-import 'package:carepaw/features/medical_records/presentation/pages/medical_record_detail_page.dart';
-import 'package:carepaw/features/medical_records/presentation/pages/medical_record_form_page.dart';
 import 'package:carepaw/features/medical_records/presentation/utils/medical_record_utils.dart';
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
@@ -552,17 +550,19 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   }
 
   void _navigateToForm(BuildContext context) {
+    final bloc = context.read<MedicalRecordBloc>();
     context.push(
       '/medical-records/new',
       extra: {'pet': widget.pet},
     ).then((_) {
       // Reload records after form closes
+      if (!mounted) return;
       if (_selectedFilter != null) {
-        context.read<MedicalRecordBloc>().add(
+        bloc.add(
           LoadMedicalRecordsByType(widget.pet.id!, _selectedFilter!),
         );
       } else {
-        context.read<MedicalRecordBloc>().add(LoadMedicalRecords(widget.pet.id!));
+        bloc.add(LoadMedicalRecords(widget.pet.id!));
       }
     });
   }

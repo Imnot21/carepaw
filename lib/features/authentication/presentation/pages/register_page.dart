@@ -163,7 +163,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                         const SizedBox(height: 8),
                         Text(
                           'Create your account to get started',
-                          style: AppTextStyles.bodyLarge.subtle,
+                          style: AppTextStyles.bodyLarge.subtleOf(Theme.of(context).brightness),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
@@ -267,7 +267,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                         // Terms & Privacy
                         Text(
                           'By creating an account, you agree to our Terms of Service and Privacy Policy.',
-                          style: AppTextStyles.bodySmall.subtle,
+                          style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -278,7 +278,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                           children: [
                             Text(
                               'Already have an account? ',
-                              style: AppTextStyles.bodyMedium.subtle,
+                              style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
                             ),
                             TextButton(
                               onPressed: _navigateToLogin,

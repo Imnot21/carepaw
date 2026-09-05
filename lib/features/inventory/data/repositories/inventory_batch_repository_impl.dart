@@ -1,21 +1,19 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/inventory_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/core/repositories/base_repository.dart';
-import 'package:carepaw/core/database/entities.dart';
 
 /// Inventory batch repository implementation - data layer
 /// Converts between Drift entities and domain entities
 class InventoryBatchRepositoryImpl implements InventoryBatchRepository {
   final InventoryDao _dao;
-  final SyncRepository _syncRepo;
+  final SyncRepository syncRepo;
 
-  InventoryBatchRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = InventoryDao(database),
-        _syncRepo = syncRepo;
+  InventoryBatchRepositoryImpl(CarePawDatabase database, {required this.syncRepo})
+      : _dao = InventoryDao(database);
 
   @override
   Future<InventoryBatch?> findById(int id) async {
@@ -169,7 +167,7 @@ class InventoryBatchRepositoryImpl implements InventoryBatchRepository {
         'supplier': entity.supplier,
         'createdAt': entity.createdAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.insert,
@@ -194,7 +192,7 @@ class InventoryBatchRepositoryImpl implements InventoryBatchRepository {
         'supplier': entity.supplier,
         'createdAt': entity.createdAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.update,
@@ -207,7 +205,7 @@ class InventoryBatchRepositoryImpl implements InventoryBatchRepository {
   @override
   Future<void> deleteWithSync(int id, String tableName) async {
     // Would need a DAO method for delete
-    await _syncRepo.queueForSync(
+    await syncRepo.queueForSync(
       tableName: tableName,
       recordId: id,
       operation: SyncOperation.delete,

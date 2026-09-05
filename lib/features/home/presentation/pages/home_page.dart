@@ -132,8 +132,8 @@ class _HomePageState extends State<HomePage> {
                 AppColors.tertiary.withValues(alpha: 0.03),
               ],
               child: Scaffold(
-                backgroundColor: Colors.transparent,
-                extendBodyBehindAppBar: true,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                extendBody: true,
                 body: IndexedStack(
                   index: _currentIndex,
                   children: [
@@ -728,15 +728,15 @@ class _QuickActionsSection extends StatelessWidget {
           childAspectRatio: 0.9,
           children: [
             _QuickActionCard(
-              icon: Icons.add_circle_outline,
+              icon: Icons.add,
               label: 'Add Pet',
               color: AppColors.primary,
               onTap: () => context.push(Routes.petAdd),
             ),
             _QuickActionCard(
-              icon: Icons.calendar_month_outlined,
+              icon: Icons.add,
               label: 'Book\nAppointment',
-              color: AppColors.secondary,
+              color: AppColors.primary,
               onTap: () => context.push(Routes.appointmentRequest),
             ),
             _QuickActionCard(

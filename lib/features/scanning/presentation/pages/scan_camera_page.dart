@@ -3,9 +3,6 @@ import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/core/widgets/common/cp_button.dart';
 import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
 import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
@@ -52,8 +49,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       case ScanType.medicineBox:
         return AppColors.gradientPrimary;
       case ScanType.prescription:
-        return const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+        return LinearGradient(
+          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
         );
       case ScanType.labReport:
         return const LinearGradient(
@@ -71,11 +68,11 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       case ScanType.receipt:
         return const Color(0xFF10B981);
       case ScanType.medicineBox:
-        return AppColors.primary;
+        return AppColors.categoryMedicine;
       case ScanType.prescription:
-        return const Color(0xFF8B5CF6);
+        return AppColors.categorySupply;
       case ScanType.labReport:
-        return const Color(0xFF06B6D4);
+        return AppColors.categoryVaccine;
       default:
         return const Color(0xFF6B7280);
     }

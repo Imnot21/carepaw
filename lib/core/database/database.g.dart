@@ -134,6 +134,18 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _firebaseUidMeta = const VerificationMeta(
+    'firebaseUid',
+  );
+  @override
+  late final GeneratedColumn<String> firebaseUid = GeneratedColumn<String>(
+    'firebase_uid',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 128),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -146,6 +158,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     isActive,
     createdAt,
     updatedAt,
+    firebaseUid,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -225,6 +238,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
+    if (data.containsKey('firebase_uid')) {
+      context.handle(
+        _firebaseUidMeta,
+        firebaseUid.isAcceptableOrUnknown(
+          data['firebase_uid']!,
+          _firebaseUidMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -274,6 +296,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      firebaseUid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}firebase_uid'],
+      ),
     );
   }
 
@@ -294,6 +320,7 @@ class User extends DataClass implements Insertable<User> {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? firebaseUid;
   const User({
     required this.id,
     required this.email,
@@ -305,6 +332,7 @@ class User extends DataClass implements Insertable<User> {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
+    this.firebaseUid,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -323,6 +351,9 @@ class User extends DataClass implements Insertable<User> {
     map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || firebaseUid != null) {
+      map['firebase_uid'] = Variable<String>(firebaseUid);
+    }
     return map;
   }
 
@@ -342,6 +373,9 @@ class User extends DataClass implements Insertable<User> {
       isActive: Value(isActive),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      firebaseUid: firebaseUid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firebaseUid),
     );
   }
 
@@ -361,6 +395,7 @@ class User extends DataClass implements Insertable<User> {
       isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      firebaseUid: serializer.fromJson<String?>(json['firebaseUid']),
     );
   }
   @override
@@ -377,6 +412,7 @@ class User extends DataClass implements Insertable<User> {
       'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'firebaseUid': serializer.toJson<String?>(firebaseUid),
     };
   }
 
@@ -391,6 +427,7 @@ class User extends DataClass implements Insertable<User> {
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<String?> firebaseUid = const Value.absent(),
   }) => User(
     id: id ?? this.id,
     email: email ?? this.email,
@@ -402,6 +439,7 @@ class User extends DataClass implements Insertable<User> {
     isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    firebaseUid: firebaseUid.present ? firebaseUid.value : this.firebaseUid,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -417,6 +455,9 @@ class User extends DataClass implements Insertable<User> {
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      firebaseUid: data.firebaseUid.present
+          ? data.firebaseUid.value
+          : this.firebaseUid,
     );
   }
 
@@ -432,7 +473,8 @@ class User extends DataClass implements Insertable<User> {
           ..write('avatarUrl: $avatarUrl, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('firebaseUid: $firebaseUid')
           ..write(')'))
         .toString();
   }
@@ -449,6 +491,7 @@ class User extends DataClass implements Insertable<User> {
     isActive,
     createdAt,
     updatedAt,
+    firebaseUid,
   );
   @override
   bool operator ==(Object other) =>
@@ -463,7 +506,8 @@ class User extends DataClass implements Insertable<User> {
           other.avatarUrl == this.avatarUrl &&
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.firebaseUid == this.firebaseUid);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -477,6 +521,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String?> firebaseUid;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.email = const Value.absent(),
@@ -488,6 +533,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.firebaseUid = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
@@ -500,6 +546,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.firebaseUid = const Value.absent(),
   }) : email = Value(email),
        passwordHash = Value(passwordHash),
        fullName = Value(fullName);
@@ -514,6 +561,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? firebaseUid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -526,6 +574,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (firebaseUid != null) 'firebase_uid': firebaseUid,
     });
   }
 
@@ -540,6 +589,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<bool>? isActive,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<String?>? firebaseUid,
   }) {
     return UsersCompanion(
       id: id ?? this.id,
@@ -552,6 +602,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      firebaseUid: firebaseUid ?? this.firebaseUid,
     );
   }
 
@@ -588,6 +639,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (firebaseUid.present) {
+      map['firebase_uid'] = Variable<String>(firebaseUid.value);
+    }
     return map;
   }
 
@@ -603,7 +657,8 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('avatarUrl: $avatarUrl, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('firebaseUid: $firebaseUid')
           ..write(')'))
         .toString();
   }
@@ -11133,6 +11188,828 @@ class DeviceInfoCompanion extends UpdateCompanion<DeviceInfoData> {
   }
 }
 
+class $LocalFilesTable extends LocalFiles
+    with TableInfo<$LocalFilesTable, LocalFile> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalFilesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _fileNameMeta = const VerificationMeta(
+    'fileName',
+  );
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+    'file_name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 255,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mimeTypeMeta = const VerificationMeta(
+    'mimeType',
+  );
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+    'mime_type',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fileSizeMeta = const VerificationMeta(
+    'fileSize',
+  );
+  @override
+  late final GeneratedColumn<int> fileSize = GeneratedColumn<int>(
+    'file_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 500,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+    'hash',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 32,
+      maxTextLength: 64,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('general'),
+  );
+  static const VerificationMeta _referenceIdMeta = const VerificationMeta(
+    'referenceId',
+  );
+  @override
+  late final GeneratedColumn<int> referenceId = GeneratedColumn<int>(
+    'reference_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _referenceTypeMeta = const VerificationMeta(
+    'referenceType',
+  );
+  @override
+  late final GeneratedColumn<String> referenceType = GeneratedColumn<String>(
+    'reference_type',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 50,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _uploadedByMeta = const VerificationMeta(
+    'uploadedBy',
+  );
+  @override
+  late final GeneratedColumn<int> uploadedBy = GeneratedColumn<int>(
+    'uploaded_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _isPublicMeta = const VerificationMeta(
+    'isPublic',
+  );
+  @override
+  late final GeneratedColumn<bool> isPublic = GeneratedColumn<bool>(
+    'is_public',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_public" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    fileName,
+    mimeType,
+    fileSize,
+    localPath,
+    hash,
+    category,
+    referenceId,
+    referenceType,
+    uploadedBy,
+    isPublic,
+    isSynced,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_files';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalFile> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(
+        _fileNameMeta,
+        fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(
+        _mimeTypeMeta,
+        mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mimeTypeMeta);
+    }
+    if (data.containsKey('file_size')) {
+      context.handle(
+        _fileSizeMeta,
+        fileSize.isAcceptableOrUnknown(data['file_size']!, _fileSizeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fileSizeMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('hash')) {
+      context.handle(
+        _hashMeta,
+        hash.isAcceptableOrUnknown(data['hash']!, _hashMeta),
+      );
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('reference_id')) {
+      context.handle(
+        _referenceIdMeta,
+        referenceId.isAcceptableOrUnknown(
+          data['reference_id']!,
+          _referenceIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reference_type')) {
+      context.handle(
+        _referenceTypeMeta,
+        referenceType.isAcceptableOrUnknown(
+          data['reference_type']!,
+          _referenceTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('uploaded_by')) {
+      context.handle(
+        _uploadedByMeta,
+        uploadedBy.isAcceptableOrUnknown(data['uploaded_by']!, _uploadedByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uploadedByMeta);
+    }
+    if (data.containsKey('is_public')) {
+      context.handle(
+        _isPublicMeta,
+        isPublic.isAcceptableOrUnknown(data['is_public']!, _isPublicMeta),
+      );
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalFile map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalFile(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      fileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_name'],
+      )!,
+      mimeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mime_type'],
+      )!,
+      fileSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}file_size'],
+      )!,
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      )!,
+      hash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hash'],
+      ),
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      referenceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}reference_id'],
+      ),
+      referenceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference_type'],
+      ),
+      uploadedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}uploaded_by'],
+      )!,
+      isPublic: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_public'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalFilesTable createAlias(String alias) {
+    return $LocalFilesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalFile extends DataClass implements Insertable<LocalFile> {
+  final int id;
+  final String fileName;
+  final String mimeType;
+  final int fileSize;
+  final String localPath;
+  final String? hash;
+  final String category;
+  final int? referenceId;
+  final String? referenceType;
+  final int uploadedBy;
+  final bool isPublic;
+  final bool isSynced;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const LocalFile({
+    required this.id,
+    required this.fileName,
+    required this.mimeType,
+    required this.fileSize,
+    required this.localPath,
+    this.hash,
+    required this.category,
+    this.referenceId,
+    this.referenceType,
+    required this.uploadedBy,
+    required this.isPublic,
+    required this.isSynced,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['file_name'] = Variable<String>(fileName);
+    map['mime_type'] = Variable<String>(mimeType);
+    map['file_size'] = Variable<int>(fileSize);
+    map['local_path'] = Variable<String>(localPath);
+    if (!nullToAbsent || hash != null) {
+      map['hash'] = Variable<String>(hash);
+    }
+    map['category'] = Variable<String>(category);
+    if (!nullToAbsent || referenceId != null) {
+      map['reference_id'] = Variable<int>(referenceId);
+    }
+    if (!nullToAbsent || referenceType != null) {
+      map['reference_type'] = Variable<String>(referenceType);
+    }
+    map['uploaded_by'] = Variable<int>(uploadedBy);
+    map['is_public'] = Variable<bool>(isPublic);
+    map['is_synced'] = Variable<bool>(isSynced);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalFilesCompanion toCompanion(bool nullToAbsent) {
+    return LocalFilesCompanion(
+      id: Value(id),
+      fileName: Value(fileName),
+      mimeType: Value(mimeType),
+      fileSize: Value(fileSize),
+      localPath: Value(localPath),
+      hash: hash == null && nullToAbsent ? const Value.absent() : Value(hash),
+      category: Value(category),
+      referenceId: referenceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(referenceId),
+      referenceType: referenceType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(referenceType),
+      uploadedBy: Value(uploadedBy),
+      isPublic: Value(isPublic),
+      isSynced: Value(isSynced),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalFile.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalFile(
+      id: serializer.fromJson<int>(json['id']),
+      fileName: serializer.fromJson<String>(json['fileName']),
+      mimeType: serializer.fromJson<String>(json['mimeType']),
+      fileSize: serializer.fromJson<int>(json['fileSize']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      hash: serializer.fromJson<String?>(json['hash']),
+      category: serializer.fromJson<String>(json['category']),
+      referenceId: serializer.fromJson<int?>(json['referenceId']),
+      referenceType: serializer.fromJson<String?>(json['referenceType']),
+      uploadedBy: serializer.fromJson<int>(json['uploadedBy']),
+      isPublic: serializer.fromJson<bool>(json['isPublic']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'fileName': serializer.toJson<String>(fileName),
+      'mimeType': serializer.toJson<String>(mimeType),
+      'fileSize': serializer.toJson<int>(fileSize),
+      'localPath': serializer.toJson<String>(localPath),
+      'hash': serializer.toJson<String?>(hash),
+      'category': serializer.toJson<String>(category),
+      'referenceId': serializer.toJson<int?>(referenceId),
+      'referenceType': serializer.toJson<String?>(referenceType),
+      'uploadedBy': serializer.toJson<int>(uploadedBy),
+      'isPublic': serializer.toJson<bool>(isPublic),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalFile copyWith({
+    int? id,
+    String? fileName,
+    String? mimeType,
+    int? fileSize,
+    String? localPath,
+    Value<String?> hash = const Value.absent(),
+    String? category,
+    Value<int?> referenceId = const Value.absent(),
+    Value<String?> referenceType = const Value.absent(),
+    int? uploadedBy,
+    bool? isPublic,
+    bool? isSynced,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => LocalFile(
+    id: id ?? this.id,
+    fileName: fileName ?? this.fileName,
+    mimeType: mimeType ?? this.mimeType,
+    fileSize: fileSize ?? this.fileSize,
+    localPath: localPath ?? this.localPath,
+    hash: hash.present ? hash.value : this.hash,
+    category: category ?? this.category,
+    referenceId: referenceId.present ? referenceId.value : this.referenceId,
+    referenceType: referenceType.present
+        ? referenceType.value
+        : this.referenceType,
+    uploadedBy: uploadedBy ?? this.uploadedBy,
+    isPublic: isPublic ?? this.isPublic,
+    isSynced: isSynced ?? this.isSynced,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalFile copyWithCompanion(LocalFilesCompanion data) {
+    return LocalFile(
+      id: data.id.present ? data.id.value : this.id,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      hash: data.hash.present ? data.hash.value : this.hash,
+      category: data.category.present ? data.category.value : this.category,
+      referenceId: data.referenceId.present
+          ? data.referenceId.value
+          : this.referenceId,
+      referenceType: data.referenceType.present
+          ? data.referenceType.value
+          : this.referenceType,
+      uploadedBy: data.uploadedBy.present
+          ? data.uploadedBy.value
+          : this.uploadedBy,
+      isPublic: data.isPublic.present ? data.isPublic.value : this.isPublic,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalFile(')
+          ..write('id: $id, ')
+          ..write('fileName: $fileName, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('localPath: $localPath, ')
+          ..write('hash: $hash, ')
+          ..write('category: $category, ')
+          ..write('referenceId: $referenceId, ')
+          ..write('referenceType: $referenceType, ')
+          ..write('uploadedBy: $uploadedBy, ')
+          ..write('isPublic: $isPublic, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    fileName,
+    mimeType,
+    fileSize,
+    localPath,
+    hash,
+    category,
+    referenceId,
+    referenceType,
+    uploadedBy,
+    isPublic,
+    isSynced,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalFile &&
+          other.id == this.id &&
+          other.fileName == this.fileName &&
+          other.mimeType == this.mimeType &&
+          other.fileSize == this.fileSize &&
+          other.localPath == this.localPath &&
+          other.hash == this.hash &&
+          other.category == this.category &&
+          other.referenceId == this.referenceId &&
+          other.referenceType == this.referenceType &&
+          other.uploadedBy == this.uploadedBy &&
+          other.isPublic == this.isPublic &&
+          other.isSynced == this.isSynced &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalFilesCompanion extends UpdateCompanion<LocalFile> {
+  final Value<int> id;
+  final Value<String> fileName;
+  final Value<String> mimeType;
+  final Value<int> fileSize;
+  final Value<String> localPath;
+  final Value<String?> hash;
+  final Value<String> category;
+  final Value<int?> referenceId;
+  final Value<String?> referenceType;
+  final Value<int> uploadedBy;
+  final Value<bool> isPublic;
+  final Value<bool> isSynced;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const LocalFilesCompanion({
+    this.id = const Value.absent(),
+    this.fileName = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.fileSize = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.hash = const Value.absent(),
+    this.category = const Value.absent(),
+    this.referenceId = const Value.absent(),
+    this.referenceType = const Value.absent(),
+    this.uploadedBy = const Value.absent(),
+    this.isPublic = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  LocalFilesCompanion.insert({
+    this.id = const Value.absent(),
+    required String fileName,
+    required String mimeType,
+    required int fileSize,
+    required String localPath,
+    this.hash = const Value.absent(),
+    this.category = const Value.absent(),
+    this.referenceId = const Value.absent(),
+    this.referenceType = const Value.absent(),
+    required int uploadedBy,
+    this.isPublic = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : fileName = Value(fileName),
+       mimeType = Value(mimeType),
+       fileSize = Value(fileSize),
+       localPath = Value(localPath),
+       uploadedBy = Value(uploadedBy);
+  static Insertable<LocalFile> custom({
+    Expression<int>? id,
+    Expression<String>? fileName,
+    Expression<String>? mimeType,
+    Expression<int>? fileSize,
+    Expression<String>? localPath,
+    Expression<String>? hash,
+    Expression<String>? category,
+    Expression<int>? referenceId,
+    Expression<String>? referenceType,
+    Expression<int>? uploadedBy,
+    Expression<bool>? isPublic,
+    Expression<bool>? isSynced,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (fileName != null) 'file_name': fileName,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (fileSize != null) 'file_size': fileSize,
+      if (localPath != null) 'local_path': localPath,
+      if (hash != null) 'hash': hash,
+      if (category != null) 'category': category,
+      if (referenceId != null) 'reference_id': referenceId,
+      if (referenceType != null) 'reference_type': referenceType,
+      if (uploadedBy != null) 'uploaded_by': uploadedBy,
+      if (isPublic != null) 'is_public': isPublic,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  LocalFilesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? fileName,
+    Value<String>? mimeType,
+    Value<int>? fileSize,
+    Value<String>? localPath,
+    Value<String?>? hash,
+    Value<String>? category,
+    Value<int?>? referenceId,
+    Value<String?>? referenceType,
+    Value<int>? uploadedBy,
+    Value<bool>? isPublic,
+    Value<bool>? isSynced,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return LocalFilesCompanion(
+      id: id ?? this.id,
+      fileName: fileName ?? this.fileName,
+      mimeType: mimeType ?? this.mimeType,
+      fileSize: fileSize ?? this.fileSize,
+      localPath: localPath ?? this.localPath,
+      hash: hash ?? this.hash,
+      category: category ?? this.category,
+      referenceId: referenceId ?? this.referenceId,
+      referenceType: referenceType ?? this.referenceType,
+      uploadedBy: uploadedBy ?? this.uploadedBy,
+      isPublic: isPublic ?? this.isPublic,
+      isSynced: isSynced ?? this.isSynced,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (fileSize.present) {
+      map['file_size'] = Variable<int>(fileSize.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (referenceId.present) {
+      map['reference_id'] = Variable<int>(referenceId.value);
+    }
+    if (referenceType.present) {
+      map['reference_type'] = Variable<String>(referenceType.value);
+    }
+    if (uploadedBy.present) {
+      map['uploaded_by'] = Variable<int>(uploadedBy.value);
+    }
+    if (isPublic.present) {
+      map['is_public'] = Variable<bool>(isPublic.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalFilesCompanion(')
+          ..write('id: $id, ')
+          ..write('fileName: $fileName, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('localPath: $localPath, ')
+          ..write('hash: $hash, ')
+          ..write('category: $category, ')
+          ..write('referenceId: $referenceId, ')
+          ..write('referenceType: $referenceType, ')
+          ..write('uploadedBy: $uploadedBy, ')
+          ..write('isPublic: $isPublic, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$CarePawDatabase extends GeneratedDatabase {
   _$CarePawDatabase(QueryExecutor e) : super(e);
   $CarePawDatabaseManager get managers => $CarePawDatabaseManager(this);
@@ -11156,6 +12033,7 @@ abstract class _$CarePawDatabase extends GeneratedDatabase {
   late final $AuditLogsTable auditLogs = $AuditLogsTable(this);
   late final $SyncMetadataTable syncMetadata = $SyncMetadataTable(this);
   late final $DeviceInfoTable deviceInfo = $DeviceInfoTable(this);
+  late final $LocalFilesTable localFiles = $LocalFilesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -11177,6 +12055,7 @@ abstract class _$CarePawDatabase extends GeneratedDatabase {
     auditLogs,
     syncMetadata,
     deviceInfo,
+    localFiles,
   ];
 }
 
@@ -11192,6 +12071,7 @@ typedef $$UsersTableCreateCompanionBuilder =
       Value<bool> isActive,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> firebaseUid,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
@@ -11205,6 +12085,7 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<bool> isActive,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<String?> firebaseUid,
     });
 
 final class $$UsersTableReferences
@@ -11389,6 +12270,24 @@ final class $$UsersTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$LocalFilesTable, List<LocalFile>>
+  _localFilesRefsTable(_$CarePawDatabase db) => MultiTypedResultKey.fromTable(
+    db.localFiles,
+    aliasName: 'users__id__local_files__uploaded_by',
+  );
+
+  $$LocalFilesTableProcessedTableManager get localFilesRefs {
+    final manager = $$LocalFilesTableTableManager(
+      $_db,
+      $_db.localFiles,
+    ).filter((f) => f.uploadedBy.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_localFilesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$UsersTableFilterComposer
@@ -11447,6 +12346,11 @@ class $$UsersTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firebaseUid => $composableBuilder(
+    column: $table.firebaseUid,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11676,6 +12580,31 @@ class $$UsersTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> localFilesRefs(
+    Expression<bool> Function($$LocalFilesTableFilterComposer f) f,
+  ) {
+    final $$LocalFilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.localFiles,
+      getReferencedColumn: (t) => t.uploadedBy,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LocalFilesTableFilterComposer(
+            $db: $db,
+            $table: $db.localFiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableOrderingComposer
@@ -11736,6 +12665,11 @@ class $$UsersTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get firebaseUid => $composableBuilder(
+    column: $table.firebaseUid,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -11778,6 +12712,11 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get firebaseUid => $composableBuilder(
+    column: $table.firebaseUid,
+    builder: (column) => column,
+  );
 
   Expression<T> petsRefs<T extends Object>(
     Expression<T> Function($$PetsTableAnnotationComposer a) f,
@@ -12006,6 +12945,31 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> localFilesRefs<T extends Object>(
+    Expression<T> Function($$LocalFilesTableAnnotationComposer a) f,
+  ) {
+    final $$LocalFilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.localFiles,
+      getReferencedColumn: (t) => t.uploadedBy,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LocalFilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.localFiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -12031,6 +12995,7 @@ class $$UsersTableTableManager
             bool notificationPreferencesRefs,
             bool scanRecordsRefs,
             bool auditLogsRefs,
+            bool localFilesRefs,
           })
         > {
   $$UsersTableTableManager(_$CarePawDatabase db, $UsersTable table)
@@ -12056,6 +13021,7 @@ class $$UsersTableTableManager
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> firebaseUid = const Value.absent(),
               }) => UsersCompanion(
                 id: id,
                 email: email,
@@ -12067,6 +13033,7 @@ class $$UsersTableTableManager
                 isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                firebaseUid: firebaseUid,
               ),
           createCompanionCallback:
               ({
@@ -12080,6 +13047,7 @@ class $$UsersTableTableManager
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> firebaseUid = const Value.absent(),
               }) => UsersCompanion.insert(
                 id: id,
                 email: email,
@@ -12091,6 +13059,7 @@ class $$UsersTableTableManager
                 isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                firebaseUid: firebaseUid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -12109,6 +13078,7 @@ class $$UsersTableTableManager
                 notificationPreferencesRefs = false,
                 scanRecordsRefs = false,
                 auditLogsRefs = false,
+                localFilesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -12122,6 +13092,7 @@ class $$UsersTableTableManager
                     if (notificationPreferencesRefs) db.notificationPreferences,
                     if (scanRecordsRefs) db.scanRecords,
                     if (auditLogsRefs) db.auditLogs,
+                    if (localFilesRefs) db.localFiles,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -12303,6 +13274,23 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (localFilesRefs)
+                        await $_getPrefetchedData<User, $UsersTable, LocalFile>(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._localFilesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).localFilesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.uploadedBy == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -12333,6 +13321,7 @@ typedef $$UsersTableProcessedTableManager =
         bool notificationPreferencesRefs,
         bool scanRecordsRefs,
         bool auditLogsRefs,
+        bool localFilesRefs,
       })
     >;
 typedef $$PetsTableCreateCompanionBuilder =
@@ -20132,6 +21121,492 @@ typedef $$DeviceInfoTableProcessedTableManager =
       DeviceInfoData,
       PrefetchHooks Function()
     >;
+typedef $$LocalFilesTableCreateCompanionBuilder =
+    LocalFilesCompanion Function({
+      Value<int> id,
+      required String fileName,
+      required String mimeType,
+      required int fileSize,
+      required String localPath,
+      Value<String?> hash,
+      Value<String> category,
+      Value<int?> referenceId,
+      Value<String?> referenceType,
+      required int uploadedBy,
+      Value<bool> isPublic,
+      Value<bool> isSynced,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$LocalFilesTableUpdateCompanionBuilder =
+    LocalFilesCompanion Function({
+      Value<int> id,
+      Value<String> fileName,
+      Value<String> mimeType,
+      Value<int> fileSize,
+      Value<String> localPath,
+      Value<String?> hash,
+      Value<String> category,
+      Value<int?> referenceId,
+      Value<String?> referenceType,
+      Value<int> uploadedBy,
+      Value<bool> isPublic,
+      Value<bool> isSynced,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$LocalFilesTableReferences
+    extends BaseReferences<_$CarePawDatabase, $LocalFilesTable, LocalFile> {
+  $$LocalFilesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _uploadedByTable(_$CarePawDatabase db) =>
+      db.users.createAlias('local_files__uploaded_by__users__id');
+
+  $$UsersTableProcessedTableManager get uploadedBy {
+    final $_column = $_itemColumn<int>('uploaded_by')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_uploadedByTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LocalFilesTableFilterComposer
+    extends Composer<_$CarePawDatabase, $LocalFilesTable> {
+  $$LocalFilesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fileSize => $composableBuilder(
+    column: $table.fileSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get referenceId => $composableBuilder(
+    column: $table.referenceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get referenceType => $composableBuilder(
+    column: $table.referenceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPublic => $composableBuilder(
+    column: $table.isPublic,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get uploadedBy {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uploadedBy,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LocalFilesTableOrderingComposer
+    extends Composer<_$CarePawDatabase, $LocalFilesTable> {
+  $$LocalFilesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get fileSize => $composableBuilder(
+    column: $table.fileSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get referenceId => $composableBuilder(
+    column: $table.referenceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get referenceType => $composableBuilder(
+    column: $table.referenceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPublic => $composableBuilder(
+    column: $table.isPublic,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get uploadedBy {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uploadedBy,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LocalFilesTableAnnotationComposer
+    extends Composer<_$CarePawDatabase, $LocalFilesTable> {
+  $$LocalFilesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<int> get fileSize =>
+      $composableBuilder(column: $table.fileSize, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<int> get referenceId => $composableBuilder(
+    column: $table.referenceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get referenceType => $composableBuilder(
+    column: $table.referenceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isPublic =>
+      $composableBuilder(column: $table.isPublic, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get uploadedBy {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uploadedBy,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LocalFilesTableTableManager
+    extends
+        RootTableManager<
+          _$CarePawDatabase,
+          $LocalFilesTable,
+          LocalFile,
+          $$LocalFilesTableFilterComposer,
+          $$LocalFilesTableOrderingComposer,
+          $$LocalFilesTableAnnotationComposer,
+          $$LocalFilesTableCreateCompanionBuilder,
+          $$LocalFilesTableUpdateCompanionBuilder,
+          (LocalFile, $$LocalFilesTableReferences),
+          LocalFile,
+          PrefetchHooks Function({bool uploadedBy})
+        > {
+  $$LocalFilesTableTableManager(_$CarePawDatabase db, $LocalFilesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalFilesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalFilesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalFilesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> fileName = const Value.absent(),
+                Value<String> mimeType = const Value.absent(),
+                Value<int> fileSize = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<String?> hash = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<int?> referenceId = const Value.absent(),
+                Value<String?> referenceType = const Value.absent(),
+                Value<int> uploadedBy = const Value.absent(),
+                Value<bool> isPublic = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => LocalFilesCompanion(
+                id: id,
+                fileName: fileName,
+                mimeType: mimeType,
+                fileSize: fileSize,
+                localPath: localPath,
+                hash: hash,
+                category: category,
+                referenceId: referenceId,
+                referenceType: referenceType,
+                uploadedBy: uploadedBy,
+                isPublic: isPublic,
+                isSynced: isSynced,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String fileName,
+                required String mimeType,
+                required int fileSize,
+                required String localPath,
+                Value<String?> hash = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<int?> referenceId = const Value.absent(),
+                Value<String?> referenceType = const Value.absent(),
+                required int uploadedBy,
+                Value<bool> isPublic = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => LocalFilesCompanion.insert(
+                id: id,
+                fileName: fileName,
+                mimeType: mimeType,
+                fileSize: fileSize,
+                localPath: localPath,
+                hash: hash,
+                category: category,
+                referenceId: referenceId,
+                referenceType: referenceType,
+                uploadedBy: uploadedBy,
+                isPublic: isPublic,
+                isSynced: isSynced,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$LocalFilesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({uploadedBy = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (uploadedBy) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.uploadedBy,
+                                referencedTable: $$LocalFilesTableReferences
+                                    ._uploadedByTable(db),
+                                referencedColumn: $$LocalFilesTableReferences
+                                    ._uploadedByTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LocalFilesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$CarePawDatabase,
+      $LocalFilesTable,
+      LocalFile,
+      $$LocalFilesTableFilterComposer,
+      $$LocalFilesTableOrderingComposer,
+      $$LocalFilesTableAnnotationComposer,
+      $$LocalFilesTableCreateCompanionBuilder,
+      $$LocalFilesTableUpdateCompanionBuilder,
+      (LocalFile, $$LocalFilesTableReferences),
+      LocalFile,
+      PrefetchHooks Function({bool uploadedBy})
+    >;
 
 class $CarePawDatabaseManager {
   final _$CarePawDatabase _db;
@@ -20170,4 +21645,6 @@ class $CarePawDatabaseManager {
       $$SyncMetadataTableTableManager(_db, _db.syncMetadata);
   $$DeviceInfoTableTableManager get deviceInfo =>
       $$DeviceInfoTableTableManager(_db, _db.deviceInfo);
+  $$LocalFilesTableTableManager get localFiles =>
+      $$LocalFilesTableTableManager(_db, _db.localFiles);
 }

@@ -16,10 +16,9 @@ class InventoryBloc
 
   InventoryBloc({
     required this._itemRepository,
-    required InventoryBatchRepository batchRepository,
+    required this._batchRepository,
     required this._transactionRepository,
-  })  : _batchRepository = batchRepository,
-        super(const states.InventoryInitial()) {
+  })  : super(const states.InventoryInitial()) {
     on<events.LoadInventoryItems>(_onLoadInventoryItems);
     on<events.LoadInventoryItemsByCategory>(_onLoadInventoryItemsByCategory);
     on<events.LoadLowStockItems>(_onLoadLowStockItems);
@@ -249,7 +248,7 @@ class InventoryBloc
   ) async {
     emit(const states.InventoryLoading());
     try {
-      final updatedItem = await _itemRepository.updateStock(event.id, event.newStock);
+      await _itemRepository.updateStock(event.id, event.newStock);
       emit(const states.InventoryOperationSuccess('Stock updated successfully'));
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));
@@ -267,7 +266,7 @@ class InventoryBloc
   ) async {
     emit(const states.InventoryLoading());
     try {
-      final updatedItem = await _itemRepository.adjustStock(event.id, event.delta);
+      await _itemRepository.adjustStock(event.id, event.delta);
       emit(const states.InventoryOperationSuccess('Stock adjusted successfully'));
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));

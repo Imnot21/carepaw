@@ -567,7 +567,7 @@ class _ScanDetailPageState extends State<ScanDetailPage>
       case ScanType.medicineBox:
         return const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]);
       case ScanType.prescription:
-        return const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]);
+        return LinearGradient(colors: [AppColors.categorySupply, AppColors.categorySupplyDark]);
       case ScanType.labReport:
         return const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]);
       case ScanType.other:
@@ -580,13 +580,13 @@ class _ScanDetailPageState extends State<ScanDetailPage>
       case ScanType.receipt:
         return const Color(0xFFF59E0B);
       case ScanType.medicineBox:
-        return const Color(0xFF3B82F6);
+        return AppColors.categoryMedicine;
       case ScanType.prescription:
-        return const Color(0xFF8B5CF6);
+        return AppColors.categorySupply;
       case ScanType.labReport:
-        return const Color(0xFF10B981);
+        return AppColors.categoryVaccine;
       case ScanType.other:
-        return const Color(0xFF6B7280);
+        return AppColors.secondary;
     }
   }
 

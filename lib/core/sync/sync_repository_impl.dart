@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart' show CarePawDatabase;
 import 'package:carepaw/core/database/generated_types.dart' show DeviceInfoData, SyncMetadataData, DeviceInfoCompanion, SyncMetadataCompanion;
 import 'package:carepaw/core/database/dao/sync_metadata_dao.dart';

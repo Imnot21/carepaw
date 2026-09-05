@@ -938,6 +938,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage>
         _loadSingleVeterinarian();
         // Give it a moment
         Future.delayed(const Duration(milliseconds: 100), () {
+          if (!mounted) return;
           if (_selectedVeterinarianId == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -952,6 +953,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage>
         });
         return;
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Please select a veterinarian'),

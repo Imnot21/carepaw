@@ -36,10 +36,10 @@ dependencies:
   firebase_messaging: ^15.1.3
   firebase_app_check: ^0.3.1+6
   firebase_functions: ^0.6.0
-  firebase_storage: ^12.3.4
+  # firebase_storage: ^12.3.4  // Replaced with local file storage (free, no cloud costs)
 
   # Background Work & Connectivity
-  workmanager: ^0.5.2
+  workmanager: ^0.10.9
   connectivity_plus: ^6.0.5
 
   # Utilities
@@ -54,6 +54,12 @@ dependencies:
   sqlite3: ^3.5.1
   flutter_animate: ^4.5.0
   permission_handler: ^12.0.1
+  crypto: ^3.0.5
+
+  # Local Notifications (free alternative to FCM)
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  device_preview: ^3.0.0-prerelease3
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -4,12 +4,10 @@ import 'package:carepaw/features/notifications/domain/entities/notification.dart
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
 import 'package:carepaw/core/widgets/common/cp_loader.dart';
 import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
 import 'package:carepaw/core/widgets/effects/glass_container.dart';
 import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
@@ -177,7 +175,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ),
               Switch.adaptive(
                 value: isEnabled,
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
                 inactiveThumbColor: AppColors.divider,
                 inactiveTrackColor: AppColors.surfaceContainerHighest,
@@ -229,7 +227,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         title: 'Prescriptions',
         subtitle: 'New prescriptions, refill reminders',
         icon: Icons.medication_rounded,
-        gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]),
+        gradient: LinearGradient(colors: [AppColors.categorySupply, AppColors.categorySupplyDark]),
         enabled: preferences?.prescriptionReady ?? true,
       ),
       _CategorySetting(
@@ -303,7 +301,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                     ),
                     Switch.adaptive(
                       value: category.enabled,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
                       inactiveThumbColor: AppColors.divider,
                       inactiveTrackColor: AppColors.surfaceContainerHighest,
@@ -440,7 +438,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                     ),
                     Switch.adaptive(
                       value: setting.value,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
                       inactiveThumbColor: AppColors.divider,
                       inactiveTrackColor: AppColors.surfaceContainerHighest,

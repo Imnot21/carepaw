@@ -1,13 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:carepaw/core/database/database.dart' as db;
-import 'package:carepaw/core/database/tables.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
-import 'package:carepaw/core/sync/sync_repository_impl.dart';
 import 'package:carepaw/core/sync/conflict_resolver.dart';
 import 'package:carepaw/core/sync/network_monitor.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart' as auth_entities;
-import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 
 /// Sync engine for bidirectional Firestore synchronization.
 ///
@@ -19,22 +14,16 @@ import 'package:carepaw/features/authentication/domain/repositories/auth_reposit
 class SyncEngine {
   final SyncRepository _syncRepo;
   final FirebaseFirestore _firestore;
-  final AuthRepository _authRepo;
   final NetworkMonitor _networkMonitor;
 
   bool _isSyncing = false;
   DateTime? _lastSyncStart;
-  int _consecutiveFailures = 0;
 
   SyncEngine({
-    required SyncRepository syncRepo,
-    required FirebaseFirestore firestore,
-    required AuthRepository authRepo,
-    required NetworkMonitor networkMonitor,
-  })  : _syncRepo = syncRepo,
-        _firestore = firestore,
-        _authRepo = authRepo,
-        _networkMonitor = networkMonitor;
+    required this._syncRepo,
+    required this._firestore,
+    required this._networkMonitor,
+  });
 
   /// Whether a sync is currently in progress
   bool get isSyncing => _isSyncing;
@@ -76,9 +65,6 @@ class SyncEngine {
       // 3. Update last sync time on success
       if (failedCount == 0) {
         await _syncRepo.updateLastSyncTime(DateTime.now());
-        _consecutiveFailures = 0;
-      } else {
-        _consecutiveFailures++;
       }
 
       return SyncResult.partial(
@@ -87,7 +73,6 @@ class SyncEngine {
         errors: errors,
       );
     } catch (e) {
-      _consecutiveFailures++;
       errors.add('Sync engine error: $e');
       return SyncResult.failure(errors);
     } finally {

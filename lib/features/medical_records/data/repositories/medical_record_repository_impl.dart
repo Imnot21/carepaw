@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value, OrderingTerm;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/medical_records_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
@@ -16,9 +16,8 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository, BaseReposi
   final MedicalRecordsDao _dao;
   final SyncRepository _syncRepo;
 
-  MedicalRecordRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = MedicalRecordsDao(database),
-        _syncRepo = syncRepo;
+  MedicalRecordRepositoryImpl(CarePawDatabase database, {required this._syncRepo})
+      : _dao = MedicalRecordsDao(database);
 
   @override
   Future<domain.MedicalRecord?> findById(int id) async {

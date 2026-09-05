@@ -92,8 +92,8 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
           ),
           body: AnimatedGradientBackground(
             colors: [
-              AppColors.primary.withValues(alpha:0.05),
-              AppColors.tertiary.withValues(alpha:0.03),
+              AppColors.primary.withValues(alpha: 0.05),
+              AppColors.tertiary.withValues(alpha: 0.03),
             ],
             child: BlocConsumer<QueueBloc, QueueState>(
               listener: (context, state) {
@@ -341,7 +341,7 @@ class _PositionCard extends StatelessWidget {
                 Text(
                   'Your Position',
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textOnPrimary.withValues(alpha:0.9),
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.9),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -358,7 +358,7 @@ class _PositionCard extends StatelessWidget {
                       ? '$petsAhead ${petsAhead == 1 ? 'pet' : 'pets'} ahead of you'
                       : 'You\'re next!',
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textOnPrimary.withValues(alpha:0.9),
+                    color: AppColors.textOnPrimary.withValues(alpha: 0.9),
                   ),
                 ),
                 if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
@@ -366,7 +366,7 @@ class _PositionCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.textOnPrimary.withValues(alpha:0.15),
+                      color: AppColors.textOnPrimary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -410,8 +410,8 @@ class _EmptyQueueCard extends StatelessWidget {
       blur: 15,
       gradient: LinearGradient(
         colors: [
-          isDark ? AppColors.surfaceDark.withValues(alpha:0.8) : AppColors.surface.withValues(alpha:0.8),
-          isDark ? AppColors.surfaceDark.withValues(alpha:0.6) : AppColors.surface.withValues(alpha:0.6),
+          isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surface.withValues(alpha: 0.8),
+          isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surface.withValues(alpha: 0.6),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -470,13 +470,13 @@ class _NotInQueueCard extends StatelessWidget {
       blur: 15,
       gradient: LinearGradient(
         colors: [
-          isDark ? AppColors.surfaceDark.withValues(alpha:0.8) : AppColors.surface.withValues(alpha:0.8),
-          isDark ? AppColors.surfaceDark.withValues(alpha:0.6) : AppColors.surface.withValues(alpha:0.6),
+          isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surface.withValues(alpha: 0.8),
+          isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surface.withValues(alpha: 0.6),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
-      borderColor: AppColors.warning.withValues(alpha:0.3),
+      borderColor: AppColors.warning.withValues(alpha: 0.3),
       borderWidth: 2,
       child: Column(
         children: [
@@ -484,7 +484,7 @@ class _NotInQueueCard extends StatelessWidget {
             width: 96,
             height: 96,
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha:0.15),
+              color: AppColors.warning.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(48),
             ),
             child: Icon(
@@ -538,14 +538,14 @@ class _QueueEntryCard extends StatelessWidget {
         blur: 12,
         gradient: LinearGradient(
           colors: [
-            isDark ? AppColors.surfaceDark.withValues(alpha:0.85) : AppColors.surface.withValues(alpha:0.85),
-            isDark ? AppColors.surfaceDark.withValues(alpha:0.65) : AppColors.surface.withValues(alpha:0.65),
+            isDark ? AppColors.surfaceDark.withValues(alpha: 0.85) : AppColors.surface.withValues(alpha: 0.85),
+            isDark ? AppColors.surfaceDark.withValues(alpha: 0.65) : AppColors.surface.withValues(alpha: 0.65),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderColor: isCurrentUser
-            ? statusColor.withValues(alpha:0.4)
+            ? statusColor.withValues(alpha: 0.4)
             : (isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight),
         borderWidth: isCurrentUser ? 2 : 1,
         child: Column(
@@ -560,7 +560,7 @@ class _QueueEntryCard extends StatelessWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [statusColor, statusColor.withValues(alpha:0.8)],
+                      colors: [statusColor, statusColor.withValues(alpha: 0.8)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -600,9 +600,9 @@ class _QueueEntryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha:0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withValues(alpha:0.3)),
+                    border: Border.all(color: statusColor.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     entry.queueEntry.status.displayName,
@@ -799,8 +799,8 @@ class _QueueInfoCard extends StatelessWidget {
       blur: 12,
       gradient: LinearGradient(
         colors: [
-          isDark ? AppColors.surfaceDark.withValues(alpha:0.8) : AppColors.surface.withValues(alpha:0.8),
-          isDark ? AppColors.surfaceDark.withValues(alpha:0.6) : AppColors.surface.withValues(alpha:0.6),
+          isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surface.withValues(alpha: 0.8),
+          isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surface.withValues(alpha: 0.6),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -916,8 +916,8 @@ class _NotLoggedInView extends StatelessWidget {
     return Scaffold(
       body: AnimatedGradientBackground(
         colors: [
-          AppColors.primary.withValues(alpha:0.05),
-          AppColors.tertiary.withValues(alpha:0.03),
+          AppColors.primary.withValues(alpha: 0.05),
+          AppColors.tertiary.withValues(alpha: 0.03),
         ],
         child: Center(
           child: Padding(
@@ -984,8 +984,8 @@ class _AccessDeniedView extends StatelessWidget {
     return Scaffold(
       body: AnimatedGradientBackground(
         colors: [
-          AppColors.error.withValues(alpha:0.06),
-          AppColors.warning.withValues(alpha:0.04),
+          AppColors.error.withValues(alpha: 0.06),
+          AppColors.warning.withValues(alpha: 0.04),
           AppColors.surface,
         ],
         child: Center(

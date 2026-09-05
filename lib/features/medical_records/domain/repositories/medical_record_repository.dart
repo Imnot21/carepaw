@@ -6,6 +6,7 @@ import 'package:carepaw/features/medical_records/domain/entities/medical_record.
 abstract class MedicalRecordRepository
     implements StreamRepository<MedicalRecord, int>, PaginatedRepository<MedicalRecord, int>, BaseRepository<MedicalRecord, int> {
   /// Sync-aware operations
+  @override
   Future<MedicalRecord> createWithSync(MedicalRecord entity, String tableName);
   /// Find all medical records for a pet (chronological)
   Future<List<MedicalRecord>> findByPet(int petId);

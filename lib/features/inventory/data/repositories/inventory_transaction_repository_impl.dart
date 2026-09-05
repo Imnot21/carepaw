@@ -4,16 +4,14 @@ import 'package:carepaw/core/sync/sync_repository.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart' as domain;
 import 'package:carepaw/core/repositories/base_repository.dart';
-import 'package:carepaw/core/database/entities.dart';
 
 /// Inventory transaction repository implementation - data layer
 /// Converts between Drift entities and domain entities
 class InventoryTransactionRepositoryImpl implements InventoryTransactionRepository {
   final CarePawDatabase _database;
-  final SyncRepository _syncRepo;
+  final SyncRepository syncRepo;
 
-  InventoryTransactionRepositoryImpl(this._database, {required SyncRepository syncRepo})
-      : _syncRepo = syncRepo;
+  InventoryTransactionRepositoryImpl(this._database, {required this.syncRepo});
 
   @override
   Future<domain.InventoryTransaction?> findById(int id) async {
@@ -164,7 +162,7 @@ class InventoryTransactionRepositoryImpl implements InventoryTransactionReposito
         'notes': entity.notes,
         'createdAt': entity.createdAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.insert,
@@ -192,7 +190,7 @@ class InventoryTransactionRepositoryImpl implements InventoryTransactionReposito
         'notes': entity.notes,
         'createdAt': entity.createdAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.update,
@@ -205,7 +203,7 @@ class InventoryTransactionRepositoryImpl implements InventoryTransactionReposito
   @override
   Future<void> deleteWithSync(int id, String tableName) async {
     // Inventory transactions cannot be deleted
-    await _syncRepo.queueForSync(
+    await syncRepo.queueForSync(
       tableName: tableName,
       recordId: id,
       operation: SyncOperation.delete,

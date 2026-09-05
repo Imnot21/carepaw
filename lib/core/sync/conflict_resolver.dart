@@ -120,7 +120,7 @@ class ConflictResolver {
     required String deviceId,
   }) {
     return {
-      'id': '${tableName}:$recordId:${DateTime.now().millisecondsSinceEpoch}',
+      'id': '$tableName:$recordId:${DateTime.now().millisecondsSinceEpoch}',
       'tableName': tableName,
       'recordId': recordId,
       'localData': localData,

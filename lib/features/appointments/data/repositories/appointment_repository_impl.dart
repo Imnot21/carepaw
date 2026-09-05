@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/appointments_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
@@ -7,7 +7,6 @@ import 'package:carepaw/features/appointments/domain/entities/appointment.dart' 
 import 'package:carepaw/features/pets/domain/entities/pet.dart' as pet_domain;
 import 'package:carepaw/features/authentication/domain/entities/user.dart' as user_domain;
 import 'package:carepaw/core/repositories/base_repository.dart';
-import 'package:carepaw/core/database/entities.dart';
 
 /// Mapper for Pet entity
 pet_domain.Pet _petToDomain(Pet entity) {
@@ -34,9 +33,8 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
   final AppointmentsDao _dao;
   final SyncRepository _syncRepo;
 
-  AppointmentRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = AppointmentsDao(database),
-        _syncRepo = syncRepo;
+  AppointmentRepositoryImpl(CarePawDatabase database, {required this._syncRepo})
+      : _dao = AppointmentsDao(database);
 
   @override
   Future<domain.Appointment?> findById(int id) async {

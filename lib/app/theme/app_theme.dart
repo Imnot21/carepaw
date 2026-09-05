@@ -20,7 +20,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
 
-      // Color scheme - Premium purple with sophisticated depth
+      // Color scheme - Professional blue with silver accents
       colorScheme: ColorScheme.light(
         primary: AppColors.primary,
         onPrimary: AppColors.textOnPrimary,
@@ -57,7 +57,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 1,
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         titleTextStyle: AppTextStyles.appBarTitle.copyWith(
           color: AppColors.textPrimary,
@@ -240,7 +240,7 @@ class AppTheme {
 
       // Navigation bar (Material 3)
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.surface,
         indicatorColor: AppColors.primaryContainer,
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -471,7 +471,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
 
-      // Color scheme - Premium purple with sophisticated depth
+      // Color scheme - Professional blue with silver accents
       colorScheme: ColorScheme.dark(
         primary: AppColors.primaryLight,
         onPrimary: AppColors.textOnDark,
@@ -508,7 +508,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 1,
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimaryDark,
         titleTextStyle: AppTextStyles.appBarTitle.copyWith(
           color: AppColors.textPrimaryDark,
@@ -689,7 +689,7 @@ class AppTheme {
 
       // Navigation bar (Material 3)
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.surfaceDark,
         indicatorColor: AppColors.primaryDark,
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

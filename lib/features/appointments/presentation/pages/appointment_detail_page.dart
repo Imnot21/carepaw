@@ -112,7 +112,6 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
 
   Widget _buildAppointmentDetail(AppointmentWithDetails appointment) {
     final pet = appointment.pet;
-    final veterinarian = appointment.veterinarian;
     final status = appointment.appointment.status;
     final statusInfo = _getStatusInfo(status);
     final speciesColor = PetUtils.getSpeciesColor(pet.species);
@@ -414,7 +413,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                     Icon(Icons.email_outlined, size: 16, color: AppColors.textSecondary),
                     const SizedBox(width: 6),
                     Text(
-                      vet.email!,
+                      vet.email,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

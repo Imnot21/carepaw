@@ -279,13 +279,14 @@ class _PetListViewState extends State<_PetListView> {
   }
 
   void _navigateToAddPet(BuildContext context) {
+    final petBloc = context.read<PetBloc>();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PetFormPage(ownerId: widget.ownerId),
       ),
     ).then((_) {
       if (mounted) {
-        context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+        petBloc.add(LoadPets(ownerId: widget.ownerId));
       }
     });
   }
@@ -299,13 +300,14 @@ class _PetListViewState extends State<_PetListView> {
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
+    final petBloc = context.read<PetBloc>();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PetFormPage(ownerId: widget.ownerId, pet: pet),
       ),
     ).then((_) {
       if (mounted) {
-        context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+        petBloc.add(LoadPets(ownerId: widget.ownerId));
       }
     });
   }
@@ -821,13 +823,14 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
   }
 
   void _navigateToAddPet(BuildContext context) {
+    final petBloc = context.read<PetBloc>();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PetFormPage(ownerId: 0), // Will be set in form for staff
       ),
     ).then((_) {
       if (mounted) {
-        context.read<PetBloc>().add(const LoadAllPets());
+        petBloc.add(const LoadAllPets());
       }
     });
   }
@@ -841,13 +844,14 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
+    final petBloc = context.read<PetBloc>();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PetFormPage(ownerId: pet.ownerId, pet: pet),
       ),
     ).then((_) {
       if (mounted) {
-        context.read<PetBloc>().add(const LoadAllPets());
+        petBloc.add(const LoadAllPets());
       }
     });
   }

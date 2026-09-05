@@ -26,8 +26,10 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     // Listen to auth state stream from repository
     _authRepository.authStateStream.listen((authResult) {
       if (authResult != null) {
+        // ignore: invalid_use_of_visible_for_testing_member
         emit(states.AuthAuthenticated(authResult));
       } else {
+        // ignore: invalid_use_of_visible_for_testing_member
         emit(const states.AuthUnauthenticated());
       }
     });

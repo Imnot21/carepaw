@@ -13,6 +13,7 @@ import 'package:carepaw/core/sync/sync_repository.dart';
 import 'package:carepaw/core/sync/sync_repository_impl.dart';
 import 'package:carepaw/core/sync/sync_engine.dart';
 import 'package:carepaw/core/sync/network_monitor.dart';
+import 'package:carepaw/core/sync/background_sync.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/features/users/data/repositories/user_repository_impl.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
@@ -71,13 +72,33 @@ Future<void> configureDependencies() async {
   // Register Firestore (needs Firebase to be initialized first)
   getIt.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
 
+  // Auth Repository - uses static classes directly (PasswordHasher, SecureStorage, LocalStorage)
+  // Register with a factory
+  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(getIt<CarePawDatabase>()));
+
+  // Now update AuthRepository with SyncController to enable immediate auth sync
+  // This runs after SyncController is registered, so it's available
+  // We need to re-register with the SyncController set
+  getIt.unregister<AuthRepository>();
+  final authRepo = AuthRepositoryImpl(getIt<CarePawDatabase>());
+
   // Register Sync Engine
   getIt.registerLazySingleton<SyncEngine>(() => SyncEngine(
     syncRepo: getIt<SyncRepository>(),
     firestore: getIt<FirebaseFirestore>(),
-    authRepo: getIt<AuthRepository>(),
     networkMonitor: getIt<NetworkMonitor>(),
   ));
+
+  // Register Sync Controller
+  getIt.registerLazySingleton<SyncController>(() => SyncController(
+    syncEngine: getIt<SyncEngine>(),
+    syncRepo: getIt<SyncRepository>(),
+    usersDao: getIt<UsersDao>(),
+  ));
+
+  // Set SyncController on authRepo and register as singleton
+  authRepo.setSyncController(getIt<SyncController>());
+  getIt.registerSingleton<AuthRepository>(authRepo);
 
   // Register Repositories
   getIt.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
@@ -91,9 +112,4 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<InventoryTransactionRepository>(() => InventoryTransactionRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
   getIt.registerLazySingleton<ScanRecordRepository>(() => ScanRecordRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
   getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-
-  // Auth Repository - uses static classes directly (PasswordHasher, SecureStorage, LocalStorage)
-  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
-    getIt<CarePawDatabase>(),
-  ));
 }

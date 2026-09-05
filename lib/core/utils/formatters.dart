@@ -23,7 +23,9 @@ String formatDateTime(DateTime dateTime, {bool includeTime = true}) {
 
   if (hour == 0) {
     hour = 12;
-  } else if (hour > 12) hour -= 12;
+  } else if (hour > 12) {
+    hour -= 12;
+  }
 
   return '$month $day, $year $hour:$minute $period';
 }
@@ -43,7 +45,9 @@ String formatTime(DateTime dateTime) {
 
   if (hour == 0) {
     hour = 12;
-  } else if (hour > 12) hour -= 12;
+  } else if (hour > 12) {
+    hour -= 12;
+  }
 
   return '$hour:$minute $period';
 }

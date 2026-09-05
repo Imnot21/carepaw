@@ -1,20 +1,17 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart';
 import 'package:carepaw/core/database/database.dart';
 import 'package:carepaw/core/database/dao/pets_dao.dart';
 import 'package:carepaw/core/sync/sync_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart' as domain;
 import 'package:carepaw/core/repositories/base_repository.dart';
-import 'package:carepaw/core/database/entities.dart';
-
 /// Pet repository implementation - data layer
 class PetRepositoryImpl implements PetRepository {
   final PetsDao _dao;
-  final SyncRepository _syncRepo;
+  final SyncRepository syncRepo;
 
-  PetRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
-      : _dao = PetsDao(database),
-        _syncRepo = syncRepo;
+  PetRepositoryImpl(CarePawDatabase database, {required this.syncRepo})
+      : _dao = PetsDao(database);
 
   @override
   Future<domain.Pet?> findById(int id) async {
@@ -203,7 +200,7 @@ class PetRepositoryImpl implements PetRepository {
         'createdAt': entity.createdAt.toIso8601String(),
         'updatedAt': entity.updatedAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.insert,
@@ -233,7 +230,7 @@ class PetRepositoryImpl implements PetRepository {
         'createdAt': entity.createdAt.toIso8601String(),
         'updatedAt': entity.updatedAt.toIso8601String(),
       };
-      await _syncRepo.queueForSync(
+      await syncRepo.queueForSync(
         tableName: tableName,
         recordId: saved.id!,
         operation: SyncOperation.update,
@@ -248,7 +245,7 @@ class PetRepositoryImpl implements PetRepository {
     // Soft delete locally
     await _dao.softDelete(id);
     // Queue delete for sync
-    await _syncRepo.queueForSync(
+    await syncRepo.queueForSync(
       tableName: tableName,
       recordId: id,
       operation: SyncOperation.delete,

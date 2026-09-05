@@ -4,7 +4,6 @@ import 'package:carepaw/core/widgets/common/cp_button.dart';
 import 'package:carepaw/core/widgets/effects/glass_container.dart';
 import 'package:carepaw/core/widgets/effects/floating_animation.dart';
 import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -37,12 +36,12 @@ class BatchCard extends StatelessWidget {
           colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
         );
       case InventoryCategory.supply:
-        return const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+        return LinearGradient(
+          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
         );
       case InventoryCategory.equipment:
-        return const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+        return LinearGradient(
+          colors: [AppColors.categoryEquipment, AppColors.categoryEquipmentDark],
         );
       case InventoryCategory.food:
         return const LinearGradient(
@@ -54,13 +53,13 @@ class BatchCard extends StatelessWidget {
   Color _getCategoryColor(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return AppColors.primary;
+        return AppColors.categoryMedicine;
       case InventoryCategory.vaccine:
-        return const Color(0xFF06B6D4);
+        return AppColors.categoryVaccine;
       case InventoryCategory.supply:
-        return const Color(0xFF8B5CF6);
+        return AppColors.categorySupply;
       case InventoryCategory.equipment:
-        return const Color(0xFF6366F1);
+        return AppColors.categoryEquipment;
       case InventoryCategory.food:
         return const Color(0xFFF59E0B);
     }

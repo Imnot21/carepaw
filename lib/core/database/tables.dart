@@ -16,6 +16,12 @@ class Users extends Table {
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  // Firebase Auth UID for sync (nullable - local-first auth)
+  TextColumn get firebaseUid => text().nullable().withLength(max: 128)();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 /// Pets table - Patient records
@@ -407,4 +413,37 @@ class DeviceInfo extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// Local File Storage table - Tracks files stored on device (free alternative to Firebase Storage)
+class LocalFiles extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  // File metadata
+  TextColumn get fileName => text().withLength(min: 1, max: 255)();
+  TextColumn get mimeType => text().withLength(min: 1, max: 100)();
+  IntColumn get fileSize => integer()(); // in bytes
+  TextColumn get localPath => text().withLength(min: 1, max: 500)(); // Relative path in app documents directory
+  TextColumn get hash => text().nullable().withLength(min: 32, max: 64)(); // SHA-256 for deduplication
+
+  // Categorization (mirrors Firebase Storage paths)
+  TextColumn get category =>
+      text().withDefault(const Constant('general'))(); // profile_images, pet_images, medical_records, scans, receipts, medicine_boxes, uploads
+  IntColumn get referenceId => integer().nullable()(); // Related entity ID (petId, appointmentId, etc.)
+  TextColumn get referenceType => text().nullable().withLength(min: 1, max: 50)(); // pet, appointment, medical_record, scan, inventory, user
+
+  // Ownership and access
+  IntColumn get uploadedBy => integer().references(Users, #id)();
+  BoolColumn get isPublic => boolean().withDefault(const Constant(false))(); // For profile images
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))(); // For future cloud sync
+
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  List<Index> get indexes => [
+        Index('idx_local_files_category', 'category'),
+        Index('idx_local_files_reference', 'reference_type, reference_id'),
+        Index('idx_local_files_uploaded_by', 'uploaded_by'),
+        Index('idx_local_files_hash', 'hash'),
+      ];
 }
