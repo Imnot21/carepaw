@@ -203,6 +203,22 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<domain.User> createAccount({
+    required String email,
+    required String password,
+    required String fullName,
+    String? phone,
+    required domain.UserRole role,
+  }) async {
+    // This drift-backed repository has been set aside in favor of the
+    // Firebase-first implementation (FirestoreUserRepository).
+    throw UnsupportedError(
+      'createAccount is not supported by the local-drift repository. '
+      'Use FirestoreUserRepository instead.',
+    );
+  }
+
+  @override
   Future<domain.User> createWithSync(domain.User entity, String tableName) async {
     final saved = await save(entity);
     if (saved.id != null) {

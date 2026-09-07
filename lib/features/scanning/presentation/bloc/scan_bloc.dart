@@ -9,8 +9,9 @@ import 'package:carepaw/core/errors/failures.dart';
 class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
   final ScanRecordRepository _scanRepository;
 
-  ScanBloc({required this._scanRepository})
-      : super(const states.ScanInitial()) {
+  ScanBloc({required ScanRecordRepository scanRepository})
+      : _scanRepository = scanRepository,
+        super(const states.ScanInitial()) {
     on<events.LoadScanRecords>(_onLoadScanRecords);
     on<events.LoadScanRecordsByType>(_onLoadScanRecordsByType);
     on<events.LoadPendingScans>(_onLoadPendingScans);

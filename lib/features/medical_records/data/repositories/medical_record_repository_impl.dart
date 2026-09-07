@@ -16,8 +16,9 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository, BaseReposi
   final MedicalRecordsDao _dao;
   final SyncRepository _syncRepo;
 
-  MedicalRecordRepositoryImpl(CarePawDatabase database, {required this._syncRepo})
-      : _dao = MedicalRecordsDao(database);
+  MedicalRecordRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
+      : _dao = MedicalRecordsDao(database),
+        _syncRepo = syncRepo;
 
   @override
   Future<domain.MedicalRecord?> findById(int id) async {

@@ -14,9 +14,11 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
   Stream<List<QueueEntryWithDetails>>? _queueStream;
 
   QueueBloc({
-    required this._repository,
-    required this._authBloc,
-  }) : super(QueueInitial()) {
+    required QueueRepository repository,
+    required AuthBloc authBloc,
+  }) : _repository = repository,
+       _authBloc = authBloc,
+       super(QueueInitial()) {
     on<QueueLoadRequested>(_onLoadRequested);
     on<QueueStaffLoadRequested>(_onStaffLoadRequested);
     on<QueueWatchRequested>(_onWatchRequested);

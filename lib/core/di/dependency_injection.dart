@@ -14,8 +14,9 @@ import 'package:carepaw/core/sync/sync_repository_impl.dart';
 import 'package:carepaw/core/sync/sync_engine.dart';
 import 'package:carepaw/core/sync/network_monitor.dart';
 import 'package:carepaw/core/sync/background_sync.dart';
+import 'package:carepaw/core/firebase/user_id_sequence.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
-import 'package:carepaw/features/users/data/repositories/user_repository_impl.dart';
+import 'package:carepaw/features/users/data/repositories/firestore_user_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/pets/data/repositories/pet_repository_impl.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
@@ -36,6 +37,7 @@ import 'package:carepaw/features/notifications/data/repositories/notification_re
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final getIt = GetIt.instance;
 
@@ -72,15 +74,15 @@ Future<void> configureDependencies() async {
   // Register Firestore (needs Firebase to be initialized first)
   getIt.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
 
-  // Auth Repository - uses static classes directly (PasswordHasher, SecureStorage, LocalStorage)
-  // Register with a factory
-  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(getIt<CarePawDatabase>()));
+  // User ID sequence (Firestore counter for app-facing int IDs)
+  getIt.registerLazySingleton<UserIdSequence>(() => UserIdSequence(getIt<FirebaseFirestore>()));
 
-  // Now update AuthRepository with SyncController to enable immediate auth sync
-  // This runs after SyncController is registered, so it's available
-  // We need to re-register with the SyncController set
-  getIt.unregister<AuthRepository>();
-  final authRepo = AuthRepositoryImpl(getIt<CarePawDatabase>());
+  // Auth Repository - Firebase-backed (real Firebase Authentication + Firestore profiles)
+  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
+    firebaseAuth: FirebaseAuth.instance,
+    firestore: getIt<FirebaseFirestore>(),
+    userIdSequence: getIt<UserIdSequence>(),
+  ));
 
   // Register Sync Engine
   getIt.registerLazySingleton<SyncEngine>(() => SyncEngine(
@@ -96,12 +98,13 @@ Future<void> configureDependencies() async {
     usersDao: getIt<UsersDao>(),
   ));
 
-  // Set SyncController on authRepo and register as singleton
-  authRepo.setSyncController(getIt<SyncController>());
-  getIt.registerSingleton<AuthRepository>(authRepo);
-
   // Register Repositories
-  getIt.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
+  // UserRepository - Firestore-backed source of truth (admin account creation etc.)
+  getIt.registerLazySingleton<UserRepository>(() => FirestoreUserRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    firebaseAuth: FirebaseAuth.instance,
+    userIdSequence: getIt<UserIdSequence>(),
+  ));
   getIt.registerLazySingleton<PetRepository>(() => PetRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
   getIt.registerLazySingleton<AppointmentRepository>(() => AppointmentRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
   getIt.registerLazySingleton<QueueRepository>(() => QueueRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));

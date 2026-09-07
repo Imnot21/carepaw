@@ -1,62 +1,50 @@
-import 'package:drift/drift.dart';
-import 'package:carepaw/core/database/database.dart' as db;
-import 'package:carepaw/core/database/dao/users_dao.dart';
-import 'package:carepaw/core/security/password_hasher.dart';
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/errors/error_handler.dart';
+import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
+import 'package:carepaw/core/firebase/firestore_schema.dart';
+import 'package:carepaw/core/firebase/user_doc_mapper.dart';
+import 'package:carepaw/core/firebase/user_id_sequence.dart';
 import 'package:carepaw/core/security/secure_storage.dart';
 import 'package:carepaw/core/storage/local_storage.dart';
-import 'package:carepaw/core/sync/background_sync.dart' show SyncController;
-import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart'
-    as auth_entities;
-import 'package:carepaw/core/errors/failures.dart';
-import 'package:carepaw/core/errors/error_handler.dart';
 import 'package:carepaw/core/utils/validators.dart';
-import 'dart:async';
-import 'dart:math';
+import 'package:carepaw/features/authentication/domain/entities/user.dart' as auth_entities;
+import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 
-/// Typedefs for cleaner code
 typedef AuthResult = auth_entities.AuthResult;
 typedef DomainUser = auth_entities.User;
 typedef UserRole = auth_entities.UserRole;
-typedef UsersCompanion = db.UsersCompanion;
-typedef UserEntity = db.User; // Drift generated entity class
 
-/// Private class for reset token data
-class _ResetTokenData {
-  final int userId;
-  final DateTime expiresAt;
-
-  _ResetTokenData(this.userId, this.expiresAt);
-}
-
-/// Authentication repository implementation - data layer.
+/// Authentication repository implementation - data layer (Firebase-backed).
 ///
 /// Implements [AuthRepository] using:
-/// - [UsersDao] for database operations
-/// - [SecureStorage] for token storage
-/// - [LocalStorage] for session flags
-/// - [PasswordHasher] for password verification
-/// - [SyncController] for immediate auth sync to Firebase
+/// - `FirebaseAuth` for real email/password authentication and session
+///   persistence (tokens are managed natively by the SDK)
+/// - `Cloud Firestore` `users/{uid}` documents as the source of truth for
+///   profiles, roles, and activation state
+/// - [UserIdSequence] for globally-unique app-facing integer IDs (the domain
+///   layer still keys records by `int` `id`).
+///
+/// The former local drift storage and password hashing are intentionally set
+/// aside: authentication now runs entirely against Firebase.
 class AuthRepositoryImpl implements AuthRepository {
-  final UsersDao _usersDao;
-  SyncController? _syncController;
+  final FirebaseAuth _firebaseAuth;
+  final FirebaseFirestore _firestore;
+  final UserIdSequence _userIdSequence;
 
-  // Stream controller for auth state changes
+  // Stream controller for auth state changes (mirrors Firebase sign-in state)
   final _authStateController = StreamController<auth_entities.AuthResult?>.broadcast();
 
-  // In-memory storage for password reset tokens (in production, use Redis or database)
-  static final Map<String, _ResetTokenData> _resetTokens = {};
-
-  AuthRepositoryImpl(
-    db.CarePawDatabase database, {
-    this._syncController,
-  })  : _usersDao = UsersDao(database);
-
-  /// Set sync controller after construction (to break circular dependency)
-  void setSyncController(SyncController syncController) {
-    _syncController = syncController;
-  }
+  AuthRepositoryImpl({
+    required FirebaseAuth firebaseAuth,
+    required FirebaseFirestore firestore,
+    required UserIdSequence userIdSequence,
+  })  : _firebaseAuth = firebaseAuth,
+        _firestore = firestore,
+        _userIdSequence = userIdSequence;
 
   @override
   Future<AuthResult> login({
@@ -64,73 +52,35 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      // Find user by email in local database
-      var userEntity = await _usersDao.getByEmail(email);
-
-      // If not found locally, try to sync from Firebase (for users created in Firebase Console)
-      if (userEntity == null) {
-        // Try to ensure local user exists by syncing from Firebase
-        final syncController = _syncController;
-        if (syncController != null) {
-          final localUserId = await syncController.ensureLocalUserExists(email);
-          if (localUserId != null) {
-            userEntity = await _usersDao.getById(localUserId);
-          }
-        }
-        // If still not found, throw error
-        if (userEntity == null) {
-          throw UserNotFoundFailure();
-        }
+      final credentials = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final fireUser = credentials.user;
+      if (fireUser == null) {
+        throw const InvalidCredentialsFailure();
       }
 
-      // Check if user is active
-      if (!userEntity.isActive) {
-        throw AccountLockedFailure();
-      }
-
-      // Verify password
-      final isValid = PasswordHasher.verify(password, userEntity.passwordHash);
-      if (!isValid) {
-        // If password doesn't match but user has Firebase UID, they might be a Firebase Console user
-        // who needs to use "Forgot Password" to set a local password
-        if (userEntity.firebaseUid != null && userEntity.firebaseUid!.isNotEmpty) {
-          throw InvalidCredentialsFailure(
-            message: 'This account was created via Firebase. Please use "Forgot Password" to set a local password.',
-          );
-        }
-        throw InvalidCredentialsFailure();
-      }
-
-      // Update last activity
-      await _usersDao.updateActivity(userEntity.id);
-
-      // Generate tokens
-      final authResult = _generateAuthResult(userEntity);
-
-      // Store tokens securely
-      await _storeTokens(authResult);
-
-      // Update local storage flags
-      await _setLocalSession(authResult.user);
-
-      // Emit auth state
-      _authStateController.add(authResult);
-
-      // Rehash password if needed (upgrade cost factor)
-      final newHash = PasswordHasher.maybeRehash(password, userEntity.passwordHash);
-      if (newHash != null) {
-        await _usersDao.updateUser(
-          UsersCompanion(
-            id: Value(userEntity.id),
-            passwordHash: Value(newHash),
-            updatedAt: Value(DateTime.now()),
-          ),
+      final domainUser = await _readCurrentUserDoc();
+      if (domainUser == null) {
+        await _firebaseAuth.signOut();
+        throw const UserNotFoundFailure(
+          message: 'No profile found for this account. Please contact support.',
         );
       }
+      if (!domainUser.isActive) {
+        await _firebaseAuth.signOut();
+        throw const AccountLockedFailure();
+      }
 
+      final authResult = _buildAuthResult(domainUser, await fireUser.getIdToken());
+      await _setLocalSession(domainUser);
+      _authStateController.add(authResult);
       return authResult;
     } on AuthFailure {
       rethrow;
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthException(e);
     } catch (e) {
       throw ErrorHandler.handleException(e);
     }
@@ -145,165 +95,84 @@ class AuthRepositoryImpl implements AuthRepository {
     UserRole role = UserRole.petOwner,
   }) async {
     try {
-      if (kDebugMode) print('[AuthRepo] Register request: email=$email, fullName=$fullName, role=$role');
-
-      // Check if email already exists
-      final existingUser = await _usersDao.getByEmail(email);
-      if (existingUser != null) {
-        if (kDebugMode) print('[AuthRepo] Email already in use: $email');
-        throw EmailAlreadyInUseFailure();
-      }
-
-      // Validate password strength
+      // Validate password strength before hitting the API
       final passwordError = Validators.validatePassword(password);
       if (passwordError != null) {
-        if (kDebugMode) print('[AuthRepo] Weak password: $passwordError');
         throw WeakPasswordFailure(message: passwordError);
       }
 
-      // Hash password
-      final passwordHash = PasswordHasher.hash(password);
-      if (kDebugMode) print('[AuthRepo] Password hashed, creating user...');
-
-      // Create user
-      final userId = await _usersDao.createUser(
-        UsersCompanion(
-          email: Value(email),
-          passwordHash: Value(passwordHash),
-          fullName: Value(fullName),
-          phone: Value(phone),
-          role: Value(role.value),
-          isActive: const Value(true),
-          createdAt: Value(DateTime.now()),
-          updatedAt: Value(DateTime.now()),
-        ),
+      final credentials = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-
-      if (kDebugMode) print('[AuthRepo] User created with ID: $userId');
-
-      // Fetch created user
-      final userEntity = await _usersDao.getById(userId);
-      if (userEntity == null) {
-        if (kDebugMode) print('[AuthRepo] ERROR: Failed to fetch created user');
-        throw UnexpectedFailure(message: 'Failed to create user');
+      final fireUser = credentials.user;
+      if (fireUser == null) {
+        throw const UnexpectedFailure(message: 'Failed to create account.');
       }
 
-      if (kDebugMode) print('[AuthRepo] User fetched: ${userEntity.email}, firebaseUid: ${userEntity.firebaseUid ?? "NULL"}');
+      // Assign a globally-unique app-facing int id and persist the cloud profile.
+      final newId = await _userIdSequence.next();
+      final now = DateTime.now();
+      final domainUser = DomainUser(
+        id: newId,
+        firebaseUid: fireUser.uid,
+        email: email,
+        fullName: fullName.trim(),
+        phone: phone,
+        role: role,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      );
+      await _firestore
+          .collection(FirestoreSchema.users)
+          .doc(fireUser.uid)
+          .set(UserDocMapper.toData(domainUser));
 
-      // Generate tokens
-      final authResult = _generateAuthResult(userEntity);
-
-      // Store tokens securely
-      await _storeTokens(authResult);
-
-      // Update local storage flags
-      await _setLocalSession(authResult.user);
-
-      // Emit auth state
+      final authResult = _buildAuthResult(domainUser, await fireUser.getIdToken());
+      await _setLocalSession(domainUser);
       _authStateController.add(authResult);
-
-      // Trigger immediate auth sync to Firebase (fire and forget)
-      if (_syncController != null) {
-        if (kDebugMode) print('[AuthRepo] Triggering immediate auth sync...');
-        _syncController!.syncAuthNow().then((result) {
-          if (kDebugMode) {
-            print('[AuthRepo] Immediate auth sync after registration: $result');
-          }
-        }).catchError((e) {
-          if (kDebugMode) {
-            print('[AuthRepo] Immediate auth sync error (non-blocking): $e');
-          }
-        });
-      } else {
-        if (kDebugMode) print('[AuthRepo] WARNING: _syncController is NULL - sync will not happen!');
-      }
-
       return authResult;
     } on AuthFailure {
       rethrow;
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthException(e);
     } catch (e) {
-      if (kDebugMode) print('[AuthRepo] Register exception: $e');
       throw ErrorHandler.handleException(e);
     }
   }
 
   @override
   Future<void> logout() async {
-    try {
-      // Clear secure storage
-      await SecureStorage.clearAuthData();
-
-      // Clear local storage
-      await LocalStorage.clearAuthData();
-
-      // Emit unauthenticated state
-      _authStateController.add(null);
-    } catch (e) {
-      throw ErrorHandler.handleException(e);
-    }
+    await _firebaseAuth.signOut();
+    await _clearLocalSession();
+    _authStateController.add(null);
   }
 
   @override
   Future<AuthResult?> getCurrentUser() async {
     try {
-      // Read tokens from secure storage
-      final accessToken = await SecureStorage.getAuthToken();
-      final storedRefreshToken = await SecureStorage.getRefreshToken();
-
-      if (accessToken == null || storedRefreshToken == null) {
+      // Firebase Auth persists the session natively; this returns synchronously
+      // from the locally restored state before any network round-trip.
+      final current = _firebaseAuth.currentUser;
+      if (current == null) {
         return null;
       }
 
-      // Get user ID from local storage
-      final userId = LocalStorage.getUserId();
-      if (userId == null) {
-        // No user ID, clear tokens and return null
-        await SecureStorage.clearAuthData();
-        await LocalStorage.clearAuthData();
+      final domainUser = await _readCurrentUserDoc();
+      if (domainUser == null || !domainUser.isActive) {
+        // Session exists but the profile is missing or disabled -> sign out.
+        await _firebaseAuth.signOut();
+        await _clearLocalSession();
         return null;
       }
 
-      // Fetch user from database
-      final userEntity = await _usersDao.getById(userId);
-      if (userEntity == null || !userEntity.isActive) {
-        // User not found or inactive, clear session
-        await logout();
-        return null;
-      }
-
-      // Check token expiry (simplified - in production use JWT with exp claim)
-      // For now, we trust the refresh token expiry stored in secure storage
-      final expiryString = await SecureStorage.read(SecureStorageKeys.tokenExpiry);
-      if (expiryString != null) {
-        final expiry = DateTime.tryParse(expiryString);
-        if (expiry != null && DateTime.now().isAfter(expiry)) {
-          // Tokens expired, try to refresh
-          try {
-            return await refreshToken();
-          } catch (_) {
-            await logout();
-            return null;
-          }
-        }
-      }
-
-      // Generate new auth result with existing tokens
-      final authResult = AuthResult(
-        user: _toDomain(userEntity),
-        accessToken: accessToken,
-        refreshToken: storedRefreshToken,
-        expiresAt: expiryString != null
-            ? DateTime.parse(expiryString)
-            : DateTime.now().add(const Duration(days: 30)),
-      );
-
-      // Emit auth state
+      final authResult = _buildAuthResult(domainUser, await current.getIdToken());
+      await _setLocalSession(domainUser);
       _authStateController.add(authResult);
-
       return authResult;
     } catch (e) {
-      // On any error, clear session and return null
-      await logout();
+      // Never throw from session restore - return null instead.
       return null;
     }
   }
@@ -311,32 +180,20 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthResult> refreshToken() async {
     try {
-      final refreshToken = await SecureStorage.getRefreshToken();
-      if (refreshToken == null) {
-        throw SessionExpiredFailure();
+      final current = _firebaseAuth.currentUser;
+      if (current == null) {
+        throw const SessionExpiredFailure();
       }
 
-      // Get user ID
-      final userId = LocalStorage.getUserId();
-      if (userId == null) {
-        throw SessionExpiredFailure();
+      // Force a fresh ID token; Firebase also auto-refreshes in the background.
+      await current.reload();
+      final domainUser = await _readCurrentUserDoc();
+      if (domainUser == null || !domainUser.isActive) {
+        throw const SessionExpiredFailure();
       }
 
-      // Verify user still exists and is active
-      final userEntity = await _usersDao.getById(userId);
-      if (userEntity == null || !userEntity.isActive) {
-        throw SessionExpiredFailure();
-      }
-
-      // Generate new tokens
-      final authResult = _generateAuthResult(userEntity);
-
-      // Store new tokens
-      await _storeTokens(authResult);
-
-      // Emit auth state
+      final authResult = _buildAuthResult(domainUser, await current.getIdToken(true));
       _authStateController.add(authResult);
-
       return authResult;
     } on AuthFailure {
       rethrow;
@@ -351,44 +208,27 @@ class AuthRepositoryImpl implements AuthRepository {
     required String newPassword,
   }) async {
     try {
-      final userId = LocalStorage.getUserId();
-      if (userId == null) {
-        throw SessionExpiredFailure();
+      final current = _firebaseAuth.currentUser;
+      if (current == null) {
+        throw const SessionExpiredFailure();
       }
 
-      final userEntity = await _usersDao.getById(userId);
-      if (userEntity == null) {
-        throw UserNotFoundFailure();
-      }
-
-      // Verify current password
-      final isValid = PasswordHasher.verify(currentPassword, userEntity.passwordHash);
-      if (!isValid) {
-        throw InvalidCredentialsFailure();
-      }
-
-      // Validate new password
+      // Validate new password before applying
       final passwordError = Validators.validatePassword(newPassword);
       if (passwordError != null) {
-        throw WeakPasswordFailure();
+        throw WeakPasswordFailure(message: passwordError);
       }
 
-      // Hash new password
-      final newHash = PasswordHasher.hash(newPassword);
-
-      // Update password in database
-      await _usersDao.updateUser(
-        UsersCompanion(
-          id: Value(userId),
-          passwordHash: Value(newHash),
-          updatedAt: Value(DateTime.now()),
-        ),
+      // Re-authenticate with the current password, then update.
+      final email = current.email ?? '';
+      await current.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: email, password: currentPassword),
       );
-
-      // Update activity
-      await _usersDao.updateActivity(userId);
+      await current.updatePassword(newPassword);
     } on AuthFailure {
       rethrow;
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthException(e);
     } catch (e) {
       throw ErrorHandler.handleException(e);
     }
@@ -396,35 +236,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> forgotPassword(String email) async {
+    // Firebase sends the reset email. It does not reveal whether the email is
+    // registered, so we surface only real errors (e.g. network).
     try {
-      // In a real implementation, this would:
-      // 1. Generate a secure reset token
-      // 2. Store it with expiry (e.g., 1 hour)
-      // 3. Send email with reset link
-      // 4. Log audit event
-
-      // For now, we simulate by checking if user exists (but don't reveal it)
-      final userEntity = await _usersDao.getByEmail(email);
-
-      // Always succeed from user perspective (security: don't reveal email existence)
-      // But log the attempt for audit
-      if (userEntity != null) {
-        // Generate a secure reset token
-        final resetToken = _generateToken();
-        final expiresAt = DateTime.now().add(const Duration(hours: 1));
-
-        // Store token in memory (in production, use Redis/database)
-        _resetTokens[resetToken] = _ResetTokenData(userEntity.id, expiresAt);
-
-        // TODO: Implement actual email sending
-        // await _emailService.sendPasswordReset(userEntity.email, resetToken);
-
-        // For testing, print the token (in production, remove this)
-        // print('Password reset token for ${userEntity.email}: $resetToken');
-      }
-    } catch (e) {
-      // Don't throw - always succeed from user perspective
-      // Log error internally
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthException(e);
     }
   }
 
@@ -433,115 +250,66 @@ class AuthRepositoryImpl implements AuthRepository {
     required String token,
     required String newPassword,
   }) async {
+    final passwordError = Validators.validatePassword(newPassword);
+    if (passwordError != null) {
+      throw WeakPasswordFailure(message: passwordError);
+    }
+
     try {
-      // Validate token
-      final tokenData = _resetTokens[token];
-      if (tokenData == null) {
-        throw InvalidCredentialsFailure();
-      }
-
-      // Check if token is expired
-      if (DateTime.now().isAfter(tokenData.expiresAt)) {
-        _resetTokens.remove(token);
-        throw InvalidCredentialsFailure();
-      }
-
-      // Validate new password
-      final passwordError = Validators.validatePassword(newPassword);
-      if (passwordError != null) {
-        throw WeakPasswordFailure();
-      }
-
-      // Get user and update password
-      final userEntity = await _usersDao.getById(tokenData.userId);
-      if (userEntity == null) {
-        throw UserNotFoundFailure();
-      }
-
-      // Hash new password
-      final newHash = PasswordHasher.hash(newPassword);
-
-      // Update password in database
-      await _usersDao.updateUser(
-        UsersCompanion(
-          id: Value(userEntity.id),
-          passwordHash: Value(newHash),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
-
-      // Remove used token
-      _resetTokens.remove(token);
-
-      // Clear any existing sessions (optional - force re-login)
-      // await logout();
-    } on AuthFailure {
-      rethrow;
-    } catch (e) {
-      throw ErrorHandler.handleException(e);
+      // `token` is the Firebase password-reset oobCode from the email link.
+      await _firebaseAuth.confirmPasswordReset(code: token, newPassword: newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthException(e);
     }
   }
 
   @override
   Stream<AuthResult?> get authStateStream => _authStateController.stream;
 
-  /// Generate authentication result with tokens
-  AuthResult _generateAuthResult(UserEntity userEntity) {
-    final now = DateTime.now();
-    final accessToken = _generateToken();
-    final refreshToken = _generateToken();
-    final expiresAt = now.add(const Duration(days: 30)); // Long-lived refresh token
+  // ============ Private helpers ============
 
-    final domainUser = _toDomain(userEntity);
+  /// Read the current user's Firestore profile as a domain [DomainUser].
+  Future<DomainUser?> _readCurrentUserDoc() async {
+    final current = _firebaseAuth.currentUser;
+    if (current == null) {
+      return null;
+    }
+    final snapshot = await _firestore
+        .collection(FirestoreSchema.users)
+        .doc(current.uid)
+        .get();
+    if (!snapshot.exists) {
+      return null;
+    }
+    return UserDocMapper.fromData(snapshot.data()!, current.uid);
+  }
 
+  AuthResult _buildAuthResult(DomainUser user, String? accessToken) {
     return AuthResult(
-      user: domainUser,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      expiresAt: expiresAt,
+      user: user,
+      // The Firebase SDK returns a null token only in a race with sign-out;
+      // treat it as empty rather than failing the whole session.
+      accessToken: accessToken ?? '',
+      // The Firebase UID serves as the stable refresh identifier; the Firebase
+      // SDK renews tokens automatically.
+      refreshToken: user.firebaseUid ?? '',
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
     );
   }
 
-  /// Generate a secure random token
-  String _generateToken() {
-    final random = Random.secure();
-    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
-    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join('');
-  }
-
-  /// Store tokens in secure storage
-  Future<void> _storeTokens(AuthResult authResult) async {
-    await SecureStorage.saveAuthToken(authResult.accessToken);
-    await SecureStorage.saveRefreshToken(authResult.refreshToken);
-    await SecureStorage.write(
-      SecureStorageKeys.tokenExpiry,
-      authResult.expiresAt.toIso8601String(),
-    );
-  }
-
-  /// Set local session flags
   Future<void> _setLocalSession(DomainUser user) async {
+    if (user.id == null) return;
     await LocalStorage.setUserId(user.id!);
     await LocalStorage.setUserRole(user.role.value);
     await LocalStorage.setLoggedIn(true);
   }
 
-  /// Convert Drift entity to domain entity
-  DomainUser _toDomain(UserEntity entity) {
-    return DomainUser(
-      id: entity.id,
-      email: entity.email,
-      fullName: entity.fullName,
-      phone: entity.phone,
-      role: UserRole.fromString(entity.role),
-      avatarUrl: entity.avatarUrl,
-      isActive: entity.isActive,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    );
+  Future<void> _clearLocalSession() async {
+    await LocalStorage.clearAuthData();
+    await SecureStorage.clearAuthData();
   }
 
-  /// Dispose resources
+  /// Dispose resources (called on app shutdown, if ever needed).
   void dispose() {
     _authStateController.close();
   }

@@ -13,8 +13,9 @@ class MedicalRecordBloc
     extends Bloc<events.MedicalRecordEvent, states.MedicalRecordState> {
   final MedicalRecordRepository _medicalRecordRepository;
 
-  MedicalRecordBloc({required this._medicalRecordRepository})
-      : super(const states.MedicalRecordInitial()) {
+  MedicalRecordBloc({required MedicalRecordRepository medicalRecordRepository})
+      : _medicalRecordRepository = medicalRecordRepository,
+        super(const states.MedicalRecordInitial()) {
     on<events.LoadMedicalRecords>(_onLoadMedicalRecords);
     on<events.LoadMedicalRecordsByType>(_onLoadMedicalRecordsByType);
     on<events.LoadMedicalRecordDetails>(_onLoadMedicalRecordDetails);

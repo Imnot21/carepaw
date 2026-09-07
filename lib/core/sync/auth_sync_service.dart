@@ -15,10 +15,12 @@ class AuthSyncService {
   final FirebaseFirestore _firestore;
 
   AuthSyncService({
-    required this._usersDao,
-    required this._firebaseAuth,
-    required this._firestore,
-  });
+    required UsersDao usersDao,
+    required FirebaseAuth firebaseAuth,
+    required FirebaseFirestore firestore,
+  }) : _usersDao = usersDao,
+       _firebaseAuth = firebaseAuth,
+       _firestore = firestore;
 
   /// Sync all local users to Firebase Auth.
   ///

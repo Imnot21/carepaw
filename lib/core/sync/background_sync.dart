@@ -1,8 +1,10 @@
 import 'package:workmanager/workmanager.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Set aside with the drift→Firebase auth push: only the disabled blocks below
+// reference these. Restore them if the bridges are ever revived.
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:carepaw/core/sync/sync_engine.dart';
 import 'package:carepaw/core/sync/sync_repository.dart' show SyncResult, SyncStatus, SyncRepository;
@@ -60,8 +62,10 @@ Future<void> _performBackgroundSync() async {
     // Initialize database
     if (kDebugMode) print('[BackgroundSync] Opening database...');
     final database = db.CarePawDatabase();
-    final usersDao = UsersDao(database);
-    if (kDebugMode) print('[BackgroundSync] Database opened, usersDao created');
+    // Set aside with the drift→Firebase auth push (auth/users now live in the
+    // cloud); restore this line if the auth bridges are ever revived.
+    // final usersDao = UsersDao(database);
+    if (kDebugMode) print('[BackgroundSync] Database opened');
 
     // Check and show new notifications for all users
     // In a real implementation, we'd iterate over known user IDs
@@ -83,18 +87,19 @@ Future<void> _performBackgroundSync() async {
       }
     }
 
-    // Sync local auth to Firebase Auth
-    if (kDebugMode) print('[BackgroundSync] Starting auth sync...');
-    final authSyncService = AuthSyncService(
-      usersDao: usersDao,
-      firebaseAuth: FirebaseAuth.instance,
-      firestore: FirebaseFirestore.instance,
-    );
-
-    final authSyncResult = await authSyncService.syncLocalUsersToFirebase();
-    if (kDebugMode) {
-      print('[BackgroundSync] Auth sync result: $authSyncResult');
-    }
+    // DISABLED (Firestore-first): the local drift DB is set aside for auth/users.
+    // We must never push local drift users into Firebase Auth, or the old local
+    // accounts would be resurrected as Firebase accounts during background sync.
+    // Kept here (commented out) for reference; the cloud is the source of truth.
+    // final authSyncService = AuthSyncService(
+    //   usersDao: usersDao,
+    //   firebaseAuth: FirebaseAuth.instance,
+    //   firestore: FirebaseFirestore.instance,
+    // );
+    // final authSyncResult = await authSyncService.syncLocalUsersToFirebase();
+    // if (kDebugMode) {
+    //   print('[BackgroundSync] Auth sync result: $authSyncResult');
+    // }
 
     // TODO: Get dependencies from GetIt or recreate them
     // For now, we'll need to initialize the sync engine with proper dependencies
@@ -147,14 +152,19 @@ Future<void> registerOneTimeSync({Duration delay = const Duration(seconds: 30)})
 class SyncController {
   final SyncEngine _syncEngine;
   final SyncRepository _syncRepo;
+  // Kept for the set-aside drift→Firebase auth bridges (see the disabled
+  // syncAuthNow/syncFirebaseUsersToLocal/ensureLocalUserExists below).
+  // ignore: unused_field
   final UsersDao _usersDao;
   final List<VoidCallback> _statusListeners = [];
 
   SyncController({
-    required this._syncEngine,
-    required this._syncRepo,
-    required this._usersDao,
-  });
+    required SyncEngine syncEngine,
+    required SyncRepository syncRepo,
+    required UsersDao usersDao,
+  }) : _syncEngine = syncEngine,
+       _syncRepo = syncRepo,
+       _usersDao = usersDao;
 
   /// Current sync status
   SyncStatus get status => _currentStatus;
@@ -202,93 +212,32 @@ class SyncController {
     return result;
   }
 
-  /// Trigger immediate auth sync (local users → Firebase Auth)
+  /// Trigger immediate auth sync (local users → Firebase Auth).
+  ///
+  /// DISABLED (Firestore-first): the local drift DB is set aside for
+  /// auth/users, so there is nothing left to push and old drift accounts must
+  /// never be resurrected into Firebase Auth. Returns an empty success result.
   Future<AuthSyncResult> syncAuthNow() async {
-    try {
-      if (kDebugMode) print('[SyncController] syncAuthNow() called');
-
-      // Initialize Firebase if not already
-      if (Firebase.apps.isEmpty) {
-        if (kDebugMode) print('[SyncController] Initializing Firebase...');
-        await Firebase.initializeApp();
-      } else {
-        if (kDebugMode) print('[SyncController] Firebase already initialized');
-      }
-
-      if (kDebugMode) print('[SyncController] Creating AuthSyncService with usersDao: $_usersDao');
-
-      final authSyncService = AuthSyncService(
-        usersDao: _usersDao,
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-
-      if (kDebugMode) print('[SyncController] Calling syncLocalUsersToFirebase()...');
-      final result = await authSyncService.syncLocalUsersToFirebase();
-      if (kDebugMode) {
-        print('[SyncController] Manual auth sync result: $result');
-      }
-      return result;
-    } catch (e) {
-      if (kDebugMode) print('[SyncController] Manual auth sync error: $e');
-      final errorResult = AuthSyncResult()
-        ..failed = 1
-        ..errors.add(e.toString());
-      return errorResult;
-    }
+    if (kDebugMode) print('[SyncController] syncAuthNow() disabled (Firestore-first)');
+    return AuthSyncResult();
   }
 
-  /// Trigger immediate auth sync (Firebase Auth users → local database)
+  /// Trigger immediate auth sync (Firebase Auth users → local database).
+  ///
+  /// DISABLED (Firestore-first): the local drift DB is set aside for
+  /// auth/users; the cloud is the source of truth and nothing pulls back.
   Future<AuthSyncResult> syncFirebaseUsersToLocal() async {
-    try {
-      // Initialize Firebase if not already
-      if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
-      }
-
-      final authSyncService = AuthSyncService(
-        usersDao: _usersDao,
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-
-      final result = await authSyncService.syncFirebaseUsersToLocal();
-      if (kDebugMode) {
-        print('Manual Firebase→Local auth sync result: $result');
-      }
-      return result;
-    } catch (e) {
-      if (kDebugMode) print('Manual Firebase→Local auth sync error: $e');
-      final errorResult = AuthSyncResult()
-        ..failed = 1
-        ..errors.add(e.toString());
-      return errorResult;
-    }
+    if (kDebugMode) print('[SyncController] syncFirebaseUsersToLocal() disabled (Firestore-first)');
+    return AuthSyncResult();
   }
 
-  /// Ensure local user exists for email (sync from Firebase if needed)
+  /// Ensure local user exists for email (sync from Firebase if needed).
+  ///
+  /// DISABLED (Firestore-first): there is no local user table to ensure; the
+  /// Firestore `users/{uid}` doc is authoritative.
   Future<int?> ensureLocalUserExists(String email) async {
-    try {
-      // Initialize Firebase if not already
-      if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
-      }
-
-      final authSyncService = AuthSyncService(
-        usersDao: _usersDao,
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-
-      final localUserId = await authSyncService.ensureLocalUserExists(email);
-      if (kDebugMode) {
-        print('Ensure local user for $email: ${localUserId ?? "not found"}');
-      }
-      return localUserId;
-    } catch (e) {
-      if (kDebugMode) print('Ensure local user error: $e');
-      return null;
-    }
+    if (kDebugMode) print('[SyncController] ensureLocalUserExists() disabled (Firestore-first)');
+    return null;
   }
 
   /// Initialize sync controller (call on app start)

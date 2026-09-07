@@ -15,10 +15,13 @@ class InventoryBloc
   final InventoryTransactionRepository _transactionRepository;
 
   InventoryBloc({
-    required this._itemRepository,
-    required this._batchRepository,
-    required this._transactionRepository,
-  })  : super(const states.InventoryInitial()) {
+    required InventoryItemRepository itemRepository,
+    required InventoryBatchRepository batchRepository,
+    required InventoryTransactionRepository transactionRepository,
+  })  : _itemRepository = itemRepository,
+        _batchRepository = batchRepository,
+        _transactionRepository = transactionRepository,
+        super(const states.InventoryInitial()) {
     on<events.LoadInventoryItems>(_onLoadInventoryItems);
     on<events.LoadInventoryItemsByCategory>(_onLoadInventoryItemsByCategory);
     on<events.LoadLowStockItems>(_onLoadLowStockItems);

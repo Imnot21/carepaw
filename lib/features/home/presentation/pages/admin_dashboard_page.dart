@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
+import 'package:carepaw/features/users/presentation/pages/admin_user_management_page.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -722,7 +723,7 @@ class _LinkTile extends StatelessWidget {
 class _AdminUsersTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return _PlaceholderTab(title: 'User Management', icon: Icons.people_outlined, actionText: 'Add User', actionRoute: Routes.adminUsers);
+    return const AdminUserManagementPage();
   }
 }
 

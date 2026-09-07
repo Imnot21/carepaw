@@ -14,9 +14,11 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
   int? _currentPetId;
 
   AppointmentBloc({
-    required this._repository,
-    required this._authBloc,
-  }) : super(AppointmentInitial()) {
+    required AppointmentRepository repository,
+    required AuthBloc authBloc,
+  }) : _repository = repository,
+       _authBloc = authBloc,
+       super(AppointmentInitial()) {
     on<AppointmentLoadRequested>(_onLoadRequested);
     on<AppointmentUpcomingLoadRequested>(_onUpcomingLoadRequested);
     on<AppointmentDetailLoadRequested>(_onDetailLoadRequested);

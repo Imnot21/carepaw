@@ -9,8 +9,9 @@ import 'package:carepaw/core/errors/failures.dart';
 class NotificationBloc extends Bloc<events.NotificationEvent, states.NotificationState> {
   final NotificationRepository _notificationRepository;
 
-  NotificationBloc({required this._notificationRepository})
-      : super(const states.NotificationInitial()) {
+  NotificationBloc({required NotificationRepository notificationRepository})
+      : _notificationRepository = notificationRepository,
+        super(const states.NotificationInitial()) {
     on<events.LoadNotifications>(_onLoadNotifications);
     on<events.LoadUnreadCount>(_onLoadUnreadCount);
     on<events.LoadNotificationsByType>(_onLoadNotificationsByType);

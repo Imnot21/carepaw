@@ -20,10 +20,12 @@ class SyncEngine {
   DateTime? _lastSyncStart;
 
   SyncEngine({
-    required this._syncRepo,
-    required this._firestore,
-    required this._networkMonitor,
-  });
+    required SyncRepository syncRepo,
+    required FirebaseFirestore firestore,
+    required NetworkMonitor networkMonitor,
+  }) : _syncRepo = syncRepo,
+       _firestore = firestore,
+       _networkMonitor = networkMonitor;
 
   /// Whether a sync is currently in progress
   bool get isSyncing => _isSyncing;

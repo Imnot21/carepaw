@@ -33,8 +33,9 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
   final AppointmentsDao _dao;
   final SyncRepository _syncRepo;
 
-  AppointmentRepositoryImpl(CarePawDatabase database, {required this._syncRepo})
-      : _dao = AppointmentsDao(database);
+  AppointmentRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
+      : _dao = AppointmentsDao(database),
+        _syncRepo = syncRepo;
 
   @override
   Future<domain.Appointment?> findById(int id) async {

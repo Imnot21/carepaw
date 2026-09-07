@@ -30,6 +30,7 @@ import 'package:carepaw/features/home/presentation/pages/home_page.dart';
 import 'package:carepaw/features/home/presentation/pages/staff_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/vet_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/admin_dashboard_page.dart';
+import 'package:carepaw/features/users/presentation/pages/admin_user_management_page.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/core/widgets/common/cp_loader.dart';
 
@@ -326,7 +327,7 @@ class AppRouter {
           GoRoute(
             path: 'users',
             name: RouteNames.adminUsers,
-            builder: (context, state) => const PlaceholderPage(title: 'User Management'),
+            builder: (context, state) => const AdminUserManagementPage(),
           ),
           GoRoute(
             path: 'settings',

@@ -14,8 +14,9 @@ class VaccinationRepositoryImpl implements VaccinationRepository {
   final VaccinationsDao _dao;
   final SyncRepository _syncRepo;
 
-  VaccinationRepositoryImpl(CarePawDatabase database, {required this._syncRepo})
-      : _dao = VaccinationsDao(database);
+  VaccinationRepositoryImpl(CarePawDatabase database, {required SyncRepository syncRepo})
+      : _dao = VaccinationsDao(database),
+        _syncRepo = syncRepo;
 
   @override
   Future<domain.Vaccination?> findById(int id) async {
