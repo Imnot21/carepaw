@@ -8,15 +8,14 @@ import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dar
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
 import 'package:carepaw/features/inventory/presentation/pages/inventory_form_page.dart';
 import 'package:carepaw/features/inventory/presentation/pages/inventory_detail_page.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_text_field.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
-import 'package:carepaw/core/widgets/common/cp_empty_state.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -24,7 +23,7 @@ import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
-/// Inventory list page with premium design
+/// Inventory list page with neumorphic design.
 class InventoryListPage extends StatefulWidget {
   const InventoryListPage({super.key});
 
@@ -36,6 +35,8 @@ class _InventoryListPageState extends State<InventoryListPage> {
   final _searchController = TextEditingController();
   InventoryCategory? _selectedCategory;
   String _searchQuery = '';
+
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -86,19 +87,15 @@ class _InventoryListPageState extends State<InventoryListPage> {
         }
 
         return Scaffold(
-          body: AnimatedGradientBackground(
-            colors: [
-              AppColors.primary.withValues(alpha: 0.08),
-              AppColors.secondary.withValues(alpha: 0.06),
-              AppColors.surface,
+          backgroundColor: _isDark
+              ? AppColors.backgroundDark
+              : AppColors.background,
+          body: CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              _buildFilterSection(),
+              _buildInventoryList(),
             ],
-            child: CustomScrollView(
-              slivers: [
-                _buildAppBar(),
-                _buildFilterSection(),
-                _buildInventoryList(),
-              ],
-            ),
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _navigateToForm(),
@@ -108,7 +105,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
             foregroundColor: AppColors.textOnPrimary,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.3, end: 0),
+          ).animate().fadeIn(duration: 300.ms),
         );
       },
     );
@@ -120,6 +117,8 @@ class _InventoryListPageState extends State<InventoryListPage> {
       floating: false,
       pinned: true,
       backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
@@ -131,50 +130,28 @@ class _InventoryListPageState extends State<InventoryListPage> {
               'Inventory',
               style: AppTextStyles.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Manage your clinic supplies',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
               ),
             ),
           ],
         ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface.withValues(alpha: 0.9),
-                AppColors.surface.withValues(alpha: 0.7),
-              ],
-            ),
-          ),
-          child: const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.filter_list_rounded),
-          onPressed: _showFilterDialog,
-          tooltip: 'Filter',
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: NeuIconButton(
+            icon: Icons.filter_list_rounded,
+            onPressed: _showFilterDialog,
+            tooltip: 'Filter',
+          ),
         ),
-        const SizedBox(width: 8),
       ],
     );
   }
@@ -183,14 +160,13 @@ class _InventoryListPageState extends State<InventoryListPage> {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-        child: GlassContainer(
+        child: NeuCard(
           padding: const EdgeInsets.all(16),
           borderRadius: 20,
-          blur: 15,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CpTextField(
+              NeuTextField(
                 controller: _searchController,
                 hint: 'Search inventory...',
                 prefixIcon: const Icon(Icons.search_rounded),
@@ -198,13 +174,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 40,
+                height: 48,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildCategoryChip(null, 'All'),
-                    ...InventoryCategory.values.map((cat) =>
-                        _buildCategoryChip(cat, cat.displayName)),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _buildCategoryChip(null, 'All'),
+                    ),
+                    ...InventoryCategory.values.map((cat) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildCategoryChip(cat, cat.displayName),
+                        )),
                   ],
                 ),
               ),
@@ -217,26 +198,11 @@ class _InventoryListPageState extends State<InventoryListPage> {
 
   Widget _buildCategoryChip(InventoryCategory? category, String label) {
     final isSelected = _selectedCategory == category;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => _onCategoryChanged(category),
-        backgroundColor: AppColors.surfaceContainerHighest,
-        selectedColor: AppColors.primary.withValues(alpha: 0.2),
-        checkmarkColor: AppColors.primary,
-        labelStyle: TextStyle(
-          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-          ),
-        ),
-      ),
+    return NeuChip(
+      label: label,
+      selected: isSelected,
+      onTap: () => _onCategoryChanged(category),
+      selectedColor: AppColors.primary,
     );
   }
 
@@ -249,12 +215,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CpLoader(size: 48),
+                  const SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: NeuCircularProgress(),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Loading inventory...',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: _isDark
+                          ? AppColors.textSecondaryOnDark
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -265,8 +237,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
 
         if (state is InventoryError) {
           return SliverFillRemaining(
-            child: CpEmptyState(
+            child: _NeuEmptyState(
               icon: Icons.error_outline_rounded,
+              iconColor: AppColors.error,
               title: 'Error Loading Inventory',
               message: state.failure.message,
               actionLabel: 'Retry',
@@ -289,7 +262,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
 
         if (items.isEmpty) {
           return SliverFillRemaining(
-            child: CpEmptyState(
+            child: _NeuEmptyState(
               icon: Icons.inventory_2_outlined,
               title: _searchQuery.isNotEmpty
                   ? 'No Results Found'
@@ -326,177 +299,153 @@ class _InventoryListPageState extends State<InventoryListPage> {
     final isLowStock = item.isLowStock;
     final isOutOfStock = item.isOutOfStock;
     final stockPercentage = item.stockPercentage ?? 0;
+    final statusColor = isOutOfStock
+        ? AppColors.error
+        : isLowStock
+            ? AppColors.warning
+            : _getCategoryColor(item.category);
 
-    return FloatingAnimation(
-      delay: Duration(milliseconds: 50 * (index % 10)),
-      child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        borderRadius: 16,
-        blur: 10,
-        borderColor: isOutOfStock
-            ? AppColors.error.withValues(alpha: 0.3)
-            : isLowStock
-                ? AppColors.warning.withValues(alpha: 0.3)
-                : AppColors.primary.withValues(alpha: 0.1),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _navigateToDetail(item),
-          child: Row(
-            children: [
-              // Category icon with pulsing glow for low stock
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: _getCategoryGradient(item.category),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: isLowStock || isOutOfStock
-                          ? PremiumShadows.glow(context, isOutOfStock ? AppColors.error : AppColors.warning)
-                          : null,
-                    ),
-                    child: Icon(
-                      _getCategoryIcon(item.category),
-                      size: 28,
-                      color: AppColors.textOnPrimary,
-                    ),
-                  ),
-                  if (isOutOfStock)
-                    PulsingGlow(
-                      glowColor: AppColors.error,
-                      maxRadius: 32,
-                      duration: const Duration(seconds: 2),
-                      child: Container(),
-                    )
-                  else if (isLowStock)
-                    PulsingGlow(
-                      glowColor: AppColors.warning,
-                      maxRadius: 32,
-                      duration: const Duration(seconds: 3),
-                      child: Container(),
-                    ),
-                ],
+    return NeuCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      onTap: () => _navigateToDetail(item),
+      child: Row(
+        children: [
+          // Category icon
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: NeuContainer(
+              borderRadius: 14,
+              variant: NeuVariant.raised,
+              color: _getCategoryColor(item.category),
+              boxShadow: isLowStock || isOutOfStock
+                  ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.35)
+                  : NeuShadow.color(context, _getCategoryColor(item.category), blur: 12, opacity: 0.28),
+              child: Icon(
+                _getCategoryIcon(item.category),
+                size: 28,
+                color: AppColors.textOnPrimary,
               ),
-              const SizedBox(width: 16),
-              // Item info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Item info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.name,
-                            style: AppTextStyles.titleMedium.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _isDark
+                              ? AppColors.textPrimaryOnDark
+                              : AppColors.textPrimary,
                         ),
-                        if (isOutOfStock)
-                          _buildStatusBadge('Out of Stock', AppColors.error)
-                        else if (isLowStock)
-                          _buildStatusBadge('Low Stock', AppColors.warning)
-                        else if (item.isAtMax)
-                          _buildStatusBadge('Full', AppColors.success),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${item.category.displayName} • ${item.unit}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Stock indicator
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Stock: ',
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  Text(
-                                    formatNumber(item.currentStock),
-                                    style: AppTextStyles.labelMedium.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: isOutOfStock
-                                          ? AppColors.error
-                                          : isLowStock
-                                              ? AppColors.warning
-                                              : AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  Text(
-                                    ' ${item.unit}',
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (item.maxStock != null) ...[
-                                const SizedBox(height: 4),
-                                LinearProgressIndicator(
-                                  value: stockPercentage / 100,
-                                  backgroundColor:
-                                      AppColors.surfaceContainerHighest,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    isOutOfStock
-                                        ? AppColors.error
-                                        : isLowStock
-                                            ? AppColors.warning
-                                            : AppColors.primary,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                  minHeight: 6,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (item.maxStock != null) ...[
-                          const SizedBox(width: 12),
-                          Text(
-                            '${stockPercentage.toInt()}%',
-                            style: AppTextStyles.titleSmall.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: isOutOfStock
-                                  ? AppColors.error
-                                  : isLowStock
-                                      ? AppColors.warning
-                                      : AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                    if (isOutOfStock)
+                      _buildStatusBadge('Out of Stock', AppColors.error)
+                    else if (isLowStock)
+                      _buildStatusBadge('Low Stock', AppColors.warning)
+                    else if (item.isAtMax)
+                      _buildStatusBadge('Full', AppColors.success),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              // Chevron
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textTertiary,
-                size: 24,
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  '${item.category.displayName} • ${item.unit}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: _isDark
+                        ? AppColors.textSecondaryOnDark
+                        : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Stock indicator
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Stock: ',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: _isDark
+                                      ? AppColors.textSecondaryOnDark
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                              Text(
+                                formatNumber(item.currentStock),
+                                style: AppTextStyles.labelMedium.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: isOutOfStock
+                                      ? AppColors.error
+                                      : isLowStock
+                                          ? AppColors.warning
+                                          : (_isDark
+                                              ? AppColors.textPrimaryOnDark
+                                              : AppColors.textPrimary),
+                                ),
+                              ),
+                              Text(
+                                ' ${item.unit}',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: _isDark
+                                      ? AppColors.textSecondaryOnDark
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (item.maxStock != null) ...[
+                            const SizedBox(height: 6),
+                            NeuProgress(
+                              value: (stockPercentage / 100).clamp(0.0, 1.0),
+                              height: 6,
+                              color: statusColor,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (item.maxStock != null) ...[
+                      const SizedBox(width: 12),
+                      Text(
+                        '${stockPercentage.toInt()}%',
+                        style: AppTextStyles.titleSmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isOutOfStock
+                              ? AppColors.error
+                              : isLowStock
+                                  ? AppColors.warning
+                                  : AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: 8),
+          // Chevron
+          Icon(
+            Icons.chevron_right_rounded,
+            color: _isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+            size: 24,
+          ),
+        ],
       ),
     );
   }
@@ -519,26 +468,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
     );
   }
 
-  LinearGradient _getCategoryGradient(InventoryCategory category) {
+  Color _getCategoryColor(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return AppColors.gradientPrimary;
+        return AppColors.categoryMedicine;
       case InventoryCategory.vaccine:
-        return const LinearGradient(
-          colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
-        );
+        return AppColors.categoryVaccine;
       case InventoryCategory.supply:
-        return LinearGradient(
-          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
-        );
+        return AppColors.categorySupply;
       case InventoryCategory.equipment:
-        return LinearGradient(
-          colors: [AppColors.categoryEquipment, AppColors.categoryEquipmentDark],
-        );
+        return AppColors.categoryEquipment;
       case InventoryCategory.food:
-        return const LinearGradient(
-          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-        );
+        return AppColors.categoryFood;
     }
   }
 
@@ -588,67 +529,67 @@ class _InventoryListPageState extends State<InventoryListPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => GlassContainer(
+      builder: (context) => NeuContainer(
         margin: const EdgeInsets.all(20),
         borderRadius: 24,
-        blur: 20,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Filter Inventory',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w700,
+        variant: NeuVariant.raised,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Filter Inventory',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ...InventoryCategory.values.map((cat) => ListTile(
+                  leading: Icon(_getCategoryIcon(cat),
+                      color: _getCategoryColor(cat)),
+                  title: Text(
+                    cat.displayName,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: _isDark
+                          ? AppColors.textPrimaryOnDark
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                  trailing: _selectedCategory == cat
+                      ? Icon(Icons.check_circle_rounded,
+                          color: _getCategoryColor(cat))
+                      : null,
+                  onTap: () {
+                    _onCategoryChanged(cat);
+                    Navigator.pop(context);
+                  },
+                )),
+            const SizedBox(height: 12),
+            ListTile(
+              leading: Icon(Icons.clear_all_rounded,
+                  color: _isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary),
+              title: Text(
+                'Clear Filters',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: _isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 20),
-              ...InventoryCategory.values.map((cat) => ListTile(
-                    leading: Icon(_getCategoryIcon(cat),
-                        color: _getCategoryColor(cat)),
-                    title: Text(cat.displayName),
-                    trailing: _selectedCategory == cat
-                        ? Icon(Icons.check_circle_rounded,
-                            color: _getCategoryColor(cat))
-                        : null,
-                    onTap: () {
-                      _onCategoryChanged(cat);
-                      Navigator.pop(context);
-                    },
-                  )),
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(Icons.clear_all_rounded,
-                    color: AppColors.textSecondary),
-                title: const Text('Clear Filters'),
-                onTap: () {
-                  _onCategoryChanged(null);
-                  _searchController.clear();
-                  _onSearchChanged('');
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
+              onTap: () {
+                _onCategoryChanged(null);
+                _searchController.clear();
+                _onSearchChanged('');
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Color _getCategoryColor(InventoryCategory category) {
-    switch (category) {
-      case InventoryCategory.medicine:
-        return AppColors.categoryMedicine;
-      case InventoryCategory.vaccine:
-        return AppColors.categoryVaccine;
-      case InventoryCategory.supply:
-        return AppColors.categorySupply;
-      case InventoryCategory.equipment:
-        return AppColors.categoryEquipment;
-      case InventoryCategory.food:
-        return AppColors.categoryFood;
-    }
   }
 }
 
@@ -658,62 +599,55 @@ class _NotLoggedInView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.08),
-          AppColors.secondary.withValues(alpha: 0.06),
-          AppColors.surface,
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.primary,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.primary,
-                    ),
-                    child: Icon(
-                      Icons.inventory_2_outlined,
-                      size: 80,
-                      color: AppColors.textOnPrimary,
-                    ),
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 160,
+                height: 160,
+                child: NeuContainer(
+                  borderRadius: 80,
+                  variant: NeuVariant.raised,
+                  color: AppColors.primary,
+                  boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.35),
+                  child: const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 80,
+                    color: AppColors.textOnPrimary,
                   ),
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Please log in to manage inventory',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Please log in to manage inventory',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Sign in to access inventory management',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to access inventory management',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Log In',
-                  onPressed: () => context.go('/login'),
-                  icon: Icons.login_rounded,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Log In',
+                onPressed: () => context.go('/login'),
+                icon: Icons.login_rounded,
+                size: NeuButtonSize.large,
+              ),
+            ],
           ),
         ),
       ),
@@ -727,65 +661,132 @@ class _AccessDeniedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.error.withValues(alpha: 0.06),
-          AppColors.warning.withValues(alpha: 0.04),
-          AppColors.surface,
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.error,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientError,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.glow(context, AppColors.error, intensity: 0.3),
-                    ),
-                    child: Icon(
-                      Icons.block_rounded,
-                      size: 80,
-                      color: Colors.white,
-                    ),
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 160,
+                height: 160,
+                child: NeuContainer(
+                  borderRadius: 80,
+                  variant: NeuVariant.raised,
+                  color: AppColors.error,
+                  boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.35),
+                  child: const Icon(
+                    Icons.block_rounded,
+                    size: 80,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Access Denied',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.error,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Access Denied',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.error,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Only veterinarians and clinic staff can manage inventory.\n\nThis feature is for clinic operations only.',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Only veterinarians and clinic staff can manage inventory.\n\nThis feature is for clinic operations only.',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Go Back',
-                  onPressed: () => context.pop(),
-                  icon: Icons.arrow_back_rounded,
-                  variant: ButtonVariant.secondary,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Go Back',
+                onPressed: () => context.pop(),
+                icon: Icons.arrow_back_rounded,
+                variant: NeuButtonVariant.secondary,
+                size: NeuButtonSize.large,
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Neumorphic empty state — replaces the legacy `CpEmptyState`.
+class _NeuEmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final Color? iconColor;
+
+  const _NeuEmptyState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = iconColor ?? AppColors.primary;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 120,
+              height: 120,
+              child: NeuContainer(
+                borderRadius: 60,
+                variant: NeuVariant.raised,
+                color: color.withValues(alpha: 0.14),
+                boxShadow: NeuShadow.color(context, color, blur: 20, opacity: 0.18),
+                child: Icon(icon, size: 56, color: color),
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              title,
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 24),
+              NeuButton(
+                text: actionLabel!,
+                onPressed: onAction,
+                variant: NeuButtonVariant.primary,
+                icon: Icons.add_rounded,
+                size: NeuButtonSize.medium,
+              ),
+            ],
+          ],
         ),
       ),
     );

@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
+import '../../../../app/theme/app_colors.dart';
 
 /// Pet entity - domain layer representation
 class Pet extends Equatable {
@@ -136,6 +138,23 @@ enum PetSpecies {
         return 'Reptile';
       case PetSpecies.other:
         return 'Other';
+    }
+  }
+
+  Color get accentColor {
+    switch (this) {
+      case PetSpecies.dog:
+        return AppColors.dogAccent;
+      case PetSpecies.cat:
+        return AppColors.catAccent;
+      case PetSpecies.bird:
+        return AppColors.birdAccent;
+      case PetSpecies.rabbit:
+        return AppColors.rabbitAccent;
+      case PetSpecies.reptile:
+        return AppColors.reptileAccent;
+      case PetSpecies.other:
+        return AppColors.otherAccent;
     }
   }
 }

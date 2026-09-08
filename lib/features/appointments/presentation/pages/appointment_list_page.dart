@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -10,15 +11,19 @@ import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_text_field.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/effects/index.dart';
 
-/// Appointment list page showing upcoming and past appointments with premium design
+/// Appointment list page showing upcoming and past appointments with
+/// neumorphic design.
 /// Role-based UI: Pet owners see their appointments, Vets/Staff see all/assigned
 class AppointmentListPage extends StatefulWidget {
   const AppointmentListPage({super.key});
@@ -31,40 +36,15 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
 
   bool _isVetOrStaff = false;
+
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    _animationController.forward();
 
     // Determine user role from auth state
     final authState = context.read<AuthBloc>().state;
@@ -82,49 +62,35 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedGradientBackground(
-      colors: [
-        AppColors.primary.withValues(alpha: 0.05),
-        AppColors.tertiary.withValues(alpha: 0.03),
-      ],
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: _buildAppBar(),
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
+    return Scaffold(
+      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          const SizedBox(height: 8),
+          // Search bar
+          _buildSearchBar(),
+          const SizedBox(height: 16),
+          // Tab bar
+          _buildTabBar(),
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                const SizedBox(height: 8),
-                // Search bar
-                _buildSearchBar(),
-                const SizedBox(height: 16),
-                // Tab bar
-                _buildTabBar(),
-                // Tab content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildAppointmentList(isUpcoming: true),
-                      _buildAppointmentList(isUpcoming: false),
-                    ],
-                  ),
-                ),
+                _buildAppointmentList(isUpcoming: true),
+                _buildAppointmentList(isUpcoming: false),
               ],
             ),
           ),
-        ),
-        floatingActionButton: _buildFloatingActionButton(),
-      ),
+        ],
+      ).animate().fadeIn(duration: 300.ms),
+      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
@@ -134,30 +100,23 @@ class _AppointmentListPageState extends State<AppointmentListPage>
         _isVetOrStaff ? 'All Appointments' : 'Appointments',
         style: AppTextStyles.headlineSmall.copyWith(
           fontWeight: FontWeight.w700,
-          color: Theme.of(context).colorScheme.onSurface,
+          color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
         ),
       ),
       centerTitle: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       actions: [
-        GlassContainer(
-          borderRadius: 14,
-          padding: const EdgeInsets.all(10),
-          blur: 15,
-          margin: const EdgeInsets.only(right: 16),
-          borderColor: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.glassBorderDark
-              : AppColors.glassBorderLight,
-          child: IconButton(
-            icon: Icon(Icons.refresh_rounded, color: AppColors.primary, size: 22),
-            onPressed: () {
-              context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
-            },
-            tooltip: 'Refresh',
-          ),
+        NeuIconButton(
+          icon: Icons.refresh_rounded,
+          onPressed: () {
+            context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
+          },
+          tooltip: 'Refresh',
         ),
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -165,47 +124,29 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GlassContainer(
-        borderRadius: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        blur: 15,
-        borderColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.glassBorderDark
-            : AppColors.glassBorderLight,
-        child: TextField(
-          controller: _searchController,
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Search appointments...',
-            hintStyle: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textHint,
-            ),
-            prefixIcon: Icon(
-              Icons.search_rounded,
-              color: AppColors.textSecondary,
-              size: 24,
-            ),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(
-                      Icons.clear_rounded,
-                      color: AppColors.textSecondary,
-                      size: 22,
-                    ),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {});
-                    },
-                    tooltip: 'Clear search',
-                  )
-                : null,
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          onChanged: (_) => setState(() {}),
+      child: NeuTextField(
+        controller: _searchController,
+        hint: 'Search appointments...',
+        prefixIcon: const Icon(
+          Icons.search_rounded,
+          color: AppColors.textSecondary,
+          size: 24,
         ),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: Icon(
+                  Icons.clear_rounded,
+                  color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  size: 22,
+                ),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {});
+                },
+                tooltip: 'Clear search',
+              )
+            : null,
+        onChanged: (_) => setState(() {}),
       ),
     );
   }
@@ -213,24 +154,28 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   Widget _buildTabBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GlassContainer(
-        borderRadius: 14,
+      child: NeuContainer(
         padding: const EdgeInsets.all(4),
-        blur: 15,
-        borderColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.glassBorderDark
-            : AppColors.glassBorderLight,
+        borderRadius: 14,
+        variant: NeuVariant.raised,
         child: TabBar(
           controller: _tabController,
           indicator: BoxDecoration(
-            gradient: AppColors.gradientPrimary,
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(10),
-            boxShadow: PremiumShadows.coloredShadow(AppColors.primary),
+            boxShadow: NeuShadow.color(
+              context,
+              AppColors.primary,
+              blur: 10,
+              opacity: 0.3,
+            ),
           ),
           labelColor: Colors.white,
-          unselectedLabelColor: AppColors.textSecondary,
+          unselectedLabelColor:
+              _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
           labelStyle: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w500),
+          unselectedLabelStyle:
+              AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w500),
           dividerColor: Colors.transparent,
           tabs: const [
             Tab(text: 'Upcoming'),
@@ -246,29 +191,13 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     // Vets/Staff manage appointments from their dashboards
     if (_isVetOrStaff) return const SizedBox.shrink();
 
-    return ScaleOnTap(
-      onTap: _navigateToCreateAppointment,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.gradientPrimary,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: PremiumShadows.primary,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.event_available_rounded, size: 22, color: Colors.white),
-            const SizedBox(width: 10),
-            Text(
-              'New Appointment',
-              style: AppTextStyles.labelLarge.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: NeuButton(
+        text: 'New Appointment',
+        onPressed: _navigateToCreateAppointment,
+        icon: Icons.event_available_rounded,
+        size: NeuButtonSize.large,
       ),
     );
   }
@@ -277,7 +206,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     return BlocBuilder<AppointmentBloc, AppointmentState>(
       builder: (context, state) {
         if (state is AppointmentLoading) {
-          return const Center(child: CpLoader(size: 32, strokeWidth: 3));
+          return const Center(child: NeuCircularProgress());
         }
 
         if (state is AppointmentError) {
@@ -315,20 +244,20 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               itemBuilder: (context, index) {
                 final appointment = filtered[index];
                 final pet = petDetailsMap[appointment.id!];
-                return FloatingAnimation(
-                  delay: Duration(milliseconds: 80 * index),
-                  child: _AppointmentCard(
-                    appointment: appointment,
-                    pet: pet,
-                    onTap: () => _navigateToDetail(appointment),
-                    onCheckIn: appointment.canCheckIn
-                        ? () => _showCheckInDialog(appointment)
-                        : null,
-                    onCancel: appointment.canCancel
-                        ? () => _showCancelDialog(appointment)
-                        : null,
-                    isVetOrStaff: _isVetOrStaff,
-                  ),
+                return _AppointmentCard(
+                  appointment: appointment,
+                  pet: pet,
+                  onTap: () => _navigateToDetail(appointment),
+                  onCheckIn: appointment.canCheckIn
+                      ? () => _showCheckInDialog(appointment)
+                      : null,
+                  onCancel: appointment.canCancel
+                      ? () => _showCancelDialog(appointment)
+                      : null,
+                  isVetOrStaff: _isVetOrStaff,
+                ).animate().fadeIn(
+                  duration: 300.ms,
+                  delay: Duration(milliseconds: 60 * index),
                 );
               },
             ),
@@ -352,40 +281,39 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   }
 
   Widget _buildEmptyState(bool isUpcoming) {
+    final accent = isUpcoming ? AppColors.primary : AppColors.success;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FloatingAnimation(
-              child: PulsingGlow(
-                glowColor: isUpcoming ? AppColors.primary : AppColors.tertiary,
-                maxRadius: 25,
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    gradient: isUpcoming ? AppColors.gradientPrimary : AppColors.gradientSuccess,
-                    borderRadius: BorderRadius.circular(70),
-                    boxShadow: isUpcoming ? PremiumShadows.primary : PremiumShadows.success,
-                  ),
-                  child: Icon(
-                    isUpcoming ? Icons.calendar_today_outlined : Icons.history_outlined,
-                    size: 70,
-                    color: AppColors.textOnPrimary,
-                  ),
+            SizedBox(
+              width: 140,
+              height: 140,
+              child: NeuContainer(
+                borderRadius: 70,
+                variant: NeuVariant.raised,
+                color: accent,
+                boxShadow: NeuShadow.color(
+                  context,
+                  accent,
+                  blur: 24,
+                  opacity: 0.32,
+                ),
+                child: Icon(
+                  isUpcoming ? Icons.calendar_today_outlined : Icons.history_outlined,
+                  size: 70,
+                  color: AppColors.textOnPrimary,
                 ),
               ),
             ),
             const SizedBox(height: 28),
             Text(
-              isUpcoming
-                  ? (_isVetOrStaff ? 'No Upcoming Appointments' : 'No Upcoming Appointments')
-                  : 'No Past Appointments',
+              isUpcoming ? 'No Upcoming Appointments' : 'No Past Appointments',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -401,13 +329,16 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             ),
             if (isUpcoming && !_isVetOrStaff) ...[
               const SizedBox(height: 36),
-              CpButton(
-                text: 'Request Appointment',
-                onPressed: _navigateToCreateAppointment,
-                icon: Icons.event_available_rounded,
-                size: ButtonSize.large,
-                expanded: true,
-                variant: ButtonVariant.primary,
+              SizedBox(
+                width: double.infinity,
+                child: NeuButton(
+                  text: 'Request Appointment',
+                  onPressed: _navigateToCreateAppointment,
+                  icon: Icons.event_available_rounded,
+                  size: NeuButtonSize.large,
+                  variant: NeuButtonVariant.primary,
+                  expanded: true,
+                ),
               ),
             ],
           ],
@@ -423,16 +354,20 @@ class _AppointmentListPageState extends State<AppointmentListPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FloatingAnimation(
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  gradient: AppColors.gradientError,
-                  borderRadius: BorderRadius.circular(70),
-                  boxShadow: PremiumShadows.error,
+            SizedBox(
+              width: 140,
+              height: 140,
+              child: NeuContainer(
+                borderRadius: 70,
+                variant: NeuVariant.raised,
+                color: AppColors.error,
+                boxShadow: NeuShadow.color(
+                  context,
+                  AppColors.error,
+                  blur: 24,
+                  opacity: 0.32,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.error_outline_rounded,
                   size: 70,
                   color: AppColors.textOnPrimary,
@@ -444,7 +379,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               'Failed to Load Appointments',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -455,14 +390,17 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            CpButton(
-              text: 'Retry',
-              onPressed: () {
-                context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
-              },
-              icon: Icons.refresh_rounded,
-              variant: ButtonVariant.primary,
-              expanded: true,
+            SizedBox(
+              width: double.infinity,
+              child: NeuButton(
+                text: 'Retry',
+                onPressed: () {
+                  context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
+                },
+                icon: Icons.refresh_rounded,
+                variant: NeuButtonVariant.primary,
+                expanded: true,
+              ),
             ),
           ],
         ),
@@ -481,28 +419,57 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   void _showCheckInDialog(Appointment appointment) {
     showDialog(
       context: context,
-      builder: (dialogContext) => _PremiumDialog(
-        title: 'Check In',
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            NeuContainer(
+              padding: const EdgeInsets.all(10),
+              borderRadius: 12,
+              variant: NeuVariant.flat,
+              child: const Icon(
+                Icons.check_circle_outline_rounded,
+                color: AppColors.success,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Check In',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
         content: Text(
           'Check in for ${appointment.reason ?? 'this appointment'}?',
-          style: AppTextStyles.bodyLarge,
+          style: AppTextStyles.bodyLarge.copyWith(
+            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+          ),
         ),
-        icon: Icons.check_circle_outline_rounded,
-        iconColor: AppColors.success,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: AppTextStyles.labelLarge),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.labelLarge.copyWith(
+                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+              ),
+            ),
           ),
-          CpButton(
+          NeuButton(
             text: 'Check In',
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.read<AppointmentBloc>().add(AppointmentCheckInRequested(appointment.id!));
+              context.read<AppointmentBloc>().add(
+                AppointmentCheckInRequested(appointment.id!),
+              );
             },
-            variant: ButtonVariant.primary,
+            variant: NeuButtonVariant.primary,
             icon: Icons.check_circle_rounded,
-            expanded: true,
           ),
         ],
       ),
@@ -514,134 +481,79 @@ class _AppointmentListPageState extends State<AppointmentListPage>
 
     showDialog(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => _PremiumDialog(
-          title: 'Cancel Appointment',
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Are you sure you want to cancel this appointment?',
-                style: AppTextStyles.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              CpTextField(
-                controller: reasonController,
-                label: 'Cancellation Reason (optional)',
-                hint: 'Enter reason...',
-                maxLines: 3,
-                helper: 'This helps us improve our service',
-              ),
-            ],
-          ),
-          icon: Icons.cancel_outlined,
-          iconColor: AppColors.error,
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('No', style: AppTextStyles.labelLarge),
-            ),
-            CpButton(
-              text: 'Yes, Cancel',
-              variant: ButtonVariant.destructive,
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<AppointmentBloc>().add(
-                  AppointmentCancelRequested(appointment.id!, reasonController.text.trim()),
-                );
-              },
-              icon: Icons.cancel_rounded,
-              expanded: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Premium dialog with glassmorphism styling
-class _PremiumDialog extends StatelessWidget {
-  final String title;
-  final Widget content;
-  final IconData icon;
-  final Color iconColor;
-  final List<Widget> actions;
-
-  const _PremiumDialog({
-    required this.title,
-    required this.content,
-    required this.icon,
-    required this.iconColor,
-    required this.actions,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: GlassContainer(
-        borderRadius: 24,
-        padding: const EdgeInsets.all(24),
-        blur: 25,
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
-            Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.glassBorderDark
-            : AppColors.glassBorderLight,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    iconColor.withValues(alpha: 0.2),
-                    iconColor.withValues(alpha: 0.05),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(icon, color: iconColor, size: 28),
+            NeuContainer(
+              padding: const EdgeInsets.all(10),
+              borderRadius: 12,
+              variant: NeuVariant.flat,
+              child: const Icon(Icons.cancel_outlined, color: AppColors.error, size: 22),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(width: 12),
             Text(
-              title,
-              style: AppTextStyles.headlineSmall.copyWith(
+              'Cancel Appointment',
+              style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
               ),
-            ),
-            const SizedBox(height: 16),
-            content,
-            const SizedBox(height: 24),
-            Row(
-              children: actions
-                  .map((action) => Expanded(child: action))
-                  .expand((widget) => [widget, const SizedBox(width: 12)])
-                  .take(actions.length * 2 - 1)
-                  .toList(),
             ),
           ],
         ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to cancel this appointment?',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            NeuTextField(
+              controller: reasonController,
+              label: 'Cancellation Reason (optional)',
+              hint: 'Enter reason...',
+              maxLines: 3,
+              helper: 'This helps us improve our service',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'No',
+              style: AppTextStyles.labelLarge.copyWith(
+                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+              ),
+            ),
+          ),
+          NeuButton(
+            text: 'Yes, Cancel',
+            variant: NeuButtonVariant.destructive,
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              context.read<AppointmentBloc>().add(
+                AppointmentCancelRequested(
+                  appointment.id!,
+                  reasonController.text.trim(),
+                ),
+              );
+            },
+            icon: Icons.cancel_rounded,
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Individual appointment card - premium design
+/// Individual appointment card - neumorphic design
 class _AppointmentCard extends StatelessWidget {
   final Appointment appointment;
   final Pet? pet;
@@ -661,394 +573,303 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final statusColor = _getStatusColor(appointment.status);
     final isUpcoming = appointment.isUpcoming;
     final speciesColor = _getSpeciesColor(pet?.species);
     final speciesIcon = _getSpeciesIcon(pet?.species);
+    final textPrimary = isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
 
-    return ScaleOnTap(
+    return NeuCard(
       onTap: onTap,
-      child: GlassContainer(
-        borderRadius: 20,
-        padding: const EdgeInsets.all(18),
-        blur: 15,
-        margin: const EdgeInsets.only(bottom: 14),
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-            Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderColor: statusColor.withValues( alpha: isUpcoming ? 0.3 : 0.15),
-        borderWidth: 1.5,
-        boxShadow: isUpcoming
-            ? [
-                BoxShadow(
-                  color: statusColor.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row with status and time
-            Row(
-              children: [
-                // Status indicator dot
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: statusColor.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Date & time
-                Expanded(
-                  child: Text(
-                    _formatDateTime(appointment.scheduledAt),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                // Status chip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        statusColor.withValues(alpha: 0.2),
-                        statusColor.withValues(alpha: 0.08),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                  ),
-                  child: Text(
-                    appointment.status.displayName,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: statusColor,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Pet info
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        speciesColor.withValues(alpha: 0.25),
-                        speciesColor.withValues(alpha: 0.1),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(speciesIcon, color: speciesColor, size: 24),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pet != null ? pet!.name : 'Pet ID: ${appointment.petId}',
-                        style: AppTextStyles.titleSmall.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (pet != null) ...[
-                        Text(
-                          '${pet!.species.displayName}${pet!.breed != null ? ' • ${pet!.breed}' : ''}',
-                          style: AppTextStyles.bodySmall.subtle,
-                        ),
-                      ] else if (appointment.veterinarianId > 0) ...[
-                        Text(
-                          'Dr. ID: ${appointment.veterinarianId}',
-                          style: AppTextStyles.bodySmall.subtle,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            if (appointment.reason != null) ...[
-              const SizedBox(height: 16),
+      borderRadius: 20,
+      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 14),
+      borderColor: statusColor.withValues(alpha: isUpcoming ? 0.35 : 0.2),
+      borderWidth: 1.5,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row with status and time
+          Row(
+            children: [
+              // Status indicator dot
               Container(
-                padding: const EdgeInsets.all(14),
+                width: 12,
+                height: 12,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                      Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.medical_services_outlined,
-                        size: 18,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        appointment.reason!,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: statusColor.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      spreadRadius: 1,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 12),
+              // Date & time
+              Expanded(
+                child: Text(
+                  _formatDateTime(appointment.scheduledAt),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: textPrimary,
+                  ),
+                ),
+              ),
+              // Status chip
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  appointment.status.displayName,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ],
+          ),
 
-            // Duration - only show for vet/staff
-            if (isVetOrStaff) ...[
-              const SizedBox(height: 14),
-              Row(
+          const SizedBox(height: 16),
+
+          // Pet info
+          Row(
+            children: [
+              NeuContainer(
+                padding: const EdgeInsets.all(12),
+                borderRadius: 14,
+                variant: NeuVariant.flat,
+                child: Icon(speciesIcon, color: speciesColor, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pet != null ? pet!.name : 'Pet ID: ${appointment.petId}',
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: textPrimary,
+                      ),
+                    ),
+                    if (pet != null) ...[
+                      Text(
+                        '${pet!.species.displayName}${pet!.breed != null ? ' • ${pet!.breed}' : ''}',
+                        style: AppTextStyles.bodySmall.subtle,
+                      ),
+                    ] else if (appointment.veterinarianId > 0) ...[
+                      Text(
+                        'Dr. ID: ${appointment.veterinarianId}',
+                        style: AppTextStyles.bodySmall.subtle,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          if (appointment.reason != null) ...[
+            const SizedBox(height: 16),
+            NeuContainer(
+              padding: const EdgeInsets.all(14),
+              borderRadius: 14,
+              variant: NeuVariant.flat,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.textHint.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      Icons.timer_outlined,
-                      size: 16,
-                      color: AppColors.textSecondary,
+                    child: const Icon(
+                      Icons.medical_services_outlined,
+                      size: 18,
+                      color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${appointment.durationMinutes} min',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      appointment.reason!,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
+          ],
 
-            // Action buttons for upcoming appointments - role-based
-            if (isUpcoming &&
-                appointment.status != AppointmentStatus.cancelled &&
-                appointment.status != AppointmentStatus.noShow) ...[
-              const SizedBox(height: 16),
-              Container(
-                height: 1,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Theme.of(context).colorScheme.outlineVariant,
-                      Colors.transparent,
-                    ],
+          // Duration - only show for vet/staff
+          if (isVetOrStaff) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                NeuContainer(
+                  padding: const EdgeInsets.all(6),
+                  borderRadius: 8,
+                  variant: NeuVariant.flat,
+                  child: const Icon(
+                    Icons.timer_outlined,
+                    size: 16,
+                    color: AppColors.textSecondary,
                   ),
                 ),
+                const SizedBox(width: 10),
+                Text(
+                  '${appointment.durationMinutes} min',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // Action buttons for upcoming appointments - role-based
+          if (isUpcoming &&
+              appointment.status != AppointmentStatus.cancelled &&
+              appointment.status != AppointmentStatus.noShow) ...[
+            const SizedBox(height: 16),
+            Container(
+              height: 1,
+              color: isDark ? AppColors.dividerDark : AppColors.divider,
+            ),
+            const SizedBox(height: 16),
+            if (isVetOrStaff) ...[
+              // Vet/Staff actions: Check In, Start, Complete, Cancel, View
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  if (onCheckIn != null)
+                    NeuButton(
+                      text: 'Check In',
+                      onPressed: onCheckIn,
+                      variant: NeuButtonVariant.outline,
+                      icon: Icons.check_circle_outline_rounded,
+                      size: NeuButtonSize.small,
+                      expanded: true,
+                    ),
+                  if (appointment.status == AppointmentStatus.checkedIn)
+                    NeuButton(
+                      text: 'Start',
+                      onPressed: () {
+                        context.read<AppointmentBloc>().add(
+                          AppointmentStartRequested(appointment.id!),
+                        );
+                      },
+                      variant: NeuButtonVariant.outline,
+                      icon: Icons.play_arrow_outlined,
+                      size: NeuButtonSize.small,
+                      expanded: true,
+                    ),
+                  if (appointment.status == AppointmentStatus.inProgress)
+                    NeuButton(
+                      text: 'Complete',
+                      onPressed: () {
+                        context.read<AppointmentBloc>().add(
+                          AppointmentCompleteRequested(appointment.id!),
+                        );
+                      },
+                      variant: NeuButtonVariant.outline,
+                      icon: Icons.check_circle_outlined,
+                      size: NeuButtonSize.small,
+                      expanded: true,
+                    ),
+                  if (onCancel != null)
+                    NeuButton(
+                      text: 'Cancel',
+                      onPressed: onCancel,
+                      variant: NeuButtonVariant.ghost,
+                      icon: Icons.cancel_outlined,
+                      size: NeuButtonSize.small,
+                      expanded: true,
+                    ),
+                  NeuButton(
+                    text: 'View',
+                    onPressed: onTap,
+                    variant: NeuButtonVariant.ghost,
+                    icon: Icons.visibility_outlined,
+                    size: NeuButtonSize.small,
+                    expanded: true,
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              if (isVetOrStaff) ...[
-                // Vet/Staff actions: Check In, Start, Complete, Cancel, View
-                Row(
-                  children: [
-                    if (onCheckIn != null) ...[
-                      Expanded(
-                        child: CpButton(
-                          text: 'Check In',
-                          onPressed: onCheckIn,
-                          variant: ButtonVariant.outline,
-                          icon: Icons.check_circle_outline_rounded,
-                          size: ButtonSize.medium,
-                          textStyle: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    if (appointment.status == AppointmentStatus.checkedIn) ...[
-                      Expanded(
-                        child: CpButton(
-                          text: 'Start',
-                          onPressed: () {
-                            context.read<AppointmentBloc>().add(
-                              AppointmentStartRequested(appointment.id!),
-                            );
-                          },
-                          variant: ButtonVariant.outline,
-                          icon: Icons.play_arrow_outlined,
-                          size: ButtonSize.medium,
-                          textStyle: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.tertiary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    if (appointment.status == AppointmentStatus.inProgress) ...[
-                      Expanded(
-                        child: CpButton(
-                          text: 'Complete',
-                          onPressed: () {
-                            context.read<AppointmentBloc>().add(
-                              AppointmentCompleteRequested(appointment.id!),
-                            );
-                          },
-                          variant: ButtonVariant.outline,
-                          icon: Icons.check_circle_outlined,
-                          size: ButtonSize.medium,
-                          textStyle: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    if (onCancel != null) ...[
-                      Expanded(
-                        child: CpButton(
+            ] else ...[
+              // Pet Owner actions: Cancel, View only
+              Row(
+                children: [
+                  if (onCancel != null) ...[
+                    Expanded(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: NeuButton(
                           text: 'Cancel',
                           onPressed: onCancel,
-                          variant: ButtonVariant.outline,
+                          variant: NeuButtonVariant.outline,
                           icon: Icons.cancel_outlined,
-                          size: ButtonSize.medium,
-                          textStyle: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.error,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    Expanded(
-                      child: CpButton(
-                        text: 'View',
-                        onPressed: onTap,
-                        variant: ButtonVariant.ghost,
-                        icon: Icons.visibility_outlined,
-                        size: ButtonSize.medium,
-                        textStyle: AppTextStyles.labelMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
+                          size: NeuButtonSize.medium,
+                          expanded: true,
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
                   ],
-                ),
-              ] else ...[
-                // Pet Owner actions: Cancel, View only
-                Row(
-                  children: [
-                    if (onCancel != null) ...[
-                      Expanded(
-                        child: CpButton(
-                          text: 'Cancel',
-                          onPressed: onCancel,
-                          variant: ButtonVariant.outline,
-                          icon: Icons.cancel_outlined,
-                          size: ButtonSize.medium,
-                          textStyle: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.error,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    Expanded(
-                      child: CpButton(
+                  Expanded(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: NeuButton(
                         text: 'View',
                         onPressed: onTap,
-                        variant: ButtonVariant.primary,
+                        variant: NeuButtonVariant.primary,
                         icon: Icons.visibility_outlined,
-                        size: ButtonSize.medium,
+                        size: NeuButtonSize.medium,
                         expanded: true,
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ] else if (!isUpcoming) ...[
-              const SizedBox(height: 16),
-              Container(
-                height: 1,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Theme.of(context).colorScheme.outlineVariant,
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: CpButton(
-                      text: 'View Details',
-                      onPressed: onTap,
-                      variant: ButtonVariant.primary,
-                      icon: Icons.visibility_outlined,
-                      size: ButtonSize.medium,
-                      expanded: true,
-                    ),
                   ),
                 ],
               ),
             ],
+          ] else if (!isUpcoming) ...[
+            const SizedBox(height: 16),
+            Container(
+              height: 1,
+              color: isDark ? AppColors.dividerDark : AppColors.divider,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: NeuButton(
+                text: 'View Details',
+                onPressed: onTap,
+                variant: NeuButtonVariant.primary,
+                icon: Icons.visibility_outlined,
+                size: NeuButtonSize.medium,
+                expanded: true,
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

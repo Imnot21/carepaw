@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart' as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
@@ -10,19 +10,18 @@ import 'package:carepaw/features/notifications/presentation/pages/notification_s
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
 import 'package:carepaw/core/widgets/common/cp_empty_state.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
-/// Notification list page with premium design
+/// Notification list page with neumorphic design
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
 
@@ -54,7 +53,6 @@ class _NotificationListPageState extends State<NotificationListPage>
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      // Load more notifications
       final state = context.read<NotificationBloc>().state;
       if (state is NotificationsLoaded && !state.hasReachedMax) {
         context.read<NotificationBloc>().add(
@@ -63,6 +61,8 @@ class _NotificationListPageState extends State<NotificationListPage>
       }
     }
   }
+
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
@@ -78,20 +78,14 @@ class _NotificationListPageState extends State<NotificationListPage>
                             user.role == UserRole.admin;
 
         return Scaffold(
-          body: AnimatedGradientBackground(
-            colors: [
-              AppColors.primary.withValues(alpha: 0.06),
-              AppColors.secondary.withValues(alpha: 0.04),
-              AppColors.surface,
+          backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+          body: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              _buildAppBar(),
+              _buildTabBar(),
+              _buildTabContent(),
             ],
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                _buildAppBar(),
-                _buildTabBar(isVetOrStaff),
-                _buildTabContent(isVetOrStaff),
-              ],
-            ),
           ),
           floatingActionButton: isVetOrStaff ? _buildFloatingActionButton() : null,
         );
@@ -106,6 +100,8 @@ class _NotificationListPageState extends State<NotificationListPage>
       pinned: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
         title: Column(
@@ -118,32 +114,27 @@ class _NotificationListPageState extends State<NotificationListPage>
                   'Notifications',
                   style: AppTextStyles.headlineMedium.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 12),
                 BlocBuilder<NotificationBloc, NotificationState>(
                   builder: (context, state) {
                     if (state is UnreadCountLoaded && state.count > 0) {
-                      return PulsingGlow(
-                        glowColor: AppColors.primary,
-                        maxRadius: 24,
-                        duration: const Duration(seconds: 2),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: AppColors.gradientPrimary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${state.count}',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.textOnPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${state.count}',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.textOnPrimary,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       );
@@ -157,27 +148,15 @@ class _NotificationListPageState extends State<NotificationListPage>
             Text(
               'Stay updated with your clinic',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
               ),
             ),
           ],
         ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface.withValues(alpha: 0.9),
-                AppColors.surface.withValues(alpha: 0.7),
-              ],
-            ),
-          ),
-        ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.tune_rounded),
+        NeuIconButton(
+          icon: Icons.tune_rounded,
           onPressed: _navigateToSettings,
           tooltip: 'Notification Settings',
         ),
@@ -186,8 +165,8 @@ class _NotificationListPageState extends State<NotificationListPage>
           builder: (context, state) {
             if (state is NotificationsLoaded &&
                 state.notifications.any((n) => !n.isRead)) {
-              return IconButton(
-                icon: const Icon(Icons.done_all_rounded),
+              return NeuIconButton(
+                icon: Icons.done_all_rounded,
                 onPressed: () {
                   context.read<NotificationBloc>().add(const MarkAllAsRead());
                 },
@@ -202,50 +181,25 @@ class _NotificationListPageState extends State<NotificationListPage>
     );
   }
 
-  Widget _buildTabBar(bool isVetOrStaff) {
+  Widget _buildTabBar() {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _NotificationTabBarDelegate(
         tabController: _tabController,
-        tabs: isVetOrStaff
-            ? const [
-                Tab(text: 'All'),
-                Tab(text: 'Unread'),
-                Tab(text: 'Appointments'),
-                Tab(text: 'Queue'),
-                Tab(text: 'Inventory'),
-                Tab(text: 'System'),
-              ]
-            : const [
-                Tab(text: 'All'),
-                Tab(text: 'Unread'),
-                Tab(text: 'Appointments'),
-                Tab(text: 'Queue'),
-              ],
-        color: AppColors.primary,
       ),
     );
   }
 
-  Widget _buildTabContent(bool isVetOrStaff) {
+  Widget _buildTabContent() {
     return SliverFillRemaining(
       child: TabBarView(
         controller: _tabController,
-        children: isVetOrStaff
-            ? [
-                _buildNotificationList(null),
-                _buildUnreadList(),
-                _buildNotificationsByType(domain.NotificationType.appointmentReminder),
-                _buildNotificationsByType(domain.NotificationType.queueUpdate),
-                _buildNotificationsByType(domain.NotificationType.inventoryLow),
-                _buildNotificationsByType(domain.NotificationType.system),
-              ]
-            : [
-                _buildNotificationList(null),
-                _buildUnreadList(),
-                _buildNotificationsByType(domain.NotificationType.appointmentReminder),
-                _buildNotificationsByType(domain.NotificationType.queueUpdate),
-              ],
+        children: [
+          _buildNotificationList(null),
+          _buildUnreadList(),
+          _buildNotificationsByType(domain.NotificationType.appointmentReminder),
+          _buildNotificationsByType(domain.NotificationType.queueUpdate),
+        ],
       ),
     );
   }
@@ -254,7 +208,7 @@ class _NotificationListPageState extends State<NotificationListPage>
     return BlocBuilder<NotificationBloc, NotificationState>(
       builder: (context, state) {
         if (state is NotificationLoading) {
-          return const Center(child: CpLoader(size: 48));
+          return const Center(child: NeuCircularProgress());
         }
 
         if (state is NotificationError) {
@@ -316,7 +270,7 @@ class _NotificationListPageState extends State<NotificationListPage>
               if (index >= notifications.length) {
                 return const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(child: CpLoader(size: 24)),
+                  child: Center(child: NeuCircularProgress(size: 24)),
                 );
               }
               final notification = notifications[index];
@@ -350,7 +304,7 @@ class _NotificationListPageState extends State<NotificationListPage>
             },
           );
         }
-        return const Center(child: CpLoader(size: 48));
+        return const Center(child: NeuCircularProgress());
       },
     );
   }
@@ -376,7 +330,7 @@ class _NotificationListPageState extends State<NotificationListPage>
           );
         }
         if (state is NotificationLoading) {
-          return const Center(child: CpLoader(size: 48));
+          return const Center(child: NeuCircularProgress());
         }
         return CpEmptyState(
           icon: _getTypeIcon(type),
@@ -399,238 +353,205 @@ class _NotificationListPageState extends State<NotificationListPage>
     final isUnread = !notification.isRead;
     final typeColor = _getTypeColor(notification.type);
 
-    return FloatingAnimation(
-      delay: Duration(milliseconds: 50 * (index % 10)),
-      child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        borderRadius: 16,
-        blur: 10,
-        borderColor: isUnread
-            ? typeColor.withValues(alpha: 0.3)
-            : AppColors.divider.withValues(alpha: 0.2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Type icon with background
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: _getTypeGradient(notification.type),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        _getTypeIcon(notification.type),
-                        size: 22,
-                        color: AppColors.textOnPrimary,
-                      ),
-                    ),
-                    if (isUnread && highlightUnread)
-                      PulsingGlow(
-                        glowColor: AppColors.primary,
-                        maxRadius: 52,
-                        duration: const Duration(seconds: 2),
-                        child: Container(),
-                      ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-
-                // Title and time
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              notification.title,
-                              style: AppTextStyles.titleMedium.copyWith(
-                                fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        formatRelativeTime(notification.createdAt),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+    return NeuCard(
+      padding: const EdgeInsets.all(16),
+      variant: isUnread ? NeuVariant.raised : NeuVariant.raised,
+      borderColor: isUnread ? typeColor.withValues(alpha: 0.3) : null,
+      borderWidth: isUnread ? 1 : 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Type icon with background
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  NeuAvatar(
+                    radius: 22,
+                    icon: _getTypeIcon(notification.type),
+                    backgroundColor: typeColor,
+                    foregroundColor: AppColors.textOnPrimary,
                   ),
-                ),
-
-                // Unread indicator
-                if (isUnread)
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Body preview
-            Text(
-              notification.message,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isUnread ? AppColors.textPrimary : AppColors.textSecondary,
-                height: 1.4,
+                ],
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+              const SizedBox(width: 12),
 
-            // Data preview if available
-            if (notification.referenceType != null) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
+              // Title and time
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${notification.referenceType}: ${notification.referenceId}',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          fontFamily: 'monospace',
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            notification.title,
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                              color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      formatRelativeTime(notification.createdAt),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
                       ),
                     ),
                   ],
+                ),
+              ),
+
+              // Unread indicator
+              if (isUnread)
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Body preview
+          Text(
+            notification.message,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: isUnread
+                  ? (_isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary)
+                  : (_isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
+              height: 1.4,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+
+          // Data preview if available
+          if (notification.referenceType != null) ...[
+            const SizedBox(height: 8),
+            NeuCard(
+              padding: const EdgeInsets.all(10),
+              variant: NeuVariant.inset,
+              borderRadius: 8,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${notification.referenceType}: ${notification.referenceId}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        fontFamily: 'monospace',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 12),
+
+          // Action buttons
+          Row(
+            children: [
+              if (isUnread)
+                Expanded(
+                  child: NeuButton(
+                    text: 'Mark Read',
+                    variant: NeuButtonVariant.primary,
+                    icon: Icons.mark_email_read_rounded,
+                    size: NeuButtonSize.small,
+                    onPressed: () {
+                      context.read<NotificationBloc>().add(
+                        MarkAsRead(notification.id!),
+                      );
+                    },
+                    expanded: true,
+                  ),
+                )
+              else
+                Expanded(
+                  child: NeuButton(
+                    text: 'View Details',
+                    variant: NeuButtonVariant.secondary,
+                    icon: Icons.visibility_rounded,
+                    size: NeuButtonSize.small,
+                    onPressed: () => _navigateToDetail(notification),
+                    expanded: true,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: NeuButton(
+                  text: isUnread ? 'Dismiss' : 'Delete',
+                  variant: isUnread ? NeuButtonVariant.outline : NeuButtonVariant.outline,
+                  icon: isUnread ? Icons.close_rounded : Icons.delete_outline_rounded,
+                  size: NeuButtonSize.small,
+                  onPressed: () {
+                    if (isUnread) {
+                      context.read<NotificationBloc>().add(
+                        MarkAsRead(notification.id!),
+                      );
+                    } else {
+                      _showDeleteConfirmation(notification.id!);
+                    }
+                  },
+                  expanded: true,
                 ),
               ),
             ],
-
-            const SizedBox(height: 12),
-
-            // Action buttons
-            Row(
-              children: [
-                if (isUnread)
-                  Expanded(
-                    child: CpButton(
-                      text: 'Mark Read',
-                      variant: ButtonVariant.primary,
-                      icon: Icons.mark_email_read_rounded,
-                      size: ButtonSize.small,
-                      onPressed: () {
-                        context.read<NotificationBloc>().add(
-                          MarkAsRead(notification.id!),
-                        );
-                      },
-                      expanded: true,
-                      gradient: AppColors.gradientPrimary,
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: CpButton(
-                      text: 'View Details',
-                      variant: ButtonVariant.secondary,
-                      icon: Icons.visibility_rounded,
-                      size: ButtonSize.small,
-                      onPressed: () => _navigateToDetail(notification),
-                      expanded: true,
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CpButton(
-                    text: isUnread ? 'Dismiss' : 'Delete',
-                    variant: ButtonVariant.outline,
-                    icon: isUnread ? Icons.close_rounded : Icons.delete_outline_rounded,
-                    size: ButtonSize.small,
-                    onPressed: () {
-                      if (isUnread) {
-                        context.read<NotificationBloc>().add(
-                          MarkAsRead(notification.id!),
-                        );
-                      } else {
-                        _showDeleteConfirmation(notification.id!);
-                      }
-                    },
-                    expanded: true,
-                    foregroundColor: isUnread ? AppColors.textSecondary : AppColors.error,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+    ).animate().fadeIn(
+      duration: 300.ms,
+      delay: Duration(milliseconds: 50 * (index % 10)),
     );
   }
 
   Widget _buildFloatingActionButton() {
     return FloatingActionButton.extended(
       onPressed: () => _showCreateNotificationDialog(),
-      icon: const Icon(Icons.add_rounded),
-      label: const Text('Test Notification'),
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.textOnPrimary,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      icon: const Icon(Icons.add_rounded),
+      label: const Text('Test Notification'),
     );
-  }
-
-  LinearGradient _getTypeGradient(domain.NotificationType type) {
-    switch (type) {
-      case domain.NotificationType.appointmentReminder:
-        return const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]);
-      case domain.NotificationType.queueUpdate:
-        return const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]);
-      case domain.NotificationType.prescriptionReady:
-        return LinearGradient(colors: [AppColors.categorySupply, AppColors.categorySupplyDark]);
-      case domain.NotificationType.inventoryLow:
-        return const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]);
-      case domain.NotificationType.system:
-        return const LinearGradient(colors: [Color(0xFF6B7280), Color(0xFF4B5563)]);
-    }
   }
 
   Color _getTypeColor(domain.NotificationType type) {
     switch (type) {
       case domain.NotificationType.appointmentReminder:
-        return const Color(0xFF3B82F6);
+        return AppColors.primary;
       case domain.NotificationType.queueUpdate:
-        return const Color(0xFFF59E0B);
+        return AppColors.warning;
       case domain.NotificationType.prescriptionReady:
         return AppColors.categorySupply;
       case domain.NotificationType.inventoryLow:
-        return const Color(0xFF10B981);
+        return AppColors.success;
       case domain.NotificationType.system:
-        return const Color(0xFF6B7280);
+        return AppColors.textSecondary;
     }
   }
 
@@ -782,27 +703,29 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
 
 class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabController tabController;
-  final List<Tab> tabs;
-  final Color color;
 
   _NotificationTabBarDelegate({
     required this.tabController,
-    required this.tabs,
-    required this.color,
   });
 
   @override
   Widget build(
     BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      color: AppColors.surface.withValues(alpha: 0.95),
+      color: isDark ? AppColors.surfaceContainerDark : AppColors.surface,
       child: TabBar(
         controller: tabController,
-        tabs: tabs,
-        indicatorColor: color,
+        tabs: const [
+          Tab(text: 'All'),
+          Tab(text: 'Unread'),
+          Tab(text: 'Appointments'),
+          Tab(text: 'Queue'),
+        ],
+        indicatorColor: AppColors.primary,
         indicatorWeight: 3,
-        labelColor: color,
-        unselectedLabelColor: AppColors.textSecondary,
+        labelColor: AppColors.primary,
+        unselectedLabelColor: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
         labelStyle: AppTextStyles.labelLarge.copyWith(
           fontWeight: FontWeight.w600,
         ),
@@ -831,64 +754,56 @@ class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
 class _NotLoggedInView extends StatelessWidget {
   const _NotLoggedInView();
 
+  bool _isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.06),
-          AppColors.secondary.withValues(alpha: 0.04),
-          AppColors.surface,
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.primary,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.primary,
-                    ),
-                    child: Icon(
-                      Icons.notifications_rounded,
-                      size: 80,
-                      color: AppColors.textOnPrimary,
-                    ),
+      backgroundColor: _isDark(context) ? AppColors.backgroundDark : AppColors.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 160,
+                height: 160,
+                child: NeuContainer(
+                  borderRadius: 80,
+                  variant: NeuVariant.raised,
+                  color: AppColors.primary,
+                  child: const Icon(
+                    Icons.notifications_rounded,
+                    size: 80,
+                    color: AppColors.textOnPrimary,
                   ),
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Please log in to view notifications',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Please log in to view notifications',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: _isDark(context) ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Sign in to stay updated with your clinic',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to stay updated with your clinic',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: _isDark(context) ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Log In',
-                  onPressed: () => context.go('/login'),
-                  icon: Icons.login_rounded,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Log In',
+                onPressed: () => Navigator.of(context).pushNamed('/login'),
+                icon: Icons.login_rounded,
+              ),
+            ],
           ),
         ),
       ),

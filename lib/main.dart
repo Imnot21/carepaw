@@ -14,6 +14,14 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
+import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
+import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart';
+import 'package:carepaw/features/medical_records/domain/repositories/medical_record_repository.dart';
+import 'package:carepaw/features/medical_records/domain/repositories/vaccination_repository.dart';
+import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
+import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
+import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'app/router/app_router.dart';
 import 'app/theme/app_theme.dart';
 
@@ -129,8 +137,41 @@ class _CarePawAppState extends State<CarePawApp> {
 
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<AuthRepository>(
+          create: (context) => getIt<AuthRepository>(),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (context) => getIt<UserRepository>(),
+        ),
         RepositoryProvider<PetRepository>(
           create: (context) => getIt<PetRepository>(),
+        ),
+        RepositoryProvider<AppointmentRepository>(
+          create: (context) => getIt<AppointmentRepository>(),
+        ),
+        RepositoryProvider<QueueRepository>(
+          create: (context) => getIt<QueueRepository>(),
+        ),
+        RepositoryProvider<MedicalRecordRepository>(
+          create: (context) => getIt<MedicalRecordRepository>(),
+        ),
+        RepositoryProvider<VaccinationRepository>(
+          create: (context) => getIt<VaccinationRepository>(),
+        ),
+        RepositoryProvider<InventoryItemRepository>(
+          create: (context) => getIt<InventoryItemRepository>(),
+        ),
+        RepositoryProvider<InventoryBatchRepository>(
+          create: (context) => getIt<InventoryBatchRepository>(),
+        ),
+        RepositoryProvider<InventoryTransactionRepository>(
+          create: (context) => getIt<InventoryTransactionRepository>(),
+        ),
+        RepositoryProvider<ScanRecordRepository>(
+          create: (context) => getIt<ScanRecordRepository>(),
+        ),
+        RepositoryProvider<NotificationRepository>(
+          create: (context) => getIt<NotificationRepository>(),
         ),
       ],
       child: MultiBlocProvider(

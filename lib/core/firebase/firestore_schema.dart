@@ -19,6 +19,7 @@ class FirestoreSchema {
   static const String prescriptions = 'prescriptions';
   static const String queueEntries = 'queueEntries';
   static const String notifications = 'notifications';
+  static const String notificationPreferences = 'notificationPreferences';
   static const String scanRecords = 'scanRecords';
   static const String auditLogs = 'auditLogs';
 

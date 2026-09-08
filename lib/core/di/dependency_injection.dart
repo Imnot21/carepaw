@@ -15,25 +15,27 @@ import 'package:carepaw/core/sync/sync_engine.dart';
 import 'package:carepaw/core/sync/network_monitor.dart';
 import 'package:carepaw/core/sync/background_sync.dart';
 import 'package:carepaw/core/firebase/user_id_sequence.dart';
+import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/features/users/data/repositories/firestore_user_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
-import 'package:carepaw/features/pets/data/repositories/pet_repository_impl.dart';
+import 'package:carepaw/features/pets/data/repositories/firestore_pet_repository.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
-import 'package:carepaw/features/appointments/data/repositories/appointment_repository_impl.dart';
+import 'package:carepaw/features/appointments/data/repositories/firestore_appointment_repository.dart';
 import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart';
-import 'package:carepaw/features/queue/data/repositories/queue_repository_impl.dart';
+import 'package:carepaw/features/queue/data/repositories/firestore_queue_repository.dart';
 import 'package:carepaw/features/medical_records/domain/repositories/medical_record_repository.dart';
-import 'package:carepaw/features/medical_records/data/repositories/medical_record_repository_impl.dart';
-import 'package:carepaw/features/medical_records/data/repositories/vaccination_repository_impl.dart';
+import 'package:carepaw/features/medical_records/domain/repositories/vaccination_repository.dart';
+import 'package:carepaw/features/medical_records/data/repositories/firestore_medical_record_repository.dart';
+import 'package:carepaw/features/medical_records/data/repositories/firestore_vaccination_repository.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
-import 'package:carepaw/features/inventory/data/repositories/inventory_item_repository_impl.dart';
-import 'package:carepaw/features/inventory/data/repositories/inventory_batch_repository_impl.dart';
-import 'package:carepaw/features/inventory/data/repositories/inventory_transaction_repository_impl.dart';
+import 'package:carepaw/features/inventory/data/repositories/firestore_inventory_item_repository.dart';
+import 'package:carepaw/features/inventory/data/repositories/firestore_inventory_batch_repository.dart';
+import 'package:carepaw/features/inventory/data/repositories/firestore_inventory_transaction_repository.dart';
 import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
-import 'package:carepaw/features/scanning/data/repositories/scan_repository_impl.dart';
+import 'package:carepaw/features/scanning/data/repositories/firestore_scan_record_repository.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
-import 'package:carepaw/features/notifications/data/repositories/notification_repository_impl.dart';
+import 'package:carepaw/features/notifications/data/repositories/firestore_notification_repository.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -105,14 +107,114 @@ Future<void> configureDependencies() async {
     firebaseAuth: FirebaseAuth.instance,
     userIdSequence: getIt<UserIdSequence>(),
   ));
-  getIt.registerLazySingleton<PetRepository>(() => PetRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<AppointmentRepository>(() => AppointmentRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<QueueRepository>(() => QueueRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<MedicalRecordRepository>(() => MedicalRecordRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<VaccinationRepositoryImpl>(() => VaccinationRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<InventoryItemRepository>(() => InventoryItemRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<InventoryBatchRepository>(() => InventoryBatchRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<InventoryTransactionRepository>(() => InventoryTransactionRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<ScanRecordRepository>(() => ScanRecordRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
-  getIt.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(getIt<CarePawDatabase>(), syncRepo: getIt<SyncRepository>()));
+  // Pets
+  getIt.registerLazySingleton<PetRepository>(() => FirestorePetRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    petIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'petIds',
+    ),
+  ));
+
+  // Appointments
+  getIt.registerLazySingleton<AppointmentRepository>(() => FirestoreAppointmentRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    appointmentIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'appointmentIds',
+    ),
+    petRepository: getIt<PetRepository>(),
+    userRepository: getIt<UserRepository>(),
+  ));
+
+  // Queue
+  getIt.registerLazySingleton<QueueRepository>(() => FirestoreQueueRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    queueIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'queueIds',
+    ),
+    appointmentRepository: getIt<AppointmentRepository>(),
+    petRepository: getIt<PetRepository>(),
+    userRepository: getIt<UserRepository>(),
+  ));
+
+  // Medical Records
+  getIt.registerLazySingleton<MedicalRecordRepository>(() => FirestoreMedicalRecordRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    medicalRecordIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'medicalRecordIds',
+    ),
+    petRepository: getIt<PetRepository>(),
+    userRepository: getIt<UserRepository>(),
+    appointmentRepository: getIt<AppointmentRepository>(),
+  ));
+
+  // Vaccinations
+  getIt.registerLazySingleton<VaccinationRepository>(() => FirestoreVaccinationRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    vaccinationIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'vaccinationIds',
+    ),
+    petRepository: getIt<PetRepository>(),
+    userRepository: getIt<UserRepository>(),
+  ));
+
+  // Inventory Items
+  getIt.registerLazySingleton<InventoryItemRepository>(() => FirestoreInventoryItemRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    inventoryItemIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'inventoryItemIds',
+    ),
+  ));
+
+  // Inventory Batches
+  getIt.registerLazySingleton<InventoryBatchRepository>(() => FirestoreInventoryBatchRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    inventoryBatchIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'inventoryBatchIds',
+    ),
+    itemRepository: getIt<InventoryItemRepository>(),
+  ));
+
+  // Inventory Transactions
+  getIt.registerLazySingleton<InventoryTransactionRepository>(() => FirestoreInventoryTransactionRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    inventoryTransactionIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'inventoryTransactionIds',
+    ),
+  ));
+
+  // Scan Records
+  getIt.registerLazySingleton<ScanRecordRepository>(() => FirestoreScanRecordRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    scanRecordIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'scanRecordIds',
+    ),
+  ));
+
+  // Notifications
+  getIt.registerLazySingleton<NotificationRepository>(() => FirestoreNotificationRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    notificationIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'notificationIds',
+    ),
+  ));
 }

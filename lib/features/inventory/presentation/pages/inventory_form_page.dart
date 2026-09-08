@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_text_field.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
-/// Inventory form page with premium design
+/// Inventory form page with neumorphic design.
 class InventoryFormPage extends StatefulWidget {
   final InventoryItem? item;
 
@@ -36,6 +38,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
   bool _isLoading = false;
 
   bool get _isEditing => widget.item != null;
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -66,29 +69,6 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     _supplierController.dispose();
     _locationController.dispose();
     super.dispose();
-  }
-
-  LinearGradient _getCategoryGradient(InventoryCategory category) {
-    switch (category) {
-      case InventoryCategory.medicine:
-        return AppColors.gradientPrimary;
-      case InventoryCategory.vaccine:
-        return const LinearGradient(
-          colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
-        );
-      case InventoryCategory.supply:
-        return LinearGradient(
-          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
-        );
-      case InventoryCategory.equipment:
-        return LinearGradient(
-          colors: [AppColors.categoryEquipment, AppColors.categoryEquipmentDark],
-        );
-      case InventoryCategory.food:
-        return const LinearGradient(
-          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-        );
-    }
   }
 
   Color _getCategoryColor(InventoryCategory category) {
@@ -124,17 +104,12 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          _getCategoryColor(_selectedCategory).withValues(alpha: 0.08),
-          AppColors.surface,
+      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          _buildAppBar(),
+          _buildForm(),
         ],
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(),
-            _buildForm(),
-          ],
-        ),
       ),
       bottomNavigationBar: _buildBottomBar(),
     );
@@ -146,97 +121,70 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
       floating: false,
       pinned: true,
       backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-        onPressed: () => Navigator.pop(context),
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: NeuIconButton(
+          icon: Icons.arrow_back_ios_new_rounded,
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _getCategoryColor(_selectedCategory)
-                        .withValues(alpha: 0.3),
-                    _getCategoryColor(_selectedCategory)
-                        .withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              right: -30,
-              top: -30,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      _getCategoryColor(_selectedCategory)
-                          .withValues(alpha: 0.15),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 20,
-              child: Row(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      gradient: _getCategoryGradient(_selectedCategory),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: PremiumShadows.glow(context, _getCategoryColor(_selectedCategory)),
-                    ),
+        background: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: NeuContainer(
+                    borderRadius: 16,
+                    variant: NeuVariant.raised,
+                    color: _getCategoryColor(_selectedCategory),
+                    boxShadow: NeuShadow.color(
+                        context, _getCategoryColor(_selectedCategory),
+                        blur: 16, opacity: 0.3),
                     child: Icon(
                       _getCategoryIcon(_selectedCategory),
                       size: 32,
                       color: AppColors.textOnPrimary,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _isEditing ? 'Edit Item' : 'New Item',
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isEditing ? 'Edit Item' : 'New Item',
+                      style: AppTextStyles.headlineSmall.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: _isDark
+                            ? AppColors.textPrimaryOnDark
+                            : AppColors.textPrimary,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _isEditing
-                            ? 'Update inventory details'
-                            : 'Add a new inventory item',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _isEditing
+                          ? 'Update inventory details'
+                          : 'Add a new inventory item',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: _isDark
+                            ? AppColors.textSecondaryOnDark
+                            : AppColors.textSecondary,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -260,7 +208,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               // Name
               _buildSectionTitle('Item Name'),
               const SizedBox(height: 12),
-              CpTextField(
+              NeuTextField(
                 controller: _nameController,
                 hint: 'Enter item name',
                 prefixIcon: const Icon(Icons.inventory_2_rounded),
@@ -282,7 +230,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       children: [
                         _buildSectionTitle('Unit'),
                         const SizedBox(height: 12),
-                        CpTextField(
+                        NeuTextField(
                           controller: _unitController,
                           hint: 'e.g., tablets, ml, units',
                           prefixIcon: const Icon(Icons.straighten_rounded),
@@ -303,11 +251,14 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       children: [
                         _buildSectionTitle('Min Stock'),
                         const SizedBox(height: 12),
-                        CpTextField(
+                        NeuTextField(
                           controller: _minStockController,
                           hint: '0',
                           keyboardType: TextInputType.number,
                           prefixIcon: const Icon(Icons.warning_amber_rounded),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Required';
@@ -335,11 +286,14 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       children: [
                         _buildSectionTitle('Max Stock (optional)'),
                         const SizedBox(height: 12),
-                        CpTextField(
+                        NeuTextField(
                           controller: _maxStockController,
                           hint: 'e.g., 1000',
                           keyboardType: TextInputType.number,
                           prefixIcon: const Icon(Icons.flag_rounded),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           validator: (value) {
                             if (value != null && value.trim().isNotEmpty) {
                               final num = double.tryParse(value);
@@ -364,11 +318,14 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       children: [
                         _buildSectionTitle('Unit Cost (optional)'),
                         const SizedBox(height: 12),
-                        CpTextField(
+                        NeuTextField(
                           controller: _unitCostController,
                           hint: 'e.g., 12.50',
                           keyboardType: TextInputType.number,
                           prefixIcon: const Icon(Icons.attach_money_rounded),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                          ],
                           validator: (value) {
                             if (value != null && value.trim().isNotEmpty) {
                               final num = double.tryParse(value);
@@ -395,7 +352,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       children: [
                         _buildSectionTitle('Supplier (optional)'),
                         const SizedBox(height: 12),
-                        CpTextField(
+                        NeuTextField(
                           controller: _supplierController,
                           hint: 'Supplier name',
                           prefixIcon: const Icon(Icons.local_shipping_rounded),
@@ -410,7 +367,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       children: [
                         _buildSectionTitle('Location (optional)'),
                         const SizedBox(height: 12),
-                        CpTextField(
+                        NeuTextField(
                           controller: _locationController,
                           hint: 'Storage location',
                           prefixIcon: const Icon(Icons.location_on_rounded),
@@ -423,12 +380,13 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               const SizedBox(height: 32),
 
               // Preview card
-              GlassContainer(
+              NeuContainer(
                 padding: const EdgeInsets.all(16),
                 borderRadius: 16,
-                blur: 10,
+                variant: NeuVariant.raised,
                 borderColor:
                     _getCategoryColor(_selectedCategory).withValues(alpha: 0.2),
+                borderWidth: 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -436,23 +394,29 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       'Preview',
                       style: AppTextStyles.labelLarge.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: _isDark
+                            ? AppColors.textSecondaryOnDark
+                            : AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Container(
+                        SizedBox(
                           width: 48,
                           height: 48,
-                          decoration: BoxDecoration(
-                            gradient: _getCategoryGradient(_selectedCategory),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            _getCategoryIcon(_selectedCategory),
-                            size: 24,
-                            color: AppColors.textOnPrimary,
+                          child: NeuContainer(
+                            borderRadius: 12,
+                            variant: NeuVariant.raised,
+                            color: _getCategoryColor(_selectedCategory),
+                            boxShadow: NeuShadow.color(
+                                context, _getCategoryColor(_selectedCategory),
+                                blur: 12, opacity: 0.28),
+                            child: Icon(
+                              _getCategoryIcon(_selectedCategory),
+                              size: 24,
+                              color: AppColors.textOnPrimary,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -466,13 +430,17 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                                     : _nameController.text,
                                 style: AppTextStyles.titleMedium.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: _isDark
+                                      ? AppColors.textPrimaryOnDark
+                                      : AppColors.textPrimary,
                                 ),
                               ),
                               Text(
                                 '${_selectedCategory.displayName} • ${_unitController.text.isEmpty ? 'unit' : _unitController.text}',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: _isDark
+                                      ? AppColors.textSecondaryOnDark
+                                      : AppColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -515,16 +483,16 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
       title,
       style: AppTextStyles.labelLarge.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
       ),
     );
   }
 
   Widget _buildCategorySelector() {
-    return GlassContainer(
+    return NeuContainer(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      blur: 10,
+      variant: NeuVariant.raised,
       child: Column(
         children: [
           Wrap(
@@ -532,54 +500,12 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
             runSpacing: 12,
             children: InventoryCategory.values.map((category) {
               final isSelected = _selectedCategory == category;
-              return GestureDetector(
+              return NeuChip(
+                label: category.displayName,
+                icon: _getCategoryIcon(category),
+                selected: isSelected,
+                selectedColor: _getCategoryColor(category),
                 onTap: () => setState(() => _selectedCategory = category),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? _getCategoryGradient(category)
-                        : LinearGradient(
-                            colors: [
-                              AppColors.surfaceContainerHighest,
-                              AppColors.surfaceContainerHighest,
-                            ],
-                          ),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.transparent
-                          : AppColors.border.withValues(alpha: 0.3),
-                    ),
-                    boxShadow: isSelected
-                        ? PremiumShadows.glow(context, _getCategoryColor(category))
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _getCategoryIcon(category),
-                        size: 20,
-                        color: isSelected
-                            ? AppColors.textOnPrimary
-                            : _getCategoryColor(category),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        category.displayName,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? AppColors.textOnPrimary
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               );
             }).toList(),
           ),
@@ -592,10 +518,11 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: _isDark ? AppColors.surfaceDarkMode : AppColors.surface,
         border: Border(
           top: BorderSide(
-            color: AppColors.border.withValues(alpha: 0.2),
+            color: _isDark ? AppColors.borderDark : AppColors.border,
+            width: 0.5,
           ),
         ),
         boxShadow: [
@@ -610,9 +537,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
         child: Row(
           children: [
             Expanded(
-              child: CpButton(
+              child: NeuButton(
                 text: _isEditing ? 'Cancel' : 'Back',
-                variant: ButtonVariant.ghost,
+                variant: NeuButtonVariant.ghost,
                 onPressed: _isLoading ? null : () => Navigator.pop(context),
                 expanded: true,
               ),
@@ -620,16 +547,15 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
             const SizedBox(width: 12),
             Expanded(
               flex: 2,
-              child: CpButton(
+              child: NeuButton(
                 text: _isLoading
                     ? 'Saving...'
                     : (_isEditing ? 'Update Item' : 'Create Item'),
-                variant: ButtonVariant.primary,
+                variant: NeuButtonVariant.primary,
                 icon: _isEditing ? Icons.save_rounded : Icons.add_rounded,
                 isLoading: _isLoading,
                 onPressed: _isLoading ? null : _saveItem,
                 expanded: true,
-                gradient: _getCategoryGradient(_selectedCategory),
               ),
             ),
           ],

@@ -105,6 +105,7 @@ abstract class RouteNames {
   static const String vetDashboard = 'vet-dashboard';
   static const String vetPatients = 'vet-patients';
   static const String vetPatientDetail = 'vet-patient-detail';
+  static const String vetRecords = 'vet-records';
 
   static const String adminDashboard = 'admin-dashboard';
   static const String adminUsers = 'admin-users';

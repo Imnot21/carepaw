@@ -6,7 +6,7 @@ import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
-import 'package:carepaw/features/appointments/data/repositories/appointment_repository_impl.dart';
+import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/core/widgets/common/cp_button.dart';
 import 'package:carepaw/core/widgets/common/cp_loader.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -880,7 +880,7 @@ class AppointmentDetailPageWithBloc extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AppointmentBloc(
-        repository: getIt<AppointmentRepositoryImpl>(),
+        repository: getIt<AppointmentRepository>(),
         authBloc: context.read<AuthBloc>(),
       )..add(AppointmentDetailLoadRequested(appointmentId)),
       child: AppointmentDetailPage(appointmentId: appointmentId),

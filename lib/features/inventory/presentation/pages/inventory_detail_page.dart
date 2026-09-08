@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
@@ -8,19 +9,18 @@ import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dar
 import 'package:carepaw/features/inventory/presentation/pages/inventory_form_page.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/transaction_card.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
 import 'package:carepaw/core/widgets/common/cp_empty_state.dart';
-import 'package:carepaw/core/widgets/common/cp_text_field.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
-/// Inventory detail page with premium design
+/// Inventory detail page with neumorphic design.
 class InventoryDetailPage extends StatefulWidget {
   final InventoryItem item;
 
@@ -33,6 +33,8 @@ class InventoryDetailPage extends StatefulWidget {
 class _InventoryDetailPageState extends State<InventoryDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -60,19 +62,14 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     final isOutOfStock = item.isOutOfStock;
 
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          _getCategoryColor(item.category).withValues(alpha: 0.08),
-          AppColors.surface,
+      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          _buildAppBar(item, isLowStock, isOutOfStock),
+          _buildStockOverview(item),
+          _buildTabBar(),
+          _buildTabContent(),
         ],
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(item, isLowStock, isOutOfStock),
-            _buildStockOverview(item),
-            _buildTabBar(),
-            _buildTabContent(),
-          ],
-        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToForm(),
@@ -82,7 +79,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.3, end: 0),
+      ).animate().fadeIn(duration: 300.ms),
     );
   }
 
@@ -93,122 +90,97 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       floating: false,
       pinned: true,
       backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-        onPressed: () => Navigator.pop(context),
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: NeuIconButton(
+          icon: Icons.arrow_back_ios_new_rounded,
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.delete_outline_rounded),
+        NeuIconButton(
+          icon: Icons.delete_outline_rounded,
           onPressed: _showDeleteDialog,
         ),
         const SizedBox(width: 8),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _getCategoryColor(item.category).withValues(alpha: 0.3),
-                    _getCategoryColor(item.category).withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      _getCategoryColor(item.category).withValues(alpha: 0.2),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 20,
-              child: Row(
-                children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      gradient: _getCategoryGradient(item.category),
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: PremiumShadows.glow(context, _getCategoryColor(item.category)),
-                    ),
+        background: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: NeuContainer(
+                    borderRadius: 18,
+                    variant: NeuVariant.raised,
+                    color: _getCategoryColor(item.category),
+                    boxShadow: NeuShadow.color(
+                        context, _getCategoryColor(item.category),
+                        blur: 18, opacity: 0.32),
                     child: Icon(
                       _getCategoryIcon(item.category),
                       size: 36,
                       color: AppColors.textOnPrimary,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          item.name,
-                          style: AppTextStyles.headlineSmall.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        item.name,
+                        style: AppTextStyles.headlineSmall.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: _isDark
+                              ? AppColors.textPrimaryOnDark
+                              : AppColors.textPrimary,
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                item.category.displayName,
-                                style: AppTextStyles.labelSmall.copyWith(
-                                  color: _getCategoryColor(item.category),
-                                  fontWeight: FontWeight.w600,
-                                ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              item.category.displayName,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: _getCategoryColor(item.category),
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            if (isOutOfStock)
-                              _buildStatusChip('Out of Stock', AppColors.error)
-                            else if (isLowStock)
-                              _buildStatusChip('Low Stock', AppColors.warning)
-                            else
-                              _buildStatusChip('In Stock', AppColors.success),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (isOutOfStock)
+                            _buildStatusChip('Out of Stock', AppColors.error)
+                          else if (isLowStock)
+                            _buildStatusChip('Low Stock', AppColors.warning)
+                          else
+                            _buildStatusChip('In Stock', AppColors.success),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -282,10 +254,10 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     Color color,
     IconData icon,
   ) {
-    return GlassContainer(
+    return NeuContainer(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      blur: 10,
+      variant: NeuVariant.raised,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -303,7 +275,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               Text(
                 label,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: _isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
               ),
             ],
@@ -313,13 +287,15 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             value,
             style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
             ),
           ),
           Text(
             unit,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: _isDark
+                  ? AppColors.textSecondaryOnDark
+                  : AppColors.textSecondary,
             ),
           ),
         ],
@@ -376,8 +352,8 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             itemCount: batches.length,
             itemBuilder: (context, index) {
               final batch = batches[index];
-              return FloatingAnimation(
-                delay: Duration(milliseconds: 50 * (index % 10)),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
                 child: BatchCard(
                   batch: batch,
                   item: widget.item,
@@ -390,7 +366,13 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           );
         }
         if (state is InventoryLoading) {
-          return const Center(child: CpLoader(size: 48));
+          return const Center(
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: NeuCircularProgress(),
+            ),
+          );
         }
         return const SizedBox.shrink();
       },
@@ -416,8 +398,8 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             itemCount: batches.length,
             itemBuilder: (context, index) {
               final batch = batches[index];
-              return FloatingAnimation(
-                delay: Duration(milliseconds: 50 * (index % 10)),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
                 child: BatchCard(
                   batch: batch,
                   item: widget.item,
@@ -457,8 +439,8 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             itemCount: allTransactions.length,
             itemBuilder: (context, index) {
               final transaction = allTransactions[index];
-              return FloatingAnimation(
-                delay: Duration(milliseconds: 50 * (index % 10)),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
                 child: TransactionCard(transaction: transaction),
               );
             },
@@ -474,94 +456,102 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => GlassContainer(
+      builder: (context) => NeuContainer(
         margin: const EdgeInsets.all(20),
         borderRadius: 24,
-        blur: 20,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: _getCategoryGradient(widget.item.category),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+        variant: NeuVariant.raised,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: NeuContainer(
+                    borderRadius: 14,
+                    variant: NeuVariant.raised,
+                    color: _getCategoryColor(widget.item.category),
+                    boxShadow: NeuShadow.color(
+                        context, _getCategoryColor(widget.item.category),
+                        blur: 14, opacity: 0.3),
                     child: Icon(_getCategoryIcon(widget.item.category),
                         size: 28, color: AppColors.textOnPrimary),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Batch Details',
-                          style: AppTextStyles.headlineSmall.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Batch Details',
+                        style: AppTextStyles.headlineSmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: _isDark
+                              ? AppColors.textPrimaryOnDark
+                              : AppColors.textPrimary,
                         ),
-                        Text(
-                          batch.batchNumber,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                      ),
+                      Text(
+                        batch.batchNumber,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: _isDark
+                              ? AppColors.textSecondaryOnDark
+                              : AppColors.textSecondary,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  if (batch.isExpired)
-                    _buildStatusChip('Expired', AppColors.error)
-                  else if (batch.isExpiringSoon)
-                    _buildStatusChip('Expiring Soon', AppColors.warning),
-                ],
-              ),
-              const SizedBox(height: 24),
-              _buildDetailRow('Quantity',
-                  '${formatNumber(batch.quantity)} ${widget.item.unit}'),
-              _buildDetailRow('Received',
-                  formatDate(batch.receivedAt)),
-              if (batch.expiresAt != null)
-                _buildDetailRow('Expires',
-                    formatDate(batch.expiresAt!)),
-              if (batch.costPerUnit != null)
-                _buildDetailRow('Cost/Unit',
-                    formatCurrency(batch.costPerUnit!)),
-              if (batch.supplier != null)
-                _buildDetailRow('Supplier', batch.supplier!),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: CpButton(
-                      text: 'Close',
-                      variant: ButtonVariant.secondary,
-                      onPressed: () => Navigator.pop(context),
-                      expanded: true,
-                    ),
+                ),
+                if (batch.isExpired)
+                  _buildStatusChip('Expired', AppColors.error)
+                else if (batch.isExpiringSoon)
+                  _buildStatusChip('Expiring Soon', AppColors.warning),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildDetailRow('Quantity',
+                '${formatNumber(batch.quantity)} ${widget.item.unit}'),
+            _buildDetailRow('Received',
+                formatDate(batch.receivedAt)),
+            if (batch.expiresAt != null)
+              _buildDetailRow('Expires',
+                  formatDate(batch.expiresAt!)),
+            if (batch.costPerUnit != null)
+              _buildDetailRow('Cost/Unit',
+                  formatCurrency(batch.costPerUnit!)),
+            if (batch.supplier != null)
+              _buildDetailRow('Supplier', batch.supplier!),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: NeuButton(
+                    text: 'Close',
+                    variant: NeuButtonVariant.secondary,
+                    onPressed: () => Navigator.pop(context),
+                    expanded: true,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CpButton(
-                      text: 'Add Transaction',
-                      variant: ButtonVariant.primary,
-                      icon: Icons.add_rounded,
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _showTransactionDialog(batch);
-                      },
-                      expanded: true,
-                    ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: NeuButton(
+                    text: 'Add Transaction',
+                    variant: NeuButtonVariant.primary,
+                    icon: Icons.add_rounded,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showTransactionDialog(batch);
+                    },
+                    expanded: true,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -577,7 +567,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             child: Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: _isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
               ),
             ),
           ),
@@ -586,7 +578,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               value,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: _isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
             ),
           ),
@@ -606,7 +600,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => GlassContainer(
+        builder: (context, setState) => NeuContainer(
           margin: EdgeInsets.only(
             left: 20,
             right: 20,
@@ -614,119 +608,123 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             top: 20,
           ),
           borderRadius: 24,
-          blur: 20,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Record Transaction',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w700,
+          variant: NeuVariant.raised,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Record Transaction',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Batch: ${batch.batchNumber}',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: _isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SegmentedButton<TransactionType>(
+                segments: TransactionType.values
+                    .map((t) => ButtonSegment(
+                          value: t,
+                          label: Text(t.displayName),
+                          icon: Icon(_getTransactionIcon(t)),
+                        ))
+                    .toList(),
+                selected: {selectedType},
+                onSelectionChanged: (selection) {
+                  setState(() => selectedType = selection.first);
+                },
+                style: SegmentedButton.styleFrom(
+                  backgroundColor: AppColors.surfaceContainerHighest,
+                  selectedBackgroundColor:
+                      _getCategoryColor(widget.item.category)
+                          .withValues(alpha: 0.2),
+                  selectedForegroundColor:
+                      _getCategoryColor(widget.item.category),
+                  side: BorderSide(
+                    color: AppColors.border.withValues(alpha: 0.3),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Batch: ${batch.batchNumber}',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SegmentedButton<TransactionType>(
-                  segments: TransactionType.values
-                      .map((t) => ButtonSegment(
-                            value: t,
-                            label: Text(t.displayName),
-                            icon: Icon(_getTransactionIcon(t)),
-                          ))
-                      .toList(),
-                  selected: {selectedType},
-                  onSelectionChanged: (selection) {
-                    setState(() => selectedType = selection.first);
-                  },
-                  style: SegmentedButton.styleFrom(
-                    backgroundColor: AppColors.surfaceContainerHighest,
-                    selectedBackgroundColor:
-                        _getCategoryColor(widget.item.category)
-                            .withValues(alpha: 0.2),
-                    selectedForegroundColor:
-                        _getCategoryColor(widget.item.category),
-                    side: BorderSide(
-                      color: AppColors.border.withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 16),
+              NeuTextField(
+                controller: quantityController,
+                hint: 'Quantity',
+                keyboardType: TextInputType.number,
+                prefixIcon: const Icon(Icons.numbers_rounded),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 12),
+              NeuTextField(
+                controller: reasonController,
+                hint: 'Reason (e.g., Restock, Sale, Adjustment)',
+                prefixIcon: const Icon(Icons.description_rounded),
+              ),
+              const SizedBox(height: 12),
+              NeuTextField(
+                controller: notesController,
+                hint: 'Notes (optional)',
+                prefixIcon: const Icon(Icons.notes_rounded),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Cancel',
+                      variant: NeuButtonVariant.ghost,
+                      onPressed: () => Navigator.pop(context),
+                      expanded: true,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                CpTextField(
-                  controller: quantityController,
-                  hint: 'Quantity',
-                  keyboardType: TextInputType.number,
-                  prefixIcon: const Icon(Icons.numbers_rounded),
-                ),
-                const SizedBox(height: 12),
-                CpTextField(
-                  controller: reasonController,
-                  hint: 'Reason (e.g., Restock, Sale, Adjustment)',
-                  prefixIcon: const Icon(Icons.description_rounded),
-                ),
-                const SizedBox(height: 12),
-                CpTextField(
-                  controller: notesController,
-                  hint: 'Notes (optional)',
-                  prefixIcon: const Icon(Icons.notes_rounded),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CpButton(
-                        text: 'Cancel',
-                        variant: ButtonVariant.ghost,
-                        onPressed: () => Navigator.pop(context),
-                        expanded: true,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CpButton(
-                        text: 'Record',
-                        variant: ButtonVariant.primary,
-                        icon: Icons.save_rounded,
-                        onPressed: () {
-                          final quantity =
-                              double.tryParse(quantityController.text);
-                          if (quantity == null || quantity <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text(
-                                    'Please enter a valid quantity'),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
-                            return;
-                          }
-                          Navigator.pop(context);
-                          _recordTransaction(
-                            batch,
-                            selectedType,
-                            quantity,
-                            reasonController.text.trim(),
-                            notesController.text.trim().isEmpty
-                                ? null
-                                : notesController.text.trim(),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Record',
+                      variant: NeuButtonVariant.primary,
+                      icon: Icons.save_rounded,
+                      onPressed: () {
+                        final quantity =
+                            double.tryParse(quantityController.text);
+                        if (quantity == null || quantity <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                  'Please enter a valid quantity'),
+                              backgroundColor: AppColors.error,
+                            ),
                           );
-                        },
-                        expanded: true,
-                      ),
+                          return;
+                        }
+                        Navigator.pop(context);
+                        _recordTransaction(
+                          batch,
+                          selectedType,
+                          quantity,
+                          reasonController.text.trim(),
+                          notesController.text.trim().isEmpty
+                              ? null
+                              : notesController.text.trim(),
+                        );
+                      },
+                      expanded: true,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -784,7 +782,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => GlassContainer(
+        builder: (context, setState) => NeuContainer(
           margin: EdgeInsets.only(
             left: 20,
             right: 20,
@@ -792,143 +790,152 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             top: 20,
           ),
           borderRadius: 24,
-          blur: 20,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Add New Batch',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+          variant: NeuVariant.raised,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add New Batch',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
-                const SizedBox(height: 24),
-                CpTextField(
-                  controller: batchNumberController,
-                  hint: 'Batch Number',
-                  prefixIcon: const Icon(Icons.confirmation_number_rounded),
-                ),
-                const SizedBox(height: 12),
-                CpTextField(
-                  controller: quantityController,
-                  hint: 'Quantity',
-                  keyboardType: TextInputType.number,
-                  prefixIcon: const Icon(Icons.numbers_rounded),
-                ),
-                const SizedBox(height: 12),
-                CpTextField(
-                  controller: costController,
-                  hint: 'Cost per Unit (optional)',
-                  keyboardType: TextInputType.number,
-                  prefixIcon: const Icon(Icons.attach_money_rounded),
-                ),
-                const SizedBox(height: 12),
-                CpTextField(
-                  controller: supplierController,
-                  hint: 'Supplier (optional)',
-                  prefixIcon: const Icon(Icons.local_shipping_rounded),
-                ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now().add(const Duration(days: 365)),
-                      firstDate: DateTime.now(),
-                      lastDate:
-                          DateTime.now().add(const Duration(days: 3650)),
-                    );
-                    if (date != null) {
-                      setState(() => expiryDate = date);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.border.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.calendar_today_rounded,
-                            color: AppColors.textSecondary, size: 20),
-                        const SizedBox(width: 12),
-                        Text(
-                          expiryDate != null
-                              ? 'Expiry: ${formatDate(expiryDate!)}'
-                              : 'Set Expiry Date (optional)',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: expiryDate != null
-                                ? AppColors.textPrimary
-                                : AppColors.textSecondary,
-                          ),
+              ),
+              const SizedBox(height: 24),
+              NeuTextField(
+                controller: batchNumberController,
+                hint: 'Batch Number',
+                prefixIcon: const Icon(Icons.confirmation_number_rounded),
+              ),
+              const SizedBox(height: 12),
+              NeuTextField(
+                controller: quantityController,
+                hint: 'Quantity',
+                keyboardType: TextInputType.number,
+                prefixIcon: const Icon(Icons.numbers_rounded),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 12),
+              NeuTextField(
+                controller: costController,
+                hint: 'Cost per Unit (optional)',
+                keyboardType: TextInputType.number,
+                prefixIcon: const Icon(Icons.attach_money_rounded),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+              ),
+              const SizedBox(height: 12),
+              NeuTextField(
+                controller: supplierController,
+                hint: 'Supplier (optional)',
+                prefixIcon: const Icon(Icons.local_shipping_rounded),
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now().add(const Duration(days: 365)),
+                    firstDate: DateTime.now(),
+                    lastDate:
+                        DateTime.now().add(const Duration(days: 3650)),
+                  );
+                  if (date != null) {
+                    setState(() => expiryDate = date);
+                  }
+                },
+                child: NeuContainer(
+                  padding: const EdgeInsets.all(16),
+                  borderRadius: 14,
+                  variant: NeuVariant.inset,
+                  borderColor: AppColors.border.withValues(alpha: 0.3),
+                  borderWidth: 1,
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_rounded,
+                          color: _isDark
+                              ? AppColors.textSecondaryOnDark
+                              : AppColors.textSecondary,
+                          size: 20),
+                      const SizedBox(width: 12),
+                      Text(
+                        expiryDate != null
+                            ? 'Expiry: ${formatDate(expiryDate!)}'
+                            : 'Set Expiry Date (optional)',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: expiryDate != null
+                              ? (_isDark
+                                  ? AppColors.textPrimaryOnDark
+                                  : AppColors.textPrimary)
+                              : (_isDark
+                                  ? AppColors.textSecondaryOnDark
+                                  : AppColors.textSecondary),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CpButton(
-                        text: 'Cancel',
-                        variant: ButtonVariant.ghost,
-                        onPressed: () => Navigator.pop(context),
-                        expanded: true,
-                      ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Cancel',
+                      variant: NeuButtonVariant.ghost,
+                      onPressed: () => Navigator.pop(context),
+                      expanded: true,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CpButton(
-                        text: 'Add Batch',
-                        variant: ButtonVariant.primary,
-                        icon: Icons.add_rounded,
-                        onPressed: () {
-                          final batchNumber =
-                              batchNumberController.text.trim();
-                          final quantity =
-                              double.tryParse(quantityController.text);
-                          final cost = costController.text.isEmpty
-                              ? null
-                              : double.tryParse(costController.text);
-                          if (batchNumber.isEmpty || quantity == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text(
-                                    'Please fill required fields'),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
-                            return;
-                          }
-                          Navigator.pop(context);
-                          context.read<InventoryBloc>().add(CreateBatch(
-                                inventoryId: widget.item.id!,
-                                batchNumber: batchNumber,
-                                quantity: quantity,
-                                receivedAt: DateTime.now(),
-                                expiresAt: expiryDate,
-                                costPerUnit: cost,
-                                supplier: supplierController.text.trim()
-                                    .isEmpty
-                                    ? null
-                                    : supplierController.text.trim(),
-                              ));
-                        },
-                        expanded: true,
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Add Batch',
+                      variant: NeuButtonVariant.primary,
+                      icon: Icons.add_rounded,
+                      onPressed: () {
+                        final batchNumber =
+                            batchNumberController.text.trim();
+                        final quantity =
+                            double.tryParse(quantityController.text);
+                        final cost = costController.text.isEmpty
+                            ? null
+                            : double.tryParse(costController.text);
+                        if (batchNumber.isEmpty || quantity == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                  'Please fill required fields'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                          return;
+                        }
+                        Navigator.pop(context);
+                        context.read<InventoryBloc>().add(CreateBatch(
+                              inventoryId: widget.item.id!,
+                              batchNumber: batchNumber,
+                              quantity: quantity,
+                              receivedAt: DateTime.now(),
+                              expiresAt: expiryDate,
+                              costPerUnit: cost,
+                              supplier: supplierController.text.trim()
+                                  .isEmpty
+                                  ? null
+                                  : supplierController.text.trim(),
+                            ));
+                      },
+                      expanded: true,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -970,10 +977,10 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 style: AppTextStyles.labelLarge.copyWith(
                     color: AppColors.textSecondary)),
           ),
-          CpButton(
+          NeuButton(
             text: 'Delete',
-            variant: ButtonVariant.destructive,
-            size: ButtonSize.small,
+            variant: NeuButtonVariant.destructive,
+            size: NeuButtonSize.small,
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
@@ -983,29 +990,6 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         ],
       ),
     );
-  }
-
-  LinearGradient _getCategoryGradient(InventoryCategory category) {
-    switch (category) {
-      case InventoryCategory.medicine:
-        return AppColors.gradientPrimary;
-      case InventoryCategory.vaccine:
-        return const LinearGradient(
-          colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
-        );
-      case InventoryCategory.supply:
-        return LinearGradient(
-          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
-        );
-      case InventoryCategory.equipment:
-        return LinearGradient(
-          colors: [AppColors.categoryEquipment, AppColors.categoryEquipmentDark],
-        );
-      case InventoryCategory.food:
-        return const LinearGradient(
-          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-        );
-    }
   }
 
   Color _getCategoryColor(InventoryCategory category) {
@@ -1065,14 +1049,18 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppColors.surface.withValues(alpha: 0.95),
+      color: _isDarkOf(context)
+          ? AppColors.surfaceDarkMode.withValues(alpha: 0.95)
+          : AppColors.surface.withValues(alpha: 0.95),
       child: TabBar(
         controller: tabController,
         tabs: tabs,
         indicatorColor: color,
         indicatorWeight: 3,
         labelColor: color,
-        unselectedLabelColor: AppColors.textSecondary,
+        unselectedLabelColor: _isDarkOf(context)
+            ? AppColors.textSecondaryOnDark
+            : AppColors.textSecondary,
         labelStyle: AppTextStyles.labelLarge.copyWith(
           fontWeight: FontWeight.w600,
         ),
@@ -1083,6 +1071,9 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
       ),
     );
   }
+
+  bool _isDarkOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
 
   @override
   double get maxExtent => 56;

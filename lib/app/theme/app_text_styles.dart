@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
-/// CarePaw premium typography scale following Material 3 guidelines.
+/// CarePaw neomorphism typography scale.
 ///
-/// Features:
-/// - Optimized for readability and accessibility
-/// - Refined font weights and letter spacing
-/// - Premium text effects support
-/// - System font stack for optimal performance
+/// Clean, readable type hierarchy that sits on the soft-gray neomorphic
+/// canvas. Colors derive from the blue + soft-gray palette. The former
+/// gradient & glow effects are removed in favor of flat, accessible colors —
+/// visual depth now comes from neumorphic shadows, not text effects.
 class AppTextStyles {
   AppTextStyles._();
 
@@ -14,22 +14,22 @@ class AppTextStyles {
   // For large, short text like headlines, hero sections
 
   static const TextStyle displayLarge = TextStyle(
-    fontSize: 57,
-    fontWeight: FontWeight.w300,
-    letterSpacing: -0.25,
+    fontSize: 40,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
     height: 1.12,
   );
 
   static const TextStyle displayMedium = TextStyle(
-    fontSize: 45,
-    fontWeight: FontWeight.w300,
-    letterSpacing: 0,
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.25,
     height: 1.16,
   );
 
   static const TextStyle displaySmall = TextStyle(
-    fontSize: 36,
-    fontWeight: FontWeight.w400,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
     letterSpacing: 0,
     height: 1.22,
   );
@@ -38,21 +38,21 @@ class AppTextStyles {
   // For section headers, page titles
 
   static const TextStyle headlineLarge = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.w600,
+    fontSize: 26,
+    fontWeight: FontWeight.w700,
     letterSpacing: -0.1,
     height: 1.25,
   );
 
   static const TextStyle headlineMedium = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.05,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
     height: 1.29,
   );
 
   static const TextStyle headlineSmall = TextStyle(
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     height: 1.33,
@@ -62,7 +62,7 @@ class AppTextStyles {
   // For component titles, card titles
 
   static const TextStyle titleLarge = TextStyle(
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     height: 1.27,
@@ -88,21 +88,21 @@ class AppTextStyles {
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     height: 1.5,
   );
 
   static const TextStyle bodyMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.25,
+    letterSpacing: 0.15,
     height: 1.5,
   );
 
   static const TextStyle bodySmall = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.4,
+    letterSpacing: 0.2,
     height: 1.4,
   );
 
@@ -119,14 +119,14 @@ class AppTextStyles {
   static const TextStyle labelMedium = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     height: 1.33,
   );
 
   static const TextStyle labelSmall = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     height: 1.45,
   );
 
@@ -152,7 +152,7 @@ class AppTextStyles {
   static const TextStyle overline = TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w600,
-    letterSpacing: 1.5,
+    letterSpacing: 1.2,
     height: 1.6,
   );
 
@@ -160,7 +160,7 @@ class AppTextStyles {
   static const TextStyle caption = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
     height: 1.33,
   );
 
@@ -168,27 +168,27 @@ class AppTextStyles {
   static const TextStyle button = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     height: 1.43,
   );
 
   /// For numbers (prices, counts, statistics)
   static const TextStyle numberLarge = TextStyle(
-    fontSize: 48,
+    fontSize: 40,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.1,
   );
 
   static const TextStyle numberMedium = TextStyle(
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
     height: 1.2,
   );
 
   static const TextStyle numberSmall = TextStyle(
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.1,
     height: 1.3,
@@ -203,127 +203,85 @@ class AppTextStyles {
     height: 1.5,
   );
 
-  // ============ Premium Text Effects ============
+  // ============ Color Text Helpers (flat, neomorphism-appropriate) ============
 
-  /// Gradient text - applies gradient to text
-  static TextStyle gradient(TextStyle style, Gradient gradient) =>
-      style.copyWith(
-        foreground: Paint()..shader = gradient.createShader(
-          const Rect.fromLTWH(0, 0, 200, 100),
-        ),
-      );
+  /// Primary-colored text (accent blue)
+  static TextStyle primary(TextStyle style) => style.copyWith(color: AppColors.primary);
 
-  /// Primary gradient text
-  static TextStyle primaryGradient(TextStyle style) => gradient(
-    style,
-    const LinearGradient(
-      colors: [
-        Color(0xFF0066CC),
-        Color(0xFF3385D6),
-        Color(0xFF14B8A6),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-  );
+  /// Secondary text (soft gray)
+  static TextStyle secondary(TextStyle style) => style.copyWith(color: AppColors.textSecondary);
 
-  /// Glowing text effect
-  static TextStyle glow(TextStyle style, Color glowColor) =>
-      style.copyWith(
-        shadows: [
-          Shadow(
-            color: glowColor.withValues(alpha: 0.5),
-            blurRadius: 8,
-            offset: const Offset(0, 0),
-          ),
-          Shadow(
-            color: glowColor.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 0),
-          ),
-        ],
-      );
-
-  /// Primary glow text
-  static TextStyle primaryGlow(TextStyle style) => glow(style, const Color(0xFF0066CC));
-
-  /// Success glow text
-  static TextStyle successGlow(TextStyle style) => glow(style, const Color(0xFF10B981));
-
-  /// Warning glow text
-  static TextStyle warningGlow(TextStyle style) => glow(style, const Color(0xFFF59E0B));
-
-  /// Error glow text
-  static TextStyle errorGlow(TextStyle style) => glow(style, const Color(0xFFEF4444));
+  /// Tertiary-text alias (kept for legacy call sites) — teal accent.
+  static TextStyle tertiary(TextStyle style) => style.copyWith(color: AppColors.tertiary);
 
   /// Subtle text (for secondary content) - light theme
-  static TextStyle subtle(TextStyle style) => style.copyWith(
-        color: const Color(0xFF98A2B3),
-      );
+  static TextStyle subtle(TextStyle style) => style.copyWith(color: AppColors.textSecondary);
 
   /// Subtle text (for secondary content) - dark theme
-  static TextStyle subtleDark(TextStyle style) => style.copyWith(
-        color: const Color(0xFFD0D5DD),
-      );
+  static TextStyle subtleDark(TextStyle style) => style.copyWith(color: AppColors.textSecondaryOnDark);
 
   /// Muted text (for tertiary content) - light theme
-  static TextStyle muted(TextStyle style) => style.copyWith(
-        color: const Color(0xFF667085),
-      );
+  static TextStyle muted(TextStyle style) => style.copyWith(color: AppColors.textTertiary);
 
   /// Muted text (for tertiary content) - dark theme
-  static TextStyle mutedDark(TextStyle style) => style.copyWith(
-        color: const Color(0xFF98A2B3),
-      );
+  static TextStyle mutedDark(TextStyle style) => style.copyWith(color: AppColors.textTertiaryOnDark);
 
-  /// High contrast text
+  /// High contrast text (emphasis)
   static TextStyle highContrast(TextStyle style) => style.copyWith(
-        color: const Color(0xFF101828),
+        color: AppColors.textPrimary,
         fontWeight: FontWeight.w700,
       );
 
   /// Link text
   static TextStyle link(TextStyle style) => style.copyWith(
-        color: const Color(0xFF0066CC),
+        color: AppColors.primary,
         decoration: TextDecoration.underline,
-        decorationColor: const Color(0xFF0066CC),
+        decorationColor: AppColors.primary,
         decorationThickness: 1.5,
       );
 
   /// Success text
-  static TextStyle success(TextStyle style) => style.copyWith(
-        color: const Color(0xFF10B981),
-      );
+  static TextStyle successText(TextStyle style) => style.copyWith(color: AppColors.success);
 
   /// Warning text
-  static TextStyle warning(TextStyle style) => style.copyWith(
-        color: const Color(0xFFF59E0B),
-      );
+  static TextStyle warningText(TextStyle style) => style.copyWith(color: AppColors.warning);
 
   /// Error text
-  static TextStyle error(TextStyle style) => style.copyWith(
-        color: const Color(0xFFEF4444),
-      );
+  static TextStyle error(TextStyle style) => style.copyWith(color: AppColors.error);
 
   /// Info text
-  static TextStyle info(TextStyle style) => style.copyWith(
-        color: const Color(0xFF3B82F6),
+  static TextStyle info(TextStyle style) => style.copyWith(color: AppColors.info);
+
+  // ============ Legacy Effect API (flattened / deprioritized) ============
+
+  /// Legacy gradient — flattened to solid primary color for neomorphism.
+  static TextStyle gradient(TextStyle style, Gradient _) => style.copyWith(color: AppColors.primary);
+
+  /// Primary gradient text — flattened to primary color.
+  static TextStyle primaryGradient(TextStyle style) => style.copyWith(color: AppColors.primary);
+
+  /// Legacy glow — replaced with a subtle soft shadow.
+  static TextStyle glow(TextStyle style, Color color) => style.copyWith(
+        shadows: [
+          Shadow(
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
+          ),
+        ],
       );
 
-  /// Primary text
-  static TextStyle primary(TextStyle style) => style.copyWith(
-        color: const Color(0xFF0066CC),
-      );
+  /// Primary glow text
+  static TextStyle primaryGlow(TextStyle style) => glow(style, AppColors.primary);
 
-  /// Secondary text
-  static TextStyle secondary(TextStyle style) => style.copyWith(
-        color: const Color(0xFF8A929E), // Silver
-      );
+  /// Success glow text
+  static TextStyle successGlow(TextStyle style) => glow(style, AppColors.success);
 
-  /// Tertiary text
-  static TextStyle tertiary(TextStyle style) => style.copyWith(
-        color: const Color(0xFF14B8A6),
-      );
+  /// Warning glow text
+  static TextStyle warningGlow(TextStyle style) => glow(style, AppColors.warning);
+
+  /// Error glow text
+  static TextStyle errorGlow(TextStyle style) => glow(style, AppColors.error);
 }
 
 /// Extension for easy text style modifications.
@@ -335,29 +293,22 @@ extension TextStyleX on TextStyle {
       );
 
   /// Make text subtle (light theme)
-  TextStyle get subtle => copyWith(
-        color: const Color(0xFF98A2B3),
-      );
+  TextStyle get subtle => copyWith(color: AppColors.textSecondary);
 
   /// Make text subtle (dark theme)
-  TextStyle subtleDark() => copyWith(
-        color: const Color(0xFFD0D5DD),
-      );
+  TextStyle subtleDark() => copyWith(color: AppColors.textSecondaryOnDark);
 
-  /// Make text subtle - theme aware (requires BuildContext or brightness)
-  TextStyle subtleOf(Brightness brightness) => brightness == Brightness.dark ? subtleDark() : subtle;
+  /// Make text subtle - theme aware (requires Brightness)
+  TextStyle subtleOf(Brightness brightness) =>
+      brightness == Brightness.dark ? subtleDark() : subtle;
 
   /// Make text muted (light theme)
-  TextStyle get muted => copyWith(
-        color: const Color(0xFF667085),
-      );
+  TextStyle get muted => copyWith(color: AppColors.textTertiary);
 
   /// Make text muted (dark theme)
-  TextStyle mutedDark() => copyWith(
-        color: const Color(0xFF98A2B3),
-      );
+  TextStyle mutedDark() => copyWith(color: AppColors.textTertiaryOnDark);
 
-  /// Make text muted - theme aware (requires BuildContext or brightness)
+  /// Make text muted - theme aware (requires Brightness)
   TextStyle mutedOf(Brightness brightness) => brightness == Brightness.dark ? mutedDark() : muted;
 
   /// Make text bold
@@ -375,44 +326,25 @@ extension TextStyleX on TextStyle {
   /// Make text light
   TextStyle get light => copyWith(fontWeight: FontWeight.w300);
 
-  /// Add gradient
-  TextStyle gradient(Gradient gradient) => copyWith(
-        foreground: Paint()..shader = gradient.createShader(
-          const Rect.fromLTWH(0, 0, 200, 100),
-        ),
-      );
+  /// Add gradient (flattened to primary color).
+  TextStyle gradient(Gradient _) => copyWith(color: AppColors.primary);
 
-  /// Add primary gradient
-  TextStyle get primaryGradient => gradient(
-    const LinearGradient(
-      colors: [
-        Color(0xFF0066CC),
-        Color(0xFF3385D6),
-        Color(0xFF14B8A6),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-  );
+  /// Add primary gradient (flattened to primary color).
+  TextStyle get primaryGradient => copyWith(color: AppColors.primary);
 
-  /// Add glow effect
+  /// Add glow effect (subtle soft shadow).
   TextStyle glow(Color color) => copyWith(
         shadows: [
           Shadow(
-            color: color.withValues(alpha: 0.5),
-            blurRadius: 8,
-            offset: const Offset(0, 0),
-          ),
-          Shadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 0),
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
           ),
         ],
       );
 
   /// Add primary glow
-  TextStyle get primaryGlow => glow(const Color(0xFF0066CC));
+  TextStyle get primaryGlow => glow(AppColors.primary);
 
   /// Add underline for links
   TextStyle get underline => copyWith(

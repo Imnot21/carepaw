@@ -20,18 +20,19 @@ import 'package:carepaw/features/appointments/presentation/bloc/appointment_even
 import 'package:carepaw/features/appointments/presentation/pages/appointment_list_page.dart';
 import 'package:carepaw/features/appointments/presentation/pages/appointment_form_page.dart';
 import 'package:carepaw/features/appointments/presentation/pages/appointment_detail_page.dart';
-import 'package:carepaw/features/appointments/data/repositories/appointment_repository_impl.dart';
+import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/pages/queue_page.dart';
 import 'package:carepaw/features/queue/presentation/pages/staff_queue_page.dart';
-import 'package:carepaw/features/queue/data/repositories/queue_repository_impl.dart';
+import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart';
 import 'package:carepaw/features/home/presentation/pages/home_page.dart';
 import 'package:carepaw/features/home/presentation/pages/staff_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/vet_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/admin_dashboard_page.dart';
 import 'package:carepaw/features/users/presentation/pages/admin_user_management_page.dart';
 import 'package:carepaw/app/router/routes.dart';
+import 'package:carepaw/app/shell/app_shell.dart';
 import 'package:carepaw/core/widgets/common/cp_loader.dart';
 
 /// Application router configuration using GoRouter.
@@ -100,12 +101,18 @@ class AppRouter {
         },
       ),
 
-      // Main home route (redirects based on role)
-      GoRoute(
-        path: Routes.home,
-        name: RouteNames.home,
-        builder: (context, state) => const HomePage(),
-      ),
+      // Authenticated content lives inside the neumorphic bottom-nav shell.
+      // Each child route is a top-level destination; the shell renders the
+      // active page and highlights the matching tab for the user's role.
+      ShellRoute(
+        builder: (context, state, child) => AppShell(child: child),
+        routes: [
+          // Main home route (redirects based on role)
+          GoRoute(
+            path: Routes.home,
+            name: RouteNames.home,
+            builder: (context, state) => const HomePage(),
+          ),
 
       // Pet Owner routes
       GoRoute(
@@ -156,7 +163,7 @@ class AppRouter {
         name: RouteNames.appointments,
         builder: (context, state) => BlocProvider(
           create: (context) => AppointmentBloc(
-            repository: getIt<AppointmentRepositoryImpl>(),
+            repository: getIt<AppointmentRepository>(),
             authBloc: context.read<AuthBloc>(),
           )..add(const AppointmentLoadRequested()),
           child: const AppointmentListPage(),
@@ -179,7 +186,7 @@ class AppRouter {
                   ),
                   BlocProvider(
                     create: (context) => AppointmentBloc(
-                      repository: getIt<AppointmentRepositoryImpl>(),
+                      repository: getIt<AppointmentRepository>(),
                       authBloc: context.read<AuthBloc>(),
                     ),
                   ),
@@ -202,7 +209,7 @@ class AppRouter {
               }
               return BlocProvider(
                 create: (context) => AppointmentBloc(
-                  repository: getIt<AppointmentRepositoryImpl>(),
+                  repository: getIt<AppointmentRepository>(),
                   authBloc: context.read<AuthBloc>(),
                 )..add(AppointmentDetailLoadRequested(id)),
                 child: AppointmentDetailPageWithBloc(appointmentId: id),
@@ -227,7 +234,7 @@ class AppRouter {
                   ),
                   BlocProvider(
                     create: (context) => AppointmentBloc(
-                      repository: getIt<AppointmentRepositoryImpl>(),
+                      repository: getIt<AppointmentRepository>(),
                       authBloc: context.read<AuthBloc>(),
                     ),
                   ),
@@ -248,7 +255,7 @@ class AppRouter {
         name: RouteNames.queue,
         builder: (context, state) => BlocProvider(
           create: (context) => QueueBloc(
-            repository: getIt<QueueRepositoryImpl>(),
+            repository: getIt<QueueRepository>(),
             authBloc: context.read<AuthBloc>(),
           )..add(const QueueLoadRequested()),
           child: const QueuePage(),
@@ -277,7 +284,7 @@ class AppRouter {
             name: RouteNames.staffQueue,
             builder: (context, state) => BlocProvider(
               create: (context) => QueueBloc(
-                repository: getIt<QueueRepositoryImpl>(),
+                repository: getIt<QueueRepository>(),
                 authBloc: context.read<AuthBloc>(),
               )..add(const QueueStaffLoadRequested()),
               child: const StaffQueuePage(),
@@ -314,6 +321,11 @@ class AppRouter {
               final id = state.pathParameters['id'];
               return PlaceholderPage(title: 'Patient - $id');
             },
+          ),
+          GoRoute(
+            path: 'records',
+            name: RouteNames.vetRecords,
+            builder: (context, state) => const PlaceholderPage(title: 'Records'),
           ),
         ],
       ),
@@ -357,6 +369,8 @@ class AppRouter {
         path: Routes.settings,
         name: RouteNames.settings,
         builder: (context, state) => const PlaceholderPage(title: 'Settings'),
+      ),
+        ],
       ),
     ];
   }

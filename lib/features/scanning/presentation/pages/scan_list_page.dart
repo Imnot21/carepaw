@@ -8,14 +8,11 @@ import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_detail_page.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_camera_page.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
-import 'package:carepaw/core/widgets/common/cp_empty_state.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -24,7 +21,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
-/// Scan list page with premium design
+/// Scan list page with neumorphic design
 class ScanListPage extends StatefulWidget {
   const ScanListPage({super.key});
 
@@ -35,6 +32,8 @@ class ScanListPage extends StatefulWidget {
 class _ScanListPageState extends State<ScanListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -68,28 +67,18 @@ class _ScanListPageState extends State<ScanListPage>
         }
 
         return Scaffold(
-          body: AnimatedGradientBackground(
-            colors: [
-              AppColors.primary.withValues(alpha: 0.06),
-              AppColors.secondary.withValues(alpha: 0.04),
-              AppColors.surface,
+          backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+          body: CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              _buildTabBar(),
+              _buildTabContent(),
             ],
-            child: CustomScrollView(
-              slivers: [
-                _buildAppBar(),
-                _buildTabBar(),
-                _buildTabContent(),
-              ],
-            ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _navigateToCamera(),
-            icon: const Icon(Icons.camera_alt_rounded),
-            label: const Text('New Scan'),
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary,
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          floatingActionButton: NeuButton(
+            text: 'New Scan',
+            icon: Icons.camera_alt_rounded,
+            onPressed: _navigateToCamera,
           ).animate().fadeIn(delay: const Duration(milliseconds: 600)).slideY(begin: 0.3, end: 0),
         );
       },
@@ -103,6 +92,8 @@ class _ScanListPageState extends State<ScanListPage>
       pinned: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
         title: Column(
@@ -113,38 +104,29 @@ class _ScanListPageState extends State<ScanListPage>
               'Scan & OCR',
               style: AppTextStyles.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Scan receipts, medicine boxes & more',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
               ),
             ),
           ],
         ),
         background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface.withValues(alpha: 0.9),
-                AppColors.surface.withValues(alpha: 0.7),
-              ],
-            ),
-          ),
+          color: Colors.transparent,
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.history_rounded),
+        NeuIconButton(
+          icon: Icons.history_rounded,
+          tooltip: 'History',
           onPressed: () {
             // Show scan history
           },
-          tooltip: 'History',
         ),
         const SizedBox(width: 8),
       ],
@@ -187,11 +169,11 @@ class _ScanListPageState extends State<ScanListPage>
     return BlocBuilder<ScanBloc, ScanState>(
       builder: (context, state) {
         if (state is ScanLoading) {
-          return const Center(child: CpLoader(size: 48));
+          return const Center(child: NeuCircularProgress(size: 48));
         }
 
         if (state is ScanError) {
-          return CpEmptyState(
+          return _NeuEmptyState(
             icon: Icons.error_outline_rounded,
             title: 'Error Loading Scans',
             message: state.failure.message,
@@ -218,7 +200,7 @@ class _ScanListPageState extends State<ScanListPage>
         }
 
         if (records.isEmpty) {
-          return CpEmptyState(
+          return _NeuEmptyState(
             icon: _getTypeIcon(type ?? ScanType.other),
             title: type != null ? 'No ${type.displayName} Scans' : 'No Scans Yet',
             message: type != null
@@ -247,7 +229,7 @@ class _ScanListPageState extends State<ScanListPage>
         if (state is PendingScansLoaded) {
           final records = state.records;
           if (records.isEmpty) {
-            return CpEmptyState(
+            return _NeuEmptyState(
               icon: Icons.pending_actions_rounded,
               title: 'No Pending Scans',
               message: 'All scans have been processed',
@@ -264,7 +246,7 @@ class _ScanListPageState extends State<ScanListPage>
             },
           );
         }
-        return const Center(child: CpLoader(size: 48));
+        return const Center(child: NeuCircularProgress(size: 48));
       },
     );
   }
@@ -277,7 +259,7 @@ class _ScanListPageState extends State<ScanListPage>
               .where((r) => r.status == status)
               .toList();
           if (records.isEmpty) {
-            return CpEmptyState(
+            return _NeuEmptyState(
               icon: Icons.check_circle_outline_rounded,
               title: 'No Confirmed Scans',
               message: 'Confirmed scans will appear here',
@@ -292,7 +274,7 @@ class _ScanListPageState extends State<ScanListPage>
             },
           );
         }
-        return const Center(child: CpLoader(size: 48));
+        return const Center(child: NeuCircularProgress(size: 48));
       },
     );
   }
@@ -302,191 +284,166 @@ class _ScanListPageState extends State<ScanListPage>
     final isConfirmed = record.status == ScanStatus.confirmed;
     final isRejected = record.status == ScanStatus.rejected;
 
-    return FloatingAnimation(
-      delay: Duration(milliseconds: 50 * (index % 10)),
-      child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        borderRadius: 16,
-        blur: 10,
-        borderColor: isPending && highlightPending
-            ? AppColors.warning.withValues(alpha: 0.3)
-            : isConfirmed
-                ? AppColors.success.withValues(alpha: 0.2)
-                : isRejected
-                    ? AppColors.error.withValues(alpha: 0.2)
-                    : _getTypeColor(record.scanType).withValues(alpha: 0.1),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _navigateToDetail(record),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return NeuCard(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      borderColor: isPending && highlightPending
+          ? AppColors.warning.withValues(alpha: 0.4)
+          : isConfirmed
+              ? AppColors.success.withValues(alpha: 0.3)
+              : isRejected
+                  ? AppColors.error.withValues(alpha: 0.3)
+                  : _getTypeColor(record.scanType).withValues(alpha: 0.15),
+      borderWidth: 1,
+      onTap: () => _navigateToDetail(record),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
             children: [
-              // Header
-              Row(
-                children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          gradient: _getTypeGradient(record.scanType),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          _getTypeIcon(record.scanType),
-                          size: 24,
-                          color: AppColors.textOnPrimary,
-                        ),
-                      ),
-                      if (isPending && highlightPending)
-                        PulsingGlow(
-                          glowColor: AppColors.warning,
-                          maxRadius: 28,
-                          duration: const Duration(seconds: 2),
-                          child: Container(),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          record.scanType.displayName,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          formatDateTime(record.createdAt),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Status badge
-                  _buildStatusBadge(record.status),
-                  const SizedBox(width: 8),
-                  // Confidence indicator
-                  if (record.confidenceScore != null)
-                    _buildConfidenceIndicator(record.confidenceScore!),
-                ],
+              NeuContainer(
+                padding: const EdgeInsets.all(12),
+                borderRadius: 12,
+                gradient: _getTypeGradient(record.scanType),
+                child: Icon(
+                  _getTypeIcon(record.scanType),
+                  size: 24,
+                  color: AppColors.textOnPrimary,
+                ),
               ),
-              const SizedBox(height: 12),
-
-              // OCR preview
-              if (record.rawOcrText != null && record.rawOcrText!.isNotEmpty) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.text_fields_rounded,
-                        size: 18,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          record.rawOcrText!.length > 80
-                              ? '${record.rawOcrText!.substring(0, 80)}...'
-                              : record.rawOcrText!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                            fontFamily: 'monospace',
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Action buttons for pending scans
-              if (isPending) ...[
-                Row(
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: CpButton(
-                        text: 'Process OCR',
-                        variant: ButtonVariant.primary,
-                        icon: Icons.psychology_rounded,
-                        size: ButtonSize.small,
-                        onPressed: () =>
-                            context.read<ScanBloc>().add(ProcessScanOcr(record.id!)),
-                        expanded: true,
-                        gradient: AppColors.gradientPrimary,
+                    Text(
+                      record.scanType.displayName,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CpButton(
-                        text: 'Review',
-                        variant: ButtonVariant.secondary,
-                        icon: Icons.visibility_rounded,
-                        size: ButtonSize.small,
-                        onPressed: () => _navigateToDetail(record),
-                        expanded: true,
+                    Text(
+                      formatDateTime(record.createdAt),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-              ] else if (isConfirmed) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: CpButton(
-                        text: 'View Details',
-                        variant: ButtonVariant.secondary,
-                        icon: Icons.visibility_rounded,
-                        size: ButtonSize.small,
-                        onPressed: () => _navigateToDetail(record),
-                        expanded: true,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CpButton(
-                        text: 'Use Data',
-                        variant: ButtonVariant.primary,
-                        icon: Icons.check_circle_rounded,
-                        size: ButtonSize.small,
-                        onPressed: () => _useScanData(record),
-                        expanded: true,
-                        gradient: AppColors.gradientSuccess,
-                      ),
-                    ),
-                  ],
-                ),
-              ] else if (isRejected) ...[
-                CpButton(
-                  text: 'Retry Scan',
-                  variant: ButtonVariant.outline,
-                  icon: Icons.refresh_rounded,
-                  size: ButtonSize.small,
-                  onPressed: () => _navigateToCamera(),
-                  expanded: true,
-                  foregroundColor: AppColors.primary,
-                ),
-              ],
+              ),
+              // Status badge
+              _buildStatusBadge(record.status),
+              const SizedBox(width: 8),
+              // Confidence indicator
+              if (record.confidenceScore != null)
+                _buildConfidenceIndicator(record.confidenceScore!),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+
+          // OCR preview
+          if (record.rawOcrText != null && record.rawOcrText!.isNotEmpty) ...[
+            NeuContainer(
+              padding: const EdgeInsets.all(12),
+              borderRadius: 10,
+              variant: NeuVariant.inset,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.text_fields_rounded,
+                    size: 18,
+                    color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      record.rawOcrText!.length > 80
+                          ? '${record.rawOcrText!.substring(0, 80)}...'
+                          : record.rawOcrText!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        fontFamily: 'monospace',
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Action buttons for pending scans
+          if (isPending) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: NeuButton(
+                    text: 'Process OCR',
+                    variant: NeuButtonVariant.primary,
+                    icon: Icons.psychology_rounded,
+                    size: NeuButtonSize.small,
+                    onPressed: () =>
+                        context.read<ScanBloc>().add(ProcessScanOcr(record.id!)),
+                    expanded: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: NeuButton(
+                    text: 'Review',
+                    variant: NeuButtonVariant.secondary,
+                    icon: Icons.visibility_rounded,
+                    size: NeuButtonSize.small,
+                    onPressed: () => _navigateToDetail(record),
+                    expanded: true,
+                  ),
+                ),
+              ],
+            ),
+          ] else if (isConfirmed) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: NeuButton(
+                    text: 'View Details',
+                    variant: NeuButtonVariant.secondary,
+                    icon: Icons.visibility_rounded,
+                    size: NeuButtonSize.small,
+                    onPressed: () => _navigateToDetail(record),
+                    expanded: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: NeuButton(
+                    text: 'Use Data',
+                    variant: NeuButtonVariant.primary,
+                    icon: Icons.check_circle_rounded,
+                    size: NeuButtonSize.small,
+                    onPressed: () => _useScanData(record),
+                    expanded: true,
+                  ),
+                ),
+              ],
+            ),
+          ] else if (isRejected) ...[
+            NeuButton(
+              text: 'Retry Scan',
+              variant: NeuButtonVariant.outline,
+              icon: Icons.refresh_rounded,
+              size: NeuButtonSize.small,
+              onPressed: () => _navigateToCamera(),
+              expanded: true,
+            ),
+          ],
+        ],
       ),
-    );
+    ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: 50 * (index % 10)));
   }
 
   Widget _buildStatusBadge(ScanStatus status) {
@@ -512,13 +469,12 @@ class _ScanListPageState extends State<ScanListPage>
         break;
     }
 
-    return Container(
+    return NeuContainer(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+      borderRadius: 8,
+      variant: NeuVariant.flat,
+      borderColor: color.withValues(alpha: 0.3),
+      borderWidth: 1,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -546,13 +502,12 @@ class _ScanListPageState extends State<ScanListPage>
       color = AppColors.error;
     }
 
-    return Container(
+    return NeuContainer(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+      borderRadius: 8,
+      variant: NeuVariant.flat,
+      borderColor: color.withValues(alpha: 0.3),
+      borderWidth: 1,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -668,15 +623,16 @@ class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      color: AppColors.surface.withValues(alpha: 0.95),
+      color: isDark ? AppColors.backgroundDark : AppColors.background,
       child: TabBar(
         controller: tabController,
         tabs: tabs,
         indicatorColor: color,
         indicatorWeight: 3,
         labelColor: color,
-        unselectedLabelColor: AppColors.textSecondary,
+        unselectedLabelColor: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
         labelStyle: AppTextStyles.labelLarge.copyWith(
           fontWeight: FontWeight.w600,
         ),
@@ -701,67 +657,127 @@ class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
+/// Neumorphic empty state used across the scan list tabs.
+class _NeuEmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _NeuEmptyState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = AppColors.primary;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: NeuCard(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NeuContainer(
+                padding: const EdgeInsets.all(24),
+                borderRadius: 24,
+                variant: NeuVariant.flat,
+                child: Icon(icon, size: 64, color: accent),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (actionLabel != null && onAction != null) ...[
+                const SizedBox(height: 24),
+                NeuButton(
+                  text: actionLabel!,
+                  onPressed: onAction,
+                  icon: Icons.add_rounded,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Not logged in view
 class _NotLoggedInView extends StatelessWidget {
   const _NotLoggedInView();
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.06),
-          AppColors.secondary.withValues(alpha: 0.04),
-          AppColors.surface,
-        ],
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.primary,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.primary,
-                    ),
+            child: NeuCard(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NeuContainer(
+                    padding: const EdgeInsets.all(24),
+                    borderRadius: 80,
+                    gradient: AppColors.gradientPrimary,
                     child: Icon(
                       Icons.camera_alt_rounded,
                       size: 80,
                       color: AppColors.textOnPrimary,
                     ),
                   ),
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  'Please log in to use scanning',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 28),
+                  Text(
+                    'Please log in to use scanning',
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Sign in to scan receipts, medicine boxes & more',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
+                  const SizedBox(height: 12),
+                  Text(
+                    'Sign in to scan receipts, medicine boxes & more',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Log In',
-                  onPressed: () => context.go(Routes.login),
-                  icon: Icons.login_rounded,
-                ),
-              ],
+                  const SizedBox(height: 32),
+                  NeuButton(
+                    text: 'Log In',
+                    onPressed: () => context.go(Routes.login),
+                    icon: Icons.login_rounded,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -776,63 +792,54 @@ class _AccessDeniedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.error.withValues(alpha: 0.06),
-          AppColors.warning.withValues(alpha: 0.04),
-          AppColors.surface,
-        ],
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.error,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientError,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.glow(context, AppColors.error, intensity: 0.3),
-                    ),
+            child: NeuCard(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NeuContainer(
+                    padding: const EdgeInsets.all(24),
+                    borderRadius: 80,
+                    gradient: AppColors.gradientError,
                     child: Icon(
                       Icons.block_rounded,
                       size: 80,
                       color: Colors.white,
                     ),
                   ),
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  'Access Denied',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.error,
+                  const SizedBox(height: 28),
+                  Text(
+                    'Access Denied',
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.error,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Only veterinarians and clinic staff can use scanning and OCR features.\n\nThis feature is for clinic operations only.',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
+                  const SizedBox(height: 12),
+                  Text(
+                    'Only veterinarians and clinic staff can use scanning and OCR features.\n\nThis feature is for clinic operations only.',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Go Back',
-                  onPressed: () => context.pop(),
-                  icon: Icons.arrow_back_rounded,
-                  variant: ButtonVariant.secondary,
-                ),
-              ],
+                  const SizedBox(height: 32),
+                  NeuButton(
+                    text: 'Go Back',
+                    onPressed: () => context.pop(),
+                    icon: Icons.arrow_back_rounded,
+                    variant: NeuButtonVariant.secondary,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
