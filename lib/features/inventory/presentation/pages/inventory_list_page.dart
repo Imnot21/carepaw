@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
@@ -14,6 +13,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -105,7 +105,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
             foregroundColor: AppColors.textOnPrimary,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ).animate().fadeIn(duration: 300.ms),
+          ),
         );
       },
     );
@@ -211,27 +211,8 @@ class _InventoryListPageState extends State<InventoryListPage> {
       builder: (context, state) {
         if (state is InventoryLoading) {
           return SliverFillRemaining(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: NeuCircularProgress(),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Loading inventory...',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: _isDark
-                          ? AppColors.textSecondaryOnDark
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            hasScrollBody: false,
+            child: NeuSkeletonList(),
           );
         }
 
@@ -239,7 +220,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
           return SliverFillRemaining(
             child: _NeuEmptyState(
               icon: Icons.error_outline_rounded,
-              iconColor: AppColors.error,
+              iconColor: ThemeColors.error(context),
               title: 'Error Loading Inventory',
               message: state.failure.message,
               actionLabel: 'Retry',
@@ -300,9 +281,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
     final isOutOfStock = item.isOutOfStock;
     final stockPercentage = item.stockPercentage ?? 0;
     final statusColor = isOutOfStock
-        ? AppColors.error
+        ? ThemeColors.error(context)
         : isLowStock
-            ? AppColors.warning
+            ? ThemeColors.warning(context)
             : _getCategoryColor(item.category);
 
     return NeuCard(
@@ -351,11 +332,11 @@ class _InventoryListPageState extends State<InventoryListPage> {
                       ),
                     ),
                     if (isOutOfStock)
-                      _buildStatusBadge('Out of Stock', AppColors.error)
+                      _buildStatusBadge('Out of Stock', ThemeColors.error(context))
                     else if (isLowStock)
-                      _buildStatusBadge('Low Stock', AppColors.warning)
+                      _buildStatusBadge('Low Stock', ThemeColors.warning(context))
                     else if (item.isAtMax)
-                      _buildStatusBadge('Full', AppColors.success),
+                      _buildStatusBadge('Full', ThemeColors.success(context)),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -390,9 +371,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
                                 style: AppTextStyles.labelMedium.copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: isOutOfStock
-                                      ? AppColors.error
+                                      ? ThemeColors.error(context)
                                       : isLowStock
-                                          ? AppColors.warning
+                                          ? ThemeColors.warning(context)
                                           : (_isDark
                                               ? AppColors.textPrimaryOnDark
                                               : AppColors.textPrimary),
@@ -426,10 +407,10 @@ class _InventoryListPageState extends State<InventoryListPage> {
                         style: AppTextStyles.titleSmall.copyWith(
                           fontWeight: FontWeight.w700,
                           color: isOutOfStock
-                              ? AppColors.error
+                              ? (_isDark ? AppColors.errorOnDark : AppColors.error)
                               : isLowStock
-                                  ? AppColors.warning
-                                  : AppColors.primary,
+                                  ? (_isDark ? AppColors.warningOnDark : AppColors.warning)
+                                  : ThemeColors.primary(context),
                         ),
                       ),
                     ],
@@ -645,7 +626,7 @@ class _NotLoggedInView extends StatelessWidget {
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
-                size: NeuButtonSize.large,
+                size: NeuButtonSize.medium,
               ),
             ],
           ),
@@ -690,7 +671,7 @@ class _AccessDeniedView extends StatelessWidget {
                 'Access Denied',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.error,
+                  color: ThemeColors.error(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -708,7 +689,7 @@ class _AccessDeniedView extends StatelessWidget {
                 onPressed: () => context.pop(),
                 icon: Icons.arrow_back_rounded,
                 variant: NeuButtonVariant.secondary,
-                size: NeuButtonSize.large,
+                size: NeuButtonSize.medium,
               ),
             ],
           ),
@@ -718,7 +699,7 @@ class _AccessDeniedView extends StatelessWidget {
   }
 }
 
-/// Neumorphic empty state — replaces the legacy `CpEmptyState`.
+/// Neumorphic empty state.
 class _NeuEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -739,7 +720,7 @@ class _NeuEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = iconColor ?? AppColors.primary;
+    final color = iconColor ?? ThemeColors.primary(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

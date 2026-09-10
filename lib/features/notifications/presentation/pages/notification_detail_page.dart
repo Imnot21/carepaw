@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart' as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
@@ -116,7 +115,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           icon: Icons.delete_outline_rounded,
           onPressed: _showDeleteConfirmation,
           tooltip: 'Delete',
-          color: AppColors.error,
+          color: ThemeColors.error(context),
         ),
         const SizedBox(width: 8),
       ],
@@ -208,7 +207,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms);
+    );
   }
 
   Widget _buildMetaSection(domain.Notification notification) {
@@ -222,7 +221,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               Icon(
                 Icons.info_outline_rounded,
                 size: 20,
-                color: AppColors.primary,
+                color: ThemeColors.primary(context),
               ),
               const SizedBox(width: 8),
               Text(
@@ -245,7 +244,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             _buildMetaRow('Reference', '${notification.referenceType}: ${notification.referenceId}'),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms, delay: 100.ms);
+    );
   }
 
   Widget _buildMetaRow(String label, String value) {
@@ -341,7 +340,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               );
               Navigator.pop(context, true);
             },
-            child: Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
           ),
         ],
       ),
@@ -351,15 +350,15 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
   Color _getTypeColor(domain.NotificationType type) {
     switch (type) {
       case domain.NotificationType.appointmentReminder:
-        return AppColors.primary;
+        return ThemeColors.primary(context);
       case domain.NotificationType.queueUpdate:
-        return AppColors.warning;
+        return _isDark ? AppColors.warningOnDark : AppColors.warning;
       case domain.NotificationType.prescriptionReady:
         return AppColors.categorySupply;
       case domain.NotificationType.inventoryLow:
-        return AppColors.success;
+        return _isDark ? AppColors.successOnDark : AppColors.success;
       case domain.NotificationType.system:
-        return AppColors.textSecondary;
+        return _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
     }
   }
 

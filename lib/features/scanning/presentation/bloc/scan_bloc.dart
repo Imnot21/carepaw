@@ -126,10 +126,11 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
   ) async {
     emit(states.ScanOcrProcessing(event.recordId));
     try {
-      // Simulate OCR processing (in real app, this would call OCR service)
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Mock OCR result - in real implementation, this would come from OCR service
+      // No OCR backend is wired yet. We intentionally do NOT fabricate content:
+      // writing invented OCR text/data into Firestore would store fake medical
+      // info as if it were genuine. Surface that processing is unavailable until
+      // a real OCR service is integrated. (See CLAUDE.md: "OCR output never
+      // trusted blindly".)
       final record = await _scanRepository.findById(event.recordId);
       if (record == null) {
         emit(const states.ScanError(NotFoundFailure(
@@ -138,20 +139,9 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
         return;
       }
 
-      // Simulate OCR extraction
-      final mockOcrText = _generateMockOcrText(record.scanType);
-      final mockExtractedData = _generateMockExtractedData(record.scanType);
-      final mockConfidence = 0.85 + (DateTime.now().millisecond % 10) / 100.0;
-
-      final updatedRecord = record.copyWith(
-        rawOcrText: mockOcrText,
-        extractedData: mockExtractedData,
-        confidenceScore: mockConfidence.clamp(0.0, 1.0),
-        status: domain.ScanStatus.pending,
-      );
-
-      await _scanRepository.save(updatedRecord);
-      emit(states.ScanOcrCompleted(updatedRecord));
+      emit(const states.ScanError(UnexpectedFailure(
+        message: 'OCR service is not configured yet',
+      )));
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
@@ -247,71 +237,4 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     }
   }
 
-  String _generateMockOcrText(domain.ScanType type) {
-    switch (type) {
-      case domain.ScanType.receipt:
-        return '''PET CARE PHARMACY
-123 Main Street
-City, State 12345
-
-RECEIPT
-Date: 2024-01-15
-Time: 14:30
-
-ITEMS:
-Amoxicillin 250mg x 30 tabs  \$45.00
-Vitamin B Complex x 100 tabs  \$22.50
-Syringe 3ml x 10 pcs  \$15.00
-
-SUBTOTAL: \$82.50
-TAX: \$6.60
-TOTAL: \$89.10
-
-THANK YOU!''';
-      case domain.ScanType.medicineBox:
-        return '''MEDICINE LABEL
-Product: Amoxicillin 250mg Capsules
-Batch: AMX2024001
-Mfg Date: 2024-01-01
-Exp Date: 2026-01-01
-Qty: 30 capsules
-Mfg by: PharmaCorp Ltd.''';
-      case domain.ScanType.prescription:
-        return '''PRESCRIPTION
-Dr. Smith Veterinary Clinic
-Patient: Max (Dog)
-Medication: Amoxicillin 250mg
-Dosage: 1 capsule twice daily
-Duration: 7 days
-Refills: 0
-Date: 2024-01-15''';
-      case domain.ScanType.labReport:
-        return '''LAB REPORT
-Clinic: CarePaw Veterinary
-Patient: Luna (Cat)
-Test: Complete Blood Count
-Date: 2024-01-15
-WBC: 12.5 K/uL (Normal)
-RBC: 6.8 M/uL (Normal)
-HGB: 14.2 g/dL (Normal)
-PLT: 280 K/uL (Normal)''';
-      default:
-        return 'Scanned document text content...';
-    }
   }
-
-  String _generateMockExtractedData(domain.ScanType type) {
-    switch (type) {
-      case domain.ScanType.receipt:
-        return '{"items":[{"name":"Amoxicillin 250mg","quantity":30,"unit":"tabs","price":45.00},{"name":"Vitamin B Complex","quantity":100,"unit":"tabs","price":22.50}],"total":89.10}';
-      case domain.ScanType.medicineBox:
-        return '{"name":"Amoxicillin 250mg","batch":"AMX2024001","expiry":"2026-01-01","quantity":30,"unit":"capsules"}';
-      case domain.ScanType.prescription:
-        return '{"medication":"Amoxicillin 250mg","dosage":"1 capsule twice daily","duration":"7 days"}';
-      case domain.ScanType.labReport:
-        return '{"test":"CBC","results":{"WBC":"12.5","RBC":"6.8","HGB":"14.2","PLT":"280"}}';
-      default:
-        return '{}';
-    }
-  }
-}

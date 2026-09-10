@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart' as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
@@ -10,13 +9,14 @@ import 'package:carepaw/features/notifications/presentation/pages/notification_s
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
-import 'package:carepaw/core/widgets/common/cp_empty_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -208,11 +208,11 @@ class _NotificationListPageState extends State<NotificationListPage>
     return BlocBuilder<NotificationBloc, NotificationState>(
       builder: (context, state) {
         if (state is NotificationLoading) {
-          return const Center(child: NeuCircularProgress());
+          return const NeuSkeletonList();
         }
 
         if (state is NotificationError) {
-          return CpEmptyState(
+          return _EmptyState(
             icon: Icons.error_outline_rounded,
             title: 'Error Loading Notifications',
             message: state.failure.message,
@@ -244,7 +244,7 @@ class _NotificationListPageState extends State<NotificationListPage>
         }
 
         if (notifications.isEmpty) {
-          return CpEmptyState(
+          return _EmptyState(
             icon: _getTypeIcon(type ?? domain.NotificationType.system),
             title: type != null
                 ? 'No ${type.displayName} Notifications'
@@ -274,7 +274,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                 );
               }
               final notification = notifications[index];
-              return _buildNotificationCard(notification, index);
+              return _buildNotificationCard(notification);
             },
           ),
         );
@@ -288,7 +288,7 @@ class _NotificationListPageState extends State<NotificationListPage>
         if (state is NotificationsLoaded) {
           final unread = state.notifications.where((n) => !n.isRead).toList();
           if (unread.isEmpty) {
-            return CpEmptyState(
+            return _EmptyState(
               icon: Icons.mark_email_read_rounded,
               title: 'All Caught Up!',
               message: 'No unread notifications',
@@ -300,11 +300,11 @@ class _NotificationListPageState extends State<NotificationListPage>
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
             itemCount: unread.length,
             itemBuilder: (context, index) {
-              return _buildNotificationCard(unread[index], index, highlightUnread: true);
+              return _buildNotificationCard(unread[index], highlightUnread: true);
             },
           );
         }
-        return const Center(child: NeuCircularProgress());
+        return const NeuSkeletonList();
       },
     );
   }
@@ -315,7 +315,7 @@ class _NotificationListPageState extends State<NotificationListPage>
         if (state is NotificationsByTypeLoaded) {
           final notifications = state.notifications;
           if (notifications.isEmpty) {
-            return CpEmptyState(
+            return _EmptyState(
               icon: _getTypeIcon(type),
               title: 'No ${type.displayName} Notifications',
               message: 'Notifications of this type will appear here',
@@ -325,14 +325,14 @@ class _NotificationListPageState extends State<NotificationListPage>
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
             itemCount: notifications.length,
             itemBuilder: (context, index) {
-              return _buildNotificationCard(notifications[index], index);
+              return _buildNotificationCard(notifications[index]);
             },
           );
         }
         if (state is NotificationLoading) {
-          return const Center(child: NeuCircularProgress());
+          return const NeuSkeletonList();
         }
-        return CpEmptyState(
+        return _EmptyState(
           icon: _getTypeIcon(type),
           title: 'No ${type.displayName} Notifications',
           message: 'Pull to refresh',
@@ -346,8 +346,7 @@ class _NotificationListPageState extends State<NotificationListPage>
   }
 
   Widget _buildNotificationCard(
-    domain.Notification notification,
-    int index, {
+    domain.Notification notification, {
     bool highlightUnread = false,
   }) {
     final isUnread = !notification.isRead;
@@ -355,7 +354,7 @@ class _NotificationListPageState extends State<NotificationListPage>
 
     return NeuCard(
       padding: const EdgeInsets.all(16),
-      variant: isUnread ? NeuVariant.raised : NeuVariant.raised,
+      variant: NeuVariant.raised,
       borderColor: isUnread ? typeColor.withValues(alpha: 0.3) : null,
       borderWidth: isUnread ? 1 : 0,
       child: Column(
@@ -479,7 +478,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                     text: 'Mark Read',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.mark_email_read_rounded,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     onPressed: () {
                       context.read<NotificationBloc>().add(
                         MarkAsRead(notification.id!),
@@ -494,7 +493,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                     text: 'View Details',
                     variant: NeuButtonVariant.secondary,
                     icon: Icons.visibility_rounded,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     onPressed: () => _navigateToDetail(notification),
                     expanded: true,
                   ),
@@ -505,7 +504,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                   text: isUnread ? 'Dismiss' : 'Delete',
                   variant: isUnread ? NeuButtonVariant.outline : NeuButtonVariant.outline,
                   icon: isUnread ? Icons.close_rounded : Icons.delete_outline_rounded,
-                  size: NeuButtonSize.small,
+                  size: NeuButtonSize.medium,
                   onPressed: () {
                     if (isUnread) {
                       context.read<NotificationBloc>().add(
@@ -522,9 +521,6 @@ class _NotificationListPageState extends State<NotificationListPage>
           ),
         ],
       ),
-    ).animate().fadeIn(
-      duration: 300.ms,
-      delay: Duration(milliseconds: 50 * (index % 10)),
     );
   }
 
@@ -543,15 +539,15 @@ class _NotificationListPageState extends State<NotificationListPage>
   Color _getTypeColor(domain.NotificationType type) {
     switch (type) {
       case domain.NotificationType.appointmentReminder:
-        return AppColors.primary;
+        return ThemeColors.primary(context);
       case domain.NotificationType.queueUpdate:
-        return AppColors.warning;
+        return _isDark ? AppColors.warningOnDark : AppColors.warning;
       case domain.NotificationType.prescriptionReady:
         return AppColors.categorySupply;
       case domain.NotificationType.inventoryLow:
-        return AppColors.success;
+        return _isDark ? AppColors.successOnDark : AppColors.success;
       case domain.NotificationType.system:
-        return AppColors.textSecondary;
+        return _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
     }
   }
 
@@ -602,7 +598,7 @@ class _NotificationListPageState extends State<NotificationListPage>
               Navigator.pop(context);
               context.read<NotificationBloc>().add(DeleteNotification(notificationId));
             },
-            child: Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
           ),
         ],
       ),
@@ -724,7 +720,7 @@ class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
         ],
         indicatorColor: AppColors.primary,
         indicatorWeight: 3,
-        labelColor: AppColors.primary,
+        labelColor: isDark ? AppColors.primaryOnDark : AppColors.primary,
         unselectedLabelColor: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
         labelStyle: AppTextStyles.labelLarge.copyWith(
           fontWeight: FontWeight.w600,
@@ -747,6 +743,81 @@ class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
     return false;
+  }
+}
+
+/// Empty state shown when a notification tab has no content.
+class _EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: NeuCard(
+          borderRadius: 20,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NeuContainer(
+                borderRadius: 90,
+                padding: const EdgeInsets.all(22),
+                color: AppColors.primary,
+                boxShadow: NeuShadow.color(
+                  context,
+                  AppColors.primary,
+                  blur: 24,
+                  opacity: 0.32,
+                ),
+                child: Icon(icon, size: 48, color: AppColors.textOnPrimary),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (actionLabel != null && onAction != null) ...[
+                const SizedBox(height: 20),
+                NeuButton(
+                  text: actionLabel!,
+                  onPressed: onAction,
+                  variant: NeuButtonVariant.primary,
+                  size: NeuButtonSize.medium,
+                  icon: Icons.refresh_rounded,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

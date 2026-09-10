@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart' as scan_event;
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -20,37 +21,7 @@ class ScanDetailPage extends StatefulWidget {
   State<ScanDetailPage> createState() => _ScanDetailPageState();
 }
 
-class _ScanDetailPageState extends State<ScanDetailPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
-    );
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
+class _ScanDetailPageState extends State<ScanDetailPage> {
   @override
   Widget build(BuildContext context) {
     final record = widget.record;
@@ -58,44 +29,35 @@ class _ScanDetailPageState extends State<ScanDetailPage>
     final statusColor = _getStatusColor(record.status);
 
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          typeColor.withValues(alpha: 0.08),
-          AppColors.surface,
-        ],
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(record, typeColor),
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                    child: Column(
-                      children: [
-                        _buildScanCard(record, typeColor, statusColor),
-                        const SizedBox(height: 16),
-                        _buildMetaSection(record),
-                        if (record.rawOcrText != null) ...[
-                          const SizedBox(height: 16),
-                          _buildOcrSection(record),
-                        ],
-                        if (record.extractedData != null) ...[
-                          const SizedBox(height: 16),
-                          _buildExtractedDataSection(record),
-                        ],
-                        const SizedBox(height: 24),
-                        _buildActionButtons(record, typeColor),
-                      ],
-                    ),
-                  ),
-                ),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.backgroundDark
+          : AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          _buildAppBar(record, typeColor),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                children: [
+                  _buildScanCard(record, typeColor, statusColor),
+                  const SizedBox(height: 16),
+                  _buildMetaSection(record),
+                  if (record.rawOcrText != null) ...[
+                    const SizedBox(height: 16),
+                    _buildOcrSection(record),
+                  ],
+                  if (record.extractedData != null) ...[
+                    const SizedBox(height: 16),
+                    _buildExtractedDataSection(record),
+                  ],
+                  const SizedBox(height: 24),
+                  _buildActionButtons(record, typeColor),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -107,12 +69,12 @@ class _ScanDetailPageState extends State<ScanDetailPage>
       pinned: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded),
-        onPressed: () => Navigator.pop(context),
-        style: IconButton.styleFrom(
-          backgroundColor: AppColors.surfaceContainerHighest,
-          foregroundColor: AppColors.textPrimary,
+      scrolledUnderElevation: 0,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: NeuIconButton(
+          icon: Icons.arrow_back_rounded,
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -125,7 +87,7 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               'Scan Detail',
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
             ),
             const SizedBox(height: 2),
@@ -145,30 +107,17 @@ class _ScanDetailPageState extends State<ScanDetailPage>
             ),
           ],
         ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface.withValues(alpha: 0.9),
-                AppColors.surface.withValues(alpha: 0.7),
-              ],
-            ),
-          ),
-        ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.delete_outline_rounded),
-          onPressed: _showDeleteConfirmation,
-          tooltip: 'Delete',
-          style: IconButton.styleFrom(
-            backgroundColor: AppColors.surfaceContainerHighest,
-            foregroundColor: AppColors.error,
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: NeuIconButton(
+            icon: Icons.delete_outline_rounded,
+            onPressed: _showDeleteConfirmation,
+            color: ThemeColors.error(context),
+            tooltip: 'Delete',
           ),
         ),
-        const SizedBox(width: 8),
       ],
     );
   }
@@ -178,23 +127,21 @@ class _ScanDetailPageState extends State<ScanDetailPage>
     Color typeColor,
     Color statusColor,
   ) {
-    return GlassContainer(
+    return NeuCard(
       padding: const EdgeInsets.all(20),
       borderRadius: 20,
-      blur: 15,
       borderColor: typeColor.withValues(alpha: 0.2),
+      borderWidth: 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with icon and status
           Row(
             children: [
-              Container(
+              NeuContainer(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: _getTypeGradient(record.scanType),
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                borderRadius: 16,
+                color: typeColor,
                 child: Icon(
                   _getTypeIcon(record.scanType),
                   size: 28,
@@ -210,7 +157,7 @@ class _ScanDetailPageState extends State<ScanDetailPage>
                       record.scanType.displayName,
                       style: AppTextStyles.headlineSmall.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: ThemeColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -261,13 +208,13 @@ class _ScanDetailPageState extends State<ScanDetailPage>
                 Icon(
                   Icons.analytics_rounded,
                   size: 20,
-                  color: AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Confidence: ${(record.confidenceScore! * 100).toStringAsFixed(1)}%',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -276,7 +223,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
             const SizedBox(height: 12),
             LinearProgressIndicator(
               value: record.confidenceScore,
-              backgroundColor: AppColors.surfaceContainerHighest,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceContainerDark
+              : AppColors.surfaceContainerHighest,
               valueColor: AlwaysStoppedAnimation<Color>(
                 record.confidenceScore! >= 0.8
                     ? AppColors.success
@@ -297,14 +246,14 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               Icon(
                 Icons.image_rounded,
                 size: 20,
-                color: AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Image: ${record.imagePath}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                     fontFamily: 'monospace',
                   ),
                   maxLines: 2,
@@ -319,10 +268,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
   }
 
   Widget _buildMetaSection(ScanRecord record) {
-    return GlassContainer(
+    return NeuCard(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      blur: 10,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -331,14 +279,14 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               Icon(
                 Icons.info_outline_rounded,
                 size: 20,
-                color: AppColors.primary,
+                color: ThemeColors.primary(context),
               ),
               const SizedBox(width: 8),
               Text(
                 'Details',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -356,10 +304,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
   }
 
   Widget _buildOcrSection(ScanRecord record) {
-    return GlassContainer(
+    return NeuCard(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      blur: 10,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -368,14 +315,14 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               Icon(
                 Icons.text_fields_rounded,
                 size: 20,
-                color: AppColors.primary,
+                color: ThemeColors.primary(context),
               ),
               const SizedBox(width: 8),
               Text(
                 'Raw OCR Text',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -385,14 +332,16 @@ class _ScanDetailPageState extends State<ScanDetailPage>
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHighest,
+              color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceContainerDark
+              : AppColors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
             child: SingleChildScrollView(
               child: Text(
                 record.rawOcrText!,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                   fontFamily: 'monospace',
                   height: 1.4,
                 ),
@@ -405,10 +354,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
   }
 
   Widget _buildExtractedDataSection(ScanRecord record) {
-    return GlassContainer(
+    return NeuCard(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      blur: 10,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -417,14 +365,14 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               Icon(
                 Icons.data_object_rounded,
                 size: 20,
-                color: AppColors.primary,
+                color: ThemeColors.primary(context),
               ),
               const SizedBox(width: 8),
               Text(
                 'Extracted Data',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -434,14 +382,16 @@ class _ScanDetailPageState extends State<ScanDetailPage>
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHighest,
+              color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceContainerDark
+              : AppColors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
             child: SingleChildScrollView(
               child: Text(
                 record.extractedData!,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                   fontFamily: 'monospace',
                   height: 1.4,
                 ),
@@ -464,7 +414,7 @@ class _ScanDetailPageState extends State<ScanDetailPage>
             child: Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -474,7 +424,7 @@ class _ScanDetailPageState extends State<ScanDetailPage>
             child: Text(
               value,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
             ),
           ),
@@ -490,9 +440,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
       children: [
         if (isPending)
           Expanded(
-            child: CpButton(
+            child: NeuButton(
               text: 'Confirm',
-              variant: ButtonVariant.primary,
+              variant: NeuButtonVariant.primary,
               icon: Icons.check_circle_rounded,
               onPressed: () {
                 context.read<ScanBloc>().add(scan_event.ConfirmScanRecord(recordId: record.id!));
@@ -503,9 +453,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
           )
         else
           Expanded(
-            child: CpButton(
+            child: NeuButton(
               text: 'Back to List',
-              variant: ButtonVariant.secondary,
+              variant: NeuButtonVariant.secondary,
               icon: Icons.arrow_back_rounded,
               onPressed: () => Navigator.pop(context),
               expanded: true,
@@ -513,9 +463,9 @@ class _ScanDetailPageState extends State<ScanDetailPage>
           ),
         const SizedBox(width: 12),
         Expanded(
-          child: CpButton(
+          child: NeuButton(
             text: isPending ? 'Reject' : 'Delete',
-            variant: ButtonVariant.outline,
+            variant: NeuButtonVariant.outline,
             icon: isPending ? Icons.close_rounded : Icons.delete_outline_rounded,
             onPressed: () {
               if (isPending) {
@@ -529,7 +479,6 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               }
             },
             expanded: true,
-            foregroundColor: AppColors.error,
           ),
         ),
       ],
@@ -553,26 +502,12 @@ class _ScanDetailPageState extends State<ScanDetailPage>
               context.read<ScanBloc>().add(scan_event.DeleteScanRecord(widget.record.id!));
               Navigator.pop(context, true);
             },
-            child: Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: Text('Delete',
+                style: TextStyle(color: ThemeColors.error(context))),
           ),
         ],
       ),
     );
-  }
-
-  LinearGradient _getTypeGradient(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]);
-      case ScanType.medicineBox:
-        return const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]);
-      case ScanType.prescription:
-        return LinearGradient(colors: [AppColors.categorySupply, AppColors.categorySupplyDark]);
-      case ScanType.labReport:
-        return const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]);
-      case ScanType.other:
-        return const LinearGradient(colors: [Color(0xFF6B7280), Color(0xFF4B5563)]);
-    }
   }
 
   Color _getTypeColor(ScanType type) {
@@ -591,13 +526,14 @@ class _ScanDetailPageState extends State<ScanDetailPage>
   }
 
   Color _getStatusColor(ScanStatus status) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case ScanStatus.pending:
-        return AppColors.warning;
+        return isDark ? AppColors.warningOnDark : AppColors.warning;
       case ScanStatus.confirmed:
-        return AppColors.success;
+        return isDark ? AppColors.successOnDark : AppColors.success;
       case ScanStatus.rejected:
-        return AppColors.error;
+        return isDark ? AppColors.errorOnDark : AppColors.error;
     }
   }
 

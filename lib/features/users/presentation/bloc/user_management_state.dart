@@ -21,10 +21,24 @@ class UserManagementLoading extends UserManagementState {
 }
 
 /// Comfortably-loaded state with the user list (staff + veterinarians).
+///
+/// Carries the previous list through the loading phase so the page keeps
+/// filtering and pagination visible while a create/role/active mutation reloads.
 class UserManagementLoaded extends UserManagementState {
   final List<User> users;
 
   const UserManagementLoaded(this.users);
+
+  @override
+  List<Object?> get props => [users];
+}
+
+/// Mutation in flight — still holds the last good list so the page does not
+/// lose search/filter/pagination while the re-load fires.
+class UserManagementMutating extends UserManagementState {
+  final List<User> users;
+
+  const UserManagementMutating(this.users);
 
   @override
   List<Object?> get props => [users];
@@ -41,11 +55,16 @@ class UserManagementActionSuccess extends UserManagementState {
 }
 
 /// Error state with failure information.
+///
+/// Carries the previous list so the page does not lose its filtered view
+/// when a transient mutation fails; the listener surfaces the failure as a
+/// SnackBar and the page re-dispatches a load to refresh.
 class UserManagementError extends UserManagementState {
   final Failure failure;
+  final List<User> users;
 
-  const UserManagementError(this.failure);
+  const UserManagementError(this.failure, [this.users = const []]);
 
   @override
-  List<Object?> get props => [failure];
+  List<Object?> get props => [failure, users];
 }

@@ -45,6 +45,9 @@ class AppColors {
   /// Soft blue tint for selected chips / badges
   static const Color primaryTint = Color(0xFFE8F1FB);
 
+  /// Blue tint plate for dark backgrounds (matches dark theme primaryContainer)
+  static const Color primaryTintOnDark = Color(0xFF16324F);
+
   // ============ Neomorphic Shadow Colors ============
   // Light mode: white light source (upper-left) + gray-blue shadow (lower-right)
   static const Color shadowLight = Color(0xFFFFFFFF);
@@ -55,13 +58,17 @@ class AppColors {
   static const Color shadowDarkOnDark = Color(0xFF1A1C20);
 
   // ============ Text Colors ============
+  // Contrast-tuned against the neomorphic canvas: textPrimary 9.5:1,
+  // textSecondary 5.1:1, textTertiary 4.5:1 in light mode — all pass WCAG AA
+  // so fonts stay dark (not washed out) on the light-gray canvas. The OnDark
+  // variants invert the ramp for the dark canvas.
   static const Color textPrimary = Color(0xFF2D3748);
-  static const Color textSecondary = Color(0xFF718096);
-  static const Color textTertiary = Color(0xFFA0AEC0);
+  static const Color textSecondary = Color(0xFF4E6073);
+  static const Color textTertiary = Color(0xFF57697D);
 
   static const Color textPrimaryOnDark = Color(0xFFE8ECF1);
   static const Color textSecondaryOnDark = Color(0xFFA7B0BC);
-  static const Color textTertiaryOnDark = Color(0xFF6E7682);
+  static const Color textTertiaryOnDark = Color(0xFF8B95A3);
 
   // ============ Status Colors ============
   static const Color error = Color(0xFFE53E3E);
@@ -137,52 +144,6 @@ class AppColors {
   static const Color divider = border;
   static const Color dividerDark = borderDark;
 
-  // Glass (legacy effect system)
-  static const Color glassBorderLight = Color(0x66FFFFFF);
-  static const Color glassBorderDark = Color(0x33000000);
-  static const Color glassLight = Color(0x190066CC);
-  static const Color glassDark = Color(0x330050A5);
-  static const Color glassHighlightLight = Color(0x99FFFFFF);
-  static const Color glassHighlightDark = Color(0x26000000);
-
-  // Legacy premium-shadow colors (used by premium_shadows.dart, being removed)
-  static const Color shadow1 = Color(0x14000000);
-  static const Color shadow2 = Color(0x1A000000);
-  static const Color shadow3 = Color(0x22000000);
-  static const Color shadow4 = Color(0x2E000000);
-  static const Color shadow5 = Color(0x3D000000);
-  static const Color shadowDark1 = Color(0x52FFFFFF);
-  static const Color shadowDark2 = Color(0x40FFFFFF);
-  static const Color shadowDark3 = Color(0x33FFFFFF);
-  static const Color shadowDark4 = Color(0x2BFFFFFF);
-  static const Color shadowDark5 = Color(0x21FFFFFF);
-  static const Color shadowPrimary = Color(0x330066CC);
-  static const Color shadowError = Color(0x33E53E3E);
-  static const Color shadowSuccess = Color(0x3338A169);
-  static const Color shadowWarning = Color(0x33DD6B20);
-
-  // Gradients (legacy) — flat blue/gray neumorphic gradients
-  static const LinearGradient gradientPrimary = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [primary, primaryLight],
-  );
-  static const LinearGradient gradientError = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [error, Color(0xFFF87171)],
-  );
-  static const LinearGradient gradientSuccess = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [success, Color(0xFF6EE7B7)],
-  );
-  static const LinearGradient gradientWarning = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [warning, Color(0xFFFDBA74)],
-  );
-
   // Status
   static const Color info = primaryLight;
   static const Color infoDark = primaryOnDark;
@@ -196,9 +157,7 @@ class AppColors {
   static const Color categoryMedicine = Color(0xFF38A169);
   static const Color categoryVaccine = primaryLight;
   static const Color categorySupply = Color(0xFF718096);
-  static const Color categorySupplyDark = Color(0xFF4A5568);
   static const Color categoryEquipment = Color(0xFF6B7280);
-  static const Color categoryEquipmentDark = Color(0xFF374151);
 
   // Pet accent aliases (species color helper)
   static const Color dogAccent = accentDog;
@@ -207,6 +166,80 @@ class AppColors {
   static const Color rabbitAccent = accentRabbit;
   static const Color reptileAccent = accentReptile;
   static const Color otherAccent = accentDefault;
+}
+
+// ============ Theme-aware helpers ============
+
+/// Convenience helpers that resolve the correct light/dark color based on the
+/// current [BuildContext]'s brightness. Use these everywhere instead of
+/// hardcoding `AppColors.textPrimary` or `AppColors.textSecondary`.
+extension ThemeColors on AppColors {
+  static Color textPrimary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textPrimaryOnDark
+          : AppColors.textPrimary;
+
+  static Color textSecondary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textSecondaryOnDark
+          : AppColors.textSecondary;
+
+  static Color textTertiary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textTertiaryOnDark
+          : AppColors.textTertiary;
+
+  static Color primary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.primaryOnDark
+          : AppColors.primary;
+
+  // ---- Status colors (semantic) ----
+  static Color error(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.errorOnDark
+          : AppColors.error;
+
+  static Color success(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.successOnDark
+          : AppColors.success;
+
+  static Color warning(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.warningOnDark
+          : AppColors.warning;
+
+  static Color info(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.infoDark
+          : AppColors.info;
+
+  // ---- Borders & surfaces ----
+  static Color border(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.borderDark
+          : AppColors.border;
+
+  static Color borderStrong(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.borderStrongDark
+          : AppColors.borderStrong;
+
+  static Color surfaceContainer(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.surfaceContainerDark
+          : AppColors.surfaceContainer;
+
+  static Color surfaceVariant(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.surfaceVariantDark
+          : AppColors.surfaceVariant;
+
+  static Color primaryTint(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.primaryTintOnDark
+          : AppColors.primaryTint;
 }
 
 /// Legacy color helpers — scale a color's luminance. Used by a few not-yet-

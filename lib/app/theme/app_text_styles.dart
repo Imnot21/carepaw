@@ -211,9 +211,6 @@ class AppTextStyles {
   /// Secondary text (soft gray)
   static TextStyle secondary(TextStyle style) => style.copyWith(color: AppColors.textSecondary);
 
-  /// Tertiary-text alias (kept for legacy call sites) — teal accent.
-  static TextStyle tertiary(TextStyle style) => style.copyWith(color: AppColors.tertiary);
-
   /// Subtle text (for secondary content) - light theme
   static TextStyle subtle(TextStyle style) => style.copyWith(color: AppColors.textSecondary);
 
@@ -252,36 +249,6 @@ class AppTextStyles {
   /// Info text
   static TextStyle info(TextStyle style) => style.copyWith(color: AppColors.info);
 
-  // ============ Legacy Effect API (flattened / deprioritized) ============
-
-  /// Legacy gradient — flattened to solid primary color for neomorphism.
-  static TextStyle gradient(TextStyle style, Gradient _) => style.copyWith(color: AppColors.primary);
-
-  /// Primary gradient text — flattened to primary color.
-  static TextStyle primaryGradient(TextStyle style) => style.copyWith(color: AppColors.primary);
-
-  /// Legacy glow — replaced with a subtle soft shadow.
-  static TextStyle glow(TextStyle style, Color color) => style.copyWith(
-        shadows: [
-          Shadow(
-            color: color.withValues(alpha: 0.35),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      );
-
-  /// Primary glow text
-  static TextStyle primaryGlow(TextStyle style) => glow(style, AppColors.primary);
-
-  /// Success glow text
-  static TextStyle successGlow(TextStyle style) => glow(style, AppColors.success);
-
-  /// Warning glow text
-  static TextStyle warningGlow(TextStyle style) => glow(style, AppColors.warning);
-
-  /// Error glow text
-  static TextStyle errorGlow(TextStyle style) => glow(style, AppColors.error);
 }
 
 /// Extension for easy text style modifications.

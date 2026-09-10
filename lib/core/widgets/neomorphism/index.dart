@@ -14,5 +14,7 @@ export 'neu_text_field.dart' show NeuTextField;
 export 'neu_switch.dart' show NeuSwitch;
 export 'neu_chip.dart' show NeuChip;
 export 'neu_progress.dart' show NeuProgress, NeuCircularProgress;
+export 'neu_skeleton.dart'
+    show NeuShimmer, NeuSkeletonBox, NeuSkeletonList, NeuSkeletonDetail;
 export 'neu_avatar.dart' show NeuAvatar;
 export 'neu_bottom_nav.dart' show NeuBottomNav, NeuNavItem;

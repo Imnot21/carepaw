@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
@@ -56,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.failure.message),
-              backgroundColor: AppColors.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -66,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Welcome back, ${state.user.fullName}!'),
-              backgroundColor: AppColors.success,
+              backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -168,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
                               isLoading: isLoading,
                               expanded: true,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.large,
+                              size: NeuButtonSize.medium,
                             );
                           },
                         ),
@@ -231,7 +230,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-      ).animate().fadeIn(duration: 300.ms),
+      ),
     );
   }
 

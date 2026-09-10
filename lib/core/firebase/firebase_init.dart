@@ -66,18 +66,14 @@ class FirebaseInit {
 
   /// Configure App Check for security.
   ///
-  /// - Debug: Uses debug provider (prints token to console for emulator testing)
+  /// - Debug: Skipped — the App Check API is not enabled for the Firebase
+  ///   project, so the debug provider only 403s and rate-limits local runs.
+  ///   Re-enable once `firebaseappcheck.googleapis.com` is enabled and the
+  ///   debug token is registered in the console.
   /// - Release Android: Play Integrity
   /// - Release iOS: DeviceCheck
   static Future<void> _configureAppCheck() async {
-    if (kDebugMode) {
-      // Debug provider - allows testing with Firebase Emulators
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.debug,
-        appleProvider: AppleProvider.debug,
-        webProvider: ReCaptchaV3Provider('debug-key'),
-      );
-    } else {
+    if (!kDebugMode) {
       // Production providers
       await FirebaseAppCheck.instance.activate(
         androidProvider: AndroidProvider.playIntegrity,

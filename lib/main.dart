@@ -8,7 +8,6 @@ import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/core/storage/local_storage.dart';
 import 'package:carepaw/core/security/secure_storage.dart';
 import 'package:carepaw/core/firebase/firebase_init.dart';
-import 'package:carepaw/core/sync/background_sync.dart';
 import 'package:carepaw/core/notifications/local_notification_service.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
@@ -101,15 +100,6 @@ class _CarePawAppState extends State<CarePawApp> {
     } catch (e) {
       debugPrint('⚠️ Dependency configuration failed: $e');
       _initError = e;
-    }
-
-    try {
-      debugPrint('🔄 Initializing Background Sync...');
-      final syncController = getIt<SyncController>();
-      await syncController.initialize().timeout(const Duration(seconds: 10));
-      debugPrint('✅ Background Sync initialized');
-    } catch (e) {
-      debugPrint('⚠️ Background Sync init failed: $e');
     }
 
     if (mounted) {

@@ -11,16 +11,15 @@ import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/scale_on_tap.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
 /// Page for creating/editing medical records with premium design.
 class MedicalRecordFormPage extends StatefulWidget {
@@ -89,7 +88,6 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
           return const _NotLoggedInView();
         }
 
-        // Check if user is vet, staff, or admin - only these roles can create/edit medical records
         final user = authState.user;
         final isVetOrStaff = user.role == UserRole.veterinarian ||
                             user.role == UserRole.staff ||
@@ -134,7 +132,6 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             }
           },
           child: Scaffold(
-            extendBodyBehindAppBar: true,
             appBar: AppBar(
               title: Text(
                 isEditing ? 'Edit Record' : 'New Record',
@@ -146,70 +143,54 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                onPressed: _isLoading ? null : () => context.pop(),
+              leading: Padding(
+                padding: const EdgeInsets.all(8),
+                child: NeuIconButton(
+                  icon: Icons.arrow_back_ios_new_rounded,
+                  onPressed: _isLoading ? null : () => context.pop(),
+                  tooltip: 'Back',
+                ),
               ),
             ),
-            body: AnimatedGradientBackground(
-              colors: [
-                speciesColor.withValues(alpha: 0.05),
-                AppColors.primary.withValues(alpha: 0.03),
-              ],
-              child: Form(
-                key: _formKey,
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    // Pet header
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-                      sliver: SliverToBoxAdapter(
-                        child: FloatingAnimation(
-                          delay: const Duration(milliseconds: 50),
-                          child: _buildPetHeader(context, speciesColor),
-                        ),
-                      ),
+            body: Form(
+              key: _formKey,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Pet header
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                    sliver: SliverToBoxAdapter(
+                      child: _buildPetHeader(context, speciesColor),
                     ),
+                  ),
 
-                    // Record type selector
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      sliver: SliverToBoxAdapter(
-                        child: FloatingAnimation(
-                          delay: const Duration(milliseconds: 100),
-                          child: _buildTypeSelector(context, speciesColor),
-                        ),
-                      ),
+                  // Record type selector
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverToBoxAdapter(
+                      child: _buildTypeSelector(context, speciesColor),
                     ),
+                  ),
 
-                    // Form fields
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                      sliver: SliverList.separated(
-                        itemCount: _getFields().length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          return FloatingAnimation(
-                            delay: Duration(milliseconds: 120 + 60 * index),
-                            child: _getFields()[index],
-                          );
-                        },
-                      ),
+                  // Form fields
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    sliver: SliverList.separated(
+                      itemCount: _getFields().length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) => _getFields()[index],
                     ),
+                  ),
 
-                    // Submit button
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
-                      sliver: SliverToBoxAdapter(
-                        child: FloatingAnimation(
-                          delay: const Duration(milliseconds: 300),
-                          child: _buildSubmitButton(context, speciesColor, isEditing),
-                        ),
-                      ),
+                  // Submit button
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+                    sliver: SliverToBoxAdapter(
+                      child: _buildSubmitButton(context, isEditing),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -221,15 +202,10 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
   Widget _buildPetHeader(BuildContext context, Color speciesColor) {
     return Row(
       children: [
-        PulsingGlow(
-          glowColor: speciesColor,
-          maxRadius: 18,
-          duration: const Duration(seconds: 3),
-          child: PetUtils.buildAvatar(
-            species: widget.pet.species,
-            radius: 36,
-            iconSize: 36,
-          ),
+        PetUtils.buildAvatar(
+          species: widget.pet.species,
+          radius: 36,
+          iconSize: 36,
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -255,12 +231,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                speciesColor.withValues(alpha: 0.2),
-                speciesColor.withValues(alpha: 0.1),
-              ],
-            ),
+            color: speciesColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: speciesColor.withValues(alpha: 0.3),
@@ -281,11 +252,11 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
   Widget _buildTypeSelector(BuildContext context, Color speciesColor) {
     final types = MedicalRecordType.values;
 
-    return GlassContainer(
-      padding: const EdgeInsets.all(20),
+    return NeuCard(
       borderRadius: 20,
+      padding: const EdgeInsets.all(20),
       borderColor: speciesColor.withValues(alpha: 0.2),
-      boxShadow: PremiumShadows.level2,
+      borderWidth: 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -294,12 +265,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      speciesColor.withValues(alpha: 0.2),
-                      speciesColor.withValues(alpha: 0.1),
-                    ],
-                  ),
+                  color: speciesColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -322,56 +288,13 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             spacing: 8,
             runSpacing: 8,
             children: types.map((type) {
-              final typeInfo = MedicalRecordUtils.getTypeInfo(type);
-              final isSelected = _selectedType == type;
-
-              return ScaleOnTap(
+              final typeInfo = MedicalRecordUtils.getTypeInfo(context, type);
+              return NeuChip(
+                label: type.displayName,
+                icon: typeInfo.icon,
+                selected: _selectedType == type,
+                selectedColor: typeInfo.color,
                 onTap: () => setState(() => _selectedType = type),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? LinearGradient(
-                            colors: [typeInfo.color, typeInfo.color.withValues(alpha: 0.8)],
-                          )
-                        : LinearGradient(
-                            colors: [
-                              Theme.of(context).colorScheme.surface,
-                              Theme.of(context).colorScheme.surfaceContainerHighest,
-                            ],
-                          ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.transparent
-                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                      width: 1.5,
-                    ),
-                    boxShadow: isSelected
-                        ? PremiumShadows.glow(context, typeInfo.color, intensity: 0.3)
-                        : PremiumShadows.level1,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        typeInfo.icon,
-                        size: 18,
-                        color: isSelected ? Colors.white : typeInfo.color,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        type.displayName,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               );
             }).toList(),
           ),
@@ -621,11 +544,9 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(20),
+    return NeuCard(
       borderRadius: 20,
-      borderColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-      boxShadow: PremiumShadows.level2,
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -646,7 +567,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             ],
           ),
           const SizedBox(height: 12),
-          CpTextField(
+          NeuTextField(
             controller: controller,
             hint: hint,
             maxLines: maxLines,
@@ -657,14 +578,15 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     );
   }
 
-  Widget _buildSubmitButton(BuildContext context, Color speciesColor, bool isEditing) {
-    return CpButton(
+  Widget _buildSubmitButton(BuildContext context, bool isEditing) {
+    return NeuButton(
       text: isEditing ? 'Update Record' : 'Create Record',
       onPressed: _isLoading ? null : _submitForm,
       icon: isEditing ? Icons.save_rounded : Icons.add_rounded,
       isLoading: _isLoading,
-      backgroundColor: speciesColor,
-      foregroundColor: Colors.white,
+      expanded: true,
+      size: NeuButtonSize.medium,
+      variant: NeuButtonVariant.primary,
     );
   }
 
@@ -704,7 +626,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         return CreateVisitRecord(
           petId: widget.pet.id!,
           veterinarianId: userId,
-          appointmentId: null, // Could be linked later
+          appointmentId: null,
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim().isEmpty
               ? null
@@ -810,7 +732,6 @@ class _NotLoggedInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('New Medical Record'),
         centerTitle: true,
@@ -818,60 +739,46 @@ class _NotLoggedInView extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.06),
-          AppColors.tertiary.withValues(alpha: 0.04),
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.primary,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.primary,
-                    ),
-                    child: Icon(
-                      Icons.medical_information_outlined,
-                      size: 80,
-                      color: AppColors.textOnPrimary,
-                    ),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NeuContainer(
+                borderRadius: 80,
+                padding: const EdgeInsets.all(40),
+                color: AppColors.primary,
+                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                child: const Icon(
+                  Icons.medical_information_outlined,
+                  size: 80,
+                  color: AppColors.textOnPrimary,
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Please log in to create records',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Please log in to create records',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Sign in to add medical records for your pet',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to add medical records for your pet',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Log In',
-                  onPressed: () => context.go('/login'),
-                  icon: Icons.login_rounded,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Log In',
+                onPressed: () => context.go('/login'),
+                icon: Icons.login_rounded,
+              ),
+            ],
           ),
         ),
       ),
@@ -888,7 +795,6 @@ class _AccessDeniedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Medical Record'),
         centerTitle: true,
@@ -896,62 +802,48 @@ class _AccessDeniedView extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.error.withValues(alpha: 0.06),
-          AppColors.warning.withValues(alpha: 0.04),
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.error,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientError,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.glow(context, AppColors.error, intensity: 0.3),
-                    ),
-                    child: Icon(
-                      Icons.block_rounded,
-                      size: 80,
-                      color: Colors.white,
-                    ),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NeuContainer(
+                borderRadius: 80,
+                padding: const EdgeInsets.all(40),
+                color: AppColors.error,
+                boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.28),
+                child: const Icon(
+                  Icons.block_rounded,
+                  size: 80,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Access Denied',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.error,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Access Denied',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: ThemeColors.error(context),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Only veterinarians and clinic staff can create or edit medical records for $petName.\n\nMedical records are created during consultations and will appear here automatically.',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Only veterinarians and clinic staff can create or edit medical records for $petName.\n\nMedical records are created during consultations and will appear here automatically.',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Go Back',
-                  onPressed: () => context.pop(),
-                  icon: Icons.arrow_back_rounded,
-                  variant: ButtonVariant.secondary,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Go Back',
+                onPressed: () => context.pop(),
+                icon: Icons.arrow_back_rounded,
+                variant: NeuButtonVariant.secondary,
+              ),
+            ],
           ),
         ),
       ),

@@ -163,8 +163,10 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
     final pets = await _petRepository.findByOwner(ownerId);
     final petIds = pets.map((p) => p.id).whereType<int>().toSet();
     if (petIds.isEmpty) return [];
-    final all = await findAll();
-    return all.where((a) => petIds.contains(a.petId)).toList();
+    // Fetch per-pet rather than scanning the entire appointments collection,
+    // which grows with every pet/owner in the system.
+    final chunks = await Future.wait(petIds.map(findByPet));
+    return chunks.expand((x) => x).toList();
   }
 
   @override
@@ -331,11 +333,13 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
   }
 
   Future<List<AppointmentWithPetDetails>> _enrichWithPets(List<Appointment> appointments) async {
-    final result = <AppointmentWithPetDetails>[];
-    for (final appt in appointments) {
+    Future<AppointmentWithPetDetails?> enrichOne(Appointment appt) async {
       final pet = await _petRepository.findById(appt.petId);
-      if (pet != null) result.add(AppointmentWithPetDetails(appointment: appt, pet: pet));
+      if (pet == null) return null;
+      return AppointmentWithPetDetails(appointment: appt, pet: pet);
     }
-    return result;
+
+    final resolved = await Future.wait(appointments.map(enrichOne));
+    return resolved.whereType<AppointmentWithPetDetails>().toList();
   }
 }

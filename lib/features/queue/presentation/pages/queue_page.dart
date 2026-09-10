@@ -5,20 +5,23 @@ import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
+import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
+import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
+import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
+import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
+import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
-/// Queue page for pet owners - shows their position and wait time with premium design
+/// Queue page for pet owners - shows their position and wait time
 class QueuePage extends StatefulWidget {
   const QueuePage({super.key});
 
@@ -26,30 +29,13 @@ class QueuePage extends StatefulWidget {
   State<QueuePage> createState() => _QueuePageState();
 }
 
-class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _pulseAnimation;
-
+class _QueuePageState extends State<QueuePage> {
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
 
     // Load queue when page initializes
     context.read<QueueBloc>().add(QueueLoadRequested());
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   @override
@@ -70,75 +56,57 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
 
         return Scaffold(
           extendBodyBehindAppBar: true,
-          backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: const Text('Queue Status'),
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,
             backgroundColor: Colors.transparent,
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: CpIconButton(
-                  icon: Icons.refresh_rounded,
-                  onPressed: () {
-                    context.read<QueueBloc>().add(QueueLoadRequested());
-                  },
-                  tooltip: 'Refresh',
-                ),
-              ),
-            ],
+            // Reload happens via pull-to-refresh (RefreshIndicator) instead of a button.
           ),
-          body: AnimatedGradientBackground(
-            colors: [
-              AppColors.primary.withValues(alpha: 0.05),
-              AppColors.tertiary.withValues(alpha: 0.03),
-            ],
-            child: BlocConsumer<QueueBloc, QueueState>(
-              listener: (context, state) {
-                if (state is QueueOperationSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: AppColors.success,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
-                } else if (state is QueueError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: AppColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is QueueLoading) {
-                  return const Center(child: CpLoader());
-                }
+          body: BlocConsumer<QueueBloc, QueueState>(
+            listener: (context, state) {
+              if (state is QueueOperationSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: ThemeColors.success(context),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+              } else if (state is QueueError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: ThemeColors.error(context),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state is QueueLoading) {
+                return const NeuSkeletonList();
+              }
 
-                if (state is QueueError) {
-                  return _buildErrorState(state.message);
-                }
+              if (state is QueueError) {
+                return _buildErrorState(state.message);
+              }
 
-                if (state is QueueLoaded) {
-                  return _buildQueueView(state);
-                }
+              if (state is QueueLoaded) {
+                return _buildQueueView(state);
+              }
 
-                return _buildInitialState();
-              },
-            ),
-      ),
+              return _buildInitialState();
+            },
+          ),
+        );
+      },
     );
-  },
-);
   }
 
   Widget _buildInitialState() {
@@ -146,23 +114,15 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          PulsingGlow(
-            glowColor: AppColors.primary,
-            maxRadius: 40,
-            duration: const Duration(seconds: 3),
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                gradient: AppColors.gradientPrimary,
-                borderRadius: BorderRadius.circular(70),
-                boxShadow: PremiumShadows.primary,
-              ),
-              child: Icon(
-                Icons.queue,
-                size: 70,
-                color: AppColors.textOnPrimary,
-              ),
+          NeuContainer(
+            borderRadius: 70,
+            padding: const EdgeInsets.all(28),
+            color: AppColors.primary,
+            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+            child: const Icon(
+              Icons.queue,
+              size: 70,
+              color: AppColors.textOnPrimary,
             ),
           ),
           const SizedBox(height: 24),
@@ -176,7 +136,7 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
           const SizedBox(height: 12),
           Text(
             'Pull to refresh or wait for updates',
-            style: AppTextStyles.bodyLarge.subtle.copyWith(
+            style: AppTextStyles.bodyLarge.subtleOf(Theme.of(context).brightness).copyWith(
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -190,14 +150,49 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
     final hasQueueEntries = state.queueEntries.isNotEmpty;
     final userPosition = state.userPosition;
     final petsAhead = state.petsAhead;
+    final isInQueue = userPosition != null && userPosition > 0;
 
     // Calculate estimated wait time
     final estimatedWait = _calculateEstimatedWait(state);
 
+    Future<void> refresh() async {
+      context.read<QueueBloc>().add(QueueLoadRequested());
+    }
+
+    // No pets in the queue (and the user isn't currently queued): center the
+    // empty state vertically, consistent with the other pages, instead of
+    // pinning it under the app bar. Still scrollable + pull-to-refresh.
+    if (!hasQueueEntries && !isInQueue) {
+      return RefreshIndicator(
+        onRefresh: refresh,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 88, 16, 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _EmptyQueueCard(),
+                      const SizedBox(height: 24),
+                      _UpcomingCheckInSection(queueEntries: state.queueEntries),
+                      const SizedBox(height: 24),
+                      _QueueInfoCard(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<QueueBloc>().add(QueueLoadRequested());
-      },
+      onRefresh: refresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 88, 16, 16),
@@ -205,16 +200,12 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Position Card
-            if (userPosition != null && userPosition > 0) ...[
+            if (isInQueue) ...[
               _PositionCard(
                 position: userPosition,
                 petsAhead: petsAhead,
                 estimatedWaitMinutes: estimatedWait,
-                pulseAnimation: _pulseAnimation,
               ),
-              const SizedBox(height: 24),
-            ] else if (!hasQueueEntries) ...[
-              _EmptyQueueCard(),
               const SizedBox(height: 24),
             ] else ...[
               _NotInQueueCard(),
@@ -255,15 +246,12 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                gradient: AppColors.gradientError,
-                borderRadius: BorderRadius.circular(70),
-                boxShadow: PremiumShadows.error,
-              ),
-              child: Icon(
+            NeuContainer(
+              borderRadius: 70,
+              padding: const EdgeInsets.all(28),
+              color: AppColors.error,
+              boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+              child: const Icon(
                 Icons.error_outline_rounded,
                 size: 70,
                 color: AppColors.textOnPrimary,
@@ -280,17 +268,17 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
             const SizedBox(height: 8),
             Text(
               message,
-              style: AppTextStyles.bodyMedium.subtle,
+              style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            CpButton(
+            NeuButton(
               text: 'Retry',
               onPressed: () {
                 context.read<QueueBloc>().add(QueueLoadRequested());
               },
               icon: Icons.refresh_rounded,
-              variant: ButtonVariant.primary,
+              variant: NeuButtonVariant.primary,
             ),
           ],
         ),
@@ -307,93 +295,216 @@ class _QueuePageState extends State<QueuePage> with SingleTickerProviderStateMix
   }
 }
 
-/// Position card showing user's queue position
-class _PositionCard extends StatelessWidget {
-  final int position;
-  final int? petsAhead;
-  final int? estimatedWaitMinutes;
-  final Animation<double> pulseAnimation;
+/// Upcoming non-terminal appointments not yet queued, each with a Check In action.
+/// Provided its own filtering because the appointment list still contains
+/// checked-in items that may not have appeared in the queue yet.
+class _UpcomingCheckInSection extends StatelessWidget {
+  final List<QueueEntryWithDetails> queueEntries;
 
-  const _PositionCard({
-    required this.position,
-    this.petsAhead,
-    this.estimatedWaitMinutes,
-    required this.pulseAnimation,
-  });
+  const _UpcomingCheckInSection({required this.queueEntries});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: pulseAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: pulseAnimation.value,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: AppColors.gradientPrimary,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: PremiumShadows.primary,
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Your Position',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textOnPrimary.withValues(alpha: 0.9),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$position',
-                  style: AppTextStyles.displayLarge.copyWith(
-                    color: AppColors.textOnPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  petsAhead != null && petsAhead! > 0
-                      ? '$petsAhead ${petsAhead == 1 ? 'pet' : 'pets'} ahead of you'
-                      : 'You\'re next!',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textOnPrimary.withValues(alpha: 0.9),
-                  ),
-                ),
-                if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
-                  const SizedBox(height: 16),
+    final queuedAppointmentIds =
+        queueEntries.map((e) => e.appointment.id).whereType<int>().toSet();
+
+    return BlocBuilder<AppointmentBloc, AppointmentState>(
+      builder: (context, appointmentState) {
+        if (appointmentState is! AppointmentLoaded) return const SizedBox.shrink();
+
+        final upcoming = appointmentState.upcomingWithPetDetails
+            .where((detail) =>
+                detail.appointment.id != null &&
+                !queuedAppointmentIds.contains(detail.appointment.id) &&
+                !detail.appointment.isTerminal)
+            .toList();
+
+        if (upcoming.isEmpty) return const SizedBox.shrink();
+
+        return NeuCard(
+          borderRadius: 20,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.textOnPrimary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
+                      color: ThemeColors.primary(context).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Icon(Icons.event_available_rounded, size: 20, color: ThemeColors.primary(context)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.timer_outlined,
-                          size: 18,
-                          color: AppColors.textOnPrimary,
-                        ),
-                        const SizedBox(width: 8),
+                        Text('Check In', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w700)),
                         Text(
-                          'Est. wait: $estimatedWaitMinutes min',
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: AppColors.textOnPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          "You're not in the queue yet. Check in when you arrive at the clinic.",
+                          style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
                         ),
                       ],
                     ),
                   ),
                 ],
-              ],
-            ),
+              ),
+              const SizedBox(height: 14),
+              ...upcoming.map((detail) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _UpcomingCheckInTile(detail: detail),
+                  )),
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+class _UpcomingCheckInTile extends StatelessWidget {
+  final AppointmentWithPetDetails detail;
+
+  const _UpcomingCheckInTile({required this.detail});
+
+  String _formatDate(DateTime date) =>
+      '${date.month}/${date.day}/${date.year}';
+
+  String _formatTime(DateTime date) {
+    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final minute = date.minute.toString().padLeft(2, '0');
+    final period = date.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appointment = detail.appointment;
+    final pet = detail.pet;
+
+    return NeuCard(
+      borderRadius: 16,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          PetUtils.buildAvatar(species: pet.species, radius: 22, iconSize: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(pet.name, style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w700)),
+                Text(
+                  '${_formatDate(appointment.scheduledAt)} · ${_formatTime(appointment.scheduledAt)}',
+                  style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                ),
+                if (appointment.reason != null && appointment.reason!.trim().isNotEmpty)
+                  Text(
+                    appointment.reason!.trim(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.textSecondary(context)),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          NeuButton(
+            text: 'Check In',
+            icon: Icons.check_circle_outline_rounded,
+            variant: NeuButtonVariant.primary,
+            size: NeuButtonSize.small,
+            onPressed: () {
+              context.read<QueueBloc>().add(QueueCheckInRequested(appointment.id!));
+              context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Position card showing user's queue position
+class _PositionCard extends StatelessWidget {
+  final int position;
+  final int? petsAhead;
+  final int? estimatedWaitMinutes;
+
+  const _PositionCard({
+    required this.position,
+    this.petsAhead,
+    this.estimatedWaitMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: NeuContainer(
+        padding: const EdgeInsets.all(24),
+        borderRadius: 24,
+        color: AppColors.primary,
+        boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+        child: Column(
+          children: [
+            Text(
+              'Your Position',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$position',
+            style: AppTextStyles.displayLarge.copyWith(
+              color: AppColors.textOnPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            petsAhead != null && petsAhead! > 0
+                ? '$petsAhead ${petsAhead == 1 ? 'pet' : 'pets'} ahead of you'
+                : 'You\'re next!',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+            ),
+          ),
+          if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.textOnPrimary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.timer_outlined,
+                    size: 18,
+                    color: AppColors.textOnPrimary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Est. wait: $estimatedWaitMinutes min',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: AppColors.textOnPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -402,39 +513,20 @@ class _PositionCard extends StatelessWidget {
 class _EmptyQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GlassContainer(
+    return NeuCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(24),
-      blur: 15,
-      gradient: LinearGradient(
-        colors: [
-          isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surface.withValues(alpha: 0.8),
-          isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surface.withValues(alpha: 0.6),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderColor: isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight,
       child: Column(
         children: [
-          PulsingGlow(
-            glowColor: AppColors.primary,
-            maxRadius: 30,
-            duration: const Duration(seconds: 3),
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                gradient: AppColors.gradientPrimary,
-                borderRadius: BorderRadius.circular(48),
-              ),
-              child: Icon(
-                Icons.queue_outlined,
-                size: 48,
-                color: AppColors.textOnPrimary,
-              ),
+          NeuContainer(
+            borderRadius: 48,
+            padding: const EdgeInsets.all(20),
+            color: AppColors.primary,
+            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+            child: const Icon(
+              Icons.queue_outlined,
+              size: 48,
+              color: AppColors.textOnPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -447,7 +539,7 @@ class _EmptyQueueCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'You don\'t have any pets currently checked in.\nBook an appointment and check in when you arrive.',
-            style: AppTextStyles.bodyMedium.subtle.copyWith(
+            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness).copyWith(
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -462,35 +554,22 @@ class _EmptyQueueCard extends StatelessWidget {
 class _NotInQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GlassContainer(
+    return NeuCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(24),
-      blur: 15,
-      gradient: LinearGradient(
-        colors: [
-          isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surface.withValues(alpha: 0.8),
-          isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surface.withValues(alpha: 0.6),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderColor: AppColors.warning.withValues(alpha: 0.3),
-      borderWidth: 2,
       child: Column(
         children: [
           Container(
             width: 96,
             height: 96,
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.15),
+              color: ThemeColors.warning(context).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(48),
             ),
             child: Icon(
               Icons.info_outline_rounded,
               size: 48,
-              color: AppColors.warning,
+              color: ThemeColors.warning(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -503,7 +582,7 @@ class _NotInQueueCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Your pets have upcoming appointments but aren\'t checked in yet.\nCheck in when you arrive at the clinic.',
-            style: AppTextStyles.bodyMedium.subtle.copyWith(
+            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness).copyWith(
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -526,256 +605,234 @@ class _QueueEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(entry.queueEntry.status);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final statusColor = _getStatusColor(context, entry.queueEntry.status);
 
-    return FloatingAnimation(
-      amplitude: 3,
-      duration: const Duration(seconds: 4),
-      child: GlassContainer(
-        borderRadius: 16,
-        padding: const EdgeInsets.all(16),
-        blur: 12,
-        gradient: LinearGradient(
-          colors: [
-            isDark ? AppColors.surfaceDark.withValues(alpha: 0.85) : AppColors.surface.withValues(alpha: 0.85),
-            isDark ? AppColors.surfaceDark.withValues(alpha: 0.65) : AppColors.surface.withValues(alpha: 0.65),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderColor: isCurrentUser
-            ? statusColor.withValues(alpha: 0.4)
-            : (isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight),
-        borderWidth: isCurrentUser ? 2 : 1,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with position and status
-            Row(
-              children: [
-                // Position badge
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [statusColor, statusColor.withValues(alpha: 0.8)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: PremiumShadows.coloredShadow(statusColor),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '#${entry.queueEntry.position}',
-                      style: AppTextStyles.titleSmall.copyWith(
-                        color: AppColors.textOnPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
+    return NeuCard(
+      borderRadius: 16,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with position and status
+          Row(
+            children: [
+              // Position badge
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '#${entry.queueEntry.position}',
+                    style: AppTextStyles.titleSmall.copyWith(
+                      color: AppColors.textOnPrimary,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Pet info
+              ),
+              const SizedBox(width: 12),
+              // Pet info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.pet.name,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '${entry.pet.species.displayName} • ${entry.pet.breed}',
+                      style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                    ),
+                  ],
+                ),
+              ),
+              // Status chip
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  entry.queueEntry.status.displayName,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Appointment info
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: ThemeColors.surfaceContainer(context),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.medical_services_outlined,
+                  size: 18,
+                  color: ThemeColors.textSecondary(context),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        entry.pet.name,
-                        style: AppTextStyles.titleMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        'Appointment',
+                        style: AppTextStyles.labelSmall.subtleOf(Theme.of(context).brightness),
                       ),
                       Text(
-                        '${entry.pet.species.displayName} • ${entry.pet.breed}',
-                        style: AppTextStyles.bodySmall.subtle,
+                        entry.appointment.reason ?? 'General checkup',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Status chip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                if (entry.queueEntry.estimatedWaitMinutes != null) ...[
+                  Icon(
+                    Icons.timer_outlined,
+                    size: 18,
+                    color: ThemeColors.textSecondary(context),
                   ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${entry.queueEntry.estimatedWaitMinutes} min',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // Vet info
+          if (entry.veterinarian.fullName.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                   child: Text(
-                    entry.queueEntry.status.displayName,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: statusColor,
-                      fontWeight: FontWeight.w700,
+                    entry.veterinarian.fullName.isNotEmpty
+                        ? entry.veterinarian.fullName[0]
+                        : 'D',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
+                const SizedBox(width: 10),
+                Text(
+                  'Dr. ${entry.veterinarian.fullName}',
+                  style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+                ),
               ],
             ),
+          ],
 
-            const SizedBox(height: 12),
-
-            // Appointment info
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
+          // Check-in time
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 16,
+            runSpacing: 6,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.medical_services_outlined,
-                    size: 18,
-                    color: AppColors.textSecondary,
+                    Icons.access_time_outlined,
+                    size: 14,
+                    color: ThemeColors.textSecondary(context),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Appointment',
-                          style: AppTextStyles.labelSmall.subtle,
-                        ),
-                        Text(
-                          entry.appointment.reason ?? 'General checkup',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (entry.queueEntry.estimatedWaitMinutes != null) ...[
-                    Icon(
-                      Icons.timer_outlined,
-                      size: 18,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${entry.queueEntry.estimatedWaitMinutes} min',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-
-            // Vet info
-            if (entry.veterinarian.fullName.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    child: Text(
-                      entry.veterinarian.fullName.isNotEmpty
-                          ? entry.veterinarian.fullName[0]
-                          : 'D',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 6),
                   Text(
-                    'Dr. ${entry.veterinarian.fullName}',
-                    style: AppTextStyles.bodyMedium.subtle,
+                    'Checked in at ${_formatTime(entry.queueEntry.checkedInAt)}',
+                    style: AppTextStyles.bodySmall.mutedOf(Theme.of(context).brightness),
                   ),
                 ],
               ),
-            ],
-
-            // Check-in time
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 16,
-              runSpacing: 6,
-              children: [
+              if (entry.queueEntry.calledAt != null) ...[
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.access_time_outlined,
+                      Icons.volume_up_outlined,
                       size: 14,
-                      color: AppColors.textHint,
+                      color: ThemeColors.info(context),
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Checked in at ${_formatTime(entry.queueEntry.checkedInAt)}',
-                      style: AppTextStyles.bodySmall.muted,
+                      'Called at ${_formatTime(entry.queueEntry.calledAt!)}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: ThemeColors.info(context),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
-                if (entry.queueEntry.calledAt != null) ...[
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.volume_up_outlined,
-                        size: 14,
-                        color: AppColors.info,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Called at ${_formatTime(entry.queueEntry.calledAt!)}',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.info,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                if (entry.queueEntry.room != null) ...[
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.door_front_door_outlined,
-                        size: 14,
-                        color: AppColors.success,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Room ${entry.queueEntry.room}',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
-            ),
-          ],
-        ),
+              if (entry.queueEntry.room != null) ...[
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.door_front_door_outlined,
+                      size: 14,
+                      color: ThemeColors.success(context),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Room ${entry.queueEntry.room}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: ThemeColors.success(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Color _getStatusColor(QueueStatus status) {
+  Color _getStatusColor(BuildContext context, QueueStatus status) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case QueueStatus.waiting:
-        return AppColors.warning;
+        return isDark ? AppColors.warningOnDark : AppColors.warning;
       case QueueStatus.called:
-        return AppColors.info;
+        return isDark ? AppColors.infoDark : AppColors.info;
       case QueueStatus.inRoom:
-        return AppColors.primary;
+        return ThemeColors.primary(context);
       case QueueStatus.completed:
-        return AppColors.success;
+        return isDark ? AppColors.successOnDark : AppColors.success;
       case QueueStatus.skipped:
-        return AppColors.textSecondary;
+        return ThemeColors.textSecondary(context);
     }
   }
 
@@ -791,21 +848,9 @@ class _QueueEntryCard extends StatelessWidget {
 class _QueueInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GlassContainer(
+    return NeuCard(
       borderRadius: 16,
       padding: const EdgeInsets.all(16),
-      blur: 12,
-      gradient: LinearGradient(
-        colors: [
-          isDark ? AppColors.surfaceDark.withValues(alpha: 0.8) : AppColors.surface.withValues(alpha: 0.8),
-          isDark ? AppColors.surfaceDark.withValues(alpha: 0.6) : AppColors.surface.withValues(alpha: 0.6),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderColor: isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -814,14 +859,14 @@ class _QueueInfoCard extends StatelessWidget {
               Icon(
                 Icons.info_outline_rounded,
                 size: 20,
-                color: AppColors.primary,
+                color: ThemeColors.primary(context),
               ),
               const SizedBox(width: 8),
               Text(
                 'How It Works',
                 style: AppTextStyles.titleSmall.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: ThemeColors.primary(context),
                 ),
               ),
             ],
@@ -869,19 +914,20 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
+        NeuContainer(
+          borderRadius: 8,
           padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            gradient: AppColors.gradientPrimary.scale(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          color: isDark
+              ? ThemeColors.primary(context).withValues(alpha: 0.16)
+              : ThemeColors.primaryTint(context),
           child: Icon(
             icon,
             size: 16,
-            color: AppColors.primary,
+            color: ThemeColors.primary(context),
           ),
         ),
         const SizedBox(width: 12),
@@ -897,7 +943,7 @@ class _InfoRow extends StatelessWidget {
               ),
               Text(
                 description,
-                style: AppTextStyles.bodySmall.subtle,
+                style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
               ),
             ],
           ),
@@ -914,60 +960,46 @@ class _NotLoggedInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.05),
-          AppColors.tertiary.withValues(alpha: 0.03),
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.primary,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.primary,
-                    ),
-                    child: Icon(
-                      Icons.queue_outlined,
-                      size: 80,
-                      color: AppColors.textOnPrimary,
-                    ),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NeuContainer(
+                borderRadius: 80,
+                padding: const EdgeInsets.all(28),
+                color: AppColors.primary,
+                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                child: const Icon(
+                  Icons.queue_outlined,
+                  size: 80,
+                  color: AppColors.textOnPrimary,
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Please log in to view queue',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Please log in to view queue',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Sign in to check your queue position',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to check your queue position',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: ThemeColors.textSecondary(context),
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Log In',
-                  onPressed: () => context.go('/login'),
-                  icon: Icons.login_rounded,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Log In',
+                onPressed: () => context.go('/login'),
+                icon: Icons.login_rounded,
+              ),
+            ],
           ),
         ),
       ),
@@ -982,63 +1014,49 @@ class _AccessDeniedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.error.withValues(alpha: 0.06),
-          AppColors.warning.withValues(alpha: 0.04),
-          AppColors.surface,
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.error,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientError,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.glow(context, AppColors.error, intensity: 0.3),
-                    ),
-                    child: Icon(
-                      Icons.block_rounded,
-                      size: 80,
-                      color: Colors.white,
-                    ),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NeuContainer(
+                borderRadius: 80,
+                padding: const EdgeInsets.all(28),
+                color: AppColors.error,
+                boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+                child: const Icon(
+                  Icons.block_rounded,
+                  size: 80,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Access Denied',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.error,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Access Denied',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: ThemeColors.error(context),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'This page is for pet owners only.\n\nUse the staff queue management page instead.',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'This page is for pet owners only.\n\nUse the staff queue management page instead.',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: ThemeColors.textSecondary(context),
                 ),
-                const SizedBox(height: 32),
-                CpButton(
-                  text: 'Go Back',
-                  onPressed: () => context.pop(),
-                  icon: Icons.arrow_back_rounded,
-                  variant: ButtonVariant.secondary,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              NeuButton(
+                text: 'Go Back',
+                onPressed: () => context.pop(),
+                icon: Icons.arrow_back_rounded,
+                variant: NeuButtonVariant.secondary,
+                expanded: true,
+              ),
+            ],
           ),
         ),
       ),

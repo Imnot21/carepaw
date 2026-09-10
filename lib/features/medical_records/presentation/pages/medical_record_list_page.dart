@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
@@ -18,7 +17,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -111,7 +110,7 @@ class _NotLoggedInView extends StatelessWidget {
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
                 variant: NeuButtonVariant.primary,
-                size: NeuButtonSize.large,
+                size: NeuButtonSize.medium,
               ),
             ],
           ),
@@ -159,7 +158,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             child: BlocBuilder<MedicalRecordBloc, MedicalRecordState>(
               builder: (context, state) {
                 if (state is MedicalRecordLoading) {
-                  return const Center(child: NeuCircularProgress());
+                  return const NeuSkeletonList();
                 } else if (state is MedicalRecordsLoaded) {
                   return _buildRecordsList(context, state.records, speciesColor);
                 } else if (state is MedicalRecordsByTypeLoaded) {
@@ -177,7 +176,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         ],
       ),
       floatingActionButton: _isVetOrStaff ? _buildFab(context, speciesColor) : null,
-    ).animate().fadeIn(duration: 300.ms);
+    );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -353,21 +352,35 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       return _buildEmptyState(context, speciesColor, isDark);
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
-      itemCount: records.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final record = records[index];
-        return NeuCard(
-          onTap: () => _navigateToDetail(context, record),
-          padding: EdgeInsets.zero,
-          child: _MedicalRecordCard(
-            record: record,
-            speciesColor: speciesColor,
-          ),
-        );
+    // Reload via pull-to-refresh instead of a manual refresh button.
+    return RefreshIndicator(
+      onRefresh: () async {
+        if (_selectedFilter != null) {
+          context.read<MedicalRecordBloc>().add(
+            LoadMedicalRecordsByType(widget.pet.id!, _selectedFilter!),
+          );
+        } else {
+          context.read<MedicalRecordBloc>().add(
+            LoadMedicalRecords(widget.pet.id!),
+          );
+        }
       },
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
+        itemCount: records.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final record = records[index];
+          return NeuCard(
+            onTap: () => _navigateToDetail(context, record),
+            padding: EdgeInsets.zero,
+            child: _MedicalRecordCard(
+              record: record,
+              speciesColor: speciesColor,
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -424,7 +437,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 onPressed: () => _navigateToForm(context),
                 icon: Icons.add_rounded,
                 expanded: false,
-                size: NeuButtonSize.large,
+                size: NeuButtonSize.medium,
                 variant: NeuButtonVariant.primary,
               ),
           ],
@@ -557,29 +570,13 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.filter_list_rounded, color: AppColors.primary),
+              leading: Icon(Icons.filter_list_rounded, color: ThemeColors.primary(context)),
               title: const Text('Filter Records'),
               subtitle: Text(_selectedFilter?.displayName ?? 'All records'),
               onTap: () => context.pop(),
             ),
             ListTile(
-              leading: const Icon(Icons.refresh_rounded, color: AppColors.primary),
-              title: const Text('Refresh'),
-              onTap: () {
-                context.pop();
-                if (_selectedFilter != null) {
-                  context.read<MedicalRecordBloc>().add(
-                    LoadMedicalRecordsByType(widget.pet.id!, _selectedFilter!),
-                  );
-                } else {
-                  context.read<MedicalRecordBloc>().add(
-                    LoadMedicalRecords(widget.pet.id!),
-                  );
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.help_outline_rounded, color: AppColors.primary),
+              leading: Icon(Icons.help_outline_rounded, color: ThemeColors.primary(context)),
               title: const Text('About Medical Records'),
               onTap: () => context.pop(),
             ),
@@ -602,7 +599,7 @@ class _MedicalRecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeInfo = _getTypeInfo(record.recordType);
+    final typeInfo = _getTypeInfo(context, record.recordType);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -688,17 +685,17 @@ class _MedicalRecordCard extends StatelessWidget {
                       borderWidth: 1,
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.medical_services_outlined,
                             size: 16,
-                            color: AppColors.primaryLight,
+                            color: ThemeColors.primary(context),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Diagnosis: ${record.diagnosis}',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.primaryOnDark,
+                                color: ThemeColors.primary(context),
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -720,17 +717,17 @@ class _MedicalRecordCard extends StatelessWidget {
                       borderWidth: 1,
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.healing_outlined,
                             size: 16,
-                            color: AppColors.primary,
+                            color: ThemeColors.primary(context),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Treatment: ${record.treatment}',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.primaryDark,
+                                color: ThemeColors.primary(context),
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -772,7 +769,7 @@ class _MedicalRecordCard extends StatelessWidget {
     }
   }
 
-  TypeInfo _getTypeInfo(MedicalRecordType type) {
-    return MedicalRecordUtils.getTypeInfo(type);
+  TypeInfo _getTypeInfo(BuildContext context, MedicalRecordType type) {
+    return MedicalRecordUtils.getTypeInfo(context, type);
   }
 }

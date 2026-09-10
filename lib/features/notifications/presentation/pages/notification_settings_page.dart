@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
@@ -7,7 +6,7 @@ import 'package:carepaw/features/notifications/presentation/bloc/notification_ev
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
@@ -43,7 +42,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               child: BlocBuilder<NotificationBloc, NotificationState>(
                 builder: (context, state) {
                   if (state is NotificationLoading) {
-                    return const Center(child: NeuCircularProgress());
+                    return const NeuSkeletonDetail();
                   }
 
                   NotificationPreferences? preferences;
@@ -160,7 +159,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms);
+    );
   }
 
   Widget _buildCategoryToggles(NotificationPreferences? preferences) {
@@ -202,7 +201,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         title: 'System',
         subtitle: 'App updates, maintenance, announcements',
         icon: Icons.settings_rounded,
-        color: AppColors.textSecondary,
+        color: ThemeColors.textSecondary(context),
         enabled: preferences?.systemAnnouncements ?? true,
       ),
     ];
@@ -266,9 +265,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   ),
                 ],
               ),
-            ).animate().fadeIn(
-              duration: 300.ms,
-              delay: Duration(milliseconds: 50 * index),
             );
           },
         ),
@@ -357,8 +353,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   NeuAvatar(
                     radius: 18,
                     icon: setting.icon,
-                    backgroundColor: AppColors.primaryTint,
-                    foregroundColor: AppColors.primary,
+                    backgroundColor: ThemeColors.surfaceVariant(context),
+                    foregroundColor: ThemeColors.primary(context),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -387,9 +383,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   ),
                 ],
               ),
-            ).animate().fadeIn(
-              duration: 300.ms,
-              delay: Duration(milliseconds: 50 * index),
             );
           },
         ),
@@ -431,7 +424,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms, delay: 200.ms);
+    );
   }
 
   Widget _buildDataManagement() {
@@ -454,7 +447,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 icon: Icons.delete_sweep_rounded,
                 title: 'Clear All Read Notifications',
                 subtitle: 'Permanently delete all read notifications',
-                color: AppColors.warning,
+                color: ThemeColors.warning(context),
                 onTap: _clearReadNotifications,
               ),
               const Divider(height: 24),
@@ -462,13 +455,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 icon: Icons.delete_forever_rounded,
                 title: 'Delete All Notifications',
                 subtitle: 'Permanently delete all notifications (cannot be undone)',
-                color: AppColors.error,
+                color: ThemeColors.error(context),
                 onTap: _deleteAllNotifications,
                 isDestructive: true,
               ),
             ],
           ),
-        ).animate().fadeIn(duration: 300.ms, delay: 300.ms),
+        ),
       ],
     );
   }
@@ -570,13 +563,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Read notifications cleared'),
-                  backgroundColor: AppColors.success,
+                  backgroundColor: ThemeColors.success(context),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               );
             },
-            child: Text('Clear', style: TextStyle(color: AppColors.warning)),
+            child: Text('Clear', style: TextStyle(color: ThemeColors.warning(context))),
           ),
         ],
       ),
@@ -587,7 +580,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete All Notifications', style: TextStyle(color: AppColors.error)),
+        title: Text('Delete All Notifications', style: TextStyle(color: ThemeColors.error(context))),
         content: const Text('This will permanently delete ALL notifications. This action cannot be undone.'),
         actions: [
           TextButton(
@@ -600,13 +593,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Feature coming soon'),
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: ThemeColors.primary(context),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               );
             },
-            child: Text('Delete All', style: TextStyle(color: AppColors.error)),
+            child: Text('Delete All', style: TextStyle(color: ThemeColors.error(context))),
           ),
         ],
       ),

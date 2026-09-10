@@ -6,11 +6,10 @@ import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 
 /// Page showing detailed view of a medical record with premium design.
 class MedicalRecordDetailPage extends StatelessWidget {
@@ -25,11 +24,9 @@ class MedicalRecordDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final speciesColor = pet.species.accentColor;
-    final typeInfo = MedicalRecordUtils.getTypeInfo(record.recordType);
+    final typeInfo = MedicalRecordUtils.getTypeInfo(context, record.recordType);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
           record.recordType.displayName,
@@ -41,154 +38,133 @@ class MedicalRecordDetailPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
+        leading: Padding(
+          padding: const EdgeInsets.all(8),
+          child: NeuIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
+            onPressed: () => context.pop(),
+            tooltip: 'Back',
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => _navigateToEdit(context),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: NeuIconButton(
+              icon: Icons.edit_outlined,
+              onPressed: () => _navigateToEdit(context),
+              tooltip: 'Edit',
+            ),
           ),
         ],
       ),
-      body: AnimatedGradientBackground(
-        colors: [
-          speciesColor.withValues(alpha: 0.05),
-          typeInfo.color.withValues(alpha: 0.03),
-        ],
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Header with record type and pet info
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              sliver: SliverToBoxAdapter(
-                child: FloatingAnimation(
-                  delay: const Duration(milliseconds: 100),
-                  child: Column(
-                    children: [
-                      // Type badge with PulsingGlow
-                      PulsingGlow(
-                        glowColor: typeInfo.color,
-                        maxRadius: 20,
-                        duration: const Duration(seconds: 2),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [typeInfo.color, typeInfo.color.withValues(alpha: 0.8)],
-                            ),
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: PremiumShadows.glow(context, typeInfo.color, intensity: 0.4),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(typeInfo.icon, color: Colors.white, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                record.recordType.displayName,
-                                style: AppTextStyles.titleMedium.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // Header with record type and pet info
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  // Type badge
+                  NeuContainer(
+                    borderRadius: 30,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    color: typeInfo.color,
+                    boxShadow: NeuShadow.color(context, typeInfo.color, blur: 16, opacity: 0.28),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(typeInfo.icon, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          record.recordType.displayName,
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Pet avatar
-                      PulsingGlow(
-                        glowColor: speciesColor,
-                        maxRadius: 25,
-                        duration: const Duration(seconds: 3),
-                        child: PetUtils.buildAvatar(
-                          species: pet.species,
-                          radius: 50,
-                          iconSize: 50,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        pet.name,
-                        style: AppTextStyles.headlineMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${pet.species.displayName}${pet.breed != null ? ' • ${pet.breed}' : ''}',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Date and title
-                      Text(
-                        record.title,
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Recorded on ${_formatFullDate(record.recordedAt)}',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Content sections
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverList.separated(
-                itemCount: _getSections().length,
-                separatorBuilder: (_, _) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final section = _getSections()[index];
-                  if (section.content == null || section.content!.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return FloatingAnimation(
-                    delay: Duration(milliseconds: 80 * (index + 1)),
-                    child: _SectionCard(
-                      title: section.title,
-                      icon: section.icon,
-                      color: section.color,
-                      content: section.content!,
+                      ],
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 24),
+                  // Pet avatar
+                  PetUtils.buildAvatar(
+                    species: pet.species,
+                    radius: 50,
+                    iconSize: 50,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    pet.name,
+                    style: AppTextStyles.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    record.title,
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Recorded on ${_formatFullDate(record.recordedAt)}',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
 
-            // Bottom padding for FAB if needed
-            const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-          ],
-        ),
+          // Content sections
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            sliver: SliverList.separated(
+              itemCount: _getSections(context).length,
+              separatorBuilder: (_, _) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final section = _getSections(context)[index];
+                if (section.content == null || section.content!.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return _SectionCard(
+                  title: section.title,
+                  icon: section.icon,
+                  color: section.color,
+                  content: section.content!,
+                );
+              },
+            ),
+          ),
+
+          // Bottom padding
+          const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+        ],
       ),
     );
   }
 
-  List<_DetailSection> _getSections() {
+  List<_DetailSection> _getSections(BuildContext context) {
     final sections = <_DetailSection>[];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (record.description != null && record.description!.isNotEmpty) {
       sections.add(_DetailSection(
         title: 'Description',
         icon: Icons.description_outlined,
-        color: AppColors.primary,
+        color: ThemeColors.primary(context),
         content: record.description!,
       ));
     }
@@ -197,7 +173,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
       sections.add(_DetailSection(
         title: 'Diagnosis',
         icon: Icons.medical_services_outlined,
-        color: AppColors.info,
+        color: isDark ? AppColors.infoDark : AppColors.info,
         content: record.diagnosis!,
       ));
     }
@@ -224,16 +200,15 @@ class MedicalRecordDetailPage extends StatelessWidget {
       sections.add(_DetailSection(
         title: 'Attachments',
         icon: Icons.attachment_outlined,
-        color: AppColors.secondary,
+        color: ThemeColors.textSecondary(context),
         content: record.attachments!,
       ));
     }
 
-    // Add metadata section
     sections.add(_DetailSection(
       title: 'Record Information',
       icon: Icons.info_outline,
-      color: AppColors.textTertiary,
+      color: ThemeColors.textTertiary(context),
       content: _buildMetadata(),
     ));
 
@@ -285,18 +260,11 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(20),
+    return NeuCard(
       borderRadius: 20,
+      padding: const EdgeInsets.all(20),
       borderColor: color.withValues(alpha: 0.2),
-      boxShadow: [
-        ...PremiumShadows.level2,
-        BoxShadow(
-          color: color.withValues(alpha: 0.1),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
+      borderWidth: 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -305,12 +273,7 @@ class _SectionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      color.withValues(alpha: 0.2),
-                      color.withValues(alpha: 0.1),
-                    ],
-                  ),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 24),

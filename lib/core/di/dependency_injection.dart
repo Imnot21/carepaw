@@ -1,19 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:carepaw/core/database/database.dart';
-import 'package:carepaw/core/database/dao/users_dao.dart';
-import 'package:carepaw/core/database/dao/medical_records_dao.dart';
-import 'package:carepaw/core/database/dao/notifications_dao.dart';
-import 'package:carepaw/core/database/dao/prescriptions_dao.dart';
-import 'package:carepaw/core/database/dao/queue_dao.dart';
-import 'package:carepaw/core/database/dao/audit_logs_dao.dart';
-import 'package:carepaw/core/database/dao/device_info_dao.dart';
-import 'package:carepaw/core/database/dao/sync_metadata_dao.dart';
-import 'package:carepaw/core/sync/sync_repository.dart';
-import 'package:carepaw/core/sync/sync_repository_impl.dart';
-import 'package:carepaw/core/sync/sync_engine.dart';
-import 'package:carepaw/core/sync/network_monitor.dart';
-import 'package:carepaw/core/sync/background_sync.dart';
 import 'package:carepaw/core/firebase/user_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
@@ -38,6 +23,8 @@ import 'package:carepaw/features/notifications/domain/repositories/notification_
 import 'package:carepaw/features/notifications/data/repositories/firestore_notification_repository.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/authentication/data/repositories/auth_repository_impl.dart';
+import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
+import 'package:carepaw/features/audit/data/repositories/firestore_audit_log_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -48,30 +35,11 @@ GetIt getItInstance() => getIt;
 
 /// Configure all dependencies for the CarePaw application
 Future<void> configureDependencies() async {
-  // Register database as singleton
-  getIt.registerLazySingleton<CarePawDatabase>(() => CarePawDatabase());
-
-  // Register DAOs
-  getIt.registerLazySingleton<UsersDao>(() => UsersDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<MedicalRecordsDao>(() => MedicalRecordsDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<NotificationsDao>(() => NotificationsDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<PrescriptionsDao>(() => PrescriptionsDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<QueueDao>(() => QueueDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<AuditLogsDao>(() => AuditLogsDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<DeviceInfoDao>(() => DeviceInfoDao(getIt<CarePawDatabase>()));
-  getIt.registerLazySingleton<SyncMetadataDao>(() => SyncMetadataDao(getIt<CarePawDatabase>()));
-
   // PasswordHasher, SecureStorage, LocalStorage are static utility classes
   // - PasswordHasher: static methods only, no instance needed
   // - SecureStorage: static methods only, initialized via SecureStorage.init()
   // - LocalStorage: static methods only, initialized via LocalStorage.init()
   // They are used directly as static classes in the code.
-
-  // Register Sync Repository
-  getIt.registerLazySingleton<SyncRepository>(() => SyncRepositoryImpl(getIt<CarePawDatabase>()));
-
-  // Register Network Monitor
-  getIt.registerLazySingleton<NetworkMonitor>(() => NetworkMonitor(Connectivity()));
 
   // Register Firestore (needs Firebase to be initialized first)
   getIt.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
@@ -84,20 +52,6 @@ Future<void> configureDependencies() async {
     firebaseAuth: FirebaseAuth.instance,
     firestore: getIt<FirebaseFirestore>(),
     userIdSequence: getIt<UserIdSequence>(),
-  ));
-
-  // Register Sync Engine
-  getIt.registerLazySingleton<SyncEngine>(() => SyncEngine(
-    syncRepo: getIt<SyncRepository>(),
-    firestore: getIt<FirebaseFirestore>(),
-    networkMonitor: getIt<NetworkMonitor>(),
-  ));
-
-  // Register Sync Controller
-  getIt.registerLazySingleton<SyncController>(() => SyncController(
-    syncEngine: getIt<SyncEngine>(),
-    syncRepo: getIt<SyncRepository>(),
-    usersDao: getIt<UsersDao>(),
   ));
 
   // Register Repositories
@@ -215,6 +169,16 @@ Future<void> configureDependencies() async {
       getIt<FirebaseFirestore>(),
       counterCollection: 'counters',
       counterDoc: 'notificationIds',
+    ),
+  ));
+
+  // Audit logs (append-only)
+  getIt.registerLazySingleton<AuditLogRepository>(() => FirestoreAuditLogRepository(
+    firestore: getIt<FirebaseFirestore>(),
+    auditLogIdSequence: FirestoreIdSequence(
+      getIt<FirebaseFirestore>(),
+      counterCollection: 'counters',
+      counterDoc: 'auditLogIds',
     ),
   ));
 }

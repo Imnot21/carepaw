@@ -50,10 +50,11 @@ class NeuBottomNav extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: SizedBox(
           height: height,
+          // Transparent shell: no solid bar behind the icons, so the per-item
+          // neumorphic plates appear to float on the page background.
           child: NeuContainer(
             borderRadius: 26,
-            variant: NeuVariant.raised,
-            boxShadow: NeuShadow.raised(context, distance: 8, blur: 18),
+            variant: NeuVariant.transparent,
             child: Row(
               children: [
                 for (var i = 0; i < items.length; i++)
@@ -89,8 +90,8 @@ class _NavSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = AppColors.primary;
-    final labelColor = selected ? accent : AppColors.textSecondary;
+    final accent = ThemeColors.primary(context);
+    final labelColor = selected ? accent : ThemeColors.textSecondary(context);
     final icon = selected ? (item.activeIcon ?? item.icon) : item.icon;
 
     return GestureDetector(
@@ -123,7 +124,7 @@ class _NavSlot extends StatelessWidget {
                         child: SizedBox(
                           width: 44,
                           height: 40,
-                          child: Icon(icon, size: 22, color: AppColors.textSecondary),
+                          child: Icon(icon, size: 22, color: ThemeColors.textSecondary(context)),
                         ),
                       ),
               ),

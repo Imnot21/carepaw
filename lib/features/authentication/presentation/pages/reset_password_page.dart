@@ -57,7 +57,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.failure.message),
-              backgroundColor: AppColors.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -67,7 +67,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Password has been reset. Please sign in.'),
-              backgroundColor: AppColors.success,
+              backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -119,7 +119,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     'CarePaw',
                     style: AppTextStyles.headlineLarge.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.success,
+                      color: ThemeColors.success(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -197,7 +197,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               expanded: true,
                               icon: Icons.check_circle_outline_rounded,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.large,
+                              size: NeuButtonSize.medium,
                             );
                           },
                         ),

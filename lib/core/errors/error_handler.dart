@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/firebase/firebase_firestore_error_mapper.dart';
 import 'failures.dart';
 import 'exceptions.dart';
 
@@ -128,6 +130,11 @@ class ErrorHandler {
 
   /// Handle other common exceptions
   static Failure _handleOtherException(Object exception) {
+    // Firestore exceptions
+    if (exception is FirebaseException) {
+      return mapFirestoreException(exception);
+    }
+
     // Format exception (Dart)
     if (exception is FormatException) {
       return const InvalidEmailFailure(

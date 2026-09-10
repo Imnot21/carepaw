@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
@@ -38,29 +38,6 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   void dispose() {
     _animationController.dispose();
     super.dispose();
-  }
-
-  LinearGradient _getTypeGradient(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return const LinearGradient(
-          colors: [Color(0xFF10B981), Color(0xFF059669)],
-        );
-      case ScanType.medicineBox:
-        return AppColors.gradientPrimary;
-      case ScanType.prescription:
-        return LinearGradient(
-          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
-        );
-      case ScanType.labReport:
-        return const LinearGradient(
-          colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
-        );
-      default:
-        return const LinearGradient(
-          colors: [Color(0xFF6B7280), Color(0xFF4B5563)],
-        );
-    }
   }
 
   Color _getTypeColor(ScanType type) {
@@ -110,17 +87,13 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          _getTypeColor(_selectedType).withValues(alpha: 0.08),
-          AppColors.surface,
-        ],
-        child: SafeArea(
-          child: _capturedImagePath == null
-              ? _buildScannerView()
-              : _buildPreviewView(),
-        ),
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      body: SafeArea(
+        child: _capturedImagePath == null
+            ? _buildScannerView()
+            : _buildPreviewView(),
       ),
     );
   }
@@ -150,12 +123,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.close_rounded),
-            onPressed: () => Navigator.pop(context),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.surfaceContainerHighest,
-              foregroundColor: AppColors.textPrimary,
+          NeuCard(
+            padding: const EdgeInsets.all(10),
+            borderRadius: 12,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Icon(Icons.close_rounded, color: ThemeColors.textPrimary(context)),
             ),
           ),
           const SizedBox(width: 12),
@@ -167,22 +140,22 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   'Scan ${_selectedType.displayName}',
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                   ),
                 ),
                 Text(
                   _getTypeDescription(_selectedType),
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                 ),
               ],
             ),
           ),
-          GlassContainer(
+          NeuContainer(
             padding: const EdgeInsets.all(12),
             borderRadius: 14,
-            blur: 10,
+            color: _getTypeColor(_selectedType).withValues(alpha: 0.12),
             child: Icon(
               _getTypeIcon(_selectedType),
               size: 28,
@@ -197,24 +170,20 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   Widget _buildTypeSelector() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GlassContainer(
+      child: NeuCard(
         padding: const EdgeInsets.all(4),
         borderRadius: 16,
-        blur: 10,
         child: Row(
           children: ScanType.values.map((type) {
             final isSelected = _selectedType == type;
             return Expanded(
               child: GestureDetector(
                 onTap: () => setState(() => _selectedType = type),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                child: NeuContainer(
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    gradient: isSelected ? _getTypeGradient(type) : null,
-                    borderRadius: BorderRadius.circular(12),
-                    color: isSelected ? null : Colors.transparent,
-                  ),
+                  borderRadius: 12,
+                  variant: isSelected ? NeuVariant.pressed : NeuVariant.transparent,
+                  color: isSelected ? _getTypeColor(_selectedType).withValues(alpha: 0.18) : null,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -222,8 +191,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                         _getTypeIcon(type),
                         size: 20,
                         color: isSelected
-                            ? AppColors.textOnPrimary
-                            : _getTypeColor(type),
+                            ? _getTypeColor(type)
+                            : ThemeColors.textSecondary(context),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -231,8 +200,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                         style: AppTextStyles.labelSmall.copyWith(
                           fontWeight: FontWeight.w600,
                           color: isSelected
-                              ? AppColors.textOnPrimary
-                              : AppColors.textSecondary,
+                              ? _getTypeColor(type)
+                              : ThemeColors.textSecondary(context),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -257,7 +226,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHighest,
+              color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceContainerDark
+              : AppColors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: _getTypeColor(_selectedType).withValues(alpha: 0.3),
@@ -410,12 +381,10 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
+          NeuContainer(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: _getTypeGradient(_selectedType),
-              shape: BoxShape.circle,
-            ),
+            borderRadius: 90,
+            color: _getTypeColor(_selectedType),
             child: Icon(
               Icons.camera_alt_rounded,
               size: 48,
@@ -427,14 +396,14 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             'Camera Preview',
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: ThemeColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Camera integration would go here',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textTertiary,
+              color: ThemeColors.textTertiary(context),
             ),
           ),
         ],
@@ -449,14 +418,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         // Simulated camera feed
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                _getTypeColor(_selectedType).withValues(alpha: 0.1),
-                _getTypeColor(_selectedType).withValues(alpha: 0.05),
-              ],
-            ),
+            color: _getTypeColor(_selectedType).withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -485,13 +447,10 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                       ),
                     ),
                   ),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      gradient: _getTypeGradient(_selectedType),
-                      shape: BoxShape.circle,
-                    ),
+                  NeuContainer(
+                    padding: const EdgeInsets.all(20),
+                    borderRadius: 60,
+                    color: _getTypeColor(_selectedType),
                     child: Icon(
                       Icons.psychology_rounded,
                       size: 48,
@@ -505,21 +464,23 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 'Processing OCR...',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Extracting text from ${_selectedType.displayName.toLowerCase()}',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
               ),
               const SizedBox(height: 24),
               SizedBox(
                 width: 200,
                 child: LinearProgressIndicator(
-                  backgroundColor: AppColors.surfaceContainerHighest,
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceContainerDark
+              : AppColors.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation(_getTypeColor(_selectedType)),
                   borderRadius: BorderRadius.circular(4),
                   minHeight: 6,
@@ -539,9 +500,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         children: [
           // Gallery button
           Expanded(
-            child: CpButton(
+            child: NeuButton(
               text: 'Gallery',
-              variant: ButtonVariant.secondary,
+              variant: NeuButtonVariant.secondary,
               icon: Icons.photo_library_rounded,
               onPressed: _pickFromGallery,
               expanded: true,
@@ -579,9 +540,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
           // Flash button
           Expanded(
-            child: CpButton(
+            child: NeuButton(
               text: 'Flash',
-              variant: ButtonVariant.secondary,
+              variant: NeuButtonVariant.secondary,
               icon: Icons.flash_on_rounded,
               onPressed: _toggleFlash,
               expanded: true,
@@ -600,12 +561,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.close_rounded),
-                onPressed: () => setState(() => _capturedImagePath = null),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.surfaceContainerHighest,
-                  foregroundColor: AppColors.textPrimary,
+              NeuCard(
+                padding: const EdgeInsets.all(10),
+                borderRadius: 12,
+                child: GestureDetector(
+                  onTap: () => setState(() => _capturedImagePath = null),
+                  child: Icon(Icons.close_rounded, color: ThemeColors.textPrimary(context)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -617,13 +578,13 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                       'Preview Scan',
                       style: AppTextStyles.titleLarge.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: ThemeColors.textPrimary(context),
                       ),
                     ),
                     Text(
                       _selectedType.displayName,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: ThemeColors.textSecondary(context),
                       ),
                     ),
                   ],
@@ -637,10 +598,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: GlassContainer(
+            child: NeuCard(
               padding: EdgeInsets.zero,
               borderRadius: 20,
-              blur: 10,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: _capturedImagePath != null
@@ -662,9 +622,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           child: Row(
             children: [
               Expanded(
-                child: CpButton(
+                child: NeuButton(
                   text: 'Retake',
-                  variant: ButtonVariant.secondary,
+                  variant: NeuButtonVariant.secondary,
                   icon: Icons.refresh_rounded,
                   onPressed: () => setState(() => _capturedImagePath = null),
                   expanded: true,
@@ -673,13 +633,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               const SizedBox(width: 16),
               Expanded(
                 flex: 2,
-                child: CpButton(
+                child: NeuButton(
                   text: 'Use Scan',
-                  variant: ButtonVariant.primary,
+                  variant: NeuButtonVariant.primary,
                   icon: Icons.check_rounded,
                   onPressed: _useScan,
                   expanded: true,
-                  gradient: _getTypeGradient(_selectedType),
                 ),
               ),
             ],
@@ -692,7 +651,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   Widget _buildPreviewPlaceholder() {
     return Container(
       width: double.infinity,
-      color: AppColors.surfaceContainerHighest,
+      color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceContainerDark
+              : AppColors.surfaceContainerHighest,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -700,13 +661,13 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             Icon(
               _getTypeIcon(_selectedType),
               size: 64,
-              color: AppColors.textTertiary,
+              color: ThemeColors.textTertiary(context),
             ),
             const SizedBox(height: 12),
             Text(
               'Captured Image Preview',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
               ),
             ),
           ],
@@ -729,7 +690,6 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   }
 
   void _pickFromGallery() {
-    // TODO: Implement gallery picker
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Gallery picker would open here'),

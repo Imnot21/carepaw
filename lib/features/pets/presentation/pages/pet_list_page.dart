@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
-import 'package:carepaw/features/pets/presentation/pages/pet_form_page.dart';
 import 'package:carepaw/features/pets/presentation/pages/pet_detail_page.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
@@ -16,7 +16,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
@@ -114,7 +114,7 @@ class _NotLoggedInView extends StatelessWidget {
                 onPressed: () => context.push('/login'),
                 variant: NeuButtonVariant.primary,
                 icon: Icons.login_outlined,
-                size: NeuButtonSize.large,
+                size: NeuButtonSize.medium,
                 expanded: true,
               ),
             ],
@@ -208,7 +208,7 @@ class _PetListViewState extends State<_PetListView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.failure.message),
-                      backgroundColor: AppColors.error,
+                      backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       margin: const EdgeInsets.all(16),
@@ -218,7 +218,7 @@ class _PetListViewState extends State<_PetListView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: AppColors.success,
+                      backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       margin: const EdgeInsets.all(16),
@@ -228,7 +228,7 @@ class _PetListViewState extends State<_PetListView> {
               },
               builder: (context, state) {
                 if (state is PetLoading) {
-                  return const Center(child: NeuCircularProgress());
+                  return const NeuSkeletonList();
                 }
 
                 if (state is PetsLoaded) {
@@ -260,7 +260,7 @@ class _PetListViewState extends State<_PetListView> {
 
                 if (state is PetOperationSuccess) {
                   context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
-                  return const Center(child: NeuCircularProgress());
+                  return const NeuSkeletonList();
                 }
 
                 return const _EmptyPetsView(onAddPet: null);
@@ -274,11 +274,10 @@ class _PetListViewState extends State<_PetListView> {
 
   void _navigateToAddPet(BuildContext context) {
     final petBloc = context.read<PetBloc>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PetFormPage(ownerId: widget.ownerId),
-      ),
-    ).then((_) {
+    // Use the router route so PetFormPage is wrapped in a BlocProvider<PetBloc>.
+    // Pushing PetFormPage directly here would build it without a PetBloc in
+    // scope and crash with ProviderNotFoundException.
+    context.push(Routes.petAdd).then((_) {
       if (mounted) {
         petBloc.add(LoadPets(ownerId: widget.ownerId));
       }
@@ -295,11 +294,9 @@ class _PetListViewState extends State<_PetListView> {
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
     final petBloc = context.read<PetBloc>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PetFormPage(ownerId: widget.ownerId, pet: pet),
-      ),
-    ).then((_) {
+    // Router route wraps PetFormPage in a BlocProvider<PetBloc>; the edit
+    // route loads the pet by ID and pre-fills the form.
+    context.push(Routes.petEdit.replaceAll(':id', '${pet.id}')).then((_) {
       if (mounted) {
         petBloc.add(LoadPets(ownerId: widget.ownerId));
       }
@@ -329,7 +326,7 @@ class _PetListViewState extends State<_PetListView> {
               context.read<PetBloc>().add(DeletePet(petId: pet.id!));
             },
             icon: Icons.delete,
-            size: NeuButtonSize.small,
+            size: NeuButtonSize.medium,
           ),
         ],
       ),
@@ -363,7 +360,7 @@ class _PetCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: 20,
         borderColor: !pet.isActive
-            ? AppColors.warning.withValues(alpha: 0.4)
+            ? ThemeColors.warning(context).withValues(alpha: 0.4)
             : null,
         borderWidth: !pet.isActive ? 2 : 0,
         child: Row(
@@ -401,14 +398,14 @@ class _PetCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha: 0.15),
+                            color: ThemeColors.warning(context).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                            border: Border.all(color: ThemeColors.warning(context).withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             'Inactive',
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.warning,
+                              color: ThemeColors.warning(context),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -442,7 +439,7 @@ class _PetCard extends StatelessWidget {
                         Icon(
                           Icons.cake_outlined,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -459,7 +456,7 @@ class _PetCard extends StatelessWidget {
                         Icon(
                           Icons.monitor_weight_outlined,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -479,13 +476,13 @@ class _PetCard extends StatelessWidget {
                         Icon(
                           Icons.nfc_outlined,
                           size: 16,
-                          color: AppColors.success,
+                          color: ThemeColors.success(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Microchipped',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.success,
+                            color: ThemeColors.success(context),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -509,9 +506,9 @@ class _PetCard extends StatelessWidget {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
-                  child: Row(
+                  child: const Row(
                     children: [
                       Icon(Icons.edit_outlined, size: 20),
                       SizedBox(width: 8),
@@ -519,13 +516,13 @@ class _PetCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 20, color: AppColors.error),
-                      SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: AppColors.error)),
+                      Icon(Icons.delete_outline, size: 20, color: ThemeColors.error(context)),
+                      const SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
                     ],
                   ),
                 ),
@@ -534,7 +531,7 @@ class _PetCard extends StatelessWidget {
                 borderRadius: 12,
                 padding: const EdgeInsets.all(8),
                 variant: NeuVariant.raised,
-                child: Icon(Icons.more_vert, size: 22, color: AppColors.textSecondary),
+                child: Icon(Icons.more_vert, size: 22, color: ThemeColors.textSecondary(context)),
               ),
             ),
           ],
@@ -598,7 +595,7 @@ class _EmptyPetsView extends StatelessWidget {
                 onPressed: onAddPet,
                 variant: NeuButtonVariant.primary,
                 icon: Icons.add,
-                size: NeuButtonSize.large,
+                size: NeuButtonSize.medium,
                 expanded: true,
               ),
           ],
@@ -690,7 +687,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.failure.message),
-                      backgroundColor: AppColors.error,
+                      backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       margin: const EdgeInsets.all(16),
@@ -700,7 +697,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: AppColors.success,
+                      backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       margin: const EdgeInsets.all(16),
@@ -710,7 +707,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
               },
               builder: (context, state) {
                 if (state is PetLoading) {
-                  return const Center(child: NeuCircularProgress());
+                  return const NeuSkeletonList();
                 }
 
                 if (state is PetsLoaded) {
@@ -742,7 +739,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
 
                 if (state is PetOperationSuccess) {
                   context.read<PetBloc>().add(const LoadAllPets());
-                  return const Center(child: NeuCircularProgress());
+                  return const NeuSkeletonList();
                 }
 
                 return const _EmptyPetsView(onAddPet: null);
@@ -756,11 +753,9 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
 
   void _navigateToAddPet(BuildContext context) {
     final petBloc = context.read<PetBloc>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PetFormPage(ownerId: 0), // Will be set in form for staff
-      ),
-    ).then((_) {
+    // Router route wraps PetFormPage in a BlocProvider<PetBloc>; pushing the
+    // form directly would crash with ProviderNotFoundException.
+    context.push(Routes.petAdd).then((_) {
       if (mounted) {
         petBloc.add(const LoadAllPets());
       }
@@ -777,11 +772,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
     final petBloc = context.read<PetBloc>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PetFormPage(ownerId: pet.ownerId, pet: pet),
-      ),
-    ).then((_) {
+    context.push(Routes.petEdit.replaceAll(':id', '${pet.id}')).then((_) {
       if (mounted) {
         petBloc.add(const LoadAllPets());
       }
@@ -811,7 +802,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
               context.read<PetBloc>().add(DeletePet(petId: pet.id!));
             },
             icon: Icons.delete,
-            size: NeuButtonSize.small,
+            size: NeuButtonSize.medium,
           ),
         ],
       ),
@@ -883,14 +874,14 @@ class _StaffPetCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha: 0.15),
+                            color: ThemeColors.warning(context).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                            border: Border.all(color: ThemeColors.warning(context).withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             'Inactive',
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.warning,
+                              color: ThemeColors.warning(context),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -923,7 +914,7 @@ class _StaffPetCard extends StatelessWidget {
                       Icon(
                         Icons.person_outline,
                         size: 16,
-                        color: AppColors.textSecondary,
+                        color: ThemeColors.textSecondary(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -941,7 +932,7 @@ class _StaffPetCard extends StatelessWidget {
                         Icon(
                           Icons.cake_outlined,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -958,7 +949,7 @@ class _StaffPetCard extends StatelessWidget {
                         Icon(
                           Icons.monitor_weight_outlined,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -978,13 +969,13 @@ class _StaffPetCard extends StatelessWidget {
                         Icon(
                           Icons.nfc_outlined,
                           size: 16,
-                          color: AppColors.success,
+                          color: ThemeColors.success(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Microchipped',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.success,
+                            color: ThemeColors.success(context),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1018,13 +1009,13 @@ class _StaffPetCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 20, color: AppColors.error),
-                      SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: AppColors.error)),
+                      Icon(Icons.delete_outline, size: 20, color: ThemeColors.error(context)),
+                      const SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
                     ],
                   ),
                 ),
@@ -1033,7 +1024,7 @@ class _StaffPetCard extends StatelessWidget {
                 borderRadius: 12,
                 padding: const EdgeInsets.all(8),
                 variant: NeuVariant.raised,
-                child: Icon(Icons.more_vert, size: 22, color: AppColors.textSecondary),
+                child: Icon(Icons.more_vert, size: 22, color: ThemeColors.textSecondary(context)),
               ),
             ),
           ],

@@ -65,7 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.failure.message),
-              backgroundColor: AppColors.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -75,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Welcome to CarePaw, ${state.user.fullName}!'),
-              backgroundColor: AppColors.success,
+              backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -200,7 +200,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               isLoading: isLoading,
                               expanded: true,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.large,
+                              size: NeuButtonSize.medium,
                             );
                           },
                         ),

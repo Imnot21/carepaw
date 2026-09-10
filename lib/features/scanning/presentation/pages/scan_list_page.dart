@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
@@ -12,7 +11,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -79,7 +78,7 @@ class _ScanListPageState extends State<ScanListPage>
             text: 'New Scan',
             icon: Icons.camera_alt_rounded,
             onPressed: _navigateToCamera,
-          ).animate().fadeIn(delay: const Duration(milliseconds: 600)).slideY(begin: 0.3, end: 0),
+          ),
         );
       },
     );
@@ -145,7 +144,7 @@ class _ScanListPageState extends State<ScanListPage>
           const Tab(text: 'Pending'),
           const Tab(text: 'Confirmed'),
         ],
-        color: AppColors.primary,
+        color: ThemeColors.primary(context),
       ),
     );
   }
@@ -169,7 +168,7 @@ class _ScanListPageState extends State<ScanListPage>
     return BlocBuilder<ScanBloc, ScanState>(
       builder: (context, state) {
         if (state is ScanLoading) {
-          return const Center(child: NeuCircularProgress(size: 48));
+          return const NeuSkeletonList();
         }
 
         if (state is ScanError) {
@@ -216,7 +215,7 @@ class _ScanListPageState extends State<ScanListPage>
           itemCount: records.length,
           itemBuilder: (context, index) {
             final record = records[index];
-            return _buildScanCard(record, index);
+            return _buildScanCard(record);
           },
         );
       },
@@ -242,11 +241,11 @@ class _ScanListPageState extends State<ScanListPage>
             itemCount: records.length,
             itemBuilder: (context, index) {
               final record = records[index];
-              return _buildScanCard(record, index, highlightPending: true);
+              return _buildScanCard(record, highlightPending: true);
             },
           );
         }
-        return const Center(child: NeuCircularProgress(size: 48));
+        return const NeuSkeletonList();
       },
     );
   }
@@ -270,16 +269,16 @@ class _ScanListPageState extends State<ScanListPage>
             itemCount: records.length,
             itemBuilder: (context, index) {
               final record = records[index];
-              return _buildScanCard(record, index);
+              return _buildScanCard(record);
             },
           );
         }
-        return const Center(child: NeuCircularProgress(size: 48));
+        return const NeuSkeletonList();
       },
     );
   }
 
-  Widget _buildScanCard(ScanRecord record, int index, {bool highlightPending = false}) {
+  Widget _buildScanCard(ScanRecord record, {bool highlightPending = false}) {
     final isPending = record.status == ScanStatus.pending;
     final isConfirmed = record.status == ScanStatus.confirmed;
     final isRejected = record.status == ScanStatus.rejected;
@@ -289,11 +288,11 @@ class _ScanListPageState extends State<ScanListPage>
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
       borderColor: isPending && highlightPending
-          ? AppColors.warning.withValues(alpha: 0.4)
+          ? ThemeColors.warning(context).withValues(alpha: 0.4)
           : isConfirmed
-              ? AppColors.success.withValues(alpha: 0.3)
+              ? ThemeColors.success(context).withValues(alpha: 0.3)
               : isRejected
-                  ? AppColors.error.withValues(alpha: 0.3)
+                  ? ThemeColors.error(context).withValues(alpha: 0.3)
                   : _getTypeColor(record.scanType).withValues(alpha: 0.15),
       borderWidth: 1,
       onTap: () => _navigateToDetail(record),
@@ -306,7 +305,7 @@ class _ScanListPageState extends State<ScanListPage>
               NeuContainer(
                 padding: const EdgeInsets.all(12),
                 borderRadius: 12,
-                gradient: _getTypeGradient(record.scanType),
+                color: _getTypeColor(record.scanType),
                 child: Icon(
                   _getTypeIcon(record.scanType),
                   size: 24,
@@ -386,7 +385,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'Process OCR',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.psychology_rounded,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     onPressed: () =>
                         context.read<ScanBloc>().add(ProcessScanOcr(record.id!)),
                     expanded: true,
@@ -398,7 +397,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'Review',
                     variant: NeuButtonVariant.secondary,
                     icon: Icons.visibility_rounded,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     onPressed: () => _navigateToDetail(record),
                     expanded: true,
                   ),
@@ -413,7 +412,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'View Details',
                     variant: NeuButtonVariant.secondary,
                     icon: Icons.visibility_rounded,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     onPressed: () => _navigateToDetail(record),
                     expanded: true,
                   ),
@@ -424,7 +423,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'Use Data',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.check_circle_rounded,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     onPressed: () => _useScanData(record),
                     expanded: true,
                   ),
@@ -436,14 +435,14 @@ class _ScanListPageState extends State<ScanListPage>
               text: 'Retry Scan',
               variant: NeuButtonVariant.outline,
               icon: Icons.refresh_rounded,
-              size: NeuButtonSize.small,
+              size: NeuButtonSize.medium,
               onPressed: () => _navigateToCamera(),
               expanded: true,
             ),
           ],
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: 50 * (index % 10)));
+    );
   }
 
   Widget _buildStatusBadge(ScanStatus status) {
@@ -453,17 +452,17 @@ class _ScanListPageState extends State<ScanListPage>
 
     switch (status) {
       case ScanStatus.pending:
-        color = AppColors.warning;
+        color = ThemeColors.warning(context);
         text = 'Pending';
         icon = Icons.pending_rounded;
         break;
       case ScanStatus.confirmed:
-        color = AppColors.success;
+        color = ThemeColors.success(context);
         text = 'Confirmed';
         icon = Icons.check_circle_rounded;
         break;
       case ScanStatus.rejected:
-        color = AppColors.error;
+        color = ThemeColors.error(context);
         text = 'Rejected';
         icon = Icons.cancel_rounded;
         break;
@@ -495,11 +494,11 @@ class _ScanListPageState extends State<ScanListPage>
   Widget _buildConfidenceIndicator(double confidence) {
     Color color;
     if (confidence >= 0.8) {
-      color = AppColors.success;
+      color = ThemeColors.success(context);
     } else if (confidence >= 0.6) {
-      color = AppColors.warning;
+      color = ThemeColors.warning(context);
     } else {
-      color = AppColors.error;
+      color = ThemeColors.error(context);
     }
 
     return NeuContainer(
@@ -523,29 +522,6 @@ class _ScanListPageState extends State<ScanListPage>
         ],
       ),
     );
-  }
-
-  LinearGradient _getTypeGradient(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return const LinearGradient(
-          colors: [Color(0xFF10B981), Color(0xFF059669)],
-        );
-      case ScanType.medicineBox:
-        return AppColors.gradientPrimary;
-      case ScanType.prescription:
-        return LinearGradient(
-          colors: [AppColors.categorySupply, AppColors.categorySupplyDark],
-        );
-      case ScanType.labReport:
-        return const LinearGradient(
-          colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
-        );
-      default:
-        return const LinearGradient(
-          colors: [Color(0xFF6B7280), Color(0xFF4B5563)],
-        );
-    }
   }
 
   Color _getTypeColor(ScanType type) {
@@ -601,7 +577,7 @@ class _ScanListPageState extends State<ScanListPage>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Using ${record.scanType.displayName} data...'),
-        backgroundColor: AppColors.success,
+        backgroundColor: ThemeColors.success(context),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -676,7 +652,7 @@ class _NeuEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = AppColors.primary;
+    final accent = ThemeColors.primary(context);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -746,7 +722,7 @@ class _NotLoggedInView extends StatelessWidget {
                   NeuContainer(
                     padding: const EdgeInsets.all(24),
                     borderRadius: 80,
-                    gradient: AppColors.gradientPrimary,
+                    color: AppColors.primary,
                     child: Icon(
                       Icons.camera_alt_rounded,
                       size: 80,
@@ -807,7 +783,7 @@ class _AccessDeniedView extends StatelessWidget {
                   NeuContainer(
                     padding: const EdgeInsets.all(24),
                     borderRadius: 80,
-                    gradient: AppColors.gradientError,
+                    color: AppColors.error,
                     child: Icon(
                       Icons.block_rounded,
                       size: 80,
@@ -819,7 +795,7 @@ class _AccessDeniedView extends StatelessWidget {
                     'Access Denied',
                     style: AppTextStyles.headlineSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.error,
+                      color: ThemeColors.error(context),
                     ),
                     textAlign: TextAlign.center,
                   ),

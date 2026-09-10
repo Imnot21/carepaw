@@ -49,7 +49,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.failure.message),
-              backgroundColor: AppColors.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -61,7 +61,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               content: const Text(
                 'If an account exists with that email, a password reset link has been sent.',
               ),
-              backgroundColor: AppColors.success,
+              backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -109,7 +109,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     'CarePaw',
                     style: AppTextStyles.headlineLarge.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
+                      color: ThemeColors.primary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -168,7 +168,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               expanded: true,
                               icon: Icons.send_rounded,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.large,
+                              size: NeuButtonSize.medium,
                             );
                           },
                         ),

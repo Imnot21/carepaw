@@ -452,7 +452,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                             Text(
                               'Min: ${_minStockController.text.isEmpty ? '0' : _minStockController.text}',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.warning,
+                                color: ThemeColors.warning(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -460,7 +460,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                               Text(
                                 'Max: ${_maxStockController.text}',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.info,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? AppColors.infoDark
+                                      : AppColors.info,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -625,7 +627,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: AppColors.success,
+              backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -640,7 +642,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.failure.message),
-              backgroundColor: AppColors.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),

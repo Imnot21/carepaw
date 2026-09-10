@@ -40,12 +40,24 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     }
   }
 
+  List<User> _currentUsers() {
+    final s = state;
+    if (s is states.UserManagementLoaded) return s.users;
+    if (s is states.UserManagementMutating) return s.users;
+    return const [];
+  }
+
   /// Create a new staff / veterinarian / pet-owner account.
   Future<void> _onCreateRequested(
     events.UserManagementCreateRequested event,
     Emitter<states.UserManagementState> emit,
   ) async {
-    emit(const states.UserManagementLoading());
+    final prev = _currentUsers();
+    if (prev.isNotEmpty) {
+      emit(states.UserManagementMutating(prev));
+    } else {
+      emit(const states.UserManagementLoading());
+    }
     try {
       await _userRepository.createAccount(
         email: event.email.trim().toLowerCase(),
@@ -60,9 +72,9 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
       // Refresh the list to include the new account.
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
-      emit(states.UserManagementError(failure));
+      emit(states.UserManagementError(failure, _currentUsers()));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString())));
+      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), _currentUsers()));
     }
   }
 
@@ -71,6 +83,10 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     events.UserManagementChangeRoleRequested event,
     Emitter<states.UserManagementState> emit,
   ) async {
+    final prev = _currentUsers();
+    if (prev.isNotEmpty) {
+      emit(states.UserManagementMutating(prev));
+    }
     try {
       await _userRepository.changeRole(event.userId, event.newRole);
       emit(states.UserManagementActionSuccess(
@@ -78,9 +94,9 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
       ));
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
-      emit(states.UserManagementError(failure));
+      emit(states.UserManagementError(failure, prev));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString())));
+      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), prev));
     }
   }
 
@@ -89,6 +105,10 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     events.UserManagementToggleActiveRequested event,
     Emitter<states.UserManagementState> emit,
   ) async {
+    final prev = _currentUsers();
+    if (prev.isNotEmpty) {
+      emit(states.UserManagementMutating(prev));
+    }
     try {
       await _userRepository.setActive(event.userId, event.isActive);
       emit(states.UserManagementActionSuccess(
@@ -96,9 +116,9 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
       ));
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
-      emit(states.UserManagementError(failure));
+      emit(states.UserManagementError(failure, prev));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString())));
+      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), prev));
     }
   }
 }

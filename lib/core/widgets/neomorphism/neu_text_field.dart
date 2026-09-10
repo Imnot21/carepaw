@@ -4,12 +4,12 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import 'neu_container.dart';
 
-/// Neumorphic text input — a sunken (inset) field with focus/error states.
+/// Neumorphic text input: a sunken (inset) field with focus/error states.
 ///
-/// Replaces the legacy `CpTextField`. The field sits recessed in the canvas:
-/// its inset edge shadows communicate affordance, and a primary border +
-/// glow snaps in when focused. Supports the full `CpTextField` surface area —
-/// label, hint, validation, prefix/suffix icons, obscure toggle, formatters.
+/// Replaces the legacy Material-era text field. The field sits recessed in the
+/// canvas: its inset edge shadows communicate affordance, and a primary border
+/// snaps in when focused. Supports the full surface area - label, hint,
+/// validation, prefix/suffix icons, obscure toggle, formatters.
 class NeuTextField extends StatefulWidget {
   final String? label;
   final String? hint;
@@ -114,7 +114,13 @@ class _NeuTextFieldState extends State<NeuTextField> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasError = _errorText != null || widget.error != null;
-    final labelColor = isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary;
+    final accent = ThemeColors.primary(context);
+    final errorColor = ThemeColors.error(context);
+    // Textfield foreground: stark max-contrast. Pure white on the dark field,
+    // dark-navy on the light field — matching "white in dark mode, dark in light".
+    final inputColor = isDark ? Colors.white : AppColors.textPrimary;
+    final labelColor = inputColor;
+    final hintColor = isDark ? Colors.white70 : AppColors.textSecondary;
     final disabledLabelColor = isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary;
 
     return Column(
@@ -135,7 +141,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
           child: NeuContainer(
             variant: NeuVariant.inset,
             borderRadius: 14,
-            borderColor: _borderColor(isDark),
+            borderColor: _borderColor(accent, errorColor),
             borderWidth: (_isFocused || hasError) ? 1.6 : 1,
             padding: EdgeInsets.zero,
             child: TextFormField(
@@ -156,7 +162,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
               inputFormatters: widget.inputFormatters,
               autofocus: widget.autofocus,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: inputColor,
               ),
               decoration: InputDecoration(
                 hintText: widget.hint,
@@ -171,16 +177,14 @@ class _NeuTextFieldState extends State<NeuTextField> {
                         padding: const EdgeInsets.all(14),
                         child: IconTheme(
                           data: IconThemeData(
-                            color: _isFocused
-                                ? AppColors.primary
-                                : (_borderColor(isDark)),
+                            color: _isFocused ? accent : hintColor,
                             size: 22,
                           ),
                           child: widget.prefixIcon!,
                         ),
                       )
                     : null,
-                suffixIcon: _buildSuffixIcon(isDark),
+                suffixIcon: _buildSuffixIcon(isDark, accent),
                 filled: true,
                 fillColor: Colors.transparent,
                 border: InputBorder.none,
@@ -190,7 +194,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
                 focusedErrorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                  color: hintColor,
                 ),
               ),
             ),
@@ -202,7 +206,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
             padding: const EdgeInsets.only(left: 4),
             child: Text(
               _errorText ?? widget.error!,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+              style: AppTextStyles.bodySmall.copyWith(color: errorColor),
             ),
           ),
         ] else if (widget.helper != null) ...[
@@ -221,19 +225,19 @@ class _NeuTextFieldState extends State<NeuTextField> {
     );
   }
 
-  Color _borderColor(bool isDark) {
-    if (_isFocused) return AppColors.primary;
-    if (_errorText != null || widget.error != null) return AppColors.error;
+  Color _borderColor(Color accent, Color errorColor) {
+    if (_isFocused) return accent;
+    if (_errorText != null || widget.error != null) return errorColor;
     return Colors.transparent;
   }
 
-  Widget? _buildSuffixIcon(bool isDark) {
-    final iconColor = isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
+  Widget? _buildSuffixIcon(bool isDark, Color accent) {
+    final iconColor = isDark ? Colors.white70 : AppColors.textSecondary;
     if (widget.obscureText) {
       return IconButton(
         icon: Icon(
           _obscureText ? Icons.visibility_off : Icons.visibility,
-          color: _isFocused ? AppColors.primary : iconColor,
+          color: _isFocused ? accent : iconColor,
         ),
         onPressed: () => setState(() => _obscureText = !_obscureText),
       );
@@ -243,7 +247,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
         padding: const EdgeInsets.all(14),
         child: IconTheme(
           data: IconThemeData(
-            color: _isFocused ? AppColors.primary : iconColor,
+            color: _isFocused ? accent : iconColor,
             size: 22,
           ),
           child: widget.suffixIcon!,

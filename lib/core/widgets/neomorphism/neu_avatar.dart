@@ -30,7 +30,7 @@ class NeuAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? AppColors.primary;
+    final bg = backgroundColor ?? ThemeColors.primary(context);
     final fg = foregroundColor ?? AppColors.textOnPrimary;
 
     Widget content;

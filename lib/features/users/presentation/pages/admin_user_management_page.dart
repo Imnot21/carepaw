@@ -1,24 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
+import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/utils/validators.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
-import 'package:carepaw/core/widgets/common/cp_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/scale_on_tap.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/users/presentation/bloc/user_management_bloc.dart';
 import 'package:carepaw/features/users/presentation/bloc/user_management_event.dart';
 import 'package:carepaw/features/users/presentation/bloc/user_management_state.dart';
 
 /// Admin user management page - create staff/veterinarian accounts and manage
-/// existing staff & veterinarians (roles, activation).
+/// existing staff and veterinarians (roles, activation).
 ///
-/// Wired into both the admin bottom-nav "Users" tab and the `/admin/users`
-/// route. Uses [UserManagementBloc] for all data operations.
+/// Bloc is provided by the route in `AppRouter` so it is created once per
+/// navigation and lives as long as this page is on the stack.
 class AdminUserManagementPage extends StatefulWidget {
   const AdminUserManagementPage({super.key});
 
@@ -26,36 +29,33 @@ class AdminUserManagementPage extends StatefulWidget {
   State<AdminUserManagementPage> createState() => _AdminUserManagementPageState();
 }
 
-class _AdminUserManagementPageState extends State<AdminUserManagementPage>
-    with SingleTickerProviderStateMixin {
+class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _searchController = TextEditingController();
 
   UserRole _selectedRole = UserRole.staff;
-  List<User> _users = const [];
+  String _searchQuery = '';
+  UserRole? _roleFilter;
+  int _visibleCount = AppConstants.defaultPageSize;
+  Timer? _searchDebounce;
 
-  @override
-  void initState() {
-    super.initState();
-    // Load the staff/vet list once the bloc is available (after first frame).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<UserManagementBloc>().add(const UserManagementLoadRequested());
-      }
-    });
-  }
+  static const _debounceMs = AppConstants.searchDebounceMs;
+  // _users is derived from Bloc state, never stored.
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _fullNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -71,7 +71,6 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
           role: _selectedRole,
         ),
       );
-      // Clear the form so the next account can be created without editing.
       _fullNameController.clear();
       _emailController.clear();
       _phoneController.clear();
@@ -80,62 +79,103 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
     }
   }
 
+  void _onSearchChanged(String raw) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: _debounceMs), () {
+      if (!mounted) return;
+      setState(() {
+        _searchQuery = raw.trim().toLowerCase();
+        _visibleCount = AppConstants.defaultPageSize;
+      });
+    });
+  }
+
+  List<User> _filteredUsers(List<User> users) {
+    var out = users;
+    if (_roleFilter != null) {
+      out = out.where((u) => u.role == _roleFilter).toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      out = out.where((u) =>
+        u.fullName.toLowerCase().contains(_searchQuery) ||
+        u.email.toLowerCase().contains(_searchQuery)
+      ).toList();
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => UserManagementBloc(),
-      child: BlocListener<UserManagementBloc, UserManagementState>(
-        listener: (context, state) {
-          if (state is UserManagementLoaded) {
-            _users = state.users;
-          } else if (state is UserManagementActionSuccess) {
-            _showSnack(state.message, success: true);
-          } else if (state is UserManagementError) {
-            _showSnack(state.failure.message);
-          }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BlocListener<UserManagementBloc, UserManagementState>(
+      listener: (context, state) {
+        if (state is UserManagementActionSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: ThemeColors.success(context),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              margin: const EdgeInsets.all(16),
+            ),
+          );
+        } else if (state is UserManagementError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.failure.message),
+              backgroundColor: ThemeColors.error(context),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              margin: const EdgeInsets.all(16),
+            ),
+          );
+        }
+      },
+      child: BlocBuilder<UserManagementBloc, UserManagementState>(
+        builder: (context, state) {
+          final allUsers = switch (state) {
+            UserManagementLoaded(:final users) => users,
+            UserManagementMutating(:final users) => users,
+            _ => const <User>[],
+          };
+          final isInitialLoading = state is UserManagementLoading && allUsers.isEmpty;
+          final isMutating = state is UserManagementMutating;
+
+          return Scaffold(
+            backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+            appBar: AppBar(
+              title: const Text('User Management'),
+              centerTitle: true,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
+            body: SafeArea(
+              top: false,
+              child: isInitialLoading
+                  ? const Center(child: NeuCircularProgress(size: 32, strokeWidth: 3))
+                  : _buildContent(context, state, allUsers, isMutating),
+            ),
+          );
         },
-        child: BlocBuilder<UserManagementBloc, UserManagementState>(
-          builder: (context, state) {
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('User Management'),
-                centerTitle: true,
-                elevation: 0,
-                scrolledUnderElevation: 0,
-                backgroundColor: Colors.transparent,
-              ),
-              body: AnimatedGradientBackground(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.07),
-                  AppColors.secondary.withValues(alpha: 0.04),
-                  AppColors.tertiary.withValues(alpha: 0.05),
-                ],
-                child: SafeArea(
-                  top: false,
-                  child: state is UserManagementLoading && _users.isEmpty
-                      ? const Center(
-                          child: CpLoader(size: 32, strokeWidth: 3),
-                        )
-                      : _buildContent(context, state),
-                ),
-              ),
-            );
-          },
-        ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, UserManagementState state) {
-    final isLoading = state is UserManagementLoading;
+  Widget _buildContent(BuildContext context, UserManagementState state, List<User> allUsers, bool isMutating) {
+    final isLoading = state is UserManagementLoading || state is UserManagementMutating;
+    final filtered = _filteredUsers(allUsers);
+    final visible = filtered.take(_visibleCount).toList();
+    final hasMore = filtered.length > visible.length;
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (isLoading && _users.isNotEmpty) ...[
-            const Center(child: CpLoader(size: 20, strokeWidth: 2)),
+          if (isLoading && allUsers.isNotEmpty) ...[
+            const Center(child: NeuCircularProgress(size: 20, strokeWidth: 2)),
             const SizedBox(height: 12),
           ],
 
@@ -147,63 +187,56 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
           const SizedBox(height: 4),
           Text(
             'Add staff, veterinarians, or pet owners. Each account signs in with these credentials.',
-            style: AppTextStyles.bodySmall.subtle,
+            style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
           ),
           const SizedBox(height: 12),
 
-          GlassContainer(
+          NeuCard(
             borderRadius: 20,
             padding: const EdgeInsets.all(20),
-            blur: 14,
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.surface.withValues(alpha: 0.82),
-                Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.glassBorderDark
-                : AppColors.glassBorderLight,
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CpTextFieldName(
+                  NeuTextField(
                     controller: _fullNameController,
                     label: 'Full Name',
                     hint: 'John Doe',
+                    keyboardType: TextInputType.name,
                     validator: Validators.requiredWith([Validators.name], 'Full Name'),
                   ),
                   const SizedBox(height: 16),
-                  CpTextFieldEmail(
+                  NeuTextField(
                     controller: _emailController,
                     label: 'Email',
                     hint: 'you@example.com',
+                    keyboardType: TextInputType.emailAddress,
                     validator: Validators.requiredWith([Validators.email], 'Email'),
                   ),
                   const SizedBox(height: 16),
-                  CpTextFieldPhone(
+                  NeuTextField(
                     controller: _phoneController,
                     label: 'Phone (Optional)',
                     hint: '09XX XXX XXXX',
+                    keyboardType: TextInputType.phone,
                     helper: 'Philippine mobile number (optional)',
                   ),
                   const SizedBox(height: 16),
-                  CpTextFieldPassword(
+                  NeuTextField(
                     controller: _passwordController,
                     label: 'Password',
                     hint: 'Set a starting password',
+                    obscureText: true,
                     helper: 'Min 8 chars, 1 uppercase, 1 lowercase, 1 number',
                     validator: Validators.requiredWith([Validators.password], 'Password'),
                   ),
                   const SizedBox(height: 16),
-                  CpTextFieldPassword(
+                  NeuTextField(
                     controller: _confirmPasswordController,
                     label: 'Confirm Password',
                     hint: 'Confirm the password',
+                    obscureText: true,
                     validator: (value) {
                       final requiredError = Validators.required(value, 'Confirm Password');
                       if (requiredError != null) return requiredError;
@@ -217,11 +250,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
                   ),
                   const SizedBox(height: 16),
 
-                  // Role selector (admin is provisioned in the Firebase console)
-                  Text(
-                    'Role',
-                    style: AppTextStyles.labelLarge,
-                  ),
+                  Text('Role', style: AppTextStyles.labelLarge),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -237,13 +266,13 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
                   ),
                   const SizedBox(height: 20),
 
-                  CpButton(
+                  NeuButton(
                     text: 'Create Account',
-                    onPressed: isLoading ? null : _onCreatePressed,
-                    isLoading: isLoading,
+                    onPressed: (isLoading || isMutating) ? null : _onCreatePressed,
+                    isLoading: isLoading || isMutating,
                     expanded: true,
-                    variant: ButtonVariant.primary,
-                    size: ButtonSize.large,
+                    variant: NeuButtonVariant.primary,
+                    size: NeuButtonSize.medium,
                     icon: Icons.person_add_outlined,
                   ),
                 ],
@@ -256,43 +285,135 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
           // ---------- Existing Staff & Veterinarians ----------
           Row(
             children: [
-              Icon(Icons.badge_outlined, color: AppColors.secondary, size: 20),
+              Icon(Icons.badge_outlined, color: ThemeColors.textSecondary(context), size: 20),
               const SizedBox(width: 8),
               Text(
                 'Staff & Veterinarians',
                 style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
               ),
+              const Spacer(),
+              if (allUsers.isNotEmpty)
+                NeuContainer(
+                  borderRadius: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  variant: NeuVariant.flat,
+                  child: Text(
+                    '${filtered.length} of ${allUsers.length}',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${_users.length} account(s)',
-            style: AppTextStyles.bodySmall.subtle,
           ),
           const SizedBox(height: 12),
 
-          if (_users.isEmpty)
-            GlassContainer(
+          NeuTextField(
+            controller: _searchController,
+            hint: 'Search by name or email',
+            prefixIcon: const Icon(Icons.search_outlined, size: 18),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear_rounded, size: 18),
+                    onPressed: () {
+                      _searchDebounce?.cancel();
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = '';
+                        _visibleCount = AppConstants.defaultPageSize;
+                      });
+                    },
+                    tooltip: 'Clear',
+                  )
+                : null,
+            onChanged: _onSearchChanged,
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                NeuChip(
+                  label: 'All roles',
+                  selected: _roleFilter == null,
+                  onTap: () => setState(() {
+                    _roleFilter = null;
+                    _visibleCount = AppConstants.defaultPageSize;
+                  }),
+                  selectedColor: ThemeColors.primary(context),
+                ),
+                const SizedBox(width: 8),
+                for (final role in const [UserRole.staff, UserRole.veterinarian, UserRole.petOwner])
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: NeuChip(
+                      label: role.displayName,
+                      selected: _roleFilter == role,
+                      onTap: () => setState(() {
+                        _roleFilter = _roleFilter == role ? null : role;
+                        _visibleCount = AppConstants.defaultPageSize;
+                      }),
+                      selectedColor: roleColor(context, role),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          if (allUsers.isEmpty)
+            NeuCard(
               borderRadius: 16,
               padding: const EdgeInsets.all(20),
-              blur: 10,
-              borderColor: AppColors.glassBorderLight,
               child: Column(
                 children: [
-                  Icon(Icons.people_outlined, color: AppColors.textSecondary, size: 40),
+                  Icon(Icons.people_outlined, color: ThemeColors.textSecondary(context), size: 40),
                   const SizedBox(height: 8),
                   Text(
                     'No staff or veterinarian accounts yet.',
-                    style: AppTextStyles.bodyMedium.subtle,
+                    style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
                   ),
                 ],
               ),
             )
-          else
-            ..._users.map((user) => Padding(
+          else if (filtered.isEmpty)
+            NeuCard(
+              borderRadius: 16,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(Icons.search_off_outlined, color: ThemeColors.textSecondary(context), size: 40),
+                  const SizedBox(height: 8),
+                  Text(
+                    'No matches for "${_searchController.text.trim()}"${_roleFilter == null ? '' : ' in ${_roleFilter!.displayName}'}',
+                    style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  NeuButton(
+                    text: 'Clear filters',
+                    variant: NeuButtonVariant.outline,
+                    size: NeuButtonSize.small,
+                    onPressed: () {
+                      _searchDebounce?.cancel();
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = '';
+                        _roleFilter = null;
+                        _visibleCount = AppConstants.defaultPageSize;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            ...visible.map((user) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _UserManagementCard(
                     user: user,
+                    busy: isLoading || isMutating,
                     onRoleChanged: (role) {
                       if (user.id != null) {
                         context.read<UserManagementBloc>().add(
@@ -315,19 +436,21 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage>
                     },
                   ),
                 )),
+            if (hasMore) ...[
+              const SizedBox(height: 4),
+              NeuButton(
+                text: 'Load more (${filtered.length - visible.length} remaining)',
+                variant: NeuButtonVariant.outline,
+                size: NeuButtonSize.small,
+                icon: Icons.expand_more_rounded,
+                onPressed: () => setState(() {
+                  _visibleCount = (_visibleCount + AppConstants.defaultPageSize)
+                      .clamp(0, filtered.length);
+                }),
+              ),
+            ],
+          ],
         ],
-      ),
-    );
-  }
-
-  void _showSnack(String message, {bool success = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: success ? AppColors.success : AppColors.error,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -345,45 +468,24 @@ class _RoleChip extends StatelessWidget {
     required this.onTap,
   });
 
-  Color get _color => switch (role) {
-        UserRole.staff => AppColors.secondary,
-        UserRole.veterinarian => AppColors.tertiary,
-        UserRole.petOwner => AppColors.info,
-        UserRole.admin => AppColors.primary,
-      };
+  Color _color(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return switch (role) {
+      UserRole.staff => ThemeColors.textSecondary(context),
+      UserRole.veterinarian => AppColors.tertiary,
+      UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
+      UserRole.admin => ThemeColors.primary(context),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ScaleOnTap(
+    return NeuChip(
+      label: role.displayName,
+      icon: role == UserRole.petOwner ? Icons.person_outline : Icons.medical_services_outlined,
+      selected: selected,
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? _color.withValues(alpha: 0.18) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? _color : AppColors.glassBorderLight,
-            width: selected ? 1.6 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(role == UserRole.petOwner ? Icons.person_outline : Icons.medical_services_outlined,
-                color: selected ? _color : AppColors.textSecondary, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              role.displayName,
-              style: AppTextStyles.labelMedium.copyWith(
-                color: selected ? _color : AppColors.textSecondary,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
+      selectedColor: _color(context),
     );
   }
 }
@@ -391,11 +493,13 @@ class _RoleChip extends StatelessWidget {
 /// A card listing one staff / veterinarian with role + activation controls.
 class _UserManagementCard extends StatelessWidget {
   final User user;
+  final bool busy;
   final ValueChanged<UserRole> onRoleChanged;
   final ValueChanged<bool> onToggleActive;
 
   const _UserManagementCard({
     required this.user,
+    this.busy = false,
     required this.onRoleChanged,
     required this.onToggleActive,
   });
@@ -403,40 +507,29 @@ class _UserManagementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final role = user.role;
-    final primary = user.isActive ? roleColor(role) : AppColors.textSecondary;
+    final primary = user.isActive ? roleColor(context, role) : ThemeColors.textSecondary(context);
 
-    return GlassContainer(
+    return NeuCard(
       borderRadius: 16,
       padding: const EdgeInsets.all(16),
-      blur: 12,
-      gradient: LinearGradient(
-        colors: [
-          Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
-          Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
       borderColor: primary.withValues(alpha: 0.3),
       borderWidth: 1.2,
       child: Row(
         children: [
-          // Avatar
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: roleColor(role).withValues(alpha: 0.22),
+              color: roleColor(context, role).withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               role == UserRole.veterinarian ? Icons.medical_services_outlined : Icons.person_outline,
-              color: roleColor(role),
+              color: roleColor(context, role),
               size: 22,
             ),
           ),
           const SizedBox(width: 12),
-          // Name + email
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,7 +543,7 @@ class _UserManagementCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   user.email,
-                  style: AppTextStyles.bodySmall.subtle,
+                  style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -458,21 +551,20 @@ class _UserManagementCard extends StatelessWidget {
                 Text(
                   user.isActive ? 'Active' : 'De-activated',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: user.isActive ? AppColors.success : AppColors.error,
+                    color: user.isActive ? ThemeColors.success(context) : ThemeColors.error(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-          // Role dropdown
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               DropdownButton<UserRole>(
                 value: user.role,
                 underline: const SizedBox.shrink(),
-                style: AppTextStyles.labelMedium.copyWith(color: roleColor(role)),
+                style: AppTextStyles.labelMedium.copyWith(color: roleColor(context, role)),
                 borderRadius: BorderRadius.circular(12),
                 items: [UserRole.staff, UserRole.veterinarian, UserRole.petOwner]
                     .map((r) => DropdownMenuItem(
@@ -480,19 +572,18 @@ class _UserManagementCard extends StatelessWidget {
                           child: Text(r.displayName),
                         ))
                     .toList(),
-                onChanged: user.isActive
-                    ? (role) {
+                onChanged: (!user.isActive || busy)
+                    ? null
+                    : (role) {
                         if (role != null && role != user.role) onRoleChanged(role);
-                      }
-                    : null,
+                      },
               ),
-              // Activation switch
               Transform.scale(
                 scale: 0.8,
                 child: Switch(
                   value: user.isActive,
-                  activeTrackColor: AppColors.success,
-                  onChanged: (v) => onToggleActive(v),
+                  activeTrackColor: ThemeColors.success(context),
+                  onChanged: busy ? null : (v) => onToggleActive(v),
                 ),
               ),
             ],
@@ -504,9 +595,12 @@ class _UserManagementCard extends StatelessWidget {
 }
 
 /// Role accent color shared by the page widgets.
-Color roleColor(UserRole role) => switch (role) {
-      UserRole.staff => AppColors.secondary,
-      UserRole.veterinarian => AppColors.tertiary,
-      UserRole.petOwner => AppColors.info,
-      UserRole.admin => AppColors.primary,
-    };
+Color roleColor(BuildContext context, UserRole role) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  return switch (role) {
+    UserRole.staff => ThemeColors.textSecondary(context),
+    UserRole.veterinarian => AppColors.tertiary,
+    UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
+    UserRole.admin => ThemeColors.primary(context),
+  };
+}

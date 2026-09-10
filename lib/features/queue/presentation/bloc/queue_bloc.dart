@@ -22,6 +22,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     on<QueueLoadRequested>(_onLoadRequested);
     on<QueueStaffLoadRequested>(_onStaffLoadRequested);
     on<QueueWatchRequested>(_onWatchRequested);
+    on<QueueCheckInRequested>(_onCheckInRequested);
     on<QueueCallNextRequested>(_onCallNextRequested);
     on<QueueMoveToRoomRequested>(_onMoveToRoomRequested);
     on<QueueCompleteRequested>(_onCompleteRequested);
@@ -146,6 +147,20 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     }
   }
 
+  /// Check an upcoming appointment into the queue (pet owner).
+  Future<void> _onCheckInRequested(
+    QueueCheckInRequested event,
+    Emitter<QueueState> emit,
+  ) async {
+    try {
+      await _repository.checkIn(event.appointmentId);
+      emit(const QueueOperationSuccess("Checked in, you're in the queue!"));
+      add(const QueueLoadRequested());
+    } catch (e) {
+      emit(QueueError('Failed to check in: $e'));
+    }
+  }
+
   /// Call next patient (staff)
   Future<void> _onCallNextRequested(
     QueueCallNextRequested event,
@@ -171,7 +186,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     Emitter<QueueState> emit,
   ) async {
     try {
-      await _repository.moveToRoom(event.queueId);
+      await _repository.moveToRoom(event.queueId, event.room);
       emit(QueueOperationSuccess('Patient moved to room'));
       add(QueueStaffLoadRequested());
     } catch (e) {

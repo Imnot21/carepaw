@@ -30,10 +30,19 @@ import 'package:carepaw/features/home/presentation/pages/home_page.dart';
 import 'package:carepaw/features/home/presentation/pages/staff_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/vet_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/admin_dashboard_page.dart';
+import 'package:carepaw/features/audit/presentation/bloc/audit_log_bloc.dart';
+import 'package:carepaw/features/audit/presentation/bloc/audit_log_event.dart';
+import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
+import 'package:carepaw/features/audit/presentation/pages/admin_audit_page.dart';
+import 'package:carepaw/features/home/presentation/pages/admin_settings_page.dart';
+import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
+import 'package:carepaw/features/users/presentation/bloc/user_management_bloc.dart';
+import 'package:carepaw/features/users/presentation/bloc/user_management_event.dart';
 import 'package:carepaw/features/users/presentation/pages/admin_user_management_page.dart';
+import 'package:carepaw/features/users/presentation/pages/profile_page.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/shell/app_shell.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 
 /// Application router configuration using GoRouter.
 ///
@@ -249,15 +258,26 @@ class AppRouter {
         ],
       ),
 
-      // Queue route for pet owners
+      // Queue route for pet owners — provides Queue + Appointments so the
+      // empty state can surface a "Check in an upcoming appointment" list.
       GoRoute(
         path: Routes.queue,
         name: RouteNames.queue,
-        builder: (context, state) => BlocProvider(
-          create: (context) => QueueBloc(
-            repository: getIt<QueueRepository>(),
-            authBloc: context.read<AuthBloc>(),
-          )..add(const QueueLoadRequested()),
+        builder: (context, state) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => QueueBloc(
+                repository: getIt<QueueRepository>(),
+                authBloc: context.read<AuthBloc>(),
+              )..add(const QueueLoadRequested()),
+            ),
+            BlocProvider(
+              create: (context) => AppointmentBloc(
+                repository: getIt<AppointmentRepository>(),
+                authBloc: context.read<AuthBloc>(),
+              )..add(const AppointmentLoadRequested()),
+            ),
+          ],
           child: const QueuePage(),
         ),
       ),
@@ -339,17 +359,27 @@ class AppRouter {
           GoRoute(
             path: 'users',
             name: RouteNames.adminUsers,
-            builder: (context, state) => const AdminUserManagementPage(),
+            builder: (context, state) => BlocProvider(
+              create: (context) => UserManagementBloc(
+                userRepository: getIt<UserRepository>(),
+              )..add(const UserManagementLoadRequested()),
+              child: const AdminUserManagementPage(),
+            ),
           ),
           GoRoute(
             path: 'settings',
             name: RouteNames.adminSettings,
-            builder: (context, state) => const PlaceholderPage(title: 'Settings'),
+            builder: (context, state) => const AdminSettingsPage(),
           ),
           GoRoute(
             path: 'audit',
             name: RouteNames.adminAudit,
-            builder: (context, state) => const PlaceholderPage(title: 'Audit Logs'),
+            builder: (context, state) => BlocProvider(
+              create: (context) => AuditLogBloc(
+                auditLogRepository: getIt<AuditLogRepository>(),
+              )..add(const AuditLogLoadRequested()),
+              child: const AdminAuditPage(),
+            ),
           ),
         ],
       ),
@@ -363,12 +393,12 @@ class AppRouter {
       GoRoute(
         path: Routes.profile,
         name: RouteNames.profile,
-        builder: (context, state) => const PlaceholderPage(title: 'Profile'),
+        builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
         path: Routes.settings,
         name: RouteNames.settings,
-        builder: (context, state) => const PlaceholderPage(title: 'Settings'),
+        builder: (context, state) => const ProfilePage(),
       ),
         ],
       ),
@@ -519,7 +549,7 @@ class _SplashPage extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 32),
-            const CpLoader(size: 32, strokeWidth: 3),
+            const NeuCircularProgress(size: 32, strokeWidth: 3),
           ],
         ),
       ),

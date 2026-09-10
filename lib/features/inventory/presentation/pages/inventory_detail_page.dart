@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
@@ -9,11 +8,11 @@ import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dar
 import 'package:carepaw/features/inventory/presentation/pages/inventory_form_page.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/transaction_card.dart';
-import 'package:carepaw/core/widgets/common/cp_empty_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
@@ -79,7 +78,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ).animate().fadeIn(duration: 300.ms),
+      ),
     );
   }
 
@@ -155,7 +154,11 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.surface.withValues(alpha: 0.9),
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.surfaceDarkMode
+                                      .withValues(alpha: 0.9)
+                                  : AppColors.surface.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
@@ -168,11 +171,17 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                           ),
                           const SizedBox(width: 8),
                           if (isOutOfStock)
-                            _buildStatusChip('Out of Stock', AppColors.error)
+                            _buildStatusChip(
+                                'Out of Stock',
+                                _isDark ? AppColors.errorOnDark : AppColors.error)
                           else if (isLowStock)
-                            _buildStatusChip('Low Stock', AppColors.warning)
+                            _buildStatusChip(
+                                'Low Stock',
+                                _isDark ? AppColors.warningOnDark : AppColors.warning)
                           else
-                            _buildStatusChip('In Stock', AppColors.success),
+                            _buildStatusChip(
+                                'In Stock',
+                                _isDark ? AppColors.successOnDark : AppColors.success),
                         ],
                       ),
                     ],
@@ -225,7 +234,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 'Minimum',
                 formatNumber(item.minStock),
                 item.unit,
-                AppColors.warning,
+                _isDark ? AppColors.warningOnDark : AppColors.warning,
                 Icons.warning_amber_rounded,
               ),
             ),
@@ -235,9 +244,11 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 item.maxStock != null ? 'Maximum' : 'No Max',
                 item.maxStock != null
                     ? formatNumber(item.maxStock!)
-                    : '—',
+                    : '-',
                 item.unit,
-                AppColors.info,
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.infoDark
+                    : AppColors.info,
                 Icons.flag_rounded,
               ),
             ),
@@ -338,7 +349,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             state.itemId == widget.item.id) {
           final batches = state.batches;
           if (batches.isEmpty) {
-            return CpEmptyState(
+            return _EmptyState(
               icon: Icons.batch_prediction_outlined,
               title: 'No Batches',
               message:
@@ -366,13 +377,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           );
         }
         if (state is InventoryLoading) {
-          return const Center(
-            child: SizedBox(
-              width: 48,
-              height: 48,
-              child: NeuCircularProgress(),
-            ),
-          );
+          return const NeuSkeletonDetail(blocks: 4);
         }
         return const SizedBox.shrink();
       },
@@ -387,7 +392,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               .where((b) => b.inventoryId == widget.item.id)
               .toList();
           if (batches.isEmpty) {
-            return CpEmptyState(
+            return _EmptyState(
               icon: Icons.event_available_rounded,
               title: 'No Expiring Batches',
               message: 'All batches have sufficient shelf life',
@@ -428,7 +433,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 .add(LoadBatchTransactions(batch.id!));
           }
           if (allTransactions.isEmpty) {
-            return CpEmptyState(
+            return _EmptyState(
               icon: Icons.receipt_long_outlined,
               title: 'No Transactions',
               message: 'Transaction history will appear here',
@@ -507,9 +512,12 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                   ),
                 ),
                 if (batch.isExpired)
-                  _buildStatusChip('Expired', AppColors.error)
+                  _buildStatusChip(
+                      'Expired', _isDark ? AppColors.errorOnDark : AppColors.error)
                 else if (batch.isExpiringSoon)
-                  _buildStatusChip('Expiring Soon', AppColors.warning),
+                  _buildStatusChip(
+                      'Expiring Soon',
+                      _isDark ? AppColors.warningOnDark : AppColors.warning),
               ],
             ),
             const SizedBox(height: 24),
@@ -646,14 +654,16 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                   setState(() => selectedType = selection.first);
                 },
                 style: SegmentedButton.styleFrom(
-                  backgroundColor: AppColors.surfaceContainerHighest,
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.surfaceContainerDark
+                      : AppColors.surfaceContainerHighest,
                   selectedBackgroundColor:
                       _getCategoryColor(widget.item.category)
                           .withValues(alpha: 0.2),
                   selectedForegroundColor:
                       _getCategoryColor(widget.item.category),
                   side: BorderSide(
-                    color: AppColors.border.withValues(alpha: 0.3),
+                    color: ThemeColors.border(context).withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -703,7 +713,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                             SnackBar(
                               content: const Text(
                                   'Please enter a valid quantity'),
-                              backgroundColor: AppColors.error,
+                              backgroundColor: ThemeColors.error(context),
                             ),
                           );
                           return;
@@ -853,7 +863,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                   padding: const EdgeInsets.all(16),
                   borderRadius: 14,
                   variant: NeuVariant.inset,
-                  borderColor: AppColors.border.withValues(alpha: 0.3),
+                  borderColor: ThemeColors.border(context).withValues(alpha: 0.3),
                   borderWidth: 1,
                   child: Row(
                     children: [
@@ -911,7 +921,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                             SnackBar(
                               content: const Text(
                                   'Please fill required fields'),
-                              backgroundColor: AppColors.error,
+                              backgroundColor: ThemeColors.error(context),
                             ),
                           );
                           return;
@@ -975,12 +985,12 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel',
                 style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textSecondary)),
+                    color: ThemeColors.textSecondary(context))),
           ),
           NeuButton(
             text: 'Delete',
             variant: NeuButtonVariant.destructive,
-            size: NeuButtonSize.small,
+            size: NeuButtonSize.medium,
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
@@ -1084,5 +1094,80 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
     return false;
+  }
+}
+
+/// Empty state shown when an inventory tab has no content.
+class _EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: NeuCard(
+          borderRadius: 20,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NeuContainer(
+                borderRadius: 90,
+                padding: const EdgeInsets.all(22),
+                color: AppColors.primary,
+                boxShadow: NeuShadow.color(
+                  context,
+                  AppColors.primary,
+                  blur: 24,
+                  opacity: 0.32,
+                ),
+                child: Icon(icon, size: 48, color: AppColors.textOnPrimary),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (actionLabel != null && onAction != null) ...[
+                const SizedBox(height: 20),
+                NeuButton(
+                  text: actionLabel!,
+                  onPressed: onAction,
+                  variant: NeuButtonVariant.primary,
+                  size: NeuButtonSize.medium,
+                  icon: Icons.add_rounded,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

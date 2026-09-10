@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
@@ -14,7 +15,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -140,14 +141,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
                         ),
                       ],
                     ),
-                  ).animate().fadeIn(duration: 300.ms),
+                  ),
 
                   // Quick info chips
                   const SizedBox(height: 16),
-                  _QuickInfoChips(pet: _pet).animate().fadeIn(
-                    duration: 300.ms,
-                    delay: 100.ms,
-                  ),
+                  _QuickInfoChips(pet: _pet),
                 ],
               ),
             ),
@@ -172,7 +170,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Weight Tracking',
                   icon: Icons.monitor_weight_outlined,
-                  iconColor: AppColors.primary,
+                  iconColor: ThemeColors.primary(context),
                   child: _WeightTrackingCard(
                     pet: _pet,
                     onAddWeight: _showAddWeightDialog,
@@ -185,7 +183,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Quick Actions',
                   icon: Icons.flash_on_rounded,
-                  iconColor: AppColors.secondary,
+                  iconColor: ThemeColors.textSecondary(context),
                   child: _QuickActionsCard(pet: _pet),
                 ),
                 const SizedBox(height: 20),
@@ -256,7 +254,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             _MenuTile(
               icon: Icons.edit_outlined,
               title: 'Edit Pet',
-              color: AppColors.primary,
+              color: ThemeColors.primary(sheetContext),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _navigateToEdit(context);
@@ -265,7 +263,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             _MenuTile(
               icon: Icons.monitor_weight_outlined,
               title: 'Add Weight Entry',
-              color: AppColors.primary,
+              color: ThemeColors.primary(sheetContext),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _showAddWeightDialog(context);
@@ -275,7 +273,9 @@ class _PetDetailPageState extends State<PetDetailPage> {
               _MenuTile(
                 icon: Icons.archive_outlined,
                 title: 'Deactivate',
-                color: AppColors.warning,
+                color: Theme.of(sheetContext).brightness == Brightness.dark
+                    ? AppColors.warningOnDark
+                    : AppColors.warning,
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _showDeactivateDialog(context);
@@ -285,7 +285,9 @@ class _PetDetailPageState extends State<PetDetailPage> {
               _MenuTile(
                 icon: Icons.unarchive_outlined,
                 title: 'Activate',
-                color: AppColors.success,
+                color: Theme.of(sheetContext).brightness == Brightness.dark
+                    ? AppColors.successOnDark
+                    : AppColors.success,
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _showActivateDialog(context);
@@ -298,13 +300,10 @@ class _PetDetailPageState extends State<PetDetailPage> {
   }
 
   void _navigateToEdit(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-          builder: (_) => PetFormPage(ownerId: _pet.ownerId, pet: _pet),
-        ))
-        .then((updated) {
-          if (updated is Pet && mounted) _updatePet(updated);
-        });
+    // Router route wraps the form in a BlocProvider<PetBloc> and loads the
+    // pet by ID; pushing PetFormPage directly would crash with
+    // ProviderNotFoundException.
+    context.push(Routes.petEdit.replaceAll(':id', '${_pet.id}'));
   }
 
   void _showAddWeightDialog(BuildContext context) {
@@ -383,7 +382,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           'Deactivate ${_pet.name}?',
           style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppColors.warning,
+            color: ThemeColors.warning(context),
           ),
         ),
         content: Text(
@@ -426,7 +425,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           'Activate ${_pet.name}?',
           style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppColors.success,
+            color: ThemeColors.success(context),
           ),
         ),
         content: Text(
@@ -517,7 +516,7 @@ class _QuickInfoChips extends StatelessWidget {
           PetUtils.buildInfoChip(
             icon: Icons.pets,
             label: pet.breed!,
-            color: AppColors.primary,
+            color: ThemeColors.primary(context),
           ),
         if (pet.birthDate != null)
           PetUtils.buildInfoChip(
@@ -529,13 +528,13 @@ class _QuickInfoChips extends StatelessWidget {
           PetUtils.buildInfoChip(
             icon: Icons.monitor_weight_outlined,
             label: '${pet.weightKg!.toStringAsFixed(1)} kg',
-            color: AppColors.primary,
+            color: ThemeColors.primary(context),
           ),
         if (pet.microchipId != null)
           PetUtils.buildInfoChip(
             icon: Icons.nfc_outlined,
             label: 'Microchipped',
-            color: AppColors.success,
+            color: ThemeColors.success(context),
           ),
       ],
     );
@@ -583,7 +582,7 @@ class _BasicInfoCard extends StatelessWidget {
           label: 'Status',
           value: pet.isActive ? 'Active' : 'Inactive',
           valueStyle: AppTextStyles.bodyMedium.copyWith(
-            color: pet.isActive ? AppColors.success : AppColors.warning,
+            color: pet.isActive ? ThemeColors.success(context) : ThemeColors.warning(context),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -667,7 +666,7 @@ class _WeightTrackingCard extends StatelessWidget {
                 child: Icon(
                   Icons.monitor_weight_outlined,
                   size: 26,
-                  color: AppColors.primary,
+                  color: ThemeColors.primary(context),
                 ),
               ),
               const SizedBox(width: 16),
@@ -685,7 +684,7 @@ class _WeightTrackingCard extends StatelessWidget {
                       '${pet.weightKg!.toStringAsFixed(1)} kg',
                       style: AppTextStyles.headlineMedium.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: ThemeColors.primary(context),
                       ),
                     ),
                   ],
@@ -695,7 +694,7 @@ class _WeightTrackingCard extends StatelessWidget {
                 text: 'Add Entry',
                 onPressed: () => onAddWeight(context),
                 icon: Icons.add,
-                size: NeuButtonSize.small,
+                size: NeuButtonSize.medium,
               ),
             ],
           ),
@@ -756,7 +755,7 @@ class _QuickActionsCard extends StatelessWidget {
           icon: Icons.calendar_today_outlined,
           title: 'Book Appointment',
           subtitle: 'Schedule a vet visit',
-          color: AppColors.primary,
+          color: ThemeColors.primary(context),
           onTap: () => ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Appointment booking coming soon')),
           ),
@@ -776,7 +775,7 @@ class _QuickActionsCard extends StatelessWidget {
           icon: Icons.vaccines_outlined,
           title: 'Vaccination Schedule',
           subtitle: 'Track upcoming vaccines',
-          color: AppColors.secondary,
+          color: ThemeColors.textSecondary(context),
           onTap: () => ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Vaccination schedule coming soon')),
           ),
@@ -950,10 +949,10 @@ class _PetDetailLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PetBloc, PetState>(
       builder: (context, state) {
-        if (state is PetLoading) return const Scaffold(body: Center(child: NeuCircularProgress()));
+        if (state is PetLoading) return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
         if (state is PetDetailLoaded) return PetDetailPage(pet: state.pet);
         if (state is PetError) return _buildError(context, state.failure.message);
-        return const Scaffold(body: Center(child: NeuCircularProgress()));
+        return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
       },
     );
   }
@@ -982,7 +981,7 @@ class _PetDetailLoader extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   borderRadius: 24,
                   variant: NeuVariant.flat,
-                  child: Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                  child: Icon(Icons.error_outline, size: 64, color: ThemeColors.error(context)),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -1023,14 +1022,14 @@ class _PetFormLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PetBloc, PetState>(
       builder: (context, state) {
-        if (state is PetLoading) return const Scaffold(body: Center(child: NeuCircularProgress()));
+        if (state is PetLoading) return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
         if (state is PetDetailLoaded) {
           final authState = context.read<AuthBloc>().state;
           final ownerId = authState is AuthAuthenticated ? authState.user.id! : 0;
           return PetFormPage(ownerId: ownerId, pet: state.pet);
         }
         if (state is PetError) return _buildError(context, state.failure.message);
-        return const Scaffold(body: Center(child: NeuCircularProgress()));
+        return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
       },
     );
   }
@@ -1059,7 +1058,7 @@ class _PetFormLoader extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   borderRadius: 24,
                   variant: NeuVariant.flat,
-                  child: Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                  child: Icon(Icons.error_outline, size: 64, color: ThemeColors.error(context)),
                 ),
                 const SizedBox(height: 20),
                 Text(

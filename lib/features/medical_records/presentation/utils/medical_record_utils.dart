@@ -5,27 +5,27 @@ import 'package:flutter/material.dart';
 /// Utility class for medical record presentation logic.
 class MedicalRecordUtils {
   /// Get type-specific icon and color for a medical record type.
-  static TypeInfo getTypeInfo(MedicalRecordType type) {
+  static TypeInfo getTypeInfo(BuildContext context, MedicalRecordType type) {
     switch (type) {
       case MedicalRecordType.visit:
         return TypeInfo(
           icon: Icons.local_hospital_outlined,
-          color: AppColors.primary,
+          color: ThemeColors.primary(context),
         );
       case MedicalRecordType.vaccination:
         return TypeInfo(
           icon: Icons.vaccines_outlined,
-          color: AppColors.success,
+          color: ThemeColors.success(context),
         );
       case MedicalRecordType.surgery:
         return TypeInfo(
           icon: Icons.healing_outlined,
-          color: AppColors.quaternary,
+          color: ThemeColors.warning(context),
         );
       case MedicalRecordType.labResult:
         return TypeInfo(
           icon: Icons.science_outlined,
-          color: AppColors.info,
+          color: ThemeColors.info(context),
         );
       case MedicalRecordType.prescription:
         return TypeInfo(
@@ -35,12 +35,12 @@ class MedicalRecordUtils {
       case MedicalRecordType.note:
         return TypeInfo(
           icon: Icons.note_outlined,
-          color: AppColors.secondary,
+          color: ThemeColors.textSecondary(context),
         );
       case MedicalRecordType.allergy:
         return TypeInfo(
           icon: Icons.warning_amber_outlined,
-          color: AppColors.error,
+          color: ThemeColors.error(context),
         );
     }
   }
@@ -94,13 +94,13 @@ class MedicalRecordUtils {
   }
 
   /// Get record type icon.
-  static IconData getTypeIcon(MedicalRecordType type) {
-    return getTypeInfo(type).icon;
+  static IconData getTypeIcon(BuildContext context, MedicalRecordType type) {
+    return getTypeInfo(context, type).icon;
   }
 
   /// Get record type color.
-  static Color getTypeColor(MedicalRecordType type) {
-    return getTypeInfo(type).color;
+  static Color getTypeColor(BuildContext context, MedicalRecordType type) {
+    return getTypeInfo(context, type).color;
   }
 }
 

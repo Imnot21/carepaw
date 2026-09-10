@@ -38,7 +38,7 @@ class _NeuChipState extends State<NeuChip> {
 
   @override
   Widget build(BuildContext context) {
-    final accent = widget.selectedColor ?? AppColors.primary;
+    final accent = widget.selectedColor ?? ThemeColors.primary(context);
 
     return GestureDetector(
       onTap: widget.enabled ? widget.onTap : null,
@@ -64,14 +64,14 @@ class _NeuChipState extends State<NeuChip> {
                   Icon(
                     widget.icon,
                     size: 16,
-                    color: widget.selected ? accent : AppColors.textSecondary,
+                    color: widget.selected ? accent : ThemeColors.textSecondary(context),
                   ),
                   const SizedBox(width: 6),
                 ],
                 Text(
                   widget.label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: widget.selected ? accent : AppColors.textPrimary,
+                    color: widget.selected ? accent : ThemeColors.textPrimary(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),

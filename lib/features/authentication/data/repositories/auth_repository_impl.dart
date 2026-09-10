@@ -61,12 +61,22 @@ class AuthRepositoryImpl implements AuthRepository {
         throw const InvalidCredentialsFailure();
       }
 
-      final domainUser = await _readCurrentUserDoc();
+      var domainUser = await _readCurrentUserDoc();
+
+      // Auto-provision a Firestore profile for users who exist in Auth
+      // but whose Firestore doc was never created (e.g. created via
+      // Firebase Console, or registration's Firestore write failed).
       if (domainUser == null) {
-        await _firebaseAuth.signOut();
-        throw const UserNotFoundFailure(
-          message: 'No profile found for this account. Please contact support.',
-        );
+        domainUser = await _autoProvisionFromAuthUser(fireUser);
+        if (domainUser == null) {
+          await _firebaseAuth.signOut();
+          throw const UserNotFoundFailure(
+            message:
+                'No profile found for this account. '
+                'Firestore security rules may be blocking writes. '
+                'Deploy firestore.rules to your Firebase project.',
+          );
+        }
       }
       if (!domainUser.isActive) {
         await _firebaseAuth.signOut();
@@ -124,10 +134,22 @@ class AuthRepositoryImpl implements AuthRepository {
         createdAt: now,
         updatedAt: now,
       );
-      await _firestore
-          .collection(FirestoreSchema.users)
-          .doc(fireUser.uid)
-          .set(UserDocMapper.toData(domainUser));
+      try {
+        await _firestore
+            .collection(FirestoreSchema.users)
+            .doc(fireUser.uid)
+            .set(UserDocMapper.toData(domainUser));
+      } catch (_) {
+        // Firestore write failed (e.g. rules deny it). Roll back the just-created
+        // Auth user so we don't leave an orphaned account that can never sign in.
+        try {
+          await fireUser.delete();
+        } catch (_) {
+          // Best-effort cleanup; if this also fails the orphan is handled by
+          // the auto-provision path on next login.
+        }
+        rethrow;
+      }
 
       final authResult = _buildAuthResult(domainUser, await fireUser.getIdToken());
       await _setLocalSession(domainUser);
@@ -282,6 +304,40 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
     return UserDocMapper.fromData(snapshot.data()!, current.uid);
+  }
+
+  /// Create a Firestore profile for an Auth user who has none.
+  ///
+  /// Used on first sign-in for accounts provisioned outside the app (Firebase
+  /// Console, seed scripts) or left orphaned when a registration's Firestore
+  /// write was blocked. Defaults to [UserRole.petOwner]. Returns `null` if the
+  /// profile cannot be written (e.g. Firestore rules still deny it), so the
+  /// caller can fail with an actionable message.
+  Future<DomainUser?> _autoProvisionFromAuthUser(User fireUser) async {
+    try {
+      final newId = await _userIdSequence.next();
+      final now = DateTime.now();
+      final domainUser = DomainUser(
+        id: newId,
+        firebaseUid: fireUser.uid,
+        email: fireUser.email ?? '',
+        fullName: fireUser.displayName?.trim().isNotEmpty == true
+            ? fireUser.displayName!
+            : (fireUser.email?.split('@').first ?? 'User'),
+        role: UserRole.petOwner,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      );
+      await _firestore
+          .collection(FirestoreSchema.users)
+          .doc(fireUser.uid)
+          .set(UserDocMapper.toData(domainUser));
+      return domainUser;
+    } catch (_) {
+      // Firestore write blocked (rules) or counter unavailable.
+      return null;
+    }
   }
 
   AuthResult _buildAuthResult(DomainUser user, String? accessToken) {

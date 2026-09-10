@@ -63,13 +63,13 @@ class _NeuIconButtonState extends State<NeuIconButton> {
                       height: widget.size * 0.8,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: widget.color ?? AppColors.primary,
+                        color: widget.color ?? ThemeColors.primary(context),
                       ),
                     )
                   : Icon(
                       widget.icon,
                       size: widget.size,
-                      color: widget.color ?? AppColors.primary,
+                      color: widget.color ?? ThemeColors.primary(context),
                     ),
             ),
           ),

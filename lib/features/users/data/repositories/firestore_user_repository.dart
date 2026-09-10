@@ -6,6 +6,9 @@ import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/firebase/user_doc_mapper.dart';
 import 'package:carepaw/core/firebase/user_id_sequence.dart';
+import 'package:carepaw/core/di/dependency_injection.dart';
+import 'package:carepaw/features/audit/domain/entities/audit_log.dart';
+import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart' as domain;
 
@@ -144,6 +147,48 @@ class FirestoreUserRepository implements UserRepository {
     return snapshot.docs.map(_docToUser).toList();
   }
 
+  /// Append an audit log entry for a sensitive user operation (best-effort).
+  ///
+  /// A failure here must never fail the originating user operation, so the
+  /// write is swallowed and the method returns normally. This satisfies the
+  /// "Always log sensitive operations - audit trail required" constraint
+  /// without coupling account/role/activation success to the audit audit store.
+  Future<void> _writeAudit({
+    required String action,
+    required domain.User targetUser,
+    Map<String, dynamic>? oldValues,
+    Map<String, dynamic>? newValues,
+  }) async {
+    try {
+      // Actor is the currently signed-in admin (the one performing the op).
+      final actorUid = _firebaseAuth.currentUser?.uid;
+      var actorId = 0;
+      if (actorUid != null) {
+        actorId = await _findAppIdByFirebaseUid(actorUid) ?? 0;
+      }
+      if (actorId == 0) return;
+
+      final auditRepository = getIt<AuditLogRepository>();
+      await auditRepository.write(AuditLog(
+        userId: actorId,
+        action: action,
+        entityType: 'USER',
+        entityId: '${targetUser.id ?? ''}',
+        oldValues: oldValues,
+        newValues: newValues,
+        createdAt: DateTime.now(),
+      ));
+    } catch (_) {
+      // Best-effort: ignore audit write failures.
+    }
+  }
+
+  Future<int?> _findAppIdByFirebaseUid(String firebaseUid) async {
+    final snapshot = await _users.where(FirestoreSchema.firebaseUid, isEqualTo: firebaseUid).limit(1).get();
+    if (snapshot.docs.isEmpty) return null;
+    return (snapshot.docs.first.data()[FirestoreSchema.id] as num?)?.toInt();
+  }
+
   @override
   Future<List<domain.User>> findVeterinarians() => findByRole(domain.UserRole.veterinarian);
 
@@ -198,7 +243,15 @@ class FirestoreUserRepository implements UserRepository {
       role: newRole,
       updatedAt: DateTime.now(),
     );
+    final oldValues = <String, dynamic>{'role': existing.role.value};
+    final newValues = <String, dynamic>{'role': newRole.value};
     await save(updated);
+    await _writeAudit(
+      action: 'USER_ROLE_CHANGE',
+      targetUser: updated,
+      oldValues: oldValues,
+      newValues: newValues,
+    );
     return updated;
   }
 
@@ -213,6 +266,12 @@ class FirestoreUserRepository implements UserRepository {
       updatedAt: DateTime.now(),
     );
     await save(updated);
+    await _writeAudit(
+      action: 'USER_ACTIVE_TOGGLE',
+      targetUser: updated,
+      oldValues: <String, dynamic>{'isActive': existing.isActive},
+      newValues: <String, dynamic>{'isActive': isActive},
+    );
     return updated;
   }
 
@@ -263,7 +322,21 @@ class FirestoreUserRepository implements UserRepository {
         createdAt: now,
         updatedAt: now,
       );
-      await _users.doc(fireUser.uid).set(UserDocMapper.toData(created));
+      try {
+        await _users.doc(fireUser.uid).set(UserDocMapper.toData(created));
+      } catch (_) {
+        // Firestore write failed (e.g. rules deny it). Roll back the Auth user
+        // so we don't leave an orphaned account, and keep the admin signed in.
+        try {
+          await fireUser.delete();
+        } catch (_) {}
+        rethrow;
+      }
+      await _writeAudit(
+        action: 'USER_CREATE',
+        targetUser: created,
+        newValues: <String, dynamic>{'role': role.value, 'email': email},
+      );
       return created;
     } on Failure {
       rethrow;

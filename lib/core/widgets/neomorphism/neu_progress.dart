@@ -29,7 +29,7 @@ class NeuProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fillColor = color ?? AppColors.primary;
+    final fillColor = color ?? ThemeColors.primary(context);
     final channel = trackColor ??
         (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceDark);
 
@@ -107,11 +107,11 @@ class NeuCircularProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = color ?? AppColors.primary;
+    final accent = color ?? ThemeColors.primary(context);
     final channel = isDark ? AppColors.surfaceContainerDark : AppColors.surfaceDark;
 
     final progress = value < 0
-        ? const CircularProgressIndicator(strokeWidth: 3, color: AppColors.primary)
+        ? CircularProgressIndicator(strokeWidth: 3, color: accent)
         : SizedBox(
             width: size,
             height: size,

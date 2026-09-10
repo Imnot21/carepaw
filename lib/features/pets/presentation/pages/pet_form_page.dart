@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
@@ -169,7 +168,7 @@ class _PetFormPageState extends State<PetFormPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.failure.message),
-              backgroundColor: AppColors.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -178,7 +177,7 @@ class _PetFormPageState extends State<PetFormPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: AppColors.success,
+              backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -242,11 +241,7 @@ class _PetFormPageState extends State<PetFormPage> {
                   separatorBuilder: (_, _) => const SizedBox(height: 20),
                   itemBuilder: (context, index) {
                     final section = _getFormSections()[index];
-                    return _buildSection(context, section, speciesColor)
-                        .animate().fadeIn(
-                          duration: 300.ms,
-                          delay: Duration(milliseconds: 80 * index),
-                        );
+                    return _buildSection(context, section, speciesColor);
                   },
                 ),
               ),
@@ -518,7 +513,7 @@ class _PetBirthDateField extends StatefulWidget {
   final String label;
   final String? hint;
   final DateTime? initialDate;
-  final ValueChanged<DateTime> onDateSelected;
+  final ValueChanged<DateTime?> onDateSelected;
 
   const _PetBirthDateField({
     required this.label,
@@ -568,7 +563,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
               children: [
                 Icon(
                   Icons.calendar_today_outlined,
-                  color: hasDate ? AppColors.primary : (isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
+                  color: hasDate ? ThemeColors.primary(context) : (isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
                   size: 22,
                 ),
                 const SizedBox(width: 12),
@@ -588,7 +583,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
                     size: 18,
                     onPressed: () {
                       setState(() => _selectedDate = null);
-                      widget.onDateSelected(DateTime.now());
+                      widget.onDateSelected(null);
                     },
                   )
                 else
@@ -615,7 +610,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppColors.primary,
+              primary: ThemeColors.primary(context),
             ),
           ),
           child: child!,
@@ -710,7 +705,7 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
               size: 20,
             ),
             filled: true,
-            fillColor: isDark ? AppColors.surfaceDark : AppColors.surface,
+            fillColor: isDark ? AppColors.surfaceContainerDark : AppColors.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(
@@ -725,7 +720,7 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+              borderSide: BorderSide(color: ThemeColors.primary(context), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -809,7 +804,7 @@ class _PetActiveSwitch extends StatelessWidget {
             child: Icon(
               value ? Icons.check_circle_outline_rounded : Icons.archive_outlined,
               size: 22,
-              color: value ? AppColors.success : AppColors.warning,
+              color: value ? ThemeColors.success(context) : ThemeColors.warning(context),
             ),
           ),
           const SizedBox(width: 16),

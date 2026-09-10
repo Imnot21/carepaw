@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -14,143 +13,141 @@ class TransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeColor = _getTypeColor(transaction.type);
+    final typeColor = _getTypeColor(context, transaction.type);
     final typeIcon = _getTypeIcon(transaction.type);
     final isPositive = transaction.quantityChange > 0;
 
-    return FloatingAnimation(
-      child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        borderRadius: 16,
-        blur: 10,
-        borderColor: typeColor.withValues(alpha: 0.15),
-        child: Row(
-          children: [
-            // Type indicator
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: typeColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(typeIcon, size: 24, color: typeColor),
+    return NeuCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      borderColor: typeColor.withValues(alpha: 0.15),
+      borderWidth: 1,
+      child: Row(
+        children: [
+          // Type indicator
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: typeColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 16),
+            child: Icon(typeIcon, size: 24, color: typeColor),
+          ),
+          const SizedBox(width: 16),
 
-            // Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        transaction.type.displayName,
-                        style: AppTextStyles.titleSmall.copyWith(
+          // Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      transaction.type.displayName,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: ThemeColors.textPrimary(context),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isPositive ? '+' : '−',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: typeColor,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: typeColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          isPositive ? '+' : '−',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: typeColor,
-                            fontWeight: FontWeight.w700,
-                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  transaction.reason,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: ThemeColors.textSecondary(context),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded,
+                        size: 12, color: ThemeColors.textTertiary(context)),
+                    const SizedBox(width: 4),
+                    Text(
+                      formatDateTime(transaction.createdAt),
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: ThemeColors.textTertiary(context),
+                      ),
+                    ),
+                    if (transaction.referenceType != null) ...[
+                      const SizedBox(width: 12),
+                      Icon(Icons.link_rounded,
+                          size: 12, color: ThemeColors.textTertiary(context)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${transaction.referenceType}: ${transaction.referenceId}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: ThemeColors.textTertiary(context),
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    transaction.reason,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Quantity change
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${isPositive ? '+' : ''}${formatNumber(transaction.quantityChange.abs())}',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: typeColor,
+                ),
+              ),
+              if (transaction.notes != null &&
+                  transaction.notes!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  child: Text(
+                    transaction.notes!,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.textTertiary(context),
+                      fontStyle: FontStyle.italic,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time_rounded,
-                          size: 12, color: AppColors.textTertiary),
-                      const SizedBox(width: 4),
-                      Text(
-                        formatDateTime(transaction.createdAt),
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
-                      if (transaction.referenceType != null) ...[
-                        const SizedBox(width: 12),
-                        Icon(Icons.link_rounded,
-                            size: 12, color: AppColors.textTertiary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${transaction.referenceType}: ${transaction.referenceId}',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Quantity change
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${isPositive ? '+' : ''}${formatNumber(transaction.quantityChange.abs())}',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: typeColor,
-                  ),
                 ),
-                if (transaction.notes != null &&
-                    transaction.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 120),
-                    child: Text(
-                      transaction.notes!,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
               ],
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Color _getTypeColor(TransactionType type) {
+  Color _getTypeColor(BuildContext context, TransactionType type) {
     switch (type) {
       case TransactionType.in_:
-        return AppColors.success;
+        return ThemeColors.success(context);
       case TransactionType.out:
-        return AppColors.error;
+        return ThemeColors.error(context);
       case TransactionType.adjustment:
-        return AppColors.warning;
+        return ThemeColors.warning(context);
     }
   }
 

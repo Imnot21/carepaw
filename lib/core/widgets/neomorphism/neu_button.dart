@@ -33,8 +33,8 @@ enum NeuButtonSize {
 
 /// Neumorphic action button with physical press feedback.
 ///
-/// Replaces the legacy `CpButton`. A pressed button dips into the canvas —
-/// scale + shadow swap — like a real physical control.
+/// Replaces the legacy Material-era button. A pressed button dips into the
+/// canvas with a scale + shadow swap, like a real physical control.
 class NeuButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -111,45 +111,49 @@ class _NeuButtonState extends State<NeuButton> {
       child: Center(child: body),
     );
 
-    switch (widget.variant) {
-      case NeuButtonVariant.primary:
-        return NeuContainer(
+    final button = switch (widget.variant) {
+      NeuButtonVariant.primary => NeuContainer(
+          padding: _getPadding(),
+          borderRadius: _getRadius(),
+          variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
+          // Filled CTA: dark in light mode, light in dark mode (high contrast).
+          color: _primaryFill(context),
+          child: content,
+        ),
+      NeuButtonVariant.secondary => NeuContainer(
           padding: _getPadding(),
           borderRadius: _getRadius(),
           variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
           child: content,
-        );
-      case NeuButtonVariant.secondary:
-        return NeuContainer(
-          padding: _getPadding(),
-          borderRadius: _getRadius(),
-          variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
-          child: content,
-        );
-      case NeuButtonVariant.outline:
-        return NeuContainer(
+        ),
+      NeuButtonVariant.outline => NeuContainer(
           padding: _getPadding(),
           borderRadius: _getRadius(),
           variant: NeuVariant.transparent,
-          borderColor: AppColors.primary,
+          borderColor: ThemeColors.primary(context),
           borderWidth: 1.5,
           child: content,
-        );
-      case NeuButtonVariant.destructive:
-        return NeuContainer(
+        ),
+      NeuButtonVariant.destructive => NeuContainer(
           padding: _getPadding(),
           borderRadius: _getRadius(),
           variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
-          color: AppColors.error,
+          color: ThemeColors.error(context),
           child: content,
-        );
-      case NeuButtonVariant.ghost:
-      case NeuButtonVariant.text:
-        return Padding(
+        ),
+      NeuButtonVariant.ghost ||
+      NeuButtonVariant.text =>
+        Padding(
           padding: _getPadding(),
           child: content,
-        );
-    }
+        ),
+    };
+
+    // Expand to fill the available width when requested. Without this the
+    // flag was a no-op and buttons only stretched if a parent forced them to.
+    return widget.expanded
+        ? SizedBox(width: double.infinity, child: button)
+        : button;
   }
 
   Widget _buildContent(BuildContext context) {
@@ -190,15 +194,27 @@ class _NeuButtonState extends State<NeuButton> {
       NeuButtonSize.large => AppTextStyles.titleSmall,
     };
     final color = switch (widget.variant) {
-      NeuButtonVariant.primary => AppColors.textOnPrimary,
+      NeuButtonVariant.primary => _primaryFillText(context),
       NeuButtonVariant.destructive => AppColors.textOnPrimary,
-      NeuButtonVariant.secondary => AppColors.primary,
-      NeuButtonVariant.outline => AppColors.primary,
-      NeuButtonVariant.ghost => AppColors.textSecondary,
-      NeuButtonVariant.text => AppColors.primary,
+      NeuButtonVariant.secondary => ThemeColors.primary(context),
+      NeuButtonVariant.outline => ThemeColors.primary(context),
+      NeuButtonVariant.ghost => ThemeColors.textSecondary(context),
+      NeuButtonVariant.text => ThemeColors.primary(context),
     };
     return base.copyWith(color: color);
   }
+
+  /// Filled CTA background: dark in light mode, light in dark mode.
+  Color _primaryFill(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textPrimaryOnDark
+          : AppColors.textPrimary;
+
+  /// Text/label color on a filled CTA: inverted to contrast with [_primaryFill].
+  Color _primaryFillText(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? AppColors.textPrimary
+          : AppColors.textOnPrimary;
 
   EdgeInsetsGeometry _getPadding() {
     return switch (widget.size) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -14,8 +13,7 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/router/routes.dart';
@@ -45,6 +43,9 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Re-evaluate whether the active tab is empty when the user switches tabs,
+    // so the create button shows in the right place.
+    _tabController.addListener(_onTabChanged);
 
     // Determine user role from auth state
     final authState = context.read<AuthBloc>().state;
@@ -80,17 +81,39 @@ class _AppointmentListPageState extends State<AppointmentListPage>
           _buildTabBar(),
           // Tab content
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
+            child: Stack(
               children: [
-                _buildAppointmentList(isUpcoming: true),
-                _buildAppointmentList(isUpcoming: false),
+                TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildAppointmentList(isUpcoming: true),
+                    _buildAppointmentList(isUpcoming: false),
+                  ],
+                ),
+                // Create footer (owners only), shown when the active tab has
+                // items. Empty tabs show the button inside the empty state
+                // instead, so it reads as a centered call to action. A
+                // BlocBuilder keeps this in sync with the live appointment state.
+                if (!_isVetOrStaff)
+                  BlocBuilder<AppointmentBloc, AppointmentState>(
+                    builder: (context, state) {
+                      if (_isCurrentTabEmpty(state)) {
+                        return const SizedBox.shrink();
+                      }
+                      return Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                          child: _buildNewAppointmentButton(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
         ],
-      ).animate().fadeIn(duration: 300.ms),
-      floatingActionButton: _buildFloatingActionButton(),
+      ),
     );
   }
 
@@ -108,16 +131,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
-      actions: [
-        NeuIconButton(
-          icon: Icons.refresh_rounded,
-          onPressed: () {
-            context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
-          },
-          tooltip: 'Refresh',
-        ),
-        const SizedBox(width: 8),
-      ],
+      // Reload happens via pull-to-refresh (RefreshIndicator) instead of a button.
     );
   }
 
@@ -127,16 +141,16 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       child: NeuTextField(
         controller: _searchController,
         hint: 'Search appointments...',
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.search_rounded,
-          color: AppColors.textSecondary,
+          color: ThemeColors.textSecondary(context),
           size: 24,
         ),
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
                 icon: Icon(
                   Icons.clear_rounded,
-                  color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                   size: 22,
                 ),
                 onPressed: () {
@@ -186,19 +200,16 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    // Only pet owners can create new appointments from this page
-    // Vets/Staff manage appointments from their dashboards
-    if (_isVetOrStaff) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: NeuButton(
-        text: 'New Appointment',
-        onPressed: _navigateToCreateAppointment,
-        icon: Icons.event_available_rounded,
-        size: NeuButtonSize.large,
-      ),
+  Widget _buildNewAppointmentButton() {
+    // Primary, medium, leading + icon. Full width so it fits both the centered
+    // empty-state CTA and the bottom footer.
+    return NeuButton(
+      text: 'New Appointment',
+      onPressed: _navigateToCreateAppointment,
+      icon: Icons.add,
+      variant: NeuButtonVariant.primary,
+      size: NeuButtonSize.medium,
+      expanded: true,
     );
   }
 
@@ -206,7 +217,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     return BlocBuilder<AppointmentBloc, AppointmentState>(
       builder: (context, state) {
         if (state is AppointmentLoading) {
-          return const Center(child: NeuCircularProgress());
+          return const NeuSkeletonList();
         }
 
         if (state is AppointmentError) {
@@ -239,7 +250,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
             },
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final appointment = filtered[index];
@@ -255,9 +266,6 @@ class _AppointmentListPageState extends State<AppointmentListPage>
                       ? () => _showCancelDialog(appointment)
                       : null,
                   isVetOrStaff: _isVetOrStaff,
-                ).animate().fadeIn(
-                  duration: 300.ms,
-                  delay: Duration(milliseconds: 60 * index),
                 );
               },
             ),
@@ -324,21 +332,16 @@ class _AppointmentListPageState extends State<AppointmentListPage>
                       ? 'No upcoming appointments found. Appointments will appear here as they are scheduled.'
                       : 'Request your first appointment to get started.\nYour upcoming visits will appear here.')
                   : 'Completed and cancelled appointments will appear here.',
-              style: AppTextStyles.bodyLarge.subtle.copyWith(height: 1.6),
+              style: AppTextStyles.bodyLarge.subtleOf(Theme.of(context).brightness).copyWith(height: 1.6),
               textAlign: TextAlign.center,
             ),
-            if (isUpcoming && !_isVetOrStaff) ...[
-              const SizedBox(height: 36),
+            // Owners get a centered create button here (this whole column is
+            // vertically centered, so the button reads as the center CTA).
+            if (!_isVetOrStaff) ...[
+              const SizedBox(height: 28),
               SizedBox(
                 width: double.infinity,
-                child: NeuButton(
-                  text: 'Request Appointment',
-                  onPressed: _navigateToCreateAppointment,
-                  icon: Icons.event_available_rounded,
-                  size: NeuButtonSize.large,
-                  variant: NeuButtonVariant.primary,
-                  expanded: true,
-                ),
+                child: _buildNewAppointmentButton(),
               ),
             ],
           ],
@@ -386,7 +389,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             const SizedBox(height: 10),
             Text(
               message,
-              style: AppTextStyles.bodyMedium.subtle,
+              style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -408,12 +411,27 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     );
   }
 
+  void _onTabChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Whether the currently selected tab has no appointments (after search),
+  /// so the create button lives in the centered empty state rather than at the
+  /// bottom footer.
+  bool _isCurrentTabEmpty(AppointmentState state) {
+    if (state is! AppointmentLoaded) return false;
+    final list = _tabController.index == 0
+        ? state.upcomingAppointments
+        : state.pastAppointments;
+    return _filterAppointments(list).isEmpty;
+  }
+
   void _navigateToCreateAppointment() {
     context.go(Routes.appointmentRequest);
   }
 
   void _navigateToDetail(Appointment appointment) {
-    context.go('${Routes.appointmentDetail}/${appointment.id}');
+    context.go('/appointments/${appointment.id}');
   }
 
   void _showCheckInDialog(Appointment appointment) {
@@ -428,9 +446,9 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               padding: const EdgeInsets.all(10),
               borderRadius: 12,
               variant: NeuVariant.flat,
-              child: const Icon(
+              child: Icon(
                 Icons.check_circle_outline_rounded,
-                color: AppColors.success,
+                color: ThemeColors.success(dialogContext),
                 size: 22,
               ),
             ),
@@ -439,7 +457,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               'Check In',
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(dialogContext),
               ),
             ),
           ],
@@ -447,7 +465,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
         content: Text(
           'Check in for ${appointment.reason ?? 'this appointment'}?',
           style: AppTextStyles.bodyLarge.copyWith(
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(dialogContext),
           ),
         ),
         actions: [
@@ -456,7 +474,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             child: Text(
               'Cancel',
               style: AppTextStyles.labelLarge.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(dialogContext),
               ),
             ),
           ),
@@ -490,14 +508,14 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               padding: const EdgeInsets.all(10),
               borderRadius: 12,
               variant: NeuVariant.flat,
-              child: const Icon(Icons.cancel_outlined, color: AppColors.error, size: 22),
+              child: Icon(Icons.cancel_outlined, color: ThemeColors.error(dialogContext), size: 22),
             ),
             const SizedBox(width: 12),
             Text(
               'Cancel Appointment',
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(dialogContext),
               ),
             ),
           ],
@@ -509,7 +527,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             Text(
               'Are you sure you want to cancel this appointment?',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(dialogContext),
               ),
               textAlign: TextAlign.center,
             ),
@@ -529,7 +547,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             child: Text(
               'No',
               style: AppTextStyles.labelLarge.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(dialogContext),
               ),
             ),
           ),
@@ -574,7 +592,7 @@ class _AppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final statusColor = _getStatusColor(appointment.status);
+    final statusColor = _getStatusColor(context, appointment.status);
     final isUpcoming = appointment.isUpcoming;
     final speciesColor = _getSpeciesColor(pet?.species);
     final speciesIcon = _getSpeciesIcon(pet?.species);
@@ -666,12 +684,12 @@ class _AppointmentCard extends StatelessWidget {
                     if (pet != null) ...[
                       Text(
                         '${pet!.species.displayName}${pet!.breed != null ? ' • ${pet!.breed}' : ''}',
-                        style: AppTextStyles.bodySmall.subtle,
+                        style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
                       ),
                     ] else if (appointment.veterinarianId > 0) ...[
                       Text(
                         'Dr. ID: ${appointment.veterinarianId}',
-                        style: AppTextStyles.bodySmall.subtle,
+                        style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
                       ),
                     ],
                   ],
@@ -692,13 +710,13 @@ class _AppointmentCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
+                      color: ThemeColors.primary(context).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.medical_services_outlined,
                       size: 18,
-                      color: AppColors.primary,
+                      color: ThemeColors.primary(context),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -726,10 +744,10 @@ class _AppointmentCard extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   borderRadius: 8,
                   variant: NeuVariant.flat,
-                  child: const Icon(
+                  child: Icon(
                     Icons.timer_outlined,
                     size: 16,
-                    color: AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -766,7 +784,7 @@ class _AppointmentCard extends StatelessWidget {
                       onPressed: onCheckIn,
                       variant: NeuButtonVariant.outline,
                       icon: Icons.check_circle_outline_rounded,
-                      size: NeuButtonSize.small,
+                      size: NeuButtonSize.medium,
                       expanded: true,
                     ),
                   if (appointment.status == AppointmentStatus.checkedIn)
@@ -779,7 +797,7 @@ class _AppointmentCard extends StatelessWidget {
                       },
                       variant: NeuButtonVariant.outline,
                       icon: Icons.play_arrow_outlined,
-                      size: NeuButtonSize.small,
+                      size: NeuButtonSize.medium,
                       expanded: true,
                     ),
                   if (appointment.status == AppointmentStatus.inProgress)
@@ -792,7 +810,7 @@ class _AppointmentCard extends StatelessWidget {
                       },
                       variant: NeuButtonVariant.outline,
                       icon: Icons.check_circle_outlined,
-                      size: NeuButtonSize.small,
+                      size: NeuButtonSize.medium,
                       expanded: true,
                     ),
                   if (onCancel != null)
@@ -801,7 +819,7 @@ class _AppointmentCard extends StatelessWidget {
                       onPressed: onCancel,
                       variant: NeuButtonVariant.ghost,
                       icon: Icons.cancel_outlined,
-                      size: NeuButtonSize.small,
+                      size: NeuButtonSize.medium,
                       expanded: true,
                     ),
                   NeuButton(
@@ -809,7 +827,7 @@ class _AppointmentCard extends StatelessWidget {
                     onPressed: onTap,
                     variant: NeuButtonVariant.ghost,
                     icon: Icons.visibility_outlined,
-                    size: NeuButtonSize.small,
+                    size: NeuButtonSize.medium,
                     expanded: true,
                   ),
                 ],
@@ -874,22 +892,23 @@ class _AppointmentCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(AppointmentStatus status) {
+  Color _getStatusColor(BuildContext context, AppointmentStatus status) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case AppointmentStatus.requested:
-        return AppColors.warning;
+        return isDark ? AppColors.warningOnDark : AppColors.warning;
       case AppointmentStatus.confirmed:
-        return AppColors.info;
+        return isDark ? AppColors.infoDark : AppColors.info;
       case AppointmentStatus.checkedIn:
-        return AppColors.primary;
+        return ThemeColors.primary(context);
       case AppointmentStatus.inProgress:
         return AppColors.tertiary;
       case AppointmentStatus.completed:
-        return AppColors.success;
+        return isDark ? AppColors.successOnDark : AppColors.success;
       case AppointmentStatus.cancelled:
-        return AppColors.error;
+        return isDark ? AppColors.errorOnDark : AppColors.error;
       case AppointmentStatus.noShow:
-        return AppColors.textSecondary;
+        return ThemeColors.textSecondary(context);
     }
   }
 

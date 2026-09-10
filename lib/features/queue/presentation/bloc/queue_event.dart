@@ -59,6 +59,16 @@ class QueueSkipRequested extends QueueEvent {
   List<Object?> get props => [queueId];
 }
 
+/// Check in an appointment into the queue (pet owner).
+class QueueCheckInRequested extends QueueEvent {
+  final int appointmentId;
+
+  const QueueCheckInRequested(this.appointmentId);
+
+  @override
+  List<Object?> get props => [appointmentId];
+}
+
 /// Reposition queue after changes (staff action)
 class QueueRepositionRequested extends QueueEvent {
   const QueueRepositionRequested();

@@ -25,11 +25,19 @@ abstract class QueueRepository extends SoftDeleteRepository<QueueEntry, int>
   /// Get next position in queue
   Future<int> getNextPosition();
 
+  /// Check in an appointment into the queue.
+  ///
+  /// Idempotent: if a queue entry for [appointmentId] already exists it is
+  /// returned directly. Otherwise a new waiting entry is created at the next
+  /// available position and the appointment is marked checked-in as a best
+  /// effort.
+  Future<QueueEntry> checkIn(int appointmentId);
+
   /// Call next patient
   Future<QueueEntry?> callNext();
 
   /// Move patient to room
-  Future<QueueEntry> moveToRoom(int queueId);
+  Future<QueueEntry> moveToRoom(int queueId, String room);
 
   /// Complete queue entry
   Future<QueueEntry> complete(int queueId);

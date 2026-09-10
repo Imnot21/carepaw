@@ -5,16 +5,14 @@ import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
-import 'package:carepaw/core/widgets/common/cp_button.dart';
-import 'package:carepaw/core/widgets/common/cp_loader.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/effects/animated_gradient.dart';
-import 'package:carepaw/core/widgets/effects/glass_container.dart';
-import 'package:carepaw/core/widgets/effects/premium_shadows.dart';
-import 'package:carepaw/core/widgets/effects/floating_animation.dart';
-import 'package:carepaw/core/widgets/effects/pulsing_glow.dart';
-import 'package:carepaw/core/widgets/effects/scale_on_tap.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -62,48 +60,26 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             scrolledUnderElevation: 0,
             backgroundColor: Colors.transparent,
             actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: ScaleOnTap(
-                  onTap: () {
-                    context.read<QueueBloc>().add(QueueStaffLoadRequested());
-                  },
-                  child: CpIconButton(
-                    icon: Icons.refresh_rounded,
-                    size: 24,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    tooltip: 'Refresh',
-                  ),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(right: 16),
-                child: ScaleOnTap(
-                  onTap: () {
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: NeuIconButton(
+                  icon: Icons.reorder_rounded,
+                  onPressed: () {
                     context.read<QueueBloc>().add(const QueueRepositionRequested());
                   },
-                  child: CpIconButton(
-                    icon: Icons.reorder_rounded,
-                    size: 24,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    tooltip: 'Reposition Queue',
-                  ),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  tooltip: 'Reposition Queue',
                 ),
               ),
             ],
           ),
-          body: AnimatedGradientBackground(
-            colors: [
-              AppColors.primary.withValues(alpha: 0.05),
-              Theme.of(context).colorScheme.surface,
-            ],
-            child: BlocConsumer<QueueBloc, QueueState>(
+          body: BlocConsumer<QueueBloc, QueueState>(
               listener: (context, state) {
                 if (state is QueueOperationSuccess) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: AppColors.success,
+                      backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       margin: const EdgeInsets.all(16),
@@ -125,7 +101,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               },
               builder: (context, state) {
                 if (state is QueueLoading) {
-                  return const Center(child: CpLoader(size: 32));
+                  return const Center(child: NeuCircularProgress());
                 }
 
                 if (state is QueueError) {
@@ -139,7 +115,6 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 return _buildInitialState();
               },
             ),
-          ),
         );
       },
     );
@@ -149,31 +124,21 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: FloatingAnimation(
-          delay: const Duration(milliseconds: 100),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              PulsingGlow(
-                glowColor: AppColors.primary,
-                maxRadius: 20,
-                duration: const Duration(seconds: 3),
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(60),
-                    boxShadow: PremiumShadows.glow(context, AppColors.primary, intensity: 0.3),
-                  ),
-                  child: Icon(
-                    Icons.people_outline_rounded,
-                    size: 60,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            NeuContainer(
+              borderRadius: 70,
+              padding: const EdgeInsets.all(30),
+              color: AppColors.primary,
+              boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+              child: const Icon(
+                Icons.people_outline_rounded,
+                size: 60,
+                color: AppColors.textOnPrimary,
               ),
-              const SizedBox(height: 24),
+            ),
+            const SizedBox(height: 24),
               Text(
                 'Queue Management',
                 style: AppTextStyles.headlineSmall.copyWith(
@@ -192,7 +157,6 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               ),
             ],
           ),
-        ),
       ),
     );
   }
@@ -204,18 +168,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(60),
-                boxShadow: PremiumShadows.glow(context, AppColors.error, intensity: 0.3),
-              ),
-              child: Icon(
+            NeuContainer(
+              borderRadius: 70,
+              padding: const EdgeInsets.all(30),
+              color: AppColors.error,
+              boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+              child: const Icon(
                 Icons.error_outline_rounded,
                 size: 60,
-                color: Theme.of(context).colorScheme.onErrorContainer,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 24),
@@ -235,18 +196,14 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ScaleOnTap(
-              onTap: () {
+            NeuButton(
+              text: 'Retry',
+              onPressed: () {
                 context.read<QueueBloc>().add(QueueStaffLoadRequested());
               },
-              child: CpButton(
-                text: 'Retry',
-                onPressed: () {
-                  context.read<QueueBloc>().add(QueueStaffLoadRequested());
-                },
-                icon: Icons.refresh_rounded,
-                variant: ButtonVariant.primary,
-              ),
+              icon: Icons.refresh_rounded,
+              variant: NeuButtonVariant.primary,
+              expanded: true,
             ),
           ],
         ),
@@ -279,24 +236,21 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                     itemCount: queueEntries.length,
                     itemBuilder: (context, index) {
                       final entry = queueEntries[index];
-                      return FloatingAnimation(
-                        delay: Duration(milliseconds: 50 * index),
-                        child: _StaffQueueEntryCard(
-                          entry: entry,
-                          onCall: entry.queueEntry.status == QueueStatus.waiting
-                              ? () => _showCallDialog(entry)
-                              : null,
-                          onMoveToRoom: entry.queueEntry.status == QueueStatus.called
-                              ? () => _showMoveToRoomDialog(entry)
-                              : null,
-                          onComplete: entry.queueEntry.status == QueueStatus.inRoom
-                              ? () => _showCompleteDialog(entry)
-                              : null,
-                          onSkip: entry.queueEntry.status == QueueStatus.waiting ||
-                              entry.queueEntry.status == QueueStatus.called
-                                  ? () => _showSkipDialog(entry)
-                                  : null,
-                        ),
+                      return _StaffQueueEntryCard(
+                        entry: entry,
+                        onCall: entry.queueEntry.status == QueueStatus.waiting
+                            ? () => _showCallDialog(entry)
+                            : null,
+                        onMoveToRoom: entry.queueEntry.status == QueueStatus.called
+                            ? () => _showMoveToRoomDialog(entry)
+                            : null,
+                        onComplete: entry.queueEntry.status == QueueStatus.inRoom
+                            ? () => _showCompleteDialog(entry)
+                            : null,
+                        onSkip: entry.queueEntry.status == QueueStatus.waiting ||
+                            entry.queueEntry.status == QueueStatus.called
+                                ? () => _showSkipDialog(entry)
+                                : null,
                       );
                     },
                   ),
@@ -313,18 +267,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(60),
-                boxShadow: PremiumShadows.glow(context, AppColors.primary, intensity: 0.2),
-              ),
-              child: Icon(
+            NeuContainer(
+              borderRadius: 70,
+              padding: const EdgeInsets.all(30),
+              color: AppColors.primary,
+              boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+              child: const Icon(
                 Icons.people_outline_rounded,
                 size: 60,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                color: AppColors.textOnPrimary,
               ),
             ),
             const SizedBox(height: 24),
@@ -351,31 +302,26 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
   }
 
   void _showCallDialog(QueueEntryWithDetails entry) {
+    final pageContext = context;
     showDialog(
       context: context,
-      builder: (context) => _PremiumDialog(
+      builder: (dialogContext) => _PremiumDialog(
         title: 'Call Patient',
         content: Text('Call ${entry.pet.name} (#${entry.queueEntry.position}) for their appointment?'),
         icon: Icons.volume_up_rounded,
-        iconColor: AppColors.info,
+        iconColor: Theme.of(dialogContext).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          ScaleOnTap(
-            onTap: () {
-              Navigator.pop(context);
-              context.read<QueueBloc>().add(QueueCallNextRequested());
+          NeuButton(
+            text: 'Call Now',
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              pageContext.read<QueueBloc>().add(QueueCallNextRequested());
             },
-            child: CpButton(
-              text: 'Call Now',
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<QueueBloc>().add(QueueCallNextRequested());
-              },
-              variant: ButtonVariant.primary,
-            ),
+            variant: NeuButtonVariant.primary,
           ),
         ],
       ),
@@ -383,11 +329,12 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
   }
 
   void _showMoveToRoomDialog(QueueEntryWithDetails entry) {
+    final pageContext = context;
     final roomController = TextEditingController(text: entry.queueEntry.room ?? '1');
 
     showDialog(
       context: context,
-      builder: (context) => _PremiumDialog(
+      builder: (dialogContext) => _PremiumDialog(
         title: 'Move to Room',
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -406,25 +353,20 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           ],
         ),
         icon: Icons.door_front_door_rounded,
-        iconColor: AppColors.primary,
+        iconColor: ThemeColors.primary(dialogContext),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          ScaleOnTap(
-            onTap: () {
-              Navigator.pop(context);
-              context.read<QueueBloc>().add(QueueMoveToRoomRequested(entry.queueEntry.id!, roomController.text.trim()));
+          NeuButton(
+            text: 'Move',
+            onPressed: () {
+              final room = roomController.text.trim();
+              Navigator.pop(dialogContext);
+              pageContext.read<QueueBloc>().add(QueueMoveToRoomRequested(entry.queueEntry.id!, room));
             },
-            child: CpButton(
-              text: 'Move',
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<QueueBloc>().add(QueueMoveToRoomRequested(entry.queueEntry.id!, roomController.text.trim()));
-              },
-              variant: ButtonVariant.primary,
-            ),
+            variant: NeuButtonVariant.primary,
           ),
         ],
       ),
@@ -432,31 +374,26 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
   }
 
   void _showCompleteDialog(QueueEntryWithDetails entry) {
+    final pageContext = context;
     showDialog(
       context: context,
-      builder: (context) => _PremiumDialog(
+      builder: (dialogContext) => _PremiumDialog(
         title: 'Complete Visit',
         content: Text('Mark ${entry.pet.name}\'s visit as completed?'),
         icon: Icons.check_circle_outline_rounded,
-        iconColor: AppColors.success,
+        iconColor: ThemeColors.success(dialogContext),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          ScaleOnTap(
-            onTap: () {
-              Navigator.pop(context);
-              context.read<QueueBloc>().add(QueueCompleteRequested(entry.queueEntry.id!));
+          NeuButton(
+            text: 'Complete',
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              pageContext.read<QueueBloc>().add(QueueCompleteRequested(entry.queueEntry.id!));
             },
-            child: CpButton(
-              text: 'Complete',
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<QueueBloc>().add(QueueCompleteRequested(entry.queueEntry.id!));
-              },
-              variant: ButtonVariant.primary,
-            ),
+            variant: NeuButtonVariant.primary,
           ),
         ],
       ),
@@ -464,32 +401,27 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
   }
 
   void _showSkipDialog(QueueEntryWithDetails entry) {
+    final pageContext = context;
     showDialog(
       context: context,
-      builder: (context) => _PremiumDialog(
+      builder: (dialogContext) => _PremiumDialog(
         title: 'Skip Patient',
         content: Text('Skip ${entry.pet.name}? They will be removed from the queue.'),
         icon: Icons.skip_next_rounded,
-        iconColor: AppColors.error,
+        iconColor: ThemeColors.error(dialogContext),
         isDestructive: true,
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          ScaleOnTap(
-            onTap: () {
-              Navigator.pop(context);
-              context.read<QueueBloc>().add(QueueSkipRequested(entry.queueEntry.id!));
+          NeuButton(
+            text: 'Skip',
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              pageContext.read<QueueBloc>().add(QueueSkipRequested(entry.queueEntry.id!));
             },
-            child: CpButton(
-              text: 'Skip',
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<QueueBloc>().add(QueueSkipRequested(entry.queueEntry.id!));
-              },
-              variant: ButtonVariant.destructive,
-            ),
+            variant: NeuButtonVariant.destructive,
           ),
         ],
       ),
@@ -511,21 +443,10 @@ class _StatsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
+    return NeuContainer(
       borderRadius: 0,
       padding: const EdgeInsets.all(16),
-      blur: 20,
-      gradient: LinearGradient(
-        colors: [
-          Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
-          Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderColor: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.glassBorderDark
-          : AppColors.glassBorderLight,
+      variant: NeuVariant.flat,
       child: Row(
         children: [
           Expanded(
@@ -533,7 +454,7 @@ class _StatsBar extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               label: 'Waiting',
               value: '$totalWaiting',
-              color: AppColors.warning,
+              color: Theme.of(context).brightness == Brightness.dark ? AppColors.warningOnDark : AppColors.warning,
             ),
           ),
           Container(
@@ -546,7 +467,7 @@ class _StatsBar extends StatelessWidget {
               icon: Icons.door_front_door_outlined,
               label: 'In Room',
               value: '$totalInRoom',
-              color: AppColors.primary,
+              color: ThemeColors.primary(context),
             ),
           ),
           Container(
@@ -558,8 +479,8 @@ class _StatsBar extends StatelessWidget {
             child: _StatItem(
               icon: Icons.volume_up_outlined,
               label: 'Now Serving',
-              value: currentServing > 0 ? '#$currentServing' : '—',
-              color: AppColors.info,
+              value: currentServing > 0 ? '#$currentServing' : '-',
+              color: Theme.of(context).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
             ),
           ),
         ],
@@ -634,28 +555,16 @@ class _StaffQueueEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(entry.queueEntry.status);
+    final statusColor = _getStatusColor(context, entry.queueEntry.status);
     final isCurrentServing = entry.queueEntry.position == 1 &&
         (entry.queueEntry.status == QueueStatus.waiting || entry.queueEntry.status == QueueStatus.called);
 
-    return GlassContainer(
+    return NeuCard(
       borderRadius: 16,
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 12),
-      blur: 20,
-      gradient: LinearGradient(
-        colors: [
-          Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-          Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderColor: isCurrentServing
-          ? statusColor.withValues(alpha: 0.5)
-          : (Theme.of(context).brightness == Brightness.dark
-              ? AppColors.glassBorderDark
-              : AppColors.glassBorderLight),
+      borderColor: isCurrentServing ? statusColor.withValues(alpha: 0.5) : null,
+      borderWidth: isCurrentServing ? 1.5 : 0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -671,7 +580,9 @@ class _StaffQueueEntryCard extends StatelessWidget {
                       ? statusColor
                       : statusColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
-                  boxShadow: isCurrentServing ? PremiumShadows.glow(context, statusColor, intensity: 0.4) : null,
+                  boxShadow: isCurrentServing
+                      ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.4)
+                      : null,
                 ),
                 child: Center(
                   child: Text(
@@ -749,30 +660,22 @@ class _StaffQueueEntryCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Appointment info
-          GlassContainer(
+          NeuContainer(
             borderRadius: 12,
             padding: const EdgeInsets.all(12),
-            blur: 15,
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            variant: NeuVariant.inset,
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
+                    color: ThemeColors.primary(context).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.medical_services_outlined,
                     size: 18,
-                    color: AppColors.primary,
+                    color: ThemeColors.primary(context),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -783,7 +686,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                       Text(
                         'Appointment',
                         style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                       ),
                       Text(
@@ -799,20 +702,20 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.15),
+                      color: ThemeColors.warning(context).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.timer_outlined,
                       size: 18,
-                      color: AppColors.warning,
+                      color: Theme.of(context).brightness == Brightness.dark ? AppColors.warningOnDark : AppColors.warning,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     '${entry.queueEntry.estimatedWaitMinutes} min',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.warning,
+                      color: Theme.of(context).brightness == Brightness.dark ? AppColors.warningOnDark : AppColors.warning,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -857,13 +760,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
               Icon(
                 Icons.access_time_outlined,
                 size: 14,
-                color: AppColors.textHint,
+                color: ThemeColors.textSecondary(context),
               ),
               const SizedBox(width: 6),
               Text(
                 'Checked in: ${_formatTime(entry.queueEntry.checkedInAt)}',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textHint,
+                  color: ThemeColors.textSecondary(context),
                 ),
               ),
               if (entry.queueEntry.calledAt != null) ...[
@@ -871,13 +774,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
                 Icon(
                   Icons.volume_up_outlined,
                   size: 14,
-                  color: AppColors.info,
+                  color: Theme.of(context).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Called: ${_formatTime(entry.queueEntry.calledAt!)}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.info,
+                    color: Theme.of(context).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -887,13 +790,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
                 Icon(
                   Icons.door_front_door_outlined,
                   size: 14,
-                  color: AppColors.success,
+                  color: Theme.of(context).brightness == Brightness.dark ? AppColors.successOnDark : AppColors.success,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Room ${entry.queueEntry.room}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.success,
+                    color: Theme.of(context).brightness == Brightness.dark ? AppColors.successOnDark : AppColors.success,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -917,12 +820,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
     if (onCall != null) {
       actions.add(
         Expanded(
-          child: CpButton(
+          child: NeuButton(
             text: 'Call',
             onPressed: onCall!,
             icon: Icons.volume_up_rounded,
-            variant: ButtonVariant.secondary,
-            size: ButtonSize.small,
+            variant: NeuButtonVariant.secondary,
+            size: NeuButtonSize.medium,
+            expanded: true,
           ),
         ),
       );
@@ -932,12 +836,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
       if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
         Expanded(
-          child: CpButton(
+          child: NeuButton(
             text: 'Room',
             onPressed: onMoveToRoom!,
             icon: Icons.door_front_door_rounded,
-            variant: ButtonVariant.primary,
-            size: ButtonSize.small,
+            variant: NeuButtonVariant.primary,
+            size: NeuButtonSize.medium,
+            expanded: true,
           ),
         ),
       );
@@ -947,12 +852,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
       if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
         Expanded(
-          child: CpButton(
+          child: NeuButton(
             text: 'Complete',
             onPressed: onComplete!,
             icon: Icons.check_rounded,
-            variant: ButtonVariant.primary,
-            size: ButtonSize.small,
+            variant: NeuButtonVariant.primary,
+            size: NeuButtonSize.medium,
+            expanded: true,
           ),
         ),
       );
@@ -962,12 +868,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
       if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
         Expanded(
-          child: CpButton(
+          child: NeuButton(
             text: 'Skip',
             onPressed: onSkip!,
             icon: Icons.skip_next_rounded,
-            variant: ButtonVariant.destructive,
-            size: ButtonSize.small,
+            variant: NeuButtonVariant.destructive,
+            size: NeuButtonSize.medium,
+            expanded: true,
           ),
         ),
       );
@@ -976,18 +883,19 @@ class _StaffQueueEntryCard extends StatelessWidget {
     return Row(children: actions);
   }
 
-  Color _getStatusColor(QueueStatus status) {
+  Color _getStatusColor(BuildContext context, QueueStatus status) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case QueueStatus.waiting:
-        return AppColors.warning;
+        return isDark ? AppColors.warningOnDark : AppColors.warning;
       case QueueStatus.called:
-        return AppColors.info;
+        return isDark ? AppColors.infoDark : AppColors.info;
       case QueueStatus.inRoom:
-        return AppColors.primary;
+        return ThemeColors.primary(context);
       case QueueStatus.completed:
-        return AppColors.success;
+        return isDark ? AppColors.successOnDark : AppColors.success;
       case QueueStatus.skipped:
-        return AppColors.textSecondary;
+        return ThemeColors.textSecondary(context);
     }
   }
 
@@ -1054,36 +962,23 @@ class _NotLoggedInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.primary.withValues(alpha: 0.05),
-          AppColors.secondary.withValues(alpha: 0.03),
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.primary,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientPrimary,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.primary,
-                    ),
-                    child: Icon(
-                      Icons.people_outlined,
-                      size: 80,
-                      color: AppColors.textOnPrimary,
-                    ),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NeuContainer(
+                borderRadius: 90,
+                padding: const EdgeInsets.all(40),
+                color: AppColors.primary,
+                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                child: const Icon(
+                  Icons.people_outlined,
+                  size: 80,
+                  color: AppColors.textOnPrimary,
                 ),
+              ),
                 const SizedBox(height: 28),
                 Text(
                   'Please log in to manage queue',
@@ -1096,12 +991,12 @@ class _NotLoggedInView extends StatelessWidget {
                 Text(
                   'Sign in to access queue management',
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                CpButton(
+                NeuButton(
                   text: 'Log In',
                   onPressed: () => context.go('/login'),
                   icon: Icons.login_rounded,
@@ -1109,7 +1004,6 @@ class _NotLoggedInView extends StatelessWidget {
               ],
             ),
           ),
-        ),
       ),
     );
   }
@@ -1122,43 +1016,29 @@ class _AccessDeniedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedGradientBackground(
-        colors: [
-          AppColors.error.withValues(alpha: 0.06),
-          AppColors.warning.withValues(alpha: 0.04),
-          AppColors.surface,
-        ],
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PulsingGlow(
-                  glowColor: AppColors.error,
-                  maxRadius: 40,
-                  duration: const Duration(seconds: 3),
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.gradientError,
-                      borderRadius: BorderRadius.circular(80),
-                      boxShadow: PremiumShadows.glow(context, AppColors.error, intensity: 0.3),
-                    ),
-                    child: Icon(
-                      Icons.block_rounded,
-                      size: 80,
-                      color: Colors.white,
-                    ),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NeuContainer(
+                borderRadius: 90,
+                padding: const EdgeInsets.all(40),
+                color: AppColors.error,
+                boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+                child: const Icon(
+                  Icons.block_rounded,
+                  size: 80,
+                  color: Colors.white,
                 ),
+              ),
                 const SizedBox(height: 28),
                 Text(
                   'Access Denied',
                   style: AppTextStyles.headlineSmall.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.error,
+                    color: ThemeColors.error(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1166,21 +1046,20 @@ class _AccessDeniedView extends StatelessWidget {
                 Text(
                   'Only veterinarians and clinic staff can manage the queue.\n\nThis feature is for clinic operations only.',
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                CpButton(
+                NeuButton(
                   text: 'Go Back',
                   onPressed: () => context.pop(),
                   icon: Icons.arrow_back_rounded,
-                  variant: ButtonVariant.secondary,
+                  variant: NeuButtonVariant.secondary,
                 ),
               ],
             ),
           ),
-        ),
       ),
     );
   }
