@@ -1,19 +1,231 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ============================================================
-    // TEST-ONLY RULES — Firestore-first migration bring-up.
-    // Any authenticated user may read/write any document so the
-    // admin user-management page (list all users, create accounts,
-    // change roles, toggle active) and the int-id counter
-    // (counters/userIds) work end-to-end.
-    //
-    // DO NOT ship. Replace with firestore.rules.prod (the previously
-    // active rules, preserved verbatim) before any real deployment.
-    // ============================================================
+    // ----------------------------------------------------------
+    // CarePaw — PRODUCTION Firestore Rules
+    // ----------------------------------------------------------
+    // These rules enforce:
+    //   • Users can read/write their own profile (users/{uid})
+    //   • Admins can manage all users
+    //   • Pet owners can read/write their own pets
+    //   • Veterinarians can read/write pets of their assigned appointments
+    //   • Staff can read/write queue entries for check-in flow
+    //   • Medical records: append-only, owners/vets can read, vets create
+    //   • Inventory: staff/vets read, staff write
+    //   • Audit logs: admins write, admins read
+    //   • Counters: admin-only (for int-id sequences)
+    // ----------------------------------------------------------
+
+    // ---- Helpers ----
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isVeterinarian() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'veterinarian';
+    }
+
+    function isStaff() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff';
+    }
+
+    function isPetOwner() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'petOwner';
+    }
+
+    function getCurrentUserId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.id;
+    }
+
+    function getCurrentFirebaseUid() {
+      return request.auth.uid;
+    }
+
+    function isPetOwnerOf(petOwnerId) {
+      return isAuthenticated() && getCurrentUserId() == petOwnerId;
+    }
+
+    function isVeterinarianOf(petId) {
+      // Vet can access pet if they have an appointment with that pet
+      return isVeterinarian() &&
+        exists(/databases/$(database)/documents/appointments/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/appointments/$(request.auth.uid)).data.petId == petId;
+    }
+
+    function isOwnerOrVetOfPet(petOwnerId, petId) {
+      return isPetOwnerOf(petOwnerId) || isVeterinarianOf(petId);
+    }
+
+    // ---- Users collection ----
+    match /users/{uid} {
+      // Own profile: read/write (update)
+      allow read, update: if isAuthenticated() && request.auth.uid == uid;
+
+      // Admin: full access to all users
+      allow read, write: if isAdmin();
+
+      // Deletion only via Cloud Function (admin) — not directly here
+      allow delete: if false;
+    }
+
+    // ---- Pets collection ----
+    match /pets/{petId} {
+      // Owner: full CRUD on their pets
+      allow read, write: if isAuthenticated() &&
+        resource.data.ownerId == getCurrentUserId();
+
+      // Veterinarian: read/write pets they have appointments with
+      allow read, write: if isVeterinarianOf(petId);
+
+      // Admin: full access
+      allow read, write: if isAdmin();
+    }
+
+    // ---- Appointments collection ----
+    match /appointments/{appointmentId} {
+      // Owner: create/read their own
+      allow create: if isAuthenticated() &&
+        request.resource.data.ownerId == getCurrentUserId();
+      allow read: if isAuthenticated() &&
+        (resource.data.ownerId == getCurrentUserId() ||
+         resource.data.veterinarianId == getCurrentUserId() ||
+         isStaff());
+
+      // Veterinarian: read/update their assigned
+      allow update: if isAuthenticated() &&
+        (resource.data.veterinarianId == getCurrentUserId() || isStaff());
+
+      // Staff: read all, update status
+      allow read: if isStaff();
+      allow update: if isStaff() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+
+      // Admin: full
+      allow read, write: if isAdmin();
+    }
+
+    // ---- Medical Records collection ----
+    match /medicalRecords/{recordId} {
+      // Append-only: create allowed, update/delete denied
+      allow create: if isAuthenticated() &&
+        (isVeterinarian() || isAdmin());
+      allow read: if isAuthenticated() &&
+        (resource.data.petOwnerId == getCurrentUserId() ||
+         isVeterinarianOf(resource.data.petId) ||
+         isAdmin());
+      // No update, no delete — medical records are immutable
+      allow update, delete: if false;
+    }
+
+    // ---- Vaccinations subcollection ----
+    match /medicalRecords/{recordId}/vaccinations/{vaccinationId} {
+      allow create: if isAuthenticated() &&
+        (isVeterinarian() || isAdmin());
+      allow read: if isAuthenticated() &&
+        (resource.data.petOwnerId == getCurrentUserId() ||
+         isVeterinarianOf(resource.data.petId) ||
+         isAdmin());
+      allow update, delete: if false;
+    }
+
+    // ---- Inventory collection ----
+    match /inventoryItems/{itemId} {
+      // Staff/vets: read; Staff: write (stock changes)
+      allow read: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
+      allow write: if isAuthenticated() && (isStaff() || isAdmin());
+    }
+
+    // ---- Inventory Batches ----
+    match /inventoryBatches/{batchId} {
+      allow read: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
+      allow write: if isAuthenticated() && (isStaff() || isAdmin());
+    }
+
+    // ---- Inventory Transactions ----
+    match /inventoryTransactions/{transactionId} {
+      allow read: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
+      allow create: if isAuthenticated() && (isStaff() || isAdmin());
+      allow update, delete: if false;
+    }
+
+    // ---- Prescriptions ----
+    match /prescriptions/{prescriptionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.petOwnerId == getCurrentUserId() ||
+         resource.data.veterinarianId == getCurrentUserId() ||
+         isAdmin());
+      allow create: if isAuthenticated() && isVeterinarian();
+      allow update: if isAuthenticated() && isVeterinarian() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // ---- Queue Entries ----
+    match /queueEntries/{queueId} {
+      // Owner: read own queue entries
+      allow read: if isAuthenticated() &&
+        (resource.data.petOwnerId == getCurrentUserId() ||
+         isStaff() || isVeterinarian() || isAdmin());
+      // Staff: check-in, update status
+      allow create, update: if isAuthenticated() && (isStaff() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ---- Notifications ----
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.userId == getCurrentUserId();
+      allow create: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
+      allow update: if isAuthenticated() && resource.data.userId == getCurrentUserId();
+    }
+
+    // ---- Scan Records ----
+    match /scanRecords/{scanId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == getCurrentUserId() || isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // ---- Audit Logs ----
+    match /auditLogs/{logId} {
+      // Admins only — write-only in practice, but allow read for admin UI
+      allow read, write: if isAdmin();
+    }
+
+    // ---- Sync Metadata ----
+    match /syncMetadata/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ---- Device Info ----
+    match /deviceInfo/{deviceId} {
+      allow read, write: if isAuthenticated() &&
+        getCurrentFirebaseUid() == deviceId;
+    }
+
+    // ---- Sync Conflicts ----
+    match /syncConflicts/{conflictId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == getCurrentUserId() || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ---- Counters (int-id sequences) ----
+    match /counters/{counterId} {
+      // Admin-only for userIdSequence
+      allow read, write: if isAdmin();
+    }
+
+    // ---- Deny all other ----
     match /{document=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }

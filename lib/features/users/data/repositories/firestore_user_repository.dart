@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import 'package:carepaw/core/errors/error_handler.dart';
 import 'package:carepaw/core/errors/failures.dart';
 import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
@@ -276,6 +281,61 @@ class FirestoreUserRepository implements UserRepository {
   }
 
   @override
+  Future<void> deleteUser(int userId) async {
+    final existing = await findById(userId);
+    if (existing == null) {
+      throw Exception('User not found');
+    }
+    final uid = existing.firebaseUid;
+    if (uid == null || uid.isEmpty) {
+      throw Exception('User has no Firebase UID and cannot be deleted.');
+    }
+
+    // The client SDK cannot revoke another user's Auth credential, so the
+    // actual deletion (Auth revocation + Firestore doc removal + audit) is
+    // performed by the backend `deleteUser` Cloud Function under the Admin SDK.
+    final idToken = await _firebaseAuth.currentUser?.getIdToken();
+    if (idToken == null) {
+      throw const UnauthorizedFailure(
+        message: 'Sign in to delete this user.',
+      );
+    }
+
+    // Post the raw HTTPS callable protocol. This is deliberately a plain
+    // HTTP POST rather than the FlutterFire `httpsCallable` client: the
+    // pinned `firebase_functions` package is the Dart *authoring* SDK, which
+    // exposes no runtime callable API, and pinning an extra wrapper here would
+    // add a redundant web-affecting dependency just for one call.
+    final projectId = _firestore.app.options.projectId;
+    final uri = Uri.parse(
+      'https://deleteuser-$projectId.uc.r.appspot.com/deleteUser',
+    );
+    final http.Response response;
+    try {
+      response = await http
+          .post(
+            uri,
+            headers: <String, String>{
+              HttpHeaders.contentTypeHeader: 'application/json',
+              HttpHeaders.authorizationHeader: 'Bearer $idToken',
+            },
+            body: jsonEncode(<String, Object>{'uid': uid}),
+          )
+          .timeout(const Duration(seconds: 30));
+    } on SocketException {
+      throw const NoConnectionFailure(
+        message: 'Could not reach the server. Check your connection and try again.',
+      );
+    } on TimeoutException {
+      throw const TimeoutFailure();
+    }
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw _mapDeleteUserHttpError(response.statusCode);
+    }
+  }
+
+  @override
   Future<int> countByRole(domain.UserRole role) async {
     final snapshot = await _users
         .where(FirestoreSchema.role, isEqualTo: role.value)
@@ -371,5 +431,32 @@ class FirestoreUserRepository implements UserRepository {
     final snapshot = await _users.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.first;
+  }
+
+  /// Map a non-2xx `deleteUser` HTTP status to a user-friendly [Failure].
+  ///
+  /// The Cloud Function reports each failure mode with a distinct status
+  /// code (mirroring its own guard checks), so we surface the right message
+  /// without leaking server internals.
+  Failure _mapDeleteUserHttpError(int status) {
+    switch (status) {
+      case HttpStatus.unauthorized:
+        return const UnauthorizedFailure(
+          message: 'Your session has expired. Please log in again.',
+        );
+      case HttpStatus.forbidden:
+        return const UnauthorizedFailure(
+          message: 'Only administrators can delete accounts.',
+        );
+      case HttpStatus.notFound:
+        return const NotFoundFailure(message: 'User not found.');
+      case HttpStatus.conflict:
+        return const UnexpectedFailure(
+          message: 'Cannot delete this account. It may be your own account '
+              'or the last administrator.',
+        );
+      default:
+        return ServerFailure(message: 'Server error. Please try again later.');
+    }
   }
 }

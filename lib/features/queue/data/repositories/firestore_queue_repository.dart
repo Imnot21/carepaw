@@ -65,7 +65,7 @@ class FirestoreQueueRepository implements QueueRepository {
       QueueStatus.inRoom.value,
     ]).get();
     final entries = snapshot.docs.map((doc) => QueueEntryDocMapper.fromData(doc.data())).toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+      ..sort(QueueEntry.byQueueOrder);
     return entries;
   }
 
@@ -121,7 +121,7 @@ class FirestoreQueueRepository implements QueueRepository {
   @override
   Future<List<QueueEntry>> findAllIncludingDeleted() async {
     final all = await _findAllIncludingTerminal();
-    return all..sort((a, b) => a.position.compareTo(b.position));
+    return all..sort(QueueEntry.byQueueOrder);
   }
 
   // ============ StreamRepository<QueueEntry, int> ============
@@ -150,7 +150,7 @@ class FirestoreQueueRepository implements QueueRepository {
       final entries = snapshot.docs
           .map((doc) => QueueEntryDocMapper.fromData(doc.data()))
           .toList()
-        ..sort((a, b) => a.position.compareTo(b.position));
+        ..sort(QueueEntry.byQueueOrder);
       return entries;
     });
   }
@@ -185,6 +185,11 @@ class FirestoreQueueRepository implements QueueRepository {
 
   @override
   Future<int> getNextPosition() async {
+    // `position` is a display serial: it is handed out here as a monotonic
+    // arrival number and later recomputed 1..N in priority order by
+    // `repositionQueue`. Queue ORDER never depends on it — see
+    // QueueEntry.byQueueOrder — so a duplicate serial from a concurrent
+    // check-in is only cosmetic and is normalized on the next reposition.
     final active = await findAll();
     if (active.isEmpty) return 1;
     final maxPosition = active.map((e) => e.position).reduce((a, b) => a > b ? a : b);
@@ -245,7 +250,7 @@ class FirestoreQueueRepository implements QueueRepository {
   Future<QueueEntry?> callNext() async {
     final active = await findAll();
     final waiting = active.where((e) => e.isWaiting).toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+      ..sort(QueueEntry.byQueueOrder);
     if (waiting.isEmpty) return null;
     final next = waiting.first;
     return save(next.call());
@@ -281,9 +286,32 @@ class FirestoreQueueRepository implements QueueRepository {
   }
 
   @override
+  Future<QueueEntry> setPriority(int queueId, QueuePriority priority) async {
+    final existing = await findById(queueId);
+    if (existing == null) throw Exception('Queue entry not found');
+
+    // No status guard: staff may retriage any active (waiting/called/in-room)
+    // entry. Retriaging a completed/skipped entry only updates its persisted
+    // priority — repositionQueue skips terminal entries, so the live queue is
+    // unaffected.
+    final updated = await save(existing.copyWith(
+      priority: priority,
+      updatedAt: DateTime.now(),
+    ));
+
+    // Rewrites positions 1..N in priority order so the entry lands in its
+    // tier's slot. Not a Firestore transaction; a concurrent complete/skip/
+    // checkIn between the read and this renumber can momentarily leave a stale
+    // serial, which the next repositionQueue normalizes (matches existing
+    // behavior for the position race elsewhere in this file).
+    await repositionQueue();
+    return updated;
+  }
+
+  @override
   Future<void> repositionQueue() async {
     final active = await findAll();
-    active.sort((a, b) => a.position.compareTo(b.position));
+    active.sort(QueueEntry.byQueueOrder);
     final batch = _firestore.batch();
     for (var i = 0; i < active.length; i++) {
       if (active[i].position == i + 1) continue;

@@ -79,6 +79,52 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
     }
   }
 
+  /// Confirm and dispatch a permanent account deletion.
+  ///
+  /// Deleting revokes the target's Firebase Auth credential (freeing the
+  /// email so it can be re-created) and removes their Firestore document.
+  /// Because this is irreversible, we require an explicit confirmation that
+  /// names the account before dispatching the delete event.
+  Future<void> _confirmDelete(BuildContext context, User user) async {
+    // Capture theme values and the bloc before the async gap; the dialog
+    // builder runs after `await showDialog` returns, and the post-gap dispatch
+    // uses the captured bloc, so nothing here reads across the gap.
+    final deleteColor = Theme.of(context).colorScheme.error;
+    final bloc = context.read<UserManagementBloc>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete account?'),
+          content: Text(
+            'This permanently deletes ${user.fullName} (${user.email}). '
+            'Their sign-in is revoked and the email is freed to be re-created. '
+            'Pets, appointments, and medical records are left intact. '
+            'This cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: deleteColor),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete permanently'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    final id = user.id;
+    if (id == null) return;
+    bloc.add(
+      UserManagementDeleteRequested(userId: id),
+    );
+  }
+
   void _onSearchChanged(String raw) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: _debounceMs), () {
@@ -434,6 +480,9 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                         );
                       }
                     },
+                    onDelete: () {
+                      if (user.id != null) _confirmDelete(context, user);
+                    },
                   ),
                 )),
             if (hasMore) ...[
@@ -496,12 +545,14 @@ class _UserManagementCard extends StatelessWidget {
   final bool busy;
   final ValueChanged<UserRole> onRoleChanged;
   final ValueChanged<bool> onToggleActive;
+  final VoidCallback onDelete;
 
   const _UserManagementCard({
     required this.user,
     this.busy = false,
     required this.onRoleChanged,
     required this.onToggleActive,
+    required this.onDelete,
   });
 
   @override
@@ -561,22 +612,39 @@ class _UserManagementCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              DropdownButton<UserRole>(
-                value: user.role,
-                underline: const SizedBox.shrink(),
-                style: AppTextStyles.labelMedium.copyWith(color: roleColor(context, role)),
-                borderRadius: BorderRadius.circular(12),
-                items: [UserRole.staff, UserRole.veterinarian, UserRole.petOwner]
-                    .map((r) => DropdownMenuItem(
-                          value: r,
-                          child: Text(r.displayName),
-                        ))
-                    .toList(),
-                onChanged: (!user.isActive || busy)
-                    ? null
-                    : (role) {
-                        if (role != null && role != user.role) onRoleChanged(role);
-                      },
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Permanent delete (admin). Requires the explicit confirm
+                  // dialog wired in the page; disabled while a mutation runs.
+                  IconButton(
+                    tooltip: 'Delete account',
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      Icons.delete_outline_rounded,
+                      color: ThemeColors.error(context),
+                      size: 20,
+                    ),
+                    onPressed: busy ? null : onDelete,
+                  ),
+                  DropdownButton<UserRole>(
+                    value: user.role,
+                    underline: const SizedBox.shrink(),
+                    style: AppTextStyles.labelMedium.copyWith(color: roleColor(context, role)),
+                    borderRadius: BorderRadius.circular(12),
+                    items: [UserRole.staff, UserRole.veterinarian, UserRole.petOwner]
+                        .map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text(r.displayName),
+                            ))
+                        .toList(),
+                    onChanged: (!user.isActive || busy)
+                        ? null
+                        : (role) {
+                            if (role != null && role != user.role) onRoleChanged(role);
+                          },
+                  ),
+                ],
               ),
               Transform.scale(
                 scale: 0.8,

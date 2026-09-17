@@ -132,6 +132,7 @@ class FirestoreSchema {
   // Queue Entries fields
   static const String appointmentId = 'appointmentId';
   static const String position = 'position';
+  static const String priority = 'priority';
   static const String statusQueue = 'status';
   static const String checkedInAt = 'checkedInAt';
   static const String calledAt = 'calledAt';

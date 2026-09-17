@@ -123,290 +123,311 @@ class AppRouter {
             builder: (context, state) => const HomePage(),
           ),
 
-      // Pet Owner routes
-      GoRoute(
-        path: Routes.pets,
-        name: RouteNames.pets,
-        builder: (context, state) => const PetListPage(),
-        routes: [
+          // Pet Owner routes
           GoRoute(
-            path: 'add',
-            name: RouteNames.petAdd,
-            builder: (context, state) {
-              // Get owner ID from auth state
-              final authState = context.read<AuthBloc>().state;
-              final ownerId = authState is AuthAuthenticated ? authState.user.id! : 0;
-              return BlocProvider(
-                create: (context) => PetBloc(petRepository: getIt<PetRepository>()),
-                child: PetFormPage(ownerId: ownerId),
-              );
-            },
+            path: Routes.pets,
+            name: RouteNames.pets,
+            builder: (context, state) => const PetListPage(),
+            routes: [
+              GoRoute(
+                path: 'add',
+                name: RouteNames.petAdd,
+                builder: (context, state) {
+                  // Get owner ID from auth state
+                  final authState = context.read<AuthBloc>().state;
+                  final ownerId = authState is AuthAuthenticated
+                      ? authState.user.id!
+                      : 0;
+                  return BlocProvider(
+                    create: (context) =>
+                        PetBloc(petRepository: getIt<PetRepository>()),
+                    child: PetFormPage(ownerId: ownerId),
+                  );
+                },
+              ),
+              GoRoute(
+                path: ':id',
+                name: RouteNames.petDetail,
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  if (id == null) {
+                    return const PlaceholderPage(title: 'Invalid Pet ID');
+                  }
+                  return PetDetailPageWithBloc(petId: id);
+                },
+              ),
+              GoRoute(
+                path: ':id/edit',
+                name: RouteNames.petEdit,
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  if (id == null) {
+                    return const PlaceholderPage(title: 'Invalid Pet ID');
+                  }
+                  return PetFormPageWithBloc(petId: id);
+                },
+              ),
+            ],
           ),
-          GoRoute(
-            path: ':id',
-            name: RouteNames.petDetail,
-            builder: (context, state) {
-              final id = int.tryParse(state.pathParameters['id'] ?? '');
-              if (id == null) {
-                return const PlaceholderPage(title: 'Invalid Pet ID');
-              }
-              return PetDetailPageWithBloc(petId: id);
-            },
-          ),
-          GoRoute(
-            path: ':id/edit',
-            name: RouteNames.petEdit,
-            builder: (context, state) {
-              final id = int.tryParse(state.pathParameters['id'] ?? '');
-              if (id == null) {
-                return const PlaceholderPage(title: 'Invalid Pet ID');
-              }
-              return PetFormPageWithBloc(petId: id);
-            },
-          ),
-        ],
-      ),
 
-      GoRoute(
-        path: Routes.appointments,
-        name: RouteNames.appointments,
-        builder: (context, state) => BlocProvider(
-          create: (context) => AppointmentBloc(
-            repository: getIt<AppointmentRepository>(),
-            authBloc: context.read<AuthBloc>(),
-          )..add(const AppointmentLoadRequested()),
-          child: const AppointmentListPage(),
-        ),
-        routes: [
           GoRoute(
-            path: 'request',
-            name: RouteNames.appointmentRequest,
-            builder: (context, state) {
-              // Get petId and veterinarianId from query parameters if provided
-              final petId = int.tryParse(state.uri.queryParameters['petId'] ?? '');
-              final veterinarianId = int.tryParse(state.uri.queryParameters['veterinarianId'] ?? '');
-              // Get user role from auth state
-              final authState = context.read<AuthBloc>().state;
-              final userRole = authState is AuthAuthenticated ? authState.user.role : UserRole.petOwner;
-              return MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create: (context) => PetBloc(petRepository: getIt<PetRepository>()),
-                  ),
-                  BlocProvider(
-                    create: (context) => AppointmentBloc(
-                      repository: getIt<AppointmentRepository>(),
-                      authBloc: context.read<AuthBloc>(),
-                    ),
-                  ),
-                ],
-                child: AppointmentFormPage(
-                  petId: petId,
-                  veterinarianId: veterinarianId,
-                  userRole: userRole,
-                ),
-              );
-            },
-          ),
-          GoRoute(
-            path: ':id',
-            name: RouteNames.appointmentDetail,
-            builder: (context, state) {
-              final id = int.tryParse(state.pathParameters['id'] ?? '');
-              if (id == null) {
-                return const PlaceholderPage(title: 'Invalid Appointment ID');
-              }
-              return BlocProvider(
-                create: (context) => AppointmentBloc(
-                  repository: getIt<AppointmentRepository>(),
-                  authBloc: context.read<AuthBloc>(),
-                )..add(AppointmentDetailLoadRequested(id)),
-                child: AppointmentDetailPageWithBloc(appointmentId: id),
-              );
-            },
-          ),
-          GoRoute(
-            path: ':id/edit',
-            name: RouteNames.appointmentEdit,
-            builder: (context, state) {
-              final id = int.tryParse(state.pathParameters['id'] ?? '');
-              if (id == null) {
-                return const PlaceholderPage(title: 'Invalid Appointment ID');
-              }
-              // Get user role from auth state
-              final authState = context.read<AuthBloc>().state;
-              final userRole = authState is AuthAuthenticated ? authState.user.role : UserRole.petOwner;
-              return MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create: (context) => PetBloc(petRepository: getIt<PetRepository>()),
-                  ),
-                  BlocProvider(
-                    create: (context) => AppointmentBloc(
-                      repository: getIt<AppointmentRepository>(),
-                      authBloc: context.read<AuthBloc>(),
-                    ),
-                  ),
-                ],
-                child: AppointmentFormPage(
-                  appointmentId: id,
-                  userRole: userRole,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-
-      // Queue route for pet owners — provides Queue + Appointments so the
-      // empty state can surface a "Check in an upcoming appointment" list.
-      GoRoute(
-        path: Routes.queue,
-        name: RouteNames.queue,
-        builder: (context, state) => MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => QueueBloc(
-                repository: getIt<QueueRepository>(),
-                authBloc: context.read<AuthBloc>(),
-              )..add(const QueueLoadRequested()),
-            ),
-            BlocProvider(
+            path: Routes.appointments,
+            name: RouteNames.appointments,
+            builder: (context, state) => BlocProvider(
               create: (context) => AppointmentBloc(
                 repository: getIt<AppointmentRepository>(),
                 authBloc: context.read<AuthBloc>(),
               )..add(const AppointmentLoadRequested()),
+              child: const AppointmentListPage(),
             ),
-          ],
-          child: const QueuePage(),
-        ),
-      ),
-
-      GoRoute(
-        path: Routes.medicalRecords,
-        name: RouteNames.medicalRecordsRoute,
-        builder: (context, state) => const PlaceholderPage(title: 'Medical Records'),
-      ),
-
-      // Staff routes
-      GoRoute(
-        path: Routes.staffDashboard,
-        name: RouteNames.staffDashboard,
-        builder: (context, state) => const StaffDashboardPage(),
-        routes: [
-          GoRoute(
-            path: 'appointments',
-            name: RouteNames.staffAppointments,
-            builder: (context, state) => const PlaceholderPage(title: 'Staff Appointments'),
+            routes: [
+              GoRoute(
+                path: 'request',
+                name: RouteNames.appointmentRequest,
+                builder: (context, state) {
+                  // Get petId and veterinarianId from query parameters if provided
+                  final petId = int.tryParse(
+                    state.uri.queryParameters['petId'] ?? '',
+                  );
+                  final veterinarianId = int.tryParse(
+                    state.uri.queryParameters['veterinarianId'] ?? '',
+                  );
+                  // Get user role from auth state
+                  final authState = context.read<AuthBloc>().state;
+                  final userRole = authState is AuthAuthenticated
+                      ? authState.user.role
+                      : UserRole.petOwner;
+                  return MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (context) =>
+                            PetBloc(petRepository: getIt<PetRepository>()),
+                      ),
+                      BlocProvider(
+                        create: (context) => AppointmentBloc(
+                          repository: getIt<AppointmentRepository>(),
+                          authBloc: context.read<AuthBloc>(),
+                        ),
+                      ),
+                    ],
+                    child: AppointmentFormPage(
+                      petId: petId,
+                      veterinarianId: veterinarianId,
+                      userRole: userRole,
+                    ),
+                  );
+                },
+              ),
+              GoRoute(
+                path: ':id',
+                name: RouteNames.appointmentDetail,
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  if (id == null) {
+                    return const PlaceholderPage(
+                      title: 'Invalid Appointment ID',
+                    );
+                  }
+                  return BlocProvider(
+                    create: (context) => AppointmentBloc(
+                      repository: getIt<AppointmentRepository>(),
+                      authBloc: context.read<AuthBloc>(),
+                    )..add(AppointmentDetailLoadRequested(id)),
+                    child: AppointmentDetailPageWithBloc(appointmentId: id),
+                  );
+                },
+              ),
+              GoRoute(
+                path: ':id/edit',
+                name: RouteNames.appointmentEdit,
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  if (id == null) {
+                    return const PlaceholderPage(
+                      title: 'Invalid Appointment ID',
+                    );
+                  }
+                  // Get user role from auth state
+                  final authState = context.read<AuthBloc>().state;
+                  final userRole = authState is AuthAuthenticated
+                      ? authState.user.role
+                      : UserRole.petOwner;
+                  return MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (context) =>
+                            PetBloc(petRepository: getIt<PetRepository>()),
+                      ),
+                      BlocProvider(
+                        create: (context) => AppointmentBloc(
+                          repository: getIt<AppointmentRepository>(),
+                          authBloc: context.read<AuthBloc>(),
+                        ),
+                      ),
+                    ],
+                    child: AppointmentFormPage(
+                      appointmentId: id,
+                      userRole: userRole,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
+
+          // Queue route for pet owners — provides Queue + Appointments so the
+          // empty state can surface a "Check in an upcoming appointment" list.
           GoRoute(
-            path: 'queue',
-            name: RouteNames.staffQueue,
-            builder: (context, state) => BlocProvider(
-              create: (context) => QueueBloc(
-                repository: getIt<QueueRepository>(),
-                authBloc: context.read<AuthBloc>(),
-              )..add(const QueueStaffLoadRequested()),
-              child: const StaffQueuePage(),
+            path: Routes.queue,
+            name: RouteNames.queue,
+            builder: (context, state) => MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => QueueBloc(
+                    repository: getIt<QueueRepository>(),
+                    authBloc: context.read<AuthBloc>(),
+                  )..add(const QueueLoadRequested()),
+                ),
+                BlocProvider(
+                  create: (context) => AppointmentBloc(
+                    repository: getIt<AppointmentRepository>(),
+                    authBloc: context.read<AuthBloc>(),
+                  )..add(const AppointmentLoadRequested()),
+                ),
+              ],
+              child: const QueuePage(),
             ),
           ),
-          GoRoute(
-            path: 'inventory',
-            name: RouteNames.staffInventory,
-            builder: (context, state) => const PlaceholderPage(title: 'Inventory'),
-          ),
-          GoRoute(
-            path: 'scanning',
-            name: RouteNames.staffScanning,
-            builder: (context, state) => const PlaceholderPage(title: 'Scanning'),
-          ),
-        ],
-      ),
 
-      // Veterinarian routes
-      GoRoute(
-        path: Routes.vetDashboard,
-        name: RouteNames.vetDashboard,
-        builder: (context, state) => const VetDashboardPage(),
-        routes: [
           GoRoute(
-            path: 'patients',
-            name: RouteNames.vetPatients,
-            builder: (context, state) => const PlaceholderPage(title: 'Patients'),
+            path: Routes.medicalRecords,
+            name: RouteNames.medicalRecordsRoute,
+            builder: (context, state) =>
+                const PlaceholderPage(title: 'Medical Records'),
           ),
-          GoRoute(
-            path: 'patients/:id',
-            name: RouteNames.vetPatientDetail,
-            builder: (context, state) {
-              final id = state.pathParameters['id'];
-              return PlaceholderPage(title: 'Patient - $id');
-            },
-          ),
-          GoRoute(
-            path: 'records',
-            name: RouteNames.vetRecords,
-            builder: (context, state) => const PlaceholderPage(title: 'Records'),
-          ),
-        ],
-      ),
 
-      // Admin routes
-      GoRoute(
-        path: Routes.adminDashboard,
-        name: RouteNames.adminDashboard,
-        builder: (context, state) => const AdminDashboardPage(),
-        routes: [
+          // Staff routes
           GoRoute(
-            path: 'users',
-            name: RouteNames.adminUsers,
-            builder: (context, state) => BlocProvider(
-              create: (context) => UserManagementBloc(
-                userRepository: getIt<UserRepository>(),
-              )..add(const UserManagementLoadRequested()),
-              child: const AdminUserManagementPage(),
-            ),
+            path: Routes.staffDashboard,
+            name: RouteNames.staffDashboard,
+            builder: (context, state) => const StaffDashboardPage(),
+            routes: [
+              GoRoute(
+                path: 'appointments',
+                name: RouteNames.staffAppointments,
+                builder: (context, state) =>
+                    const PlaceholderPage(title: 'Staff Appointments'),
+              ),
+              GoRoute(
+                path: 'queue',
+                name: RouteNames.staffQueue,
+                builder: (context, state) => BlocProvider(
+                  create: (context) => QueueBloc(
+                    repository: getIt<QueueRepository>(),
+                    authBloc: context.read<AuthBloc>(),
+                  )..add(const QueueStaffLoadRequested()),
+                  child: const StaffQueuePage(),
+                ),
+              ),
+              GoRoute(
+                path: 'inventory',
+                name: RouteNames.staffInventory,
+                builder: (context, state) =>
+                    const PlaceholderPage(title: 'Inventory'),
+              ),
+              GoRoute(
+                path: 'scanning',
+                name: RouteNames.staffScanning,
+                builder: (context, state) =>
+                    const PlaceholderPage(title: 'Scanning'),
+              ),
+            ],
           ),
-          GoRoute(
-            path: 'settings',
-            name: RouteNames.adminSettings,
-            builder: (context, state) => const AdminSettingsPage(),
-          ),
-          GoRoute(
-            path: 'audit',
-            name: RouteNames.adminAudit,
-            builder: (context, state) => BlocProvider(
-              create: (context) => AuditLogBloc(
-                auditLogRepository: getIt<AuditLogRepository>(),
-              )..add(const AuditLogLoadRequested()),
-              child: const AdminAuditPage(),
-            ),
-          ),
-        ],
-      ),
 
-      // Common routes
-      GoRoute(
-        path: Routes.notifications,
-        name: RouteNames.notifications,
-        builder: (context, state) => const PlaceholderPage(title: 'Notifications'),
-      ),
-      GoRoute(
-        path: Routes.profile,
-        name: RouteNames.profile,
-        builder: (context, state) => const ProfilePage(),
-      ),
-      GoRoute(
-        path: Routes.settings,
-        name: RouteNames.settings,
-        builder: (context, state) => const ProfilePage(),
-      ),
+          // Veterinarian routes
+          GoRoute(
+            path: Routes.vetDashboard,
+            name: RouteNames.vetDashboard,
+            builder: (context, state) => const VetDashboardPage(),
+            routes: [
+              GoRoute(
+                path: 'patients',
+                name: RouteNames.vetPatients,
+                builder: (context, state) =>
+                    const PlaceholderPage(title: 'Patients'),
+              ),
+              GoRoute(
+                path: 'patients/:id',
+                name: RouteNames.vetPatientDetail,
+                builder: (context, state) {
+                  final id = state.pathParameters['id'];
+                  return PlaceholderPage(title: 'Patient - $id');
+                },
+              ),
+              GoRoute(
+                path: 'records',
+                name: RouteNames.vetRecords,
+                builder: (context, state) =>
+                    const PlaceholderPage(title: 'Records'),
+              ),
+            ],
+          ),
+
+          // Admin routes
+          GoRoute(
+            path: Routes.adminDashboard,
+            name: RouteNames.adminDashboard,
+            builder: (context, state) => const AdminDashboardPage(),
+            routes: [
+              GoRoute(
+                path: 'users',
+                name: RouteNames.adminUsers,
+                builder: (context, state) => BlocProvider(
+                  create: (context) => UserManagementBloc(
+                    userRepository: getIt<UserRepository>(),
+                  )..add(const UserManagementLoadRequested()),
+                  child: const AdminUserManagementPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'settings',
+                name: RouteNames.adminSettings,
+                builder: (context, state) => const AdminSettingsPage(),
+              ),
+              GoRoute(
+                path: 'audit',
+                name: RouteNames.adminAudit,
+                builder: (context, state) => BlocProvider(
+                  create: (context) => AuditLogBloc(
+                    auditLogRepository: getIt<AuditLogRepository>(),
+                  )..add(const AuditLogLoadRequested()),
+                  child: const AdminAuditPage(),
+                ),
+              ),
+            ],
+          ),
+
+          // Common routes
+          GoRoute(
+            path: Routes.notifications,
+            name: RouteNames.notifications,
+            builder: (context, state) =>
+                const PlaceholderPage(title: 'Notifications'),
+          ),
+          GoRoute(
+            path: Routes.profile,
+            name: RouteNames.profile,
+            builder: (context, state) => const ProfilePage(),
+          ),
         ],
       ),
     ];
   }
 
   /// Build redirect logic for authentication and role-based access
-  static String? Function(BuildContext, GoRouterState) _buildRedirect(AuthStateListenable authListenable) {
+  static String? Function(BuildContext, GoRouterState) _buildRedirect(
+    AuthStateListenable authListenable,
+  ) {
     return (context, state) {
       final authState = authListenable.authState;
       final user = switch (authState) {
@@ -417,7 +438,8 @@ class AppRouter {
       final userRole = user?.role ?? UserRole.petOwner;
 
       final location = state.matchedLocation;
-      final isAuthRoute = location.startsWith(Routes.login) ||
+      final isAuthRoute =
+          location.startsWith(Routes.login) ||
           location.startsWith(Routes.register) ||
           location.startsWith(Routes.forgotPassword) ||
           location.startsWith(Routes.resetPassword);
@@ -537,16 +559,16 @@ class _SplashPage extends StatelessWidget {
             Text(
               'CarePaw',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Smart Veterinary Care',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 32),
             const NeuCircularProgress(size: 32, strokeWidth: 3),
@@ -566,9 +588,7 @@ class PlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
+      appBar: AppBar(title: Text(title)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -587,8 +607,8 @@ class PlaceholderPage extends StatelessWidget {
             Text(
               'This feature is not yet implemented',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -606,9 +626,7 @@ class ErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Error'),
-      ),
+      appBar: AppBar(title: const Text('Error')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -630,8 +648,8 @@ class ErrorPage extends StatelessWidget {
                 Text(
                   error.toString(),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),

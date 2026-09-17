@@ -38,7 +38,8 @@ class _VetDashboardPageState extends State<VetDashboardPage> {
           }
 
           final user = authState.user;
-          final isVetOrAdmin = user.role == UserRole.veterinarian || user.role == UserRole.admin;
+          final isVetOrAdmin =
+              user.role == UserRole.veterinarian || user.role == UserRole.admin;
 
           if (!isVetOrAdmin) {
             return const _AccessDeniedView();
@@ -62,7 +63,12 @@ class _LoadingView extends StatelessWidget {
         children: [
           const NeuCircularProgress(),
           const SizedBox(height: 16),
-          Text('Loading...', style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness)),
+          Text(
+            'Loading...',
+            style: AppTextStyles.bodyMedium.subtleOf(
+              Theme.of(context).brightness,
+            ),
+          ),
         ],
       ),
     );
@@ -84,13 +90,35 @@ class _AccessDeniedView extends StatelessWidget {
               borderRadius: 80,
               padding: const EdgeInsets.all(28),
               color: AppColors.error,
-              boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
-              child: const Icon(Icons.block_rounded, size: 72, color: Colors.white),
+              boxShadow: NeuShadow.color(
+                context,
+                AppColors.error,
+                blur: 24,
+                opacity: 0.32,
+              ),
+              child: const Icon(
+                Icons.block_rounded,
+                size: 72,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 28),
-            Text('Access Denied', style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.w600, color: ThemeColors.error(context)), textAlign: TextAlign.center),
+            Text(
+              'Access Denied',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: ThemeColors.error(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 12),
-            Text('This area is for veterinarians only.\n\nUse the appropriate dashboard for your role.', style: AppTextStyles.bodyLarge.copyWith(color: ThemeColors.textSecondary(context)), textAlign: TextAlign.center),
+            Text(
+              'This area is for veterinarians only.\n\nUse the appropriate dashboard for your role.',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 32),
             NeuButton(
               text: 'Go Back',
@@ -132,11 +160,16 @@ class _VetDashboardContent extends StatelessWidget {
                 children: [
                   Text(
                     'Good ${_getGreeting()}, Dr. $userName!',
-                    style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                    style: AppTextStyles.titleLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                   Text(
                     'Veterinarian Dashboard',
-                    style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                    style: AppTextStyles.bodySmall.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
                   ),
                 ],
               ),
@@ -145,11 +178,6 @@ class _VetDashboardContent extends StatelessWidget {
                   icon: const Icon(Icons.notifications_outlined),
                   onPressed: () => context.push(Routes.notifications),
                   tooltip: 'Notifications',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  onPressed: () => context.push(Routes.settings),
-                  tooltip: 'Settings',
                 ),
               ],
             ),
@@ -193,7 +221,12 @@ class _VetQuickActionsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Clinical Actions', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'Clinical Actions',
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 12),
         GridView.count(
           shrinkWrap: true,
@@ -259,7 +292,10 @@ class _VetQuickActionsSection extends StatelessWidget {
 
   void _showComingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature coming soon!'), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text('$feature coming soon!'),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }
@@ -290,7 +326,10 @@ class _VetActionCard extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 8),
@@ -300,7 +339,11 @@ class _VetActionCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.labelSmall.copyWith(fontWeight: FontWeight.w600, color: color, height: 1.1),
+              style: AppTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: color,
+                height: 1.1,
+              ),
             ),
           ),
         ],
@@ -316,20 +359,38 @@ class _VetQuickLinksSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('More', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'More',
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 12),
         NeuCard(
           borderRadius: 20,
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              _LinkTile(icon: Icons.notifications_outlined, title: 'Notifications', subtitle: 'Lab results & alerts', onTap: () => context.push(Routes.notifications)),
+              _LinkTile(
+                icon: Icons.notifications_outlined,
+                title: 'Notifications',
+                subtitle: 'Lab results & alerts',
+                onTap: () => context.push(Routes.notifications),
+              ),
               const Divider(height: 1, indent: 56),
-              _LinkTile(icon: Icons.medical_services_outlined, title: 'Medical Records', subtitle: 'Full patient history access', onTap: () => context.push(Routes.medicalRecords)),
+              _LinkTile(
+                icon: Icons.medical_services_outlined,
+                title: 'Medical Records',
+                subtitle: 'Full patient history access',
+                onTap: () => context.push(Routes.medicalRecords),
+              ),
               const Divider(height: 1, indent: 56),
-              _LinkTile(icon: Icons.inventory_2_outlined, title: 'Medicine Catalog', subtitle: 'Available medications & dosages', onTap: () => _showComingSoon(context, 'Medicine Catalog')),
-              const Divider(height: 1, indent: 56),
-              _LinkTile(icon: Icons.settings_outlined, title: 'Settings', subtitle: 'App preferences', onTap: () => context.push(Routes.settings)),
+              _LinkTile(
+                icon: Icons.inventory_2_outlined,
+                title: 'Medicine Catalog',
+                subtitle: 'Available medications & dosages',
+                onTap: () => _showComingSoon(context, 'Medicine Catalog'),
+              ),
             ],
           ),
         ),
@@ -338,7 +399,12 @@ class _VetQuickLinksSection extends StatelessWidget {
   }
 
   void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$feature coming soon!'), behavior: SnackBarBehavior.floating));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$feature coming soon!'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }
 
@@ -348,7 +414,12 @@ class _LinkTile extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  const _LinkTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
+  const _LinkTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -362,9 +433,18 @@ class _LinkTile extends StatelessWidget {
             : AppColors.primaryTint,
         child: Icon(icon, color: ThemeColors.primary(context), size: 22),
       ),
-      title: Text(title, style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness)),
-      trailing: Icon(Icons.chevron_right, color: ThemeColors.textTertiary(context)),
+      title: Text(
+        title,
+        style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: ThemeColors.textTertiary(context),
+      ),
       onTap: onTap,
     );
   }

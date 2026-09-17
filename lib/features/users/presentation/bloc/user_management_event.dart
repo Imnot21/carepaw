@@ -61,3 +61,17 @@ class UserManagementToggleActiveRequested extends UserManagementEvent {
   @override
   List<Object?> get props => [userId, isActive];
 }
+
+/// Permanently delete a user account (admin action).
+///
+/// Delegates to the backend `deleteUser` Cloud Function, which revokes the
+/// target's Firebase Auth credential (freeing the email) and removes the
+/// Firestore document. The UI shows a confirmation dialog before dispatching.
+class UserManagementDeleteRequested extends UserManagementEvent {
+  final int userId;
+
+  const UserManagementDeleteRequested({required this.userId});
+
+  @override
+  List<Object?> get props => [userId];
+}

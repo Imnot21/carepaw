@@ -117,6 +117,12 @@ class RoleTabs {
       label: 'Scanning',
       location: '/staff/scanning',
     ),
+    RoleTab(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile',
+      location: '/profile',
+    ),
   ];
 
   // ---- Veterinarian patient care ----
@@ -172,12 +178,6 @@ class RoleTabs {
       activeIcon: Icons.fact_check_rounded,
       label: 'Audit',
       location: '/admin/audit',
-    ),
-    RoleTab(
-      icon: Icons.settings_outlined,
-      activeIcon: Icons.settings_rounded,
-      label: 'Settings',
-      location: '/admin/settings',
     ),
     RoleTab(
       icon: Icons.person_outline_rounded,

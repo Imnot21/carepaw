@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
 
 /// Base class for all queue events
 abstract class QueueEvent extends Equatable {
@@ -72,6 +73,17 @@ class QueueCheckInRequested extends QueueEvent {
 /// Reposition queue after changes (staff action)
 class QueueRepositionRequested extends QueueEvent {
   const QueueRepositionRequested();
+}
+
+/// Set (change) a queue entry's clinical priority (staff action).
+class QueueSetPriorityRequested extends QueueEvent {
+  final int queueId;
+  final QueuePriority priority;
+
+  const QueueSetPriorityRequested(this.queueId, this.priority);
+
+  @override
+  List<Object?> get props => [queueId, priority];
 }
 
 /// Clear error state

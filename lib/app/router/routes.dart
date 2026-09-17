@@ -59,7 +59,6 @@ abstract class Routes {
   // ============ Common Routes ============
   static const String notifications = '/notifications';
   static const String profile = '/profile';
-  static const String settings = '/settings';
   static const String about = '/about';
 
   // ============ Error Routes ============
@@ -114,5 +113,4 @@ abstract class RouteNames {
 
   static const String notifications = 'notifications';
   static const String profile = 'profile';
-  static const String settings = 'settings';
 }

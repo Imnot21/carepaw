@@ -21,6 +21,7 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     on<events.UserManagementCreateRequested>(_onCreateRequested);
     on<events.UserManagementChangeRoleRequested>(_onChangeRoleRequested);
     on<events.UserManagementToggleActiveRequested>(_onToggleActiveRequested);
+    on<events.UserManagementDeleteRequested>(_onDeleteRequested);
   }
 
   /// Load staff + veterinarian accounts for management.
@@ -113,6 +114,28 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
       await _userRepository.setActive(event.userId, event.isActive);
       emit(states.UserManagementActionSuccess(
         event.isActive ? 'User re-activated.' : 'User de-activated.',
+      ));
+      add(const events.UserManagementLoadRequested());
+    } on Failure catch (failure) {
+      emit(states.UserManagementError(failure, prev));
+    } catch (e) {
+      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), prev));
+    }
+  }
+
+  /// Permanently delete a user account.
+  Future<void> _onDeleteRequested(
+    events.UserManagementDeleteRequested event,
+    Emitter<states.UserManagementState> emit,
+  ) async {
+    final prev = _currentUsers();
+    if (prev.isNotEmpty) {
+      emit(states.UserManagementMutating(prev));
+    }
+    try {
+      await _userRepository.deleteUser(event.userId);
+      emit(const states.UserManagementActionSuccess(
+        'Account permanently deleted. The email is now free to be re-created.',
       ));
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {

@@ -28,6 +28,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     on<QueueCompleteRequested>(_onCompleteRequested);
     on<QueueSkipRequested>(_onSkipRequested);
     on<QueueRepositionRequested>(_onRepositionRequested);
+    on<QueueSetPriorityRequested>(_onSetPriorityRequested);
     on<QueueErrorCleared>(_onErrorCleared);
   }
 
@@ -58,23 +59,16 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
               e.queueEntry.status == QueueStatus.waiting ||
               e.queueEntry.status == QueueStatus.called)
           .toList()
-        ..sort((a, b) => a.queueEntry.position.compareTo(b.queueEntry.position));
+        ..sort((a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry));
 
-      int? userPosition;
-      int? petsAhead;
-
-      for (int i = 0; i < waitingEntries.length; i++) {
-        if (waitingEntries[i].pet.ownerId == ownerId) {
-          userPosition = i + 1;
-          petsAhead = i;
-          break;
-        }
-      }
+      final (userPosition, petsAhead, higherPriorityAhead) =
+          _computeOwnerPlacement(waitingEntries, ownerId);
 
       emit(QueueLoaded(
         queueEntries: userQueue,
         userPosition: userPosition,
         petsAhead: petsAhead,
+        higherPriorityAhead: higherPriorityAhead,
       ));
     } catch (e) {
       emit(QueueError('Failed to load queue: $e'));
@@ -122,23 +116,16 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
                   e.queueEntry.status == QueueStatus.waiting ||
                   e.queueEntry.status == QueueStatus.called)
               .toList()
-            ..sort((a, b) => a.queueEntry.position.compareTo(b.queueEntry.position));
+            ..sort((a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry));
 
-          int? userPosition;
-          int? petsAhead;
-
-          for (int i = 0; i < waitingEntries.length; i++) {
-            if (waitingEntries[i].pet.ownerId == ownerId) {
-              userPosition = i + 1;
-              petsAhead = i;
-              break;
-            }
-          }
+          final (userPosition, petsAhead, higherPriorityAhead) =
+              _computeOwnerPlacement(waitingEntries, ownerId);
 
           emit(QueueLoaded(
             queueEntries: userQueue,
             userPosition: userPosition,
             petsAhead: petsAhead,
+            higherPriorityAhead: higherPriorityAhead,
           ));
         }
       }
@@ -235,6 +222,47 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     }
   }
 
+  /// Set a queue entry's clinical priority (staff), then reload the sorted view.
+  Future<void> _onSetPriorityRequested(
+    QueueSetPriorityRequested event,
+    Emitter<QueueState> emit,
+  ) async {
+    try {
+      await _repository.setPriority(event.queueId, event.priority);
+      emit(const QueueOperationSuccess('Priority updated'));
+      add(const QueueStaffLoadRequested());
+    } catch (e) {
+      emit(QueueError('Failed to update priority: $e'));
+    }
+  }
+
+  /// Compute an owner's placement among the active (waiting/called) entries,
+  /// which are sorted in canonical queue order (priority tier, then check-in
+  /// time). Returns:
+  ///
+  /// - `userPosition`: 1-based display position of the owner's first active
+  ///   entry, or `null` if the owner has no active entry.
+  /// - `petsAhead`: count of active entries ahead of the owner's first entry.
+  /// - `higherPriorityAhead`: whether any entry ahead belongs to a strictly
+  ///   higher clinical tier (e.g. an Emergency/Urgent case ahead of a Routine
+  ///   owner) — used by the owner view to surface a triage notice.
+  (int?, int?, bool) _computeOwnerPlacement(
+    List<QueueEntryWithDetails> waitingEntries,
+    int ownerId,
+  ) {
+    for (int i = 0; i < waitingEntries.length; i++) {
+      final entry = waitingEntries[i];
+      if (entry.pet.ownerId == ownerId) {
+        final ownerRank = entry.queueEntry.priority.rank;
+        final higherPriorityAhead = waitingEntries
+            .take(i)
+            .any((e) => e.queueEntry.priority.rank < ownerRank);
+        return (i + 1, i, higherPriorityAhead);
+      }
+    }
+    return (null, null, false);
+  }
+
   /// Clear error state
   void _onErrorCleared(
     QueueErrorCleared event,
@@ -250,7 +278,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     Emitter<QueueState> emit,
   ) {
     final sortedEntries = List<QueueEntryWithDetails>.from(queueEntries)
-      ..sort((a, b) => a.queueEntry.position.compareTo(b.queueEntry.position));
+      ..sort((a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry));
 
     int currentServing = 0;
     int totalWaiting = 0;

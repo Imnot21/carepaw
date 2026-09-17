@@ -238,6 +238,14 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                       final entry = queueEntries[index];
                       return _StaffQueueEntryCard(
                         entry: entry,
+                        onPriorityChanged: (priority) {
+                          context.read<QueueBloc>().add(
+                                QueueSetPriorityRequested(
+                                  entry.queueEntry.id!,
+                                  priority,
+                                ),
+                              );
+                        },
                         onCall: entry.queueEntry.status == QueueStatus.waiting
                             ? () => _showCallDialog(entry)
                             : null,
@@ -544,6 +552,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
   final VoidCallback? onMoveToRoom;
   final VoidCallback? onComplete;
   final VoidCallback? onSkip;
+  final ValueChanged<QueuePriority>? onPriorityChanged;
 
   const _StaffQueueEntryCard({
     required this.entry,
@@ -551,6 +560,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
     this.onMoveToRoom,
     this.onComplete,
     this.onSkip,
+    this.onPriorityChanged,
   });
 
   @override
@@ -638,6 +648,15 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onPriorityChanged != null &&
+                  entry.queueEntry.id != null) ...[
+                _PriorityControl(
+                  priority: entry.queueEntry.priority,
+                  onChanged: onPriorityChanged,
+                ),
+                const SizedBox(width: 8),
+              ],
+
               // Status chip
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -904,6 +923,99 @@ class _StaffQueueEntryCard extends StatelessWidget {
     final minute = dateTime.minute.toString().padLeft(2, '0');
     final period = dateTime.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
+  }
+}
+
+/// Triage control: a color-coded priority chip that opens a menu to change the
+/// entry's clinical priority (Routine / Urgent / Emergency).
+class _PriorityControl extends StatelessWidget {
+  final QueuePriority priority;
+  final ValueChanged<QueuePriority>? onChanged;
+
+  const _PriorityControl({required this.priority, this.onChanged});
+
+  Color _color(BuildContext context, QueuePriority p) =>
+      _priorityColor(context, p);
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _color(context, priority);
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _iconFor(priority),
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            priority.displayName,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(width: 2),
+          Icon(Icons.arrow_drop_down_rounded, size: 16, color: color),
+        ],
+      ),
+    );
+
+    return PopupMenuButton<QueuePriority>(
+      onSelected: onChanged,
+      tooltip: 'Change priority',
+      itemBuilder: (context) => QueuePriority.values.map((p) {
+        return PopupMenuItem<QueuePriority>(
+          value: p,
+          child: Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: _priorityColor(context, p),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(p.displayName),
+            ],
+          ),
+        );
+      }).toList(),
+      child: chip,
+    );
+  }
+
+  static IconData _iconFor(QueuePriority p) {
+    switch (p) {
+      case QueuePriority.emergency:
+        return Icons.priority_high_rounded;
+      case QueuePriority.urgent:
+        return Icons.warning_amber_rounded;
+      case QueuePriority.routine:
+        return Icons.check_circle_outline_rounded;
+    }
+  }
+}
+
+/// Map a clinical priority to its status color (light/dark aware).
+Color _priorityColor(BuildContext context, QueuePriority priority) {
+  switch (priority) {
+    case QueuePriority.emergency:
+      return ThemeColors.error(context);
+    case QueuePriority.urgent:
+      return ThemeColors.warning(context);
+    case QueuePriority.routine:
+      return ThemeColors.textSecondary(context);
   }
 }
 

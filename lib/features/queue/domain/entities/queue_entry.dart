@@ -9,6 +9,7 @@ class QueueEntry extends Equatable {
   final int appointmentId;
   final int position;
   final QueueStatus status;
+  final QueuePriority priority;
   final DateTime checkedInAt;
   final DateTime? calledAt;
   final DateTime? roomEnteredAt;
@@ -24,6 +25,7 @@ class QueueEntry extends Equatable {
     required this.appointmentId,
     required this.position,
     this.status = QueueStatus.waiting,
+    this.priority = QueuePriority.routine,
     required this.checkedInAt,
     this.calledAt,
     this.roomEnteredAt,
@@ -131,6 +133,7 @@ class QueueEntry extends Equatable {
         appointmentId,
         position,
         status,
+        priority,
         checkedInAt,
         calledAt,
         roomEnteredAt,
@@ -147,6 +150,7 @@ class QueueEntry extends Equatable {
     int? appointmentId,
     int? position,
     QueueStatus? status,
+    QueuePriority? priority,
     DateTime? checkedInAt,
     DateTime? calledAt,
     DateTime? roomEnteredAt,
@@ -162,6 +166,7 @@ class QueueEntry extends Equatable {
       appointmentId: appointmentId ?? this.appointmentId,
       position: position ?? this.position,
       status: status ?? this.status,
+      priority: priority ?? this.priority,
       checkedInAt: checkedInAt ?? this.checkedInAt,
       calledAt: calledAt ?? this.calledAt,
       roomEnteredAt: roomEnteredAt ?? this.roomEnteredAt,
@@ -172,6 +177,22 @@ class QueueEntry extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  /// Canonical queue ordering: clinical priority first (emergency → urgent →
+  /// routine), then first-come-first-serve by check-in time within a tier.
+  ///
+  /// This comparator is the single source of truth for queue order and MUST be
+  /// used at every sort site (repo `findAll`/`watchAll`/`callNext`/`reposition`,
+  /// the BLoC owner-position calculations, and the staff dashboard preview) so
+  /// that `callNext` can never disagree with the displayed positions.
+  ///
+  /// Note: `[position]` is only a recomputed display serial and is deliberately
+  /// NOT used here as a sort key.
+  static int byQueueOrder(QueueEntry a, QueueEntry b) {
+    final byPriority = a.priority.rank.compareTo(b.priority.rank);
+    if (byPriority != 0) return byPriority;
+    return a.checkedInAt.compareTo(b.checkedInAt);
   }
 }
 
@@ -205,6 +226,50 @@ enum QueueStatus {
         return 'Completed';
       case QueueStatus.skipped:
         return 'Skipped';
+    }
+  }
+}
+
+/// Clinical priority of a queue entry — staff triage level.
+///
+/// Emergency ranks above Urgent above Routine. Within a single tier the queue
+/// remains first-come-first-serve. New (owner self-)check-ins default to
+/// [QueuePriority.routine]; staff may retriage anytime via [QueueEntry.priority].
+enum QueuePriority {
+  emergency('EMERGENCY'),
+  urgent('URGENT'),
+  routine('ROUTINE');
+
+  final String value;
+  const QueuePriority(this.value);
+
+  static QueuePriority fromString(String value) {
+    return QueuePriority.values.firstWhere(
+      (p) => p.value == value,
+      orElse: () => QueuePriority.routine,
+    );
+  }
+
+  /// Sort rank: lower sorts first (emergency = 0 … routine = 2).
+  int get rank {
+    switch (this) {
+      case QueuePriority.emergency:
+        return 0;
+      case QueuePriority.urgent:
+        return 1;
+      case QueuePriority.routine:
+        return 2;
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case QueuePriority.emergency:
+        return 'Emergency';
+      case QueuePriority.urgent:
+        return 'Urgent';
+      case QueuePriority.routine:
+        return 'Routine';
     }
   }
 }

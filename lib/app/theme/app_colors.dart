@@ -58,17 +58,16 @@ class AppColors {
   static const Color shadowDarkOnDark = Color(0xFF1A1C20);
 
   // ============ Text Colors ============
-  // Contrast-tuned against the neomorphic canvas: textPrimary 9.5:1,
-  // textSecondary 5.1:1, textTertiary 4.5:1 in light mode — all pass WCAG AA
-  // so fonts stay dark (not washed out) on the light-gray canvas. The OnDark
-  // variants invert the ramp for the dark canvas.
-  static const Color textPrimary = Color(0xFF2D3748);
-  static const Color textSecondary = Color(0xFF4E6073);
-  static const Color textTertiary = Color(0xFF57697D);
+  // Light mode keeps core typography near-black for strong readability instead
+  // of washed gray text. Dark mode uses near-white primary text with soft white
+  // grayscale values for secondary labels.
+  static const Color textPrimary = Color(0xFF111111);
+  static const Color textSecondary = Color(0xFF2B2B2B);
+  static const Color textTertiary = Color(0xFF4A4A4A);
 
-  static const Color textPrimaryOnDark = Color(0xFFE8ECF1);
-  static const Color textSecondaryOnDark = Color(0xFFA7B0BC);
-  static const Color textTertiaryOnDark = Color(0xFF8B95A3);
+  static const Color textPrimaryOnDark = Color(0xFFFFFFFF);
+  static const Color textSecondaryOnDark = Color(0xFFE5E7EB);
+  static const Color textTertiaryOnDark = Color(0xFFD1D5DB);
 
   // ============ Status Colors ============
   static const Color error = Color(0xFFE53E3E);

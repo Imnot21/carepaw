@@ -15,30 +15,34 @@ class QueueInitial extends QueueState {}
 /// Loading state
 class QueueLoading extends QueueState {}
 
-/// Queue loaded state (for pet owner view - filtered to their pets)
+// Queue loaded state (for pet owner view - filtered to their pets)
 class QueueLoaded extends QueueState {
   final List<QueueEntryWithDetails> queueEntries;
   final int? userPosition; // Pet owner's position in queue
   final int? petsAhead; // Number of pets ahead
+  final bool higherPriorityAhead; // A triaged (urgent/emergency) entry precedes this owner
 
   const QueueLoaded({
     required this.queueEntries,
     this.userPosition,
     this.petsAhead,
+    this.higherPriorityAhead = false,
   });
 
   @override
-  List<Object?> get props => [queueEntries, userPosition, petsAhead];
+  List<Object?> get props => [queueEntries, userPosition, petsAhead, higherPriorityAhead];
 
   QueueLoaded copyWith({
     List<QueueEntryWithDetails>? queueEntries,
     int? userPosition,
     int? petsAhead,
+    bool? higherPriorityAhead,
   }) {
     return QueueLoaded(
       queueEntries: queueEntries ?? this.queueEntries,
       userPosition: userPosition ?? this.userPosition,
       petsAhead: petsAhead ?? this.petsAhead,
+      higherPriorityAhead: higherPriorityAhead ?? this.higherPriorityAhead,
     );
   }
 }

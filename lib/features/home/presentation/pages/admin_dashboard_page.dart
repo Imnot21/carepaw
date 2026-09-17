@@ -45,7 +45,9 @@ class _LoadingView extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Loading...',
-            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+            style: AppTextStyles.bodyMedium.subtleOf(
+              Theme.of(context).brightness,
+            ),
           ),
         ],
       ),
@@ -70,19 +72,27 @@ class _AccessDeniedView extends StatelessWidget {
                 color: AppColors.error,
                 borderRadius: BorderRadius.circular(80),
               ),
-              child: const Icon(Icons.block_rounded, size: 72, color: Colors.white),
+              child: const Icon(
+                Icons.block_rounded,
+                size: 72,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 28),
             Text(
               'Access Denied',
-              style: AppTextStyles.headlineSmall
-                  .copyWith(fontWeight: FontWeight.w600, color: ThemeColors.error(context)),
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: ThemeColors.error(context),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'This area is for administrators only.',
-              style: AppTextStyles.bodyLarge.copyWith(color: ThemeColors.textSecondary(context)),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -101,7 +111,9 @@ class _AdminDashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userName = user.fullName.split(' ').firstWhere((w) => w.isNotEmpty, orElse: () => 'Admin');
+    final userName = user.fullName
+        .split(' ')
+        .firstWhere((w) => w.isNotEmpty, orElse: () => 'Admin');
 
     return CustomScrollView(
       slivers: [
@@ -116,12 +128,16 @@ class _AdminDashboardContent extends StatelessWidget {
             children: [
               Text(
                 'Good ${_getGreeting()}, $userName!',
-                style:
-                    AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               Text(
                 'Administration',
-                style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                style: AppTextStyles.bodySmall.subtleOf(
+                  Theme.of(context).brightness,
+                ),
               ),
             ],
           ),
@@ -131,10 +147,7 @@ class _AdminDashboardContent extends StatelessWidget {
             padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _AdminQuickActionsSection(),
-                SizedBox(height: 8),
-              ],
+              children: [_AdminQuickActionsSection(), SizedBox(height: 8)],
             ),
           ),
         ),
@@ -163,7 +176,12 @@ class _AdminQuickActionsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Admin Actions', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'Admin Actions',
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -182,15 +200,6 @@ class _AdminQuickActionsSection extends StatelessWidget {
                 label: 'Audit Logs',
                 color: accent,
                 onTap: () => context.push(Routes.adminAudit),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _AdminActionCard(
-                icon: Icons.tune_outlined,
-                label: 'Settings',
-                color: accent,
-                onTap: () => context.push(Routes.adminSettings),
               ),
             ),
           ],
@@ -225,11 +234,21 @@ class _AdminActionCard extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 10),
-          Text(label, textAlign: TextAlign.center, style: AppTextStyles.labelSmall.copyWith(fontWeight: FontWeight.w700, color: color)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.labelSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
         ],
       ),
     );

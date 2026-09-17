@@ -48,9 +48,9 @@ class _HomePageState extends State<HomePage> {
           final ownerId = user.id!;
 
           return BlocProvider(
-            create: (context) => PetBloc(
-              petRepository: context.read<PetRepository>(),
-            )..add(LoadPets(ownerId: ownerId)),
+            create: (context) =>
+                PetBloc(petRepository: context.read<PetRepository>())
+                  ..add(LoadPets(ownerId: ownerId)),
             child: const _HomeContent(),
           );
         },
@@ -72,7 +72,9 @@ class _LoadingView extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Loading...',
-            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+            style: AppTextStyles.bodyMedium.subtleOf(
+              Theme.of(context).brightness,
+            ),
           ),
         ],
       ),
@@ -100,7 +102,9 @@ class _HomeContent extends StatelessWidget {
               onRefresh: () async {
                 final state = context.read<AuthBloc>().state;
                 if (state is AuthAuthenticated) {
-                  context.read<PetBloc>().add(LoadPets(ownerId: state.user.id!));
+                  context.read<PetBloc>().add(
+                    LoadPets(ownerId: state.user.id!),
+                  );
                 }
               },
               child: CustomScrollView(
@@ -124,7 +128,9 @@ class _HomeContent extends StatelessWidget {
                         ),
                         Text(
                           'Welcome back to CarePaw',
-                          style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                          style: AppTextStyles.bodySmall.subtleOf(
+                            Theme.of(context).brightness,
+                          ),
                         ),
                       ],
                     ),
@@ -133,11 +139,6 @@ class _HomeContent extends StatelessWidget {
                         icon: const Icon(Icons.notifications_outlined),
                         onPressed: () => context.push(Routes.notifications),
                         tooltip: 'Notifications',
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.settings_outlined),
-                        onPressed: () => context.push(Routes.settings),
-                        tooltip: 'Settings',
                       ),
                     ],
                   ),
@@ -402,7 +403,9 @@ class _PetSummaryCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Center(
               child: Icon(speciesIcon, color: speciesColor, size: 28),
@@ -429,7 +432,9 @@ class _PetSummaryCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         pet.species.displayName,
-                        style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                        style: AppTextStyles.bodySmall.subtleOf(
+                          Theme.of(context).brightness,
+                        ),
                       ),
                     ],
                   ),
@@ -510,8 +515,17 @@ class _EmptyPetsPrompt extends StatelessWidget {
             borderRadius: 90,
             padding: const EdgeInsets.all(20),
             color: AppColors.primary,
-            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
-            child: const Icon(Icons.pets_outlined, size: 48, color: AppColors.textOnPrimary),
+            boxShadow: NeuShadow.color(
+              context,
+              AppColors.primary,
+              blur: 24,
+              opacity: 0.32,
+            ),
+            child: const Icon(
+              Icons.pets_outlined,
+              size: 48,
+              color: AppColors.textOnPrimary,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -523,7 +537,9 @@ class _EmptyPetsPrompt extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Add your first pet to get started',
-            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+            style: AppTextStyles.bodyMedium.subtleOf(
+              Theme.of(context).brightness,
+            ),
           ),
           const SizedBox(height: 16),
           NeuButton(
@@ -571,8 +587,17 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
                 borderRadius: 90,
                 padding: const EdgeInsets.all(20),
                 color: AppColors.primary,
-                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
-                child: const Icon(Icons.calendar_month_outlined, size: 48, color: AppColors.textOnPrimary),
+                boxShadow: NeuShadow.color(
+                  context,
+                  AppColors.primary,
+                  blur: 24,
+                  opacity: 0.32,
+                ),
+                child: const Icon(
+                  Icons.calendar_month_outlined,
+                  size: 48,
+                  color: AppColors.textOnPrimary,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -584,7 +609,9 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Book an appointment with your vet',
-                style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+                style: AppTextStyles.bodyMedium.subtleOf(
+                  Theme.of(context).brightness,
+                ),
               ),
               const SizedBox(height: 16),
               NeuButton(
@@ -641,13 +668,6 @@ class _QuickLinksSection extends StatelessWidget {
                 subtitle: 'FAQs, contact us, feedback',
                 onTap: () => _showComingSoon(context, 'Help & Support'),
               ),
-              const Divider(height: 1, indent: 56),
-              _LinkTile(
-                icon: Icons.settings_outlined,
-                title: 'Settings',
-                subtitle: 'App preferences & account',
-                onTap: () => context.push(Routes.settings),
-              ),
             ],
           ),
         ),
@@ -692,9 +712,7 @@ class _LinkTile extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: AppTextStyles.titleSmall.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
         subtitle,

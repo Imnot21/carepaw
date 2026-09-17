@@ -49,6 +49,9 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
   device_preview: ^3.0.0-prerelease3
+
+  # HTTP client (used to call the backend deleteUser Cloud Function)
+  http: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
