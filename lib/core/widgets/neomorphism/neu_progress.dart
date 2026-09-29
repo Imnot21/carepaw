@@ -31,7 +31,7 @@ class NeuProgress extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fillColor = color ?? ThemeColors.primary(context);
     final channel = trackColor ??
-        (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceDark);
+        (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceInset);
 
     return SizedBox(
       height: height,
@@ -108,10 +108,26 @@ class NeuCircularProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = color ?? ThemeColors.primary(context);
-    final channel = isDark ? AppColors.surfaceContainerDark : AppColors.surfaceDark;
+    final channel = isDark ? AppColors.surfaceContainerDark : AppColors.surfaceInset;
 
     final progress = value < 0
-        ? CircularProgressIndicator(strokeWidth: 3, color: accent)
+        ? SizedBox(
+            width: size,
+            height: size,
+            child: CustomPaint(
+              foregroundPainter: NeuInsetPainter(
+                shadows: NeuShadow.inset(context, distance: 2, blur: 5, spread: -2),
+                borderRadius: size / 2,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: CircularProgressIndicator(
+                  strokeWidth: strokeWidth,
+                  color: accent,
+                ),
+              ),
+            ),
+          )
         : SizedBox(
             width: size,
             height: size,

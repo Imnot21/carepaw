@@ -4,11 +4,11 @@ import '../../../app/theme/app_text_styles.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
 
-/// Neumorphic filter / choice chip.
+/// Neumorphic filter / choice chip — an organic pill contour.
 ///
-/// A small raised plate that switches to a selected state (blue accent glow),
-/// or an unselected raised/flat state. Used for queue filters, species chips,
-/// and appointment-type pickers.
+/// A small raised plate that switches to a selected state (terracotta accent
+/// glow), or an unselected raised/flat state. Used for queue filters, species
+/// chips, and appointment-type pickers.
 class NeuChip extends StatefulWidget {
   final String label;
   final IconData? icon;
@@ -52,7 +52,7 @@ class _NeuChipState extends State<NeuChip> {
           duration: const Duration(milliseconds: 80),
           child: NeuContainer(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            borderRadius: 14,
+            borderRadius: 20,
             variant: widget.selected ? NeuVariant.pressed : widget.unselectedVariant,
             boxShadow: widget.selected ? NeuShadow.color(context, accent, blur: 14, opacity: 0.35) : null,
             borderColor: widget.selected ? accent : null,

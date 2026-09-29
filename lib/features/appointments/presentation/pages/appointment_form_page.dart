@@ -19,11 +19,15 @@ import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
 /// Appointment form page for creating or editing appointments
@@ -282,17 +286,14 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _selectedPetId == null && pets.isNotEmpty
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                ),
+              NeuContainer(
+                variant: NeuVariant.inset,
+                borderRadius: 14,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                borderColor: _selectedPetId == null && pets.isNotEmpty
+                    ? ThemeColors.error(context)
+                    : null,
+                borderWidth: _selectedPetId == null && pets.isNotEmpty ? 1 : 0,
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     isExpanded: true,
@@ -303,12 +304,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                         value: pet.id,
                         child: Row(
                           children: [
-                            Container(
+                            NeuContainer(
                               padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: PetUtils.getSpeciesColor(pet.species).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                              borderRadius: 8,
+                              variant: NeuVariant.flat,
+                              color: PetUtils.getSpeciesColor(pet.species).withValues(alpha: 0.15),
                               child: Icon(
                                 PetUtils.getSpeciesIcon(pet.species),
                                 size: 18,
@@ -330,7 +330,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'Please select a pet',
-                    style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.error),
+                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
                   ),
                 ),
               if (pets.isEmpty)
@@ -338,7 +338,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'No pets found. Please add a pet first.',
-                    style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.error),
+                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
                   ),
                 ),
             ],
@@ -379,16 +379,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  CircleAvatar(
+                  NeuAvatar(
                     radius: 24,
-                    backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                    child: Text(
-                      assignedVet?.fullName.isNotEmpty == true ? assignedVet!.fullName[0].toUpperCase() : 'D',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSecondaryContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    initials: assignedVet?.fullName.isNotEmpty == true ? assignedVet!.fullName[0].toUpperCase() : 'D',
+                    backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                    foregroundColor: ThemeColors.primary(context),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -399,7 +394,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                           assignedVet != null ? 'Dr. ${assignedVet.fullName}' : 'Veterinarian not assigned',
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: assignedVet != null ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.error,
+                            color: assignedVet != null ? ThemeColors.textPrimary(context) : ThemeColors.error(context),
                           ),
                         ),
                         if (assignedVet != null)
@@ -447,13 +442,13 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               borderWidth: 1,
               child: Row(
                 children: [
-                  Icon(Icons.error_outline_rounded, color: Theme.of(context).colorScheme.error, size: 22),
+                  Icon(Icons.error_outline_rounded, color: ThemeColors.error(context), size: 22),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Failed to load veterinarians: ${snapshot.error}',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onErrorContainer,
+                        color: ThemeColors.error(context),
                       ),
                     ),
                   ),
@@ -484,17 +479,14 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _selectedVeterinarianId == null && veterinarians.isNotEmpty
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                ),
+              NeuContainer(
+                variant: NeuVariant.inset,
+                borderRadius: 14,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                borderColor: _selectedVeterinarianId == null && veterinarians.isNotEmpty
+                    ? ThemeColors.error(context)
+                    : null,
+                borderWidth: _selectedVeterinarianId == null && veterinarians.isNotEmpty ? 1 : 0,
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     isExpanded: true,
@@ -505,16 +497,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                         value: vet.id,
                         child: Row(
                           children: [
-                            CircleAvatar(
+                            NeuAvatar(
                               radius: 16,
-                              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                              child: Text(
-                                vet.fullName.isNotEmpty ? vet.fullName[0] : 'D',
-                                style: AppTextStyles.labelMedium.copyWith(
-                                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              initials: vet.fullName.isNotEmpty ? vet.fullName[0] : 'D',
+                              backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                              foregroundColor: ThemeColors.primary(context),
                             ),
                             const SizedBox(width: 12),
                             Text('Dr. ${vet.fullName}', style: AppTextStyles.bodyLarge),
@@ -531,7 +518,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'Please select a veterinarian',
-                    style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.error),
+                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
                   ),
                 ),
               if (veterinarians.isEmpty)
@@ -539,7 +526,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'No veterinarians available',
-                    style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.error),
+                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
                   ),
                 ),
             ],
@@ -562,51 +549,44 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
+          NeuContainer(
             onTap: _pickDateTime,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: !hasDate ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.outlineVariant,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: (hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context)).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      Icons.calendar_today_rounded,
-                      size: 20,
-                      color: hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      hasDate
-                          ? '${_formatDate(_selectedDateTime!)} at ${_formatTime(_selectedDateTime!)}'
-                          : 'Select date and time',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: hasDate
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
+            variant: NeuVariant.inset,
+            borderRadius: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            borderColor: !hasDate ? ThemeColors.error(context) : null,
+            borderWidth: !hasDate ? 1 : 0,
+            child: Row(
+              children: [
+                NeuContainer(
+                  padding: const EdgeInsets.all(8),
+                  borderRadius: 10,
+                  variant: NeuVariant.flat,
+                  color: (hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context)).withValues(alpha: 0.15),
+                  child: Icon(
+                    Icons.calendar_today_rounded,
+                    size: 20,
                     color: hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    hasDate
+                        ? '${_formatDate(_selectedDateTime!)} at ${_formatTime(_selectedDateTime!)}'
+                        : 'Select date and time',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: hasDate
+                          ? ThemeColors.textPrimary(context)
+                          : ThemeColors.textSecondary(context),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context),
+                ),
+              ],
             ),
           ),
           if (!hasDate)
@@ -614,7 +594,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               padding: const EdgeInsets.only(top: 8, left: 4),
               child: Text(
                 'Please select a date and time',
-                style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.error),
+                style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
               ),
             ),
         ],
@@ -634,27 +614,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         runSpacing: 10,
         children: [15, 30, 45, 60].map((minutes) {
           final isSelected = _durationMinutes == minutes;
-          return InkWell(
+          return NeuChip(
+            label: '$minutes min',
+            selected: isSelected,
+            selectedColor: ThemeColors.primary(context),
             onTap: () => setState(() => _durationMinutes = minutes),
-            borderRadius: BorderRadius.circular(12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-              child: FilterChip(
-                label: Text('$minutes min', style: AppTextStyles.labelLarge),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) setState(() => _durationMinutes = minutes);
-                },
-                selectedColor: ThemeColors.primary(context).withValues(alpha: 0.2),
-                checkmarkColor: ThemeColors.primary(context),
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                side: BorderSide(
-                  color: isSelected ? ThemeColors.primary(context) : Theme.of(context).colorScheme.outlineVariant,
-                ),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
           );
         }).toList(),
       ),
@@ -710,18 +674,18 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   }) {
     return NeuCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
+              NeuContainer(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                borderRadius: 12,
+                variant: NeuVariant.flat,
+                color: iconColor.withValues(alpha: 0.15),
                 child: Icon(icon, size: 22, color: iconColor),
               ),
               const SizedBox(width: 12),
@@ -735,7 +699,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                           title,
                           style: AppTextStyles.titleLarge.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: ThemeColors.textPrimary(context),
                           ),
                         ),
                         if (required) ...[
@@ -744,7 +708,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                             '*',
                             style: AppTextStyles.titleLarge.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: Theme.of(context).colorScheme.error,
+                              color: ThemeColors.error(context),
                             ),
                           ),
                         ],
@@ -754,7 +718,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                       Text(
                         subtitle,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: ThemeColors.textSecondary(context),
                         ),
                       ),
                   ],
@@ -762,7 +726,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           child,
         ],
       ),
@@ -824,7 +788,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a pet'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           margin: const EdgeInsets.all(16),
@@ -847,7 +811,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('No veterinarian available for this clinic'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               margin: const EdgeInsets.all(16),
@@ -859,7 +823,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Please select a veterinarian'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: ThemeColors.error(context),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             margin: const EdgeInsets.all(16),
@@ -873,7 +837,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a date and time'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           margin: const EdgeInsets.all(16),
@@ -886,7 +850,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Cannot schedule appointment in the past'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           margin: const EdgeInsets.all(16),
@@ -925,12 +889,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Container(
+            NeuContainer(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: ThemeColors.error(context).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
+              borderRadius: 10,
+              variant: NeuVariant.flat,
+              color: ThemeColors.error(context).withValues(alpha: 0.15),
               child: Icon(Icons.delete_outline_rounded, size: 22, color: ThemeColors.error(context)),
             ),
             const SizedBox(width: 12),

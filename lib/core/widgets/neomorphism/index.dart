@@ -1,11 +1,13 @@
-/// Neomorphism widget toolkit — CarePaw's design language primitives.
+/// Soft Clinic neumorphic widget toolkit.
 ///
-/// All visual depth is produced by [`NeuShadow`]'s dual (light/dark) shadow
-/// system on the soft-gray canvas. Every widget auto-adapts to light/dark
-/// brightness via `Theme.of(context).brightness`.
+/// The material layer of the design language: soft-extruded surfaces with
+/// dual light/dark shadows, organic flowing shapes, and minimalist spacing.
+/// Every widget auto-adapts to light/dark brightness via
+/// `Theme.of(context).brightness`.
 library;
 
 export 'neu_shadows.dart' show NeuShadow, NeuInsetShadow, NeuInsetPainter;
+export 'neu_shapes.dart' show NeuShape;
 export 'neu_container.dart' show NeuContainer, NeuVariant;
 export 'neu_card.dart' show NeuCard;
 export 'neu_button.dart' show NeuButton, NeuButtonSize, NeuButtonVariant;

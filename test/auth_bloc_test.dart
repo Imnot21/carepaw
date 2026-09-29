@@ -15,6 +15,13 @@ void main() {
   late AuthResult adminResult;
   late AuthResult ownerResult;
 
+  setUpAll(() {
+    registerFallbackValue(UserRole.admin);
+    registerFallbackValue(UserRole.petOwner);
+    registerFallbackValue(UserRole.staff);
+    registerFallbackValue(UserRole.veterinarian);
+  });
+
   setUp(() {
     repository = MockAuthRepository();
 

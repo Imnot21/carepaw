@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_bottom_nav.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
@@ -31,7 +33,25 @@ class AppShell extends StatelessWidget {
     final currentIndex = tabs.indexFor(GoRouterState.of(context).uri.path);
 
     return Scaffold(
-      body: child,
+      extendBody: true,
+      backgroundColor: ThemeColors.background(context),
+      body: NeuContainer(
+        variant: NeuVariant.transparent,
+        borderRadius: 0,
+        padding: EdgeInsets.zero,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            ThemeColors.surface(context),
+            ThemeColors.surface(context).withValues(alpha: 0.92),
+          ],
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: child,
+        ),
+      ),
       bottomNavigationBar: NeuBottomNav(
         items: [
           for (final tab in tabs.tabs)

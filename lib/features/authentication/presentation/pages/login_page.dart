@@ -6,15 +6,15 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/features/authentication/presentation/pages/register_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:carepaw/core/utils/validators.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 
-/// Login page for user authentication with neumorphic design.
+/// Login page for user authentication with Soft Clinic design.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -45,7 +45,42 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  Widget _buildBrandHeader() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const NeuAvatar(
+          radius: 40,
+          icon: Icons.pets,
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'CarePaw',
+          style: AppTextStyles.displaySmall.copyWith(
+            color: ThemeColors.textPrimary(context),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Smart veterinary care management',
+          style: AppTextStyles.titleMedium.copyWith(
+            color: ThemeColors.textSecondary(context),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 16),
+        NeuContainer(
+          borderRadius: 2,
+          variant: NeuVariant.flat,
+          color: ThemeColors.primary(context),
+          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 2),
+          child: const SizedBox(),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,157 +109,21 @@ class _LoginPageState extends State<LoginPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-            child: Form(
-              key: _formKey,
+            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 40.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 450),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildBrand(),
-                  const SizedBox(height: 40),
-
-                  // Title
-                  Text(
-                    'Welcome Back',
-                    style: AppTextStyles.headlineLarge.copyWith(
-                      color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Sign in to your CarePaw account',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  _buildBrandHeader(),
+                  const SizedBox(height: 48),
+                  _buildLoginFormCard(),
                   const SizedBox(height: 32),
-
-                  // Form card
-                  NeuCard(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        NeuTextField(
-                          controller: _emailController,
-                          label: 'Email',
-                          hint: 'you@example.com',
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: const Icon(Icons.alternate_email_rounded),
-                          textInputAction: TextInputAction.next,
-                          validator: Validators.requiredWith([Validators.email], 'Email'),
-                        ),
-                        const SizedBox(height: 16),
-
-                        NeuTextField(
-                          controller: _passwordController,
-                          label: 'Password',
-                          hint: 'Enter your password',
-                          obscureText: true,
-                          prefixIcon: const Icon(Icons.lock_outline_rounded),
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => _onLoginPressed(),
-                          validator: Validators.requiredWith([Validators.password], 'Password'),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Forgot Password link
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              'Forgot Password?',
-                              style: AppTextStyles.primary(AppTextStyles.labelMedium),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Login button
-                        BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, state) {
-                            final isLoading = state is AuthLoading;
-                            return NeuButton(
-                              text: 'Sign In',
-                              onPressed: isLoading ? null : _onLoginPressed,
-                              isLoading: isLoading,
-                              expanded: true,
-                              variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.medium,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Divider
-                  Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'or',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: _isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Register link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Don\'t have an account? ',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const RegisterPage()),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          'Sign Up',
-                          style: AppTextStyles.primary(AppTextStyles.labelMedium).copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                  _buildFooter(),
                 ],
               ),
             ),
@@ -234,36 +133,107 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildBrand() {
+  Widget _buildFooter() {
     return Column(
       children: [
-        SizedBox(
-          width: 96,
-          height: 96,
-          child: NeuContainer(
-            borderRadius: 28,
-            variant: NeuVariant.raised,
-            color: AppColors.primary,
-            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 18, opacity: 0.32),
-            child: const Icon(Icons.pets, size: 52, color: AppColors.textOnPrimary),
+        Text(
+          'Version 1.0.0',
+          style: AppTextStyles.labelSmall.copyWith(
+            color: ThemeColors.textSecondary(context).withValues(alpha: 0.7),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
         Text(
-          'CarePaw',
-          style: AppTextStyles.displaySmall.copyWith(
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Smart Veterinary Care',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+          '© 2026 CarePaw Veterinary Systems',
+          style: AppTextStyles.labelSmall.copyWith(
+            color: ThemeColors.textSecondary(context).withValues(alpha: 0.7),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoginFormCard() {
+    return NeuCard(
+      padding: const EdgeInsets.all(28),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            NeuTextField(
+              controller: _emailController,
+              label: 'Email',
+              hint: 'you@example.com',
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: const Icon(Icons.alternate_email_rounded),
+              textInputAction: TextInputAction.next,
+              validator: Validators.requiredWith([Validators.email], 'Email'),
+            ),
+            const SizedBox(height: 20),
+            NeuTextField(
+              controller: _passwordController,
+              label: 'Password',
+              hint: 'Enter your password',
+              obscureText: true,
+              prefixIcon: const Icon(Icons.lock_outline_rounded),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _onLoginPressed(),
+              validator: Validators.requiredWith([Validators.password], 'Password'),
+            ),
+            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.centerRight,
+              child: NeuButton(
+                text: 'Forgot Password?',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                  );
+                },
+                variant: NeuButtonVariant.text,
+                size: NeuButtonSize.small,
+              ),
+            ),
+            const SizedBox(height: 28),
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final isLoading = state is AuthLoading;
+                return NeuButton(
+                  text: 'Sign In',
+                  onPressed: isLoading ? null : _onLoginPressed,
+                  isLoading: isLoading,
+                  expanded: true,
+                  variant: NeuButtonVariant.primary,
+                  size: NeuButtonSize.large,
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Don\'t have an account? ',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: ThemeColors.textSecondary(context),
+                  ),
+                ),
+                NeuButton(
+                  text: 'Sign Up',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const RegisterPage()),
+                    );
+                  },
+                  variant: NeuButtonVariant.text,
+                  size: NeuButtonSize.small,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

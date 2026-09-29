@@ -21,25 +21,19 @@ import 'package:carepaw/features/inventory/domain/repositories/inventory_reposit
 import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
+import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'app/router/app_router.dart';
 import 'app/theme/app_theme.dart';
 
 void main() async {
-  // Enable device preview ONLY for web/desktop development (simulates mobile devices)
-  // Disable on actual mobile devices (Android/iOS) to avoid initialization issues
-  final isMobile = defaultTargetPlatform == TargetPlatform.android ||
-                   defaultTargetPlatform == TargetPlatform.iOS;
-  DevicePreview.enable(
-    enabled: !kReleaseMode && !isMobile,
-    padding: const EdgeInsets.all(16),
-    backgroundDecoration: const BoxDecoration(color: Color(0xFF1D1D25)),
-  );
-
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Run app IMMEDIATELY with initializing screen
-  // Do all heavy initialization in background after first frame
-  runApp(const CarePawApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const CarePawApp(),
+    ),
+  );
 }
 
 /// Main application widget
@@ -102,6 +96,14 @@ class _CarePawAppState extends State<CarePawApp> {
       _initError = e;
     }
 
+    try {
+      debugPrint('🔄 Initializing Dependency Injection...');
+      await configureDependencies();
+      debugPrint('✅ Dependency Injection initialized');
+    } catch (e) {
+      debugPrint('⚠️ Dependency Injection init failed: $e');
+    }
+
     if (mounted) {
       setState(() {
         _servicesInitialized = true;
@@ -116,6 +118,9 @@ class _CarePawAppState extends State<CarePawApp> {
       return MaterialApp(
         title: 'CarePaw',
         debugShowCheckedModeBanner: false,
+        useInheritedMediaQuery: true,
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
@@ -236,6 +241,9 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
       return MaterialApp(
         title: 'CarePaw',
         debugShowCheckedModeBanner: false,
+        useInheritedMediaQuery: true,
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
@@ -248,6 +256,9 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
     return MaterialApp.router(
       title: 'CarePaw',
       debugShowCheckedModeBanner: false,
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
 
       // Theme configuration
       theme: AppTheme.lightTheme,
@@ -269,59 +280,83 @@ class _InitializationErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Icon(
-                  Icons.error_outline_rounded,
-                  size: 60,
-                  color: Theme.of(context).colorScheme.onErrorContainer,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Initialization Failed',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'CarePaw could not start properly.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error.toString(),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: () {
-                  // Restart the app by exiting
-                  SystemNavigator.pop();
-                },
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Restart App'),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primaryContainer.withAlpha((255 * 0.45).round()),
             ],
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Material(
+                color: Theme.of(context).cardColor,
+                elevation: 0,
+                borderRadius: BorderRadius.circular(28),
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 94,
+                        height: 94,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Icon(
+                          Icons.error_outline_rounded,
+                          size: 52,
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Initialization Failed',
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'CarePaw could not start properly.',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        error.toString(),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 28),
+                      FilledButton.icon(
+                        onPressed: () {
+                          SystemNavigator.pop();
+                        },
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Restart App'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -336,48 +371,74 @@ class _InitializingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(24),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primaryContainer.withAlpha((255 * 0.5).round()),
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 104,
+                height: 104,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primaryContainer,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.primary.withAlpha((255 * 0.22).round()),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.pets,
+                  size: 58,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
-              child: Icon(
-                Icons.pets,
-                size: 60,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              const SizedBox(height: 24),
+              Text(
+                'CarePaw',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'CarePaw',
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Smart Veterinary Care',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 32),
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(
-              'Initializing...',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Smart Veterinary Care',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 30),
+              const NeuCircularProgress(),
+              const SizedBox(height: 18),
+              Text(
+                'Initializing...',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );

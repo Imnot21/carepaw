@@ -7,6 +7,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -29,29 +31,27 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
     final statusColor = _getStatusColor(record.status);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.backgroundDark
-          : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: CustomScrollView(
         slivers: [
           _buildAppBar(record, typeColor),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
               child: Column(
                 children: [
                   _buildScanCard(record, typeColor, statusColor),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   _buildMetaSection(record),
                   if (record.rawOcrText != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     _buildOcrSection(record),
                   ],
                   if (record.extractedData != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     _buildExtractedDataSection(record),
                   ],
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   _buildActionButtons(record, typeColor),
                 ],
               ),
@@ -90,13 +90,11 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 color: ThemeColors.textPrimary(context),
               ),
             ),
-            const SizedBox(height: 2),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: typeColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
+            const SizedBox(height: 4),
+            NeuContainer(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              borderRadius: 10,
+              variant: NeuVariant.flat,
               child: Text(
                 record.scanType.displayName,
                 style: AppTextStyles.labelSmall.copyWith(
@@ -128,8 +126,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
     Color statusColor,
   ) {
     return NeuCard(
-      padding: const EdgeInsets.all(20),
-      borderRadius: 20,
+      padding: const EdgeInsets.all(24),
       borderColor: typeColor.withValues(alpha: 0.2),
       borderWidth: 1,
       child: Column(
@@ -160,17 +157,16 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                         color: ThemeColors.textPrimary(context),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Container(
+                    const SizedBox(height: 6),
+                    NeuContainer(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-                      ),
+                      borderRadius: 10,
+                      variant: NeuVariant.flat,
+                      borderColor: statusColor.withValues(alpha: 0.3),
+                      borderWidth: 1,
                       child: Text(
                         record.status.displayName,
                         style: AppTextStyles.labelSmall.copyWith(
@@ -184,22 +180,21 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Divider
-          Container(
+          SizedBox(
             height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  AppColors.divider.withValues(alpha: 0.3),
-                  Colors.transparent,
-                ],
-              ),
+            child: NeuContainer(
+              padding: EdgeInsets.zero,
+              borderRadius: 0.5,
+              variant: NeuVariant.flat,
+              boxShadow: NeuShadow.none,
+              color: ThemeColors.border(context),
+              child: const SizedBox.shrink(),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Confidence score
           if (record.confidenceScore != null) ...[
@@ -210,7 +205,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                   size: 20,
                   color: ThemeColors.textSecondary(context),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Text(
                   'Confidence: ${(record.confidenceScore! * 100).toStringAsFixed(1)}%',
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -220,23 +215,17 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: record.confidenceScore,
-              backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceContainerDark
-              : AppColors.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                record.confidenceScore! >= 0.8
-                    ? AppColors.success
-                    : record.confidenceScore! >= 0.5
-                        ? AppColors.warning
-                        : AppColors.error,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              minHeight: 8,
+            const SizedBox(height: 14),
+            NeuProgress(
+              value: record.confidenceScore!,
+              height: 10,
+              color: record.confidenceScore! >= 0.8
+                  ? ThemeColors.success(context)
+                  : record.confidenceScore! >= 0.5
+                      ? ThemeColors.warning(context)
+                      : ThemeColors.error(context),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
 
           // Image path
@@ -248,7 +237,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 size: 20,
                 color: ThemeColors.textSecondary(context),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Image: ${record.imagePath}',
@@ -269,8 +258,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
 
   Widget _buildMetaSection(ScanRecord record) {
     return NeuCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -281,7 +269,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 size: 20,
                 color: ThemeColors.primary(context),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 'Details',
                 style: AppTextStyles.titleMedium.copyWith(
@@ -291,7 +279,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildMetaRow('Created', formatDateTime(record.createdAt)),
           if (record.confirmedAt != null)
             _buildMetaRow('Confirmed At', formatDateTime(record.confirmedAt!)),
@@ -305,8 +293,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
 
   Widget _buildOcrSection(ScanRecord record) {
     return NeuCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -317,7 +304,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 size: 20,
                 color: ThemeColors.primary(context),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 'Raw OCR Text',
                 style: AppTextStyles.titleMedium.copyWith(
@@ -327,16 +314,11 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceContainerDark
-              : AppColors.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-            ),
+          const SizedBox(height: 16),
+          NeuContainer(
+            padding: const EdgeInsets.all(14),
+            borderRadius: 12,
+            variant: NeuVariant.inset,
             child: SingleChildScrollView(
               child: Text(
                 record.rawOcrText!,
@@ -355,8 +337,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
 
   Widget _buildExtractedDataSection(ScanRecord record) {
     return NeuCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -367,7 +348,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 size: 20,
                 color: ThemeColors.primary(context),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 'Extracted Data',
                 style: AppTextStyles.titleMedium.copyWith(
@@ -377,16 +358,11 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceContainerDark
-              : AppColors.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-            ),
+          const SizedBox(height: 16),
+          NeuContainer(
+            padding: const EdgeInsets.all(14),
+            borderRadius: 12,
+            variant: NeuVariant.inset,
             child: SingleChildScrollView(
               child: Text(
                 record.extractedData!,
@@ -405,7 +381,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
 
   Widget _buildMetaRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -488,24 +464,58 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
   void _showDeleteConfirmation() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Scan Record'),
-        content: const Text('Are you sure you want to delete this scan record? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.all(24),
+        child: NeuCard(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Delete Scan Record',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: ThemeColors.textPrimary(context),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Are you sure you want to delete this scan record? This action cannot be undone.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: ThemeColors.textSecondary(context),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Cancel',
+                      variant: NeuButtonVariant.outline,
+                      size: NeuButtonSize.medium,
+                      onPressed: () => Navigator.pop(dialogContext),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Delete',
+                      variant: NeuButtonVariant.destructive,
+                      size: NeuButtonSize.medium,
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        context.read<ScanBloc>().add(scan_event.DeleteScanRecord(widget.record.id!));
+                        Navigator.pop(context, true);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<ScanBloc>().add(scan_event.DeleteScanRecord(widget.record.id!));
-              Navigator.pop(context, true);
-            },
-            child: Text('Delete',
-                style: TextStyle(color: ThemeColors.error(context))),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -526,14 +536,13 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
   }
 
   Color _getStatusColor(ScanStatus status) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case ScanStatus.pending:
-        return isDark ? AppColors.warningOnDark : AppColors.warning;
+        return ThemeColors.warning(context);
       case ScanStatus.confirmed:
-        return isDark ? AppColors.successOnDark : AppColors.success;
+        return ThemeColors.success(context);
       case ScanStatus.rejected:
-        return isDark ? AppColors.errorOnDark : AppColors.error;
+        return ThemeColors.error(context);
     }
   }
 

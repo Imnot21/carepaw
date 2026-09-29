@@ -27,7 +27,7 @@ class NeuSwitch extends StatelessWidget {
     const trackWidth = 56.0, trackHeight = 32.0;
     final trackColor = value
         ? AppColors.primary
-        : (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceDark);
+        : (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceInset);
 
     final track = AnimatedContainer(
       duration: const Duration(milliseconds: 200),

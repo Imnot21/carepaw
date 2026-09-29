@@ -14,14 +14,10 @@ import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 
-/// Home page for pet owners - main dashboard content only.
-///
-/// The bottom navigation is provided by [AppShell] via [NeuBottomNav].
-/// This page renders the home tab content; other tabs (Pets, Appointments,
-/// Queue, Profile) are separate routes/pages.
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -44,8 +40,7 @@ class _HomePageState extends State<HomePage> {
             return const _LoadingView();
           }
 
-          final user = authState.user;
-          final ownerId = user.id!;
+          final ownerId = authState.user.id!;
 
           return BlocProvider(
             create: (context) =>
@@ -64,25 +59,10 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const NeuCircularProgress(),
-          const SizedBox(height: 16),
-          Text(
-            'Loading...',
-            style: AppTextStyles.bodyMedium.subtleOf(
-              Theme.of(context).brightness,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const Center(child: NeuCircularProgress());
   }
 }
 
-/// Home content with quick actions, pet summary, recent activity
 class _HomeContent extends StatelessWidget {
   const _HomeContent();
 
@@ -91,7 +71,7 @@ class _HomeContent extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
         final user = authState is AuthAuthenticated ? authState.user : null;
-        final userName = user?.fullName.split(' ').first ?? 'Pet Owner';
+        final userName = user?.fullName.split(' ').first ?? 'there';
 
         return BlocBuilder<PetBloc, PetState>(
           builder: (context, petState) {
@@ -103,13 +83,12 @@ class _HomeContent extends StatelessWidget {
                 final state = context.read<AuthBloc>().state;
                 if (state is AuthAuthenticated) {
                   context.read<PetBloc>().add(
-                    LoadPets(ownerId: state.user.id!),
-                  );
+                        LoadPets(ownerId: state.user.id!),
+                      );
                 }
               },
               child: CustomScrollView(
                 slivers: [
-                  // App bar with greeting
                   SliverAppBar(
                     floating: true,
                     snap: true,
@@ -120,14 +99,13 @@ class _HomeContent extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good ${_getGreeting()}, $userName!',
-                          style: AppTextStyles.titleLarge.copyWith(
-                            fontWeight: FontWeight.bold,
+                          'Good ${_getGreeting()}, $userName',
+                          style: AppTextStyles.headlineMedium.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         Text(
-                          'Welcome back to CarePaw',
+                          'How are your pets today?',
                           style: AppTextStyles.bodySmall.subtleOf(
                             Theme.of(context).brightness,
                           ),
@@ -135,36 +113,25 @@ class _HomeContent extends StatelessWidget {
                       ],
                     ),
                     actions: [
-                      IconButton(
-                        icon: const Icon(Icons.notifications_outlined),
-                        onPressed: () => context.push(Routes.notifications),
-                        tooltip: 'Notifications',
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _NotificationButton(),
                       ),
                     ],
                   ),
-
-                  // Main content
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Quick Actions
-                          _QuickActionsSection(),
-                          const SizedBox(height: 24),
-
-                          // Pet Summary
+                          _PrimaryActionCard(),
+                          const SizedBox(height: 28),
                           _PetSummarySection(pets: activePets),
-                          const SizedBox(height: 24),
-
-                          // Upcoming Appointments (placeholder)
+                          const SizedBox(height: 28),
                           _UpcomingAppointmentsSection(),
-                          const SizedBox(height: 24),
-
-                          // Quick Links
+                          const SizedBox(height: 28),
                           _QuickLinksSection(),
-                          const SizedBox(height: 24),
                         ],
                       ),
                     ),
@@ -180,144 +147,69 @@ class _HomeContent extends StatelessWidget {
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Morning';
-    if (hour < 17) return 'Afternoon';
-    return 'Evening';
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
   }
 }
 
-/// Quick action buttons section
-class _QuickActionsSection extends StatelessWidget {
+class _NotificationButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final accent = ThemeColors.primary(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 4,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.9,
-          children: [
-            _QuickActionCard(
-              icon: Icons.pets_outlined,
-              label: 'Add Pet',
-              color: accent,
-              onTap: () => context.push(Routes.petAdd),
-            ),
-            _QuickActionCard(
-              icon: Icons.event_available_outlined,
-              label: 'Book\nAppointment',
-              color: accent,
-              onTap: () => context.push(Routes.appointmentRequest),
-            ),
-            _QuickActionCard(
-              icon: Icons.queue_outlined,
-              label: 'Check\nQueue',
-              color: accent,
-              onTap: () => context.push(Routes.queue),
-            ),
-            _QuickActionCard(
-              icon: Icons.medical_services_outlined,
-              label: 'Medical\nRecords',
-              color: accent,
-              onTap: () => context.push(Routes.medicalRecords),
-            ),
-            _QuickActionCard(
-              icon: Icons.vaccines_outlined,
-              label: 'Vaccination\nSchedule',
-              color: accent,
-              onTap: () => _showComingSoon(context, 'Vaccination Schedule'),
-            ),
-            _QuickActionCard(
-              icon: Icons.local_pharmacy_outlined,
-              label: 'Prescriptions',
-              color: accent,
-              onTap: () => _showComingSoon(context, 'Prescriptions'),
-            ),
-            _QuickActionCard(
-              icon: Icons.receipt_long_outlined,
-              label: 'Scan\nReceipt',
-              color: accent,
-              onTap: () => _showComingSoon(context, 'Scan Receipt'),
-            ),
-            _QuickActionCard(
-              icon: Icons.chat_bubble_outline,
-              label: 'Chat with\nVet',
-              color: accent,
-              onTap: () => _showComingSoon(context, 'Chat with Vet'),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    return IconButton(
+      icon: const Icon(Icons.notifications_outlined),
+      onPressed: () => context.push(Routes.notifications),
+      tooltip: 'Notifications',
     );
   }
 }
 
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
+class _PrimaryActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      onTap: onTap,
-      borderRadius: 16,
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+      onTap: () => context.push(Routes.appointmentRequest),
+      padding: const EdgeInsets.all(20),
+      child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              color: ThemeColors.primary(context).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(
+              Icons.calendar_month_outlined,
+              color: ThemeColors.primary(context),
+              size: 26,
+            ),
           ),
-          const SizedBox(height: 8),
-          Flexible(
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.labelSmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: color,
-                height: 1.1,
-              ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Book Appointment',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Schedule a visit with your vet',
+                  style: AppTextStyles.bodySmall.subtleOf(
+                    Theme.of(context).brightness,
+                  ),
+                ),
+              ],
             ),
+          ),
+          Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 16,
+            color: ThemeColors.textTertiary(context),
           ),
         ],
       ),
@@ -325,7 +217,6 @@ class _QuickActionCard extends StatelessWidget {
   }
 }
 
-/// Pet summary section
 class _PetSummarySection extends StatelessWidget {
   final List<Pet> pets;
 
@@ -344,21 +235,25 @@ class _PetSummarySection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Your Pets (${pets.length})',
+              'Your Pets',
               style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            TextButton.icon(
+            TextButton(
               onPressed: () => context.push(Routes.pets),
-              icon: const Icon(Icons.arrow_forward, size: 18),
-              label: const Text('View All'),
+              child: Text(
+                'View All',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: ThemeColors.primary(context),
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 140,
+          height: 148,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: pets.length > 5 ? 5 : pets.length,
@@ -381,76 +276,54 @@ class _PetSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final speciesColor = _getSpeciesColor(pet.species);
+    final speciesColor = AppColors.accentForSpecies(pet.species.displayName);
     final speciesIcon = _getSpeciesIcon(pet.species);
 
-    return NeuCard(
-      onTap: () => context.push('/pets/${pet.id}'),
-      borderRadius: 16,
-      padding: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 48,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  speciesColor.withValues(alpha: 0.2),
-                  speciesColor.withValues(alpha: 0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+    return SizedBox(
+      width: 132,
+      child: NeuCard(
+        onTap: () => context.push('/pets/${pet.id}'),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: NeuAvatar(
+                radius: 26,
+                icon: speciesIcon,
+                backgroundColor: speciesColor.withValues(alpha: 0.15),
+                foregroundColor: speciesColor,
               ),
             ),
-            child: Center(
-              child: Icon(speciesIcon, color: speciesColor, size: 28),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pet.name,
-                        style: AppTextStyles.titleSmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        pet.species.displayName,
-                        style: AppTextStyles.bodySmall.subtleOf(
-                          Theme.of(context).brightness,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (pet.birthDate != null)
-                    Text(
-                      _formatAge(pet.birthDate!),
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: ThemeColors.primary(context),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                ],
+            const SizedBox(height: 10),
+            Text(
+              pet.name,
+              style: AppTextStyles.titleSmall.copyWith(
+                fontWeight: FontWeight.w700,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              pet.species.displayName,
+              style: AppTextStyles.bodySmall.subtleOf(
+                Theme.of(context).brightness,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const Spacer(),
+            if (pet.birthDate != null)
+              Text(
+                _formatAge(pet.birthDate!),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: ThemeColors.primary(context),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -463,9 +336,7 @@ class _PetSummaryCard extends StatelessWidget {
       years--;
       months += 12;
     }
-    if (years > 0) {
-      return '$years yr${years > 1 ? 's' : ''}${months > 0 ? ' $months mo' : ''}';
-    }
+    if (years > 0) return '$years yr${years > 1 ? 's' : ''}';
     return '$months mo';
   }
 
@@ -483,23 +354,6 @@ class _PetSummaryCard extends StatelessWidget {
         return Icons.eco_outlined;
       case PetSpecies.other:
         return Icons.help_outline;
-    }
-  }
-
-  Color _getSpeciesColor(PetSpecies species) {
-    switch (species) {
-      case PetSpecies.dog:
-        return AppColors.dogAccent;
-      case PetSpecies.cat:
-        return AppColors.catAccent;
-      case PetSpecies.bird:
-        return AppColors.birdAccent;
-      case PetSpecies.rabbit:
-        return AppColors.rabbitAccent;
-      case PetSpecies.reptile:
-        return AppColors.accentReptile;
-      case PetSpecies.other:
-        return AppColors.accentDefault;
     }
   }
 }
@@ -555,7 +409,6 @@ class _EmptyPetsPrompt extends StatelessWidget {
   }
 }
 
-/// Upcoming appointments section (placeholder)
 class _UpcomingAppointmentsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -566,58 +419,70 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Upcoming Appointments',
+              'Upcoming',
               style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            TextButton.icon(
+            TextButton(
               onPressed: () => context.push(Routes.appointments),
-              icon: const Icon(Icons.arrow_forward, size: 18),
-              label: const Text('View All'),
+              child: Text(
+                'View All',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: ThemeColors.primary(context),
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         NeuCard(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              NeuContainer(
-                borderRadius: 90,
-                padding: const EdgeInsets.all(20),
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(
-                  context,
-                  AppColors.primary,
-                  blur: 24,
-                  opacity: 0.32,
-                ),
-                child: const Icon(
-                  Icons.calendar_month_outlined,
-                  size: 48,
-                  color: AppColors.textOnPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No upcoming appointments',
-                style: AppTextStyles.titleSmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Book an appointment with your vet',
-                style: AppTextStyles.bodyMedium.subtleOf(
-                  Theme.of(context).brightness,
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: ThemeColors.primary(context).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      Icons.event_outlined,
+                      color: ThemeColors.primary(context),
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'No upcoming appointments',
+                          style: AppTextStyles.titleSmall.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Book a visit with your vet',
+                          style: AppTextStyles.bodySmall.subtleOf(
+                            Theme.of(context).brightness,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               NeuButton(
                 text: 'Book Appointment',
                 onPressed: () => context.push(Routes.appointmentRequest),
-                variant: NeuButtonVariant.primary,
+                variant: NeuButtonVariant.secondary,
                 icon: Icons.add,
                 expanded: true,
               ),
@@ -629,7 +494,6 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
   }
 }
 
-/// Quick links section
 class _QuickLinksSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -637,50 +501,40 @@ class _QuickLinksSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'More',
+          'Quick Actions',
           style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 12),
         NeuCard(
-          borderRadius: 20,
           padding: EdgeInsets.zero,
           child: Column(
             children: [
               _LinkTile(
-                icon: Icons.notifications_outlined,
-                title: 'Notifications',
-                subtitle: 'Appointment reminders & updates',
-                onTap: () => context.push(Routes.notifications),
+                icon: Icons.queue_outlined,
+                title: 'Queue Status',
+                subtitle: 'Check your place in line',
+                onTap: () => context.push(Routes.queue),
               ),
               const Divider(height: 1, indent: 56),
               _LinkTile(
                 icon: Icons.medical_services_outlined,
                 title: 'Medical Records',
-                subtitle: 'View health history & vaccinations',
+                subtitle: 'Health history & vaccinations',
                 onTap: () => context.push(Routes.medicalRecords),
               ),
               const Divider(height: 1, indent: 56),
               _LinkTile(
-                icon: Icons.help_outline,
-                title: 'Help & Support',
-                subtitle: 'FAQs, contact us, feedback',
-                onTap: () => _showComingSoon(context, 'Help & Support'),
+                icon: Icons.vaccines_outlined,
+                title: 'Vaccinations',
+                subtitle: 'Track immunization schedule',
+                onTap: () => context.push(Routes.medicalRecords),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
     );
   }
 }
@@ -700,15 +554,15 @@ class _LinkTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
-      leading: NeuContainer(
-        borderRadius: 12,
-        padding: const EdgeInsets.all(8),
-        color: isDark
-            ? AppColors.primary.withValues(alpha: 0.16)
-            : AppColors.primaryTint,
-        child: Icon(icon, color: ThemeColors.primary(context), size: 22),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: ThemeColors.primary(context).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: ThemeColors.primary(context), size: 20),
       ),
       title: Text(
         title,

@@ -6,10 +6,13 @@ import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/core/utils/validators.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
@@ -155,8 +158,6 @@ class _PetFormPageState extends State<PetFormPage> {
     _isActive = pet.isActive;
   }
 
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.pet != null;
@@ -186,7 +187,7 @@ class _PetFormPageState extends State<PetFormPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -200,7 +201,7 @@ class _PetFormPageState extends State<PetFormPage> {
             isEditing ? 'Edit Pet' : 'Add Pet',
             style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w700,
-              color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              color: ThemeColors.textPrimary(context),
             ),
           ),
           centerTitle: true,
@@ -213,19 +214,20 @@ class _PetFormPageState extends State<PetFormPage> {
               // Header with avatar
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                   child: Column(
                     children: [
-                      PetUtils.buildAvatar(
-                        species: _selectedSpecies,
+                      NeuAvatar(
                         radius: 50,
-                        iconSize: 50,
+                        icon: PetUtils.getSpeciesIcon(_selectedSpecies),
+                        backgroundColor: PetUtils.getSpeciesColor(_selectedSpecies).withValues(alpha: 0.2),
+                        foregroundColor: PetUtils.getSpeciesColor(_selectedSpecies),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         isEditing ? 'Update ${widget.pet!.name}' : 'Add a new pet',
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                       ),
                     ],
@@ -238,7 +240,7 @@ class _PetFormPageState extends State<PetFormPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: SliverList.separated(
                   itemCount: _getFormSections().length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 20),
+                  separatorBuilder: (_, _) => const SizedBox(height: 24),
                   itemBuilder: (context, index) {
                     final section = _getFormSections()[index];
                     return _buildSection(context, section, speciesColor);
@@ -248,7 +250,7 @@ class _PetFormPageState extends State<PetFormPage> {
 
               // Submit button
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 40),
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 48),
                 sliver: SliverToBoxAdapter(
                   child: BlocBuilder<PetBloc, PetState>(
                     builder: (context, state) {
@@ -277,7 +279,8 @@ class _PetFormPageState extends State<PetFormPage> {
     Color speciesColor,
   ) {
     return NeuCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -295,7 +298,7 @@ class _PetFormPageState extends State<PetFormPage> {
                 section.title,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -458,48 +461,28 @@ class _PetSpeciesSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Species *',
           style: AppTextStyles.labelLarge.copyWith(
-            color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 10,
+          runSpacing: 10,
           children: PetSpecies.values.map((species) {
             final isSelected = species == selectedSpecies;
             final color = PetUtils.getSpeciesColor(species);
-            return GestureDetector(
+            return NeuChip(
+              label: PetUtils.formatSpecies(species),
+              icon: PetUtils.getSpeciesIcon(species),
+              selected: isSelected,
+              selectedColor: color,
               onTap: () => onChanged(species),
-              child: NeuContainer(
-                variant: isSelected ? NeuVariant.raised : NeuVariant.flat,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                borderRadius: 20,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      PetUtils.getSpeciesIcon(species),
-                      size: 18,
-                      color: isSelected ? color : (isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      PetUtils.formatSpecies(species),
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: isSelected ? color : (isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary),
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             );
           }).toList(),
         ),
@@ -541,7 +524,6 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
     final displayText = hasDate
         ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
         : 'Select birth date';
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,50 +531,48 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
         Text(
           '${widget.label}${widget.hint != null ? ' (${widget.hint})' : ''}',
           style: AppTextStyles.labelLarge.copyWith(
-            color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
           ),
         ),
-        const SizedBox(height: 8),
-        GestureDetector(
+        const SizedBox(height: 12),
+        NeuContainer(
+          variant: NeuVariant.flat,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          borderRadius: 16,
           onTap: _pickDate,
-          child: NeuContainer(
-            variant: NeuVariant.flat,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            borderRadius: 16,
-            child: Row(
-              children: [
+          child: Row(
+            children: [
+              Icon(
+                Icons.calendar_today_outlined,
+                color: hasDate ? ThemeColors.primary(context) : ThemeColors.textSecondary(context),
+                size: 22,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  displayText,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: hasDate
+                        ? ThemeColors.textPrimary(context)
+                        : ThemeColors.textTertiary(context),
+                  ),
+                ),
+              ),
+              if (hasDate)
+                NeuIconButton(
+                  icon: Icons.clear,
+                  size: 18,
+                  onPressed: () {
+                    setState(() => _selectedDate = null);
+                    widget.onDateSelected(null);
+                  },
+                )
+              else
                 Icon(
-                  Icons.calendar_today_outlined,
-                  color: hasDate ? ThemeColors.primary(context) : (isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
-                  size: 22,
+                  Icons.keyboard_arrow_down_rounded,
+                  color: ThemeColors.textTertiary(context),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    displayText,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: hasDate
-                          ? (isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary)
-                          : (isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary),
-                    ),
-                  ),
-                ),
-                if (hasDate)
-                  NeuIconButton(
-                    icon: Icons.clear,
-                    size: 18,
-                    onPressed: () {
-                      setState(() => _selectedDate = null);
-                      widget.onDateSelected(null);
-                    },
-                  )
-                else
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
-                  ),
-              ],
-            ),
+            ],
           ),
         ),
       ],
@@ -682,7 +662,6 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
     final breeds = _commonBreedsBySpecies[widget.selectedSpecies] ?? [];
     final otherOption = 'Other (specify)';
     final showCustomField = _isCustomBreed || _selectedBreed == otherOption;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,79 +669,69 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
         Text(
           '${widget.label}${_isCustomBreed ? '' : ' *'}',
           style: AppTextStyles.labelLarge.copyWith(
-            color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
           ),
         ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          initialValue: _selectedBreed,
-          isExpanded: true,
-          decoration: InputDecoration(
-            hintText: 'Select breed',
-            prefixIcon: Icon(
-              Icons.category_outlined,
-              color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-              size: 20,
+        const SizedBox(height: 12),
+        NeuContainer(
+          variant: NeuVariant.inset,
+          borderRadius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: DropdownButtonFormField<String>(
+            initialValue: _selectedBreed,
+            isExpanded: true,
+            decoration: InputDecoration(
+              hintText: 'Select breed',
+              prefixIcon: Icon(
+                Icons.category_outlined,
+                color: ThemeColors.textSecondary(context),
+                size: 20,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
-            filled: true,
-            fillColor: isDark ? AppColors.surfaceContainerDark : AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: isDark ? AppColors.dividerDark : AppColors.divider,
+            hint: Text(
+              'Select breed',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: ThemeColors.textTertiary(context),
               ),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: isDark ? AppColors.dividerDark : AppColors.divider,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: ThemeColors.primary(context), width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          hint: Text(
-            'Select breed',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
-            ),
-          ),
-          items: [
-            ...breeds.map((breed) => DropdownMenuItem(
-              value: breed,
-              child: Text(breed, style: AppTextStyles.bodyLarge),
-            )),
-          ],
-          onChanged: (value) {
-            setState(() {
-              _selectedBreed = value;
-              _isCustomBreed = value == otherOption;
-              if (!_isCustomBreed && value != null) {
-                widget.controller.text = value;
-              } else if (_isCustomBreed) {
-                widget.controller.text = _customController.text;
-              }
-            });
-          },
-          validator: (_isCustomBreed || _selectedBreed == otherOption)
-              ? (value) {
-                  if (_customController.text.trim().isEmpty) {
-                    return 'Please enter breed';
-                  }
-                  return Validators.maxLength(_customController.text, 50, 'Breed');
+            items: [
+              ...breeds.map((breed) => DropdownMenuItem(
+                value: breed,
+                child: Text(breed, style: AppTextStyles.bodyLarge),
+              )),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _selectedBreed = value;
+                _isCustomBreed = value == otherOption;
+                if (!_isCustomBreed && value != null) {
+                  widget.controller.text = value;
+                } else if (_isCustomBreed) {
+                  widget.controller.text = _customController.text;
                 }
-              : (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a breed';
+              });
+            },
+            validator: (_isCustomBreed || _selectedBreed == otherOption)
+                ? (value) {
+                    if (_customController.text.trim().isEmpty) {
+                      return 'Please enter breed';
+                    }
+                    return Validators.maxLength(_customController.text, 50, 'Breed');
                   }
-                  return null;
-                },
+                : (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select a breed';
+                    }
+                    return null;
+                  },
+          ),
         ),
         if (showCustomField) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           NeuTextField(
             controller: _customController,
             label: 'Custom Breed',
@@ -791,7 +760,6 @@ class _PetActiveSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return NeuCard(
       padding: const EdgeInsets.all(16),
       onTap: () => onChanged(!value),
@@ -816,14 +784,14 @@ class _PetActiveSwitch extends StatelessWidget {
                   'Active Status',
                   style: AppTextStyles.titleSmall.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value ? 'Pet is active and visible' : 'Pet is inactive (archived)',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                 ),
               ],

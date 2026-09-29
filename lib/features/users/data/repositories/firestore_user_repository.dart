@@ -24,8 +24,8 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart' as do
 /// `id`; it is stored in the document and located via a `id` equality query.
 /// `User.firebaseUid` is the Firestore document ID / Firebase Auth UID.
 ///
-/// The former local drift repository (`UserRepositoryImpl`) is intentionally
-/// set aside and no longer wired.
+// The former local drift repository (`UserRepositoryImpl`) is intentionally
+// set aside and no longer wired.
 class FirestoreUserRepository implements UserRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _firebaseAuth;
@@ -35,9 +35,9 @@ class FirestoreUserRepository implements UserRepository {
     required FirebaseFirestore firestore,
     required FirebaseAuth firebaseAuth,
     required UserIdSequence userIdSequence,
-  })  : _firestore = firestore,
-        _firebaseAuth = firebaseAuth,
-        _userIdSequence = userIdSequence;
+  }) : _firestore = firestore,
+       _firebaseAuth = firebaseAuth,
+       _userIdSequence = userIdSequence;
 
   CollectionReference<Map<String, dynamic>> get _users => _firestore
       .collection(FirestoreSchema.users);
@@ -138,6 +138,7 @@ class FirestoreUserRepository implements UserRepository {
   Future<domain.User?> findByEmail(String email) async {
     final snapshot = await _users
         .where(FirestoreSchema.email, isEqualTo: email)
+        .where(FirestoreSchema.isActive, isEqualTo: true)
         .limit(1)
         .get();
     if (snapshot.docs.isEmpty) return null;
@@ -294,44 +295,84 @@ class FirestoreUserRepository implements UserRepository {
     // The client SDK cannot revoke another user's Auth credential, so the
     // actual deletion (Auth revocation + Firestore doc removal + audit) is
     // performed by the backend `deleteUser` Cloud Function under the Admin SDK.
-    final idToken = await _firebaseAuth.currentUser?.getIdToken();
-    if (idToken == null) {
-      throw const UnauthorizedFailure(
-        message: 'Sign in to delete this user.',
-      );
-    }
-
-    // Post the raw HTTPS callable protocol. This is deliberately a plain
-    // HTTP POST rather than the FlutterFire `httpsCallable` client: the
-    // pinned `firebase_functions` package is the Dart *authoring* SDK, which
-    // exposes no runtime callable API, and pinning an extra wrapper here would
-    // add a redundant web-affecting dependency just for one call.
-    final projectId = _firestore.app.options.projectId;
-    final uri = Uri.parse(
-      'https://deleteuser-$projectId.uc.r.appspot.com/deleteUser',
-    );
-    final http.Response response;
     try {
-      response = await http
-          .post(
-            uri,
-            headers: <String, String>{
-              HttpHeaders.contentTypeHeader: 'application/json',
-              HttpHeaders.authorizationHeader: 'Bearer $idToken',
-            },
-            body: jsonEncode(<String, Object>{'uid': uid}),
-          )
-          .timeout(const Duration(seconds: 30));
-    } on SocketException {
-      throw const NoConnectionFailure(
-        message: 'Could not reach the server. Check your connection and try again.',
-      );
-    } on TimeoutException {
-      throw const TimeoutFailure();
-    }
+      final currentUser = _firebaseAuth.currentUser;
+      if (currentUser == null) {
+        throw const UnauthorizedFailure(
+          message: 'Sign in to delete this user.',
+        );
+      }
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw _mapDeleteUserHttpError(response.statusCode);
+      final idToken = await currentUser.getIdToken();
+      if (idToken == null || idToken.isEmpty) {
+        throw const UnauthorizedFailure(
+          message: 'Failed to get authentication token. Please try again.',
+        );
+      }
+
+      // Post the raw HTTPS callable protocol. This is deliberately a plain
+      // HTTP POST rather than the FlutterFire `httpsCallable` client: the
+      // pinned `firebase_functions` package is the Dart *authoring* SDK, which
+      // exposes no runtime callable API, and pinning an extra wrapper here would
+      // add a redundant web-affecting dependency just for one call.
+      final projectId = _firestore.app.options.projectId;
+      final uri = Uri.parse(
+        'https://deleteuser-$projectId.uc.r.appspot.com/deleteUser',
+      );
+
+      try {
+        final http.Response response = await http
+            .post(
+              uri,
+              headers: <String, String>{
+                HttpHeaders.contentTypeHeader: 'application/json',
+                HttpHeaders.authorizationHeader: 'Bearer $idToken',
+              },
+              body: jsonEncode(<String, Object>{'uid': uid}),
+            )
+            .timeout(const Duration(seconds: 30));
+
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw _mapDeleteUserHttpError(response.statusCode);
+        }
+
+        // VERIFICATION: Confirm the user was actually deleted from Firestore
+        // with retries to account for potential propagation delays
+        bool firestoreDeleted = false;
+        for (int i = 0; i < 3; i++) {
+          final deletedUser = await findById(userId);
+          if (deletedUser == null) {
+            firestoreDeleted = true;
+            break;
+          }
+          if (i < 2) { // Don't wait after the last attempt
+            await Future.delayed(const Duration(milliseconds: 500));
+          }
+        }
+
+        if (!firestoreDeleted) {
+          throw ServerFailure(message: 'Deletion failed - user still exists in Firestore after verification');
+        }
+
+        // NOTE: Auth verification cannot be performed from the client SDK.
+        // The Cloud Function is responsible for deleting the user from Auth.
+      } on SocketException {
+        throw const NoConnectionFailure(
+          message: 'Could not reach the server. Check your connection and try again.',
+        );
+      } on TimeoutException {
+        throw const TimeoutFailure(
+          message: 'Request timed out. Please check your connection and try again.',
+        );
+      } on HttpException catch (e) {
+        throw ServerFailure(message: 'Network error: ${e.message}');
+      } catch (e) {
+        throw ServerFailure(message: 'Unexpected error during deletion: ${e.toString()}');
+      }
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthException(e);
+    } catch (e) {
+      throw ErrorHandler.handleException(e);
     }
   }
 
@@ -369,6 +410,10 @@ class FirestoreUserRepository implements UserRepository {
         throw const UnexpectedFailure(message: 'Failed to create account.');
       }
 
+      // Check if this user should be an admin (first user or email domain match with first user)
+      final bool shouldBeAdmin = await _shouldBeAdmin(email);
+      final domain.UserRole effectiveRole = shouldBeAdmin ? domain.UserRole.admin : role;
+
       final newId = await _userIdSequence.next();
       final now = DateTime.now();
       final created = domain.User(
@@ -377,7 +422,7 @@ class FirestoreUserRepository implements UserRepository {
         email: email,
         fullName: fullName.trim(),
         phone: phone,
-        role: role,
+        role: effectiveRole,
         isActive: true,
         createdAt: now,
         updatedAt: now,
@@ -395,7 +440,7 @@ class FirestoreUserRepository implements UserRepository {
       await _writeAudit(
         action: 'USER_CREATE',
         targetUser: created,
-        newValues: <String, dynamic>{'role': role.value, 'email': email},
+        newValues: <String, dynamic>{'role': effectiveRole.value, 'email': email},
       );
       return created;
     } on Failure {
@@ -431,6 +476,57 @@ class FirestoreUserRepository implements UserRepository {
     final snapshot = await _users.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.first;
+  }
+
+  /// Check if this is the first user being created in the system.
+  /// Returns true if no users exist yet in the Firestore users collection.
+  Future<bool> _isFirstUser() async {
+    final snapshot = await _users.limit(1).get();
+    return snapshot.docs.isEmpty;
+  }
+
+  /// Check if a user should be an admin based on email domain matching
+  /// with the first user in the system. Returns true if:
+  /// 1. The user is the first user in the system
+  /// 2. OR there is at least one user in the system AND
+  ///    the user's email domain matches the first user's email domain
+  Future<bool> _shouldBeAdmin(String email) async {
+    if (email.isEmpty || !email.contains('@')) {
+      // Invalid email, can't determine domain - fall back to first user check
+      return await _isFirstUser();
+    }
+
+    // Check if this is the first user
+    final bool isFirstUser = await _isFirstUser();
+    if (isFirstUser) {
+      return true;
+    }
+
+    // Not first user - check if email domain matches the first user's domain
+    // Get the first user (by lowest ID, assuming they were created first)
+    final firstUserSnapshot = await _users
+        .orderBy(FirestoreSchema.id, descending: false)
+        .limit(1)
+        .get();
+
+    if (firstUserSnapshot.docs.isEmpty) {
+      // No users found - should not happen if !isFirstUser, but handle gracefully
+      return false;
+    }
+
+    final firstUserData = firstUserSnapshot.docs.first.data();
+    final firstUserEmail = firstUserData[FirestoreSchema.email] as String?;
+
+    if (firstUserEmail == null || firstUserEmail.isEmpty || !firstUserEmail.contains('@')) {
+      // First user has no valid email
+      return false;
+    }
+
+    // Extract domains
+    final firstUserDomain = firstUserEmail.split('@').last.toLowerCase();
+    final userDomain = email.split('@').last.toLowerCase();
+
+    return firstUserDomain == userDomain;
   }
 
   /// Map a non-2xx `deleteUser` HTTP status to a user-friendly [Failure].

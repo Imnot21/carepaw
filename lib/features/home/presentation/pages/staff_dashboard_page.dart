@@ -803,28 +803,31 @@ class _LinkTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      leading: NeuContainer(
-        borderRadius: 12,
-        padding: const EdgeInsets.all(8),
-        color: isDark
-            ? AppColors.primary.withValues(alpha: 0.16)
-            : AppColors.primaryTint,
-        child: Icon(icon, color: ThemeColors.primary(context), size: 22),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: NeuContainer(
+          borderRadius: 12,
+          padding: const EdgeInsets.all(8),
+          color: isDark
+              ? AppColors.primary.withValues(alpha: 0.16)
+              : AppColors.primaryTint,
+          child: Icon(icon, color: ThemeColors.primary(context), size: 22),
+        ),
+        title: Text(
+          title,
+          style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: ThemeColors.textTertiary(context),
+        ),
+        onTap: onTap,
       ),
-      title: Text(
-        title,
-        style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
-      ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: ThemeColors.textTertiary(context),
-      ),
-      onTap: onTap,
     );
   }
 }

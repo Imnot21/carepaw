@@ -62,21 +62,21 @@ class MedicalRecordDetailPage extends StatelessWidget {
         slivers: [
           // Header with record type and pet info
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
             sliver: SliverToBoxAdapter(
               child: Column(
                 children: [
                   // Type badge
                   NeuContainer(
                     borderRadius: 30,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                     color: typeInfo.color,
                     boxShadow: NeuShadow.color(context, typeInfo.color, blur: 16, opacity: 0.28),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(typeInfo.icon, color: Colors.white, size: 20),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           record.recordType.displayName,
                           style: AppTextStyles.titleMedium.copyWith(
@@ -87,28 +87,28 @@ class MedicalRecordDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   // Pet avatar
                   PetUtils.buildAvatar(
                     species: pet.species,
                     radius: 50,
                     iconSize: 50,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Text(
                     pet.name,
                     style: AppTextStyles.headlineMedium.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: ThemeColors.textSecondary(context),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Text(
                     record.title,
                     style: AppTextStyles.headlineSmall.copyWith(
@@ -116,11 +116,11 @@ class MedicalRecordDetailPage extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     'Recorded on ${_formatFullDate(record.recordedAt)}',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: ThemeColors.textSecondary(context),
                     ),
                   ),
                 ],
@@ -133,7 +133,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList.separated(
               itemCount: _getSections(context).length,
-              separatorBuilder: (_, _) => const SizedBox(height: 16),
+              separatorBuilder: (_, _) => const SizedBox(height: 18),
               itemBuilder: (context, index) {
                 final section = _getSections(context)[index];
                 if (section.content == null || section.content!.isEmpty) {
@@ -150,7 +150,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
           ),
 
           // Bottom padding
-          const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
         ],
       ),
     );
@@ -159,7 +159,6 @@ class MedicalRecordDetailPage extends StatelessWidget {
   List<_DetailSection> _getSections(BuildContext context) {
     final sections = <_DetailSection>[];
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (record.description != null && record.description!.isNotEmpty) {
       sections.add(_DetailSection(
         title: 'Description',
@@ -173,7 +172,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
       sections.add(_DetailSection(
         title: 'Diagnosis',
         icon: Icons.medical_services_outlined,
-        color: isDark ? AppColors.infoDark : AppColors.info,
+        color: ThemeColors.info(context),
         content: record.diagnosis!,
       ));
     }
@@ -261,8 +260,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       borderColor: color.withValues(alpha: 0.2),
       borderWidth: 1,
       child: Column(
@@ -270,15 +268,14 @@ class _SectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              NeuContainer(
+                borderRadius: 14,
+                padding: const EdgeInsets.all(12),
+                variant: NeuVariant.flat,
+                color: color.withValues(alpha: 0.12),
                 child: Icon(icon, color: color, size: 24),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Text(
                 title,
                 style: AppTextStyles.titleMedium.copyWith(
@@ -287,7 +284,7 @@ class _SectionCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Text(
             content,
             style: AppTextStyles.bodyLarge.copyWith(

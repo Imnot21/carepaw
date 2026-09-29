@@ -12,12 +12,15 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
 /// Appointment detail page showing full appointment information
 class AppointmentDetailPage extends StatefulWidget {
@@ -104,19 +107,24 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
               children: [
                 _buildStatusBadge(statusInfo),
                 const SizedBox(height: 24),
-                PetUtils.buildAvatar(species: pet.species, radius: 50, iconSize: 50),
+                NeuAvatar(
+                  radius: 50,
+                  icon: PetUtils.getSpeciesIcon(pet.species),
+                  backgroundColor: PetUtils.getSpeciesColor(pet.species).withValues(alpha: 0.2),
+                  foregroundColor: PetUtils.getSpeciesColor(pet.species),
+                ),
                 const SizedBox(height: 16),
                 Text(pet.name, style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
                 Text(
                   '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
-                  style: AppTextStyles.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  style: AppTextStyles.bodyLarge.copyWith(color: ThemeColors.textSecondary(context)),
                 ),
                 if (pet.ageInYears != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     '${pet.ageInYears} years old',
-                    style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    style: AppTextStyles.bodyMedium.copyWith(color: ThemeColors.textSecondary(context)),
                   ),
                 ],
               ],
@@ -225,14 +233,16 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   Widget _buildVeterinarianCard(BuildContext context, User vet, Color speciesColor) {
     return NeuCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
       child: Row(
         children: [
           NeuContainer(
             borderRadius: 16,
             padding: const EdgeInsets.all(12),
-            color: Theme.of(context).colorScheme.secondaryContainer,
-            child: Icon(Icons.medical_services_rounded, size: 28, color: Theme.of(context).colorScheme.onSecondaryContainer),
+            variant: NeuVariant.flat,
+            color: ThemeColors.primary(context).withValues(alpha: 0.15),
+            child: Icon(Icons.medical_services_rounded, size: 28, color: ThemeColors.primary(context)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -242,7 +252,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                 Text(
                   'Veterinarian',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: ThemeColors.textSecondary(context),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -255,7 +265,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                     children: [
                       Icon(Icons.phone_outlined, size: 16, color: ThemeColors.textSecondary(context)),
                       const SizedBox(width: 6),
-                      Text(vet.phone!, style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      Text(vet.phone!, style: AppTextStyles.bodyMedium.copyWith(color: ThemeColors.textSecondary(context))),
                     ],
                   ),
                 ],
@@ -264,7 +274,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                   children: [
                     Icon(Icons.email_outlined, size: 16, color: ThemeColors.textSecondary(context)),
                     const SizedBox(width: 6),
-                    Text(vet.email, style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    Text(vet.email, style: AppTextStyles.bodyMedium.copyWith(color: ThemeColors.textSecondary(context))),
                   ],
                 ),
               ],
@@ -305,9 +315,11 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   }) {
     return Row(
       children: [
-        Container(
+        NeuContainer(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+          borderRadius: 12,
+          variant: NeuVariant.flat,
+          color: iconColor.withValues(alpha: 0.15),
           child: Icon(icon, size: 20, color: iconColor),
         ),
         const SizedBox(width: 14),
@@ -315,7 +327,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
+              Text(label, style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.textSecondary(context), fontWeight: FontWeight.w500)),
               const SizedBox(height: 2),
               Text(value, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500)),
             ],
@@ -328,15 +340,18 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   Widget _buildInfoCard(BuildContext context, String title, String content, IconData icon, Color iconColor) {
     return NeuCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
+              NeuContainer(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+                borderRadius: 12,
+                variant: NeuVariant.flat,
+                color: iconColor.withValues(alpha: 0.15),
                 child: Icon(icon, size: 22, color: iconColor),
               ),
               const SizedBox(width: 12),
@@ -427,9 +442,11 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Container(
+            NeuContainer(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: ThemeColors.error(context).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+              borderRadius: 10,
+              variant: NeuVariant.flat,
+              color: ThemeColors.error(context).withValues(alpha: 0.15),
               child: Icon(Icons.cancel_rounded, size: 22, color: ThemeColors.error(context)),
             ),
             const SizedBox(width: 12),
@@ -441,14 +458,12 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           children: [
             const Text('Please provide a reason for cancellation:'),
             const SizedBox(height: 16),
-            TextField(
+            NeuTextField(
               controller: reasonController,
-              decoration: InputDecoration(
-                hintText: 'Reason for cancellation...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ThemeColors.primary(context), width: 2)),
-              ),
+              label: 'Reason for cancellation',
+              hint: 'Reason for cancellation...',
               maxLines: 3,
+              minLines: 2,
             ),
           ],
         ),
@@ -478,9 +493,11 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Container(
+            NeuContainer(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: ThemeColors.error(context).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+              borderRadius: 10,
+              variant: NeuVariant.flat,
+              color: ThemeColors.error(context).withValues(alpha: 0.15),
               child: Icon(Icons.delete_outline_rounded, size: 22, color: ThemeColors.error(context)),
             ),
             const SizedBox(width: 12),
@@ -522,7 +539,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             const SizedBox(height: 24),
             Text('Error Loading Appointment', style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            Text(message, style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant), textAlign: TextAlign.center),
+            Text(message, style: AppTextStyles.bodyMedium.copyWith(color: ThemeColors.textSecondary(context)), textAlign: TextAlign.center),
             const SizedBox(height: 24),
             NeuButton(
               text: 'Retry',

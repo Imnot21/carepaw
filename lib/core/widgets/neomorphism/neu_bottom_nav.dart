@@ -3,8 +3,8 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
+import 'neu_shapes.dart';
 
-/// One destination in a [`NeuBottomNav`].
 class NeuNavItem {
   final IconData icon;
   final IconData? activeIcon;
@@ -22,11 +22,12 @@ class NeuNavItem {
       NeuNavItem(icon: icon, label: label);
 }
 
-/// Neumorphic bottom navigation bar.
+/// Neumorphic bottom navigation — a raised organic pill with recessed active
+/// slot.
 ///
-/// A raised pill-shaped bar with recessed slots. The active tab's icon sits on
-/// a pressed blue plate; inactive tabs are flat raised plates. Replaces the
-/// Material `NavigationBar` in the app shell.
+/// The active tab's icon sits on a pressed terracotta plate; inactive tabs are
+/// quiet raised plates. The bar itself is a flowing pill contour, the organic
+/// layer's signature at the root of every screen.
 class NeuBottomNav extends StatelessWidget {
   final List<NeuNavItem> items;
   final int currentIndex;
@@ -50,11 +51,17 @@ class NeuBottomNav extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: SizedBox(
           height: height,
-          // Transparent shell: no solid bar behind the icons, so the per-item
-          // neumorphic plates appear to float on the page background.
           child: NeuContainer(
-            borderRadius: 26,
-            variant: NeuVariant.transparent,
+            borderRadius: 30,
+            variant: NeuVariant.raised,
+            color: Theme.of(context).colorScheme.surface,
+            boxShadow: NeuShadow.color(
+              context,
+              Theme.of(context).colorScheme.primary.withAlpha((255 * 0.12).round()),
+              blur: 18,
+              opacity: 0.45,
+            ),
+            shape: RoundedRectangleBorder(borderRadius: NeuShape.navFlow),
             child: Row(
               children: [
                 for (var i = 0; i < items.length; i++)
@@ -97,48 +104,53 @@ class _NavSlot extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Center(
-                child: selected
-                    ? NeuContainer(
-                        borderRadius: 16,
-                        variant: NeuVariant.pressed,
-                        color: accent,
-                        boxShadow: NeuShadow.color(context, accent, blur: 12, opacity: 0.4),
-                        child: SizedBox(
-                          width: 44,
-                          height: 40,
-                          child: Icon(icon, size: 22, color: AppColors.textOnPrimary),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Center(
+                  child: selected
+                      ? NeuContainer(
+                          borderRadius: 18,
+                          variant: NeuVariant.pressed,
+                          color: accent,
+                          boxShadow: NeuShadow.color(context, accent, blur: 14, opacity: 0.32),
+                          child: SizedBox(
+                            width: 52,
+                            height: 40,
+                            child: Icon(icon, size: 22, color: AppColors.textOnPrimary),
+                          ),
+                        )
+                      : NeuContainer(
+                          borderRadius: 18,
+                          variant: NeuVariant.raised,
+                          child: SizedBox(
+                            width: 52,
+                            height: 40,
+                            child: Icon(icon, size: 22, color: ThemeColors.textSecondary(context)),
+                          ),
                         ),
-                      )
-                    : NeuContainer(
-                        borderRadius: 16,
-                        variant: NeuVariant.raised,
-                        child: SizedBox(
-                          width: 44,
-                          height: 40,
-                          child: Icon(icon, size: 22, color: ThemeColors.textSecondary(context)),
-                        ),
-                      ),
+                ),
               ),
             ),
-          ),
-          Text(
-            item.label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: labelColor,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+            Text(
+              item.label,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: labelColor,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-        ],
+            const SizedBox(height: 4),
+          ],
+        ),
       ),
     );
   }

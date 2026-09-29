@@ -7,8 +7,11 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 
 /// Admin Dashboard — Firestore-backed clinic administration.
 ///
@@ -66,11 +69,15 @@ class _AccessDeniedView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            NeuContainer(
+              borderRadius: 80,
               padding: const EdgeInsets.all(28),
-              decoration: BoxDecoration(
-                color: AppColors.error,
-                borderRadius: BorderRadius.circular(80),
+              color: AppColors.error,
+              boxShadow: NeuShadow.color(
+                context,
+                AppColors.error,
+                blur: 24,
+                opacity: 0.32,
               ),
               child: const Icon(
                 Icons.block_rounded,
@@ -94,6 +101,14 @@ class _AccessDeniedView extends StatelessWidget {
                 color: ThemeColors.textSecondary(context),
               ),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            NeuButton(
+              text: 'Go Back',
+              onPressed: () => context.pop(),
+              icon: Icons.arrow_back_rounded,
+              variant: NeuButtonVariant.secondary,
+              expanded: true,
             ),
           ],
         ),
@@ -141,13 +156,34 @@ class _AdminDashboardContent extends StatelessWidget {
               ),
             ],
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () => context.push(Routes.notifications),
+              tooltip: 'Notifications',
+            ),
+          ],
         ),
-        const SliverToBoxAdapter(
+        SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [_AdminQuickActionsSection(), SizedBox(height: 8)],
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.surfaceDarkMode.withAlpha(200)
+                    : AppColors.surface.withAlpha(200),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.borderDark.withAlpha(100)
+                      : AppColors.border.withAlpha(100),
+                ),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [_AdminQuickActionsSection(), SizedBox(height: 8)],
+              ),
             ),
           ),
         ),

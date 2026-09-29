@@ -3,38 +3,16 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import 'neu_container.dart';
 
-/// NeuButton variants.
-enum NeuButtonVariant {
-  /// Solid blue accent — primary actions.
-  primary,
+enum NeuButtonVariant { primary, secondary, outline, destructive, ghost, text }
 
-  /// Raised surface with primary text — secondary actions.
-  secondary,
+enum NeuButtonSize { small, medium, large }
 
-  /// Outline border with primary text — tertiary actions.
-  outline,
-
-  /// Solid red — destructive actions.
-  destructive,
-
-  /// Transparent with secondary text — subtle actions.
-  ghost,
-
-  /// Text-only primary link.
-  text,
-}
-
-/// NeuButton sizes.
-enum NeuButtonSize {
-  small,
-  medium,
-  large,
-}
-
-/// Neumorphic action button with physical press feedback.
+/// Neumorphic action button with organic pill contours and physical press
+/// feedback.
 ///
-/// Replaces the legacy Material-era button. A pressed button dips into the
-/// canvas with a scale + shadow swap, like a real physical control.
+/// A pressed button dips into the canvas with a scale + shadow swap, like a
+/// real physical control. The pill shape is the organic layer's contribution
+/// — fully rounded, no hard corners.
 class NeuButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -116,7 +94,6 @@ class _NeuButtonState extends State<NeuButton> {
           padding: _getPadding(),
           borderRadius: _getRadius(),
           variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
-          // Filled CTA: dark in light mode, light in dark mode (high contrast).
           color: _primaryFill(context),
           child: content,
         ),
@@ -149,8 +126,6 @@ class _NeuButtonState extends State<NeuButton> {
         ),
     };
 
-    // Expand to fill the available width when requested. Without this the
-    // flag was a no-op and buttons only stretched if a parent forced them to.
     return widget.expanded
         ? SizedBox(width: double.infinity, child: button)
         : button;
@@ -204,13 +179,11 @@ class _NeuButtonState extends State<NeuButton> {
     return base.copyWith(color: color);
   }
 
-  /// Filled CTA background: dark in light mode, light in dark mode.
   Color _primaryFill(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? AppColors.textPrimaryOnDark
-          : AppColors.textPrimary;
+          ? AppColors.primaryOnDark
+          : AppColors.primary;
 
-  /// Text/label color on a filled CTA: inverted to contrast with [_primaryFill].
   Color _primaryFillText(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
           ? AppColors.textPrimary
@@ -237,9 +210,9 @@ class _NeuButtonState extends State<NeuButton> {
 
   double _getRadius() {
     return switch (widget.size) {
-      NeuButtonSize.small => 12,
-      NeuButtonSize.medium => 16,
-      NeuButtonSize.large => 18,
+      NeuButtonSize.small => 20,
+      NeuButtonSize.medium => 25,
+      NeuButtonSize.large => 29,
     };
   }
 

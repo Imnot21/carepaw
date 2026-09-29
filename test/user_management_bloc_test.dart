@@ -15,6 +15,13 @@ void main() {
   late User staff;
   late User vet;
 
+  setUpAll(() {
+    registerFallbackValue(UserRole.admin);
+    registerFallbackValue(UserRole.petOwner);
+    registerFallbackValue(UserRole.staff);
+    registerFallbackValue(UserRole.veterinarian);
+  });
+
   setUp(() {
     repository = MockUserRepository();
 

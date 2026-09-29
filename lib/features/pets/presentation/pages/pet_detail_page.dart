@@ -11,10 +11,13 @@ import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
@@ -39,8 +42,6 @@ class _PetDetailPageState extends State<PetDetailPage> {
     _pet = widget.pet;
   }
 
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-
   void _updatePet(Pet updatedPet) {
     setState(() => _pet = updatedPet);
   }
@@ -50,7 +51,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     final speciesColor = PetUtils.getSpeciesColor(_pet.species);
 
     return Scaffold(
-      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -80,7 +81,8 @@ class _PetDetailPageState extends State<PetDetailPage> {
               child: Column(
                 children: [
                   NeuCard(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(28),
+                    shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
                     child: Column(
                       children: [
                         _pet.avatarUrl != null
@@ -91,53 +93,35 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                   width: 110,
                                   height: 110,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) =>
-                                      PetUtils.buildAvatarPlaceholder(
-                                    _pet.species,
+                                  errorBuilder: (_, _, _) => NeuAvatar(
                                     radius: 55,
-                                    iconSize: 55,
+                                    icon: PetUtils.getSpeciesIcon(_pet.species),
+                                    backgroundColor: speciesColor.withValues(alpha: 0.2),
+                                    foregroundColor: speciesColor,
                                   ),
                                 ),
                               )
-                            : PetUtils.buildAvatarPlaceholder(
-                                _pet.species,
+                            : NeuAvatar(
                                 radius: 55,
-                                iconSize: 55,
+                                icon: PetUtils.getSpeciesIcon(_pet.species),
+                                backgroundColor: speciesColor.withValues(alpha: 0.2),
+                                foregroundColor: speciesColor,
                               ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
                         Text(
                           _pet.name,
                           style: AppTextStyles.headlineMedium.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: ThemeColors.textPrimary(context),
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: speciesColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                PetUtils.getSpeciesIcon(_pet.species),
-                                size: 16,
-                                color: speciesColor,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                PetUtils.formatSpecies(_pet.species),
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: speciesColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 12),
+                        NeuChip(
+                          label: PetUtils.formatSpecies(_pet.species),
+                          icon: PetUtils.getSpeciesIcon(_pet.species),
+                          selected: true,
+                          selectedColor: speciesColor,
                         ),
                       ],
                     ),
@@ -229,7 +213,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 title,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -311,13 +295,13 @@ class _PetDetailPageState extends State<PetDetailPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           'Add Weight Entry',
           style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w700,
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
           ),
         ),
         content: Column(
@@ -327,7 +311,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             Text(
               'Current weight: ${_pet.weightKg?.toStringAsFixed(1) ?? 'Not set'} kg',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -348,7 +332,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
+              style: TextStyle(color: ThemeColors.textSecondary(context)),
             ),
           ),
           NeuButton(
@@ -376,7 +360,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           'Deactivate ${_pet.name}?',
@@ -388,7 +372,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
         content: Text(
           'This will archive ${_pet.name}. The pet will no longer appear in active lists but can be restored later.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
           ),
         ),
         actions: [
@@ -396,7 +380,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
+              style: TextStyle(color: ThemeColors.textSecondary(context)),
             ),
           ),
           NeuButton(
@@ -419,7 +403,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           'Activate ${_pet.name}?',
@@ -431,7 +415,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
         content: Text(
           'This will restore ${_pet.name} to active status.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
           ),
         ),
         actions: [
@@ -439,7 +423,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
+              style: TextStyle(color: ThemeColors.textSecondary(context)),
             ),
           ),
           NeuButton(
@@ -475,22 +459,36 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      leading: NeuContainer(
-        padding: const EdgeInsets.all(8),
-        borderRadius: 10,
-        variant: NeuVariant.flat,
-        child: Icon(icon, color: color, size: 20),
-      ),
-      title: Text(
-        title,
-        style: AppTextStyles.titleSmall.copyWith(
-          fontWeight: FontWeight.w600,
-          color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
-        ),
-      ),
+    return NeuContainer(
       onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      borderRadius: 14,
+      variant: NeuVariant.flat,
+      child: Row(
+        children: [
+          NeuContainer(
+            padding: const EdgeInsets.all(8),
+            borderRadius: 10,
+            variant: NeuVariant.flat,
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.titleSmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: ThemeColors.textPrimary(context),
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: ThemeColors.textTertiary(context),
+            size: 20,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -503,38 +501,43 @@ class _QuickInfoChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 10,
+      runSpacing: 10,
       alignment: WrapAlignment.center,
       children: [
-        PetUtils.buildInfoChip(
-          icon: PetUtils.getSpeciesIcon(pet.species),
+        NeuChip(
           label: PetUtils.formatSpecies(pet.species),
-          color: PetUtils.getSpeciesColor(pet.species),
+          icon: PetUtils.getSpeciesIcon(pet.species),
+          selected: true,
+          selectedColor: PetUtils.getSpeciesColor(pet.species),
         ),
         if (pet.breed != null)
-          PetUtils.buildInfoChip(
-            icon: Icons.pets,
+          NeuChip(
             label: pet.breed!,
-            color: ThemeColors.primary(context),
+            icon: Icons.pets,
+            selected: true,
+            selectedColor: ThemeColors.primary(context),
           ),
         if (pet.birthDate != null)
-          PetUtils.buildInfoChip(
-            icon: Icons.cake_outlined,
+          NeuChip(
             label: 'Age: ${PetUtils.calculateAge(pet.birthDate!)}',
-            color: AppColors.tertiary,
+            icon: Icons.cake_outlined,
+            selected: true,
+            selectedColor: AppColors.tertiary,
           ),
         if (pet.weightKg != null)
-          PetUtils.buildInfoChip(
-            icon: Icons.monitor_weight_outlined,
+          NeuChip(
             label: '${pet.weightKg!.toStringAsFixed(1)} kg',
-            color: ThemeColors.primary(context),
+            icon: Icons.monitor_weight_outlined,
+            selected: true,
+            selectedColor: ThemeColors.primary(context),
           ),
         if (pet.microchipId != null)
-          PetUtils.buildInfoChip(
-            icon: Icons.nfc_outlined,
+          NeuChip(
             label: 'Microchipped',
-            color: ThemeColors.success(context),
+            icon: Icons.nfc_outlined,
+            selected: true,
+            selectedColor: ThemeColors.success(context),
           ),
       ],
     );
@@ -610,9 +613,8 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 18),
       child: Row(
         children: [
           NeuContainer(
@@ -622,7 +624,7 @@ class _InfoRow extends StatelessWidget {
             child: Icon(
               icon,
               size: 22,
-              color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+              color: ThemeColors.textSecondary(context),
             ),
           ),
           const SizedBox(width: 16),
@@ -630,7 +632,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
               ),
             ),
           ),
@@ -652,7 +654,6 @@ class _WeightTrackingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -677,7 +678,7 @@ class _WeightTrackingCard extends StatelessWidget {
                     Text(
                       'Current Weight',
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        color: ThemeColors.textSecondary(context),
                       ),
                     ),
                     Text(
@@ -709,21 +710,21 @@ class _WeightTrackingCard extends StatelessWidget {
                   child: Icon(
                     Icons.monitor_weight_outlined,
                     size: 56,
-                    color: (isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary).withValues(alpha: 0.5),
+                    color: ThemeColors.textTertiary(context).withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'No weight recorded yet',
                   style: AppTextStyles.titleSmall.copyWith(
-                    color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   "Add a weight entry to track your pet's health",
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -801,32 +802,48 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      leading: NeuContainer(
-        padding: const EdgeInsets.all(8),
-        borderRadius: 10,
-        variant: NeuVariant.flat,
-        child: Icon(icon, color: color, size: 22),
-      ),
-      title: Text(
-        title,
-        style: AppTextStyles.titleSmall.copyWith(
-          fontWeight: FontWeight.w600,
-          color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
-      ),
+    return NeuContainer(
       onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      borderRadius: 14,
+      variant: NeuVariant.flat,
+      child: Row(
+        children: [
+          NeuContainer(
+            padding: const EdgeInsets.all(8),
+            borderRadius: 10,
+            variant: NeuVariant.flat,
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.titleSmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: ThemeColors.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: ThemeColors.textSecondary(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: ThemeColors.textTertiary(context),
+            size: 20,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -838,7 +855,6 @@ class _MedicalRecordsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -859,7 +875,7 @@ class _MedicalRecordsCard extends StatelessWidget {
               'Medical Records',
               style: AppTextStyles.titleSmall.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
             ),
           ],
@@ -875,21 +891,21 @@ class _MedicalRecordsCard extends StatelessWidget {
                 child: Icon(
                   Icons.folder_outlined,
                   size: 56,
-                  color: (isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary).withValues(alpha: 0.6),
+                  color: ThemeColors.textTertiary(context).withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 'No medical records yet',
                 style: AppTextStyles.titleSmall.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Medical records will appear here after vet visits',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -958,9 +974,8 @@ class _PetDetailLoader extends StatelessWidget {
   }
 
   Widget _buildError(BuildContext context, String message) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -987,14 +1002,14 @@ class _PetDetailLoader extends StatelessWidget {
                 Text(
                   'Error Loading Pet',
                   style: AppTextStyles.headlineSmall.copyWith(
-                    color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   message,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1035,9 +1050,8 @@ class _PetFormLoader extends StatelessWidget {
   }
 
   Widget _buildError(BuildContext context, String message) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1064,14 +1078,14 @@ class _PetFormLoader extends StatelessWidget {
                 Text(
                   'Error Loading Pet',
                   style: AppTextStyles.headlineSmall.copyWith(
-                    color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   message,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),

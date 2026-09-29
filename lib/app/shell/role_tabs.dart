@@ -43,12 +43,39 @@ class RoleTabs {
   /// Returns the index of the tab whose base [location] matches [path]
   /// (exact or as a prefix for nested screens), or -1 when no tab matches
   /// (e.g. a pushed detail screen outside any tab).
+  ///
+  /// This implementation finds the longest matching base path to ensure
+  /// that more specific tabs (e.g. '/staff/appointments') take precedence
+  /// over their parent tabs (e.g. '/staff').
   int indexFor(String path) {
+    // Normalize path by removing trailing slash if present (except for root)
+    final normalizedPath = path == '/' ? '/' : path.replaceAll(RegExp(r'/+$'), '');
+
+    int bestMatchIndex = -1;
+    int bestMatchLength = -1;
+
     for (var i = 0; i < tabs.length; i++) {
       final base = tabs[i].location;
-      if (path == base || path.startsWith('$base/')) return i;
+      // Normalize base the same way
+      final normalizedBase = base == '/' ? '/' : base.replaceAll(RegExp(r'/+$'), '');
+
+      // Check if this tab's base matches the path (exact or as prefix)
+      bool isMatch = false;
+      if (normalizedPath == normalizedBase) {
+        isMatch = true;
+      } else if (normalizedPath.startsWith('$normalizedBase/')) {
+        isMatch = true;
+      }
+
+      // If it's a match and has a longer base path than our current best match,
+      // update our best match
+      if (isMatch && normalizedBase.length > bestMatchLength) {
+        bestMatchIndex = i;
+        bestMatchLength = normalizedBase.length;
+      }
     }
-    return -1;
+
+    return bestMatchIndex;
   }
 
   // ---- Pet owner journey ----

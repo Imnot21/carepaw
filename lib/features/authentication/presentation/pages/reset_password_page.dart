@@ -4,17 +4,16 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/core/utils/validators.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/app/router/routes.dart';
 
-/// Reset password page - set new password using reset token (neumorphic design).
+/// Reset password page - set new password using reset token (Soft Clinic design).
 class ResetPasswordPage extends StatefulWidget {
   final String token;
 
@@ -47,8 +46,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     }
   }
 
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
@@ -80,7 +77,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -97,21 +94,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    width: 90,
-                    height: 90,
-                    child: NeuContainer(
-                      borderRadius: 26,
-                      variant: NeuVariant.raised,
-                      color: AppColors.success,
-                      boxShadow: NeuShadow.color(context, AppColors.success, blur: 16, opacity: 0.32),
-                      child: const Icon(Icons.lock_reset_rounded, size: 50, color: AppColors.textOnPrimary),
+                  Center(
+                    child: NeuAvatar(
+                      radius: 45,
+                      icon: Icons.lock_reset_rounded,
+                      backgroundColor: ThemeColors.success(context),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -127,11 +120,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   Text(
                     'Smart Veterinary Care',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                      color: ThemeColors.textSecondary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 40),
 
                   NeuCard(
                     padding: const EdgeInsets.all(28),
@@ -141,7 +134,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         Text(
                           'Set New Password',
                           style: AppTextStyles.headlineMedium.copyWith(
-                            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: ThemeColors.textPrimary(context),
                             fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,
@@ -150,7 +143,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         Text(
                           'Enter your new password below. Make it strong and memorable.',
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: ThemeColors.textSecondary(context),
                             height: 1.5,
                           ),
                           textAlign: TextAlign.center,
@@ -166,7 +159,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           textInputAction: TextInputAction.next,
                           validator: Validators.requiredWith([Validators.password], 'Password'),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
 
                         NeuTextField(
                           controller: _confirmPasswordController,
@@ -197,7 +190,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               expanded: true,
                               icon: Icons.check_circle_outline_rounded,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.medium,
+                              size: NeuButtonSize.large,
                             );
                           },
                         ),

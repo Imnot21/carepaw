@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
@@ -87,9 +85,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: SafeArea(
         child: _capturedImagePath == null
             ? _buildScannerView()
@@ -120,18 +117,14 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
       child: Row(
         children: [
-          NeuCard(
-            padding: const EdgeInsets.all(10),
-            borderRadius: 12,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Icon(Icons.close_rounded, color: ThemeColors.textPrimary(context)),
-            ),
+          NeuIconButton(
+            icon: Icons.close_rounded,
+            onPressed: () => Navigator.pop(context),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,6 +136,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                     color: ThemeColors.textPrimary(context),
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   _getTypeDescription(_selectedType),
                   style: AppTextStyles.bodySmall.copyWith(
@@ -152,9 +146,10 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               ],
             ),
           ),
+          const SizedBox(width: 12),
           NeuContainer(
             padding: const EdgeInsets.all(12),
-            borderRadius: 14,
+            borderRadius: 16,
             color: _getTypeColor(_selectedType).withValues(alpha: 0.12),
             child: Icon(
               _getTypeIcon(_selectedType),
@@ -169,10 +164,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Widget _buildTypeSelector() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: NeuCard(
         padding: const EdgeInsets.all(4),
-        borderRadius: 16,
         child: Row(
           children: ScanType.values.map((type) {
             final isSelected = _selectedType == type;
@@ -180,8 +174,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               child: GestureDetector(
                 onTap: () => setState(() => _selectedType = type),
                 child: NeuContainer(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  borderRadius: 12,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  borderRadius: 14,
                   variant: isSelected ? NeuVariant.pressed : NeuVariant.transparent,
                   color: isSelected ? _getTypeColor(_selectedType).withValues(alpha: 0.18) : null,
                   child: Column(
@@ -218,25 +212,19 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Widget _buildCameraView() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Camera placeholder
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceContainerDark
-              : AppColors.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: _getTypeColor(_selectedType).withValues(alpha: 0.3),
-                width: 2,
-              ),
-            ),
+          // Camera placeholder — recessed surface
+          NeuContainer(
+            variant: NeuVariant.inset,
+            borderRadius: 24,
+            padding: EdgeInsets.zero,
+            borderColor: _getTypeColor(_selectedType).withValues(alpha: 0.3),
+            borderWidth: 2,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(22),
               child: _isScanning
                   ? _buildScanningOverlay()
                   : _buildCameraPlaceholder(),
@@ -249,20 +237,18 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               animation: _pulseAnimation,
               builder: (context, child) => Transform.scale(
                 scale: _pulseAnimation.value,
-                child: Container(
+                child: SizedBox(
                   width: 280,
                   height: 180,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: _getTypeColor(_selectedType),
-                      width: 3,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
                   child: Stack(
                     children: [
-                      // Corner indicators
-                      ..._buildCorners(_getTypeColor(_selectedType)),
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _FrameGuidePainter(
+                            _getTypeColor(_selectedType),
+                          ),
+                        ),
+                      ),
 
                       // Center text
                       Center(
@@ -295,85 +281,6 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         ],
       ),
     );
-  }
-
-  List<Widget> _buildCorners(Color color) {
-    const double size = 30;
-    const double thickness = 4;
-    return [
-      // Top-left
-      Positioned(
-        top: 0,
-        left: 0,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: color, width: thickness),
-              left: BorderSide(color: color, width: thickness),
-            ),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-            ),
-          ),
-        ),
-      ),
-      // Top-right
-      Positioned(
-        top: 0,
-        right: 0,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: color, width: thickness),
-              right: BorderSide(color: color, width: thickness),
-            ),
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(16),
-            ),
-          ),
-        ),
-      ),
-      // Bottom-left
-      Positioned(
-        bottom: 0,
-        left: 0,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: color, width: thickness),
-              left: BorderSide(color: color, width: thickness),
-            ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-            ),
-          ),
-        ),
-      ),
-      // Bottom-right
-      Positioned(
-        bottom: 0,
-        right: 0,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: color, width: thickness),
-              right: BorderSide(color: color, width: thickness),
-            ),
-            borderRadius: const BorderRadius.only(
-              bottomRight: Radius.circular(16),
-            ),
-          ),
-        ),
-      ),
-    ];
   }
 
   Widget _buildCameraPlaceholder() {
@@ -416,11 +323,13 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       fit: StackFit.expand,
       children: [
         // Simulated camera feed
-        Container(
-          decoration: BoxDecoration(
-            color: _getTypeColor(_selectedType).withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(18),
-          ),
+        NeuContainer(
+          variant: NeuVariant.flat,
+          borderRadius: 22,
+          padding: EdgeInsets.zero,
+          boxShadow: NeuShadow.none,
+          color: _getTypeColor(_selectedType).withValues(alpha: 0.08),
+          child: const SizedBox.expand(),
         ),
 
         // Scanning animation
@@ -432,17 +341,13 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 alignment: Alignment.center,
                 children: [
                   // Pulsing ring
-                  AnimatedBuilder(
-                    animation: _animationController,
-                    builder: (context, child) => Container(
-                      width: 120 + _animationController.value * 40,
-                      height: 120 + _animationController.value * 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: _getTypeColor(_selectedType)
-                              .withValues(alpha: 0.3 - _animationController.value * 0.2),
-                          width: 3,
+                  SizedBox(
+                    width: 120 + _animationController.value * 40,
+                    height: 120 + _animationController.value * 40,
+                    child: CustomPaint(
+                      painter: _RingPainter(
+                        _getTypeColor(_selectedType).withValues(
+                          alpha: 0.3 - _animationController.value * 0.2,
                         ),
                       ),
                     ),
@@ -477,13 +382,10 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               const SizedBox(height: 24),
               SizedBox(
                 width: 200,
-                child: LinearProgressIndicator(
-                  backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceContainerDark
-              : AppColors.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation(_getTypeColor(_selectedType)),
-                  borderRadius: BorderRadius.circular(4),
-                  minHeight: 6,
+                child: NeuProgress(
+                  value: _animationController.value,
+                  height: 8,
+                  color: _getTypeColor(_selectedType),
                 ),
               ),
             ],
@@ -495,7 +397,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Widget _buildBottomControls() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
       child: Row(
         children: [
           // Gallery button
@@ -515,24 +417,13 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             animation: _animationController,
             builder: (context, child) => Transform.scale(
               scale: _isScanning ? 1.0 : _pulseAnimation.value,
-              child: FloatingActionButton(
+              child: NeuIconButton(
+                icon: Icons.camera_alt_rounded,
+                size: 28,
                 onPressed: _isScanning ? null : _capturePhoto,
+                isLoading: _isScanning,
+                color: AppColors.textOnPrimary,
                 backgroundColor: _getTypeColor(_selectedType),
-                foregroundColor: AppColors.textOnPrimary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: _isScanning
-                    ? SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation(AppColors.textOnPrimary),
-                        ),
-                      )
-                    : Icon(Icons.camera_alt_rounded, size: 28),
               ),
             ),
           ),
@@ -558,18 +449,14 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
           child: Row(
             children: [
-              NeuCard(
-                padding: const EdgeInsets.all(10),
-                borderRadius: 12,
-                child: GestureDetector(
-                  onTap: () => setState(() => _capturedImagePath = null),
-                  child: Icon(Icons.close_rounded, color: ThemeColors.textPrimary(context)),
-                ),
+              NeuIconButton(
+                icon: Icons.close_rounded,
+                onPressed: () => setState(() => _capturedImagePath = null),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,6 +468,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                         color: ThemeColors.textPrimary(context),
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       _selectedType.displayName,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -597,12 +485,11 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         // Image Preview
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
             child: NeuCard(
               padding: EdgeInsets.zero,
-              borderRadius: 20,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: NeuShape.cardFlow,
                 child: _capturedImagePath != null
                     ? Image.asset(
                         _capturedImagePath!,
@@ -618,7 +505,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
         // Actions
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
           child: Row(
             children: [
               Expanded(
@@ -649,11 +536,10 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   }
 
   Widget _buildPreviewPlaceholder() {
-    return Container(
-      width: double.infinity,
-      color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceContainerDark
-              : AppColors.surfaceContainerHighest,
+    return NeuContainer(
+      variant: NeuVariant.inset,
+      borderRadius: 22,
+      padding: EdgeInsets.zero,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -718,4 +604,75 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       'imagePath': _capturedImagePath,
     });
   }
+}
+
+/// Draws the viewfinder frame — a rounded border with accentuated corners.
+class _FrameGuidePainter extends CustomPainter {
+  final Color color;
+
+  const _FrameGuidePainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final border = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(16)),
+      border,
+    );
+
+    final corners = Paint()
+      ..color = color
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    const s = 30.0;
+    final paths = [
+      Path()
+        ..moveTo(0, s)
+        ..lineTo(0, 0)
+        ..lineTo(s, 0),
+      Path()
+        ..moveTo(size.width - s, 0)
+        ..lineTo(size.width, 0)
+        ..lineTo(size.width, s),
+      Path()
+        ..moveTo(0, size.height - s)
+        ..lineTo(0, size.height)
+        ..lineTo(s, size.height),
+      Path()
+        ..moveTo(size.width - s, size.height)
+        ..lineTo(size.width, size.height)
+        ..lineTo(size.width, size.height - s),
+    ];
+    for (final path in paths) {
+      canvas.drawPath(path, corners);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FrameGuidePainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// Draws the pulsing ring around the OCR indicator.
+class _RingPainter extends CustomPainter {
+  final Color color;
+
+  const _RingPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(size.center(Offset.zero), size.width / 2, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

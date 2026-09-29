@@ -12,7 +12,10 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -36,8 +39,6 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   final TextEditingController _searchController = TextEditingController();
 
   bool _isVetOrStaff = false;
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
@@ -69,7 +70,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -123,7 +124,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
         _isVetOrStaff ? 'All Appointments' : 'Appointments',
         style: AppTextStyles.headlineSmall.copyWith(
           fontWeight: FontWeight.w700,
-          color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+          color: ThemeColors.textPrimary(context),
         ),
       ),
       centerTitle: true,
@@ -147,12 +148,10 @@ class _AppointmentListPageState extends State<AppointmentListPage>
           size: 24,
         ),
         suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: Icon(
-                  Icons.clear_rounded,
-                  color: ThemeColors.textSecondary(context),
-                  size: 22,
-                ),
+            ? NeuIconButton(
+                icon: Icons.clear_rounded,
+                size: 22,
+                color: ThemeColors.textSecondary(context),
                 onPressed: () {
                   _searchController.clear();
                   setState(() {});
@@ -185,8 +184,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             ),
           ),
           labelColor: Colors.white,
-          unselectedLabelColor:
-              _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+          unselectedLabelColor: ThemeColors.textSecondary(context),
           labelStyle: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle:
               AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w500),
@@ -321,7 +319,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               isUpcoming ? 'No Upcoming Appointments' : 'No Past Appointments',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
               textAlign: TextAlign.center,
             ),
@@ -382,7 +380,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               'Failed to Load Appointments',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
               textAlign: TextAlign.center,
             ),
@@ -438,7 +436,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
@@ -500,7 +498,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
@@ -591,21 +589,21 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final statusColor = _getStatusColor(context, appointment.status);
     final isUpcoming = appointment.isUpcoming;
     final speciesColor = _getSpeciesColor(pet?.species);
     final speciesIcon = _getSpeciesIcon(pet?.species);
-    final textPrimary = isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
+    final textPrimary = ThemeColors.textPrimary(context);
+    final textSecondary = ThemeColors.textSecondary(context);
 
     return NeuCard(
       onTap: onTap,
       borderRadius: 20,
-      padding: const EdgeInsets.all(18),
-      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 16),
       borderColor: statusColor.withValues(alpha: isUpcoming ? 0.35 : 0.2),
       borderWidth: 1.5,
+      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -613,20 +611,13 @@ class _AppointmentCard extends StatelessWidget {
           Row(
             children: [
               // Status indicator dot
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.4),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
+              NeuContainer(
+                borderRadius: 8,
+                variant: NeuVariant.raised,
+                color: statusColor,
+                padding: const EdgeInsets.all(4),
+                boxShadow: NeuShadow.color(context, statusColor, blur: 8, opacity: 0.4),
+                child: const SizedBox(width: 8, height: 8),
               ),
               const SizedBox(width: 12),
               // Date & time
@@ -640,20 +631,10 @@ class _AppointmentCard extends StatelessWidget {
                 ),
               ),
               // Status chip
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                ),
-                child: Text(
-                  appointment.status.displayName,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              NeuChip(
+                label: appointment.status.displayName,
+                selected: true,
+                selectedColor: statusColor,
               ),
             ],
           ),
@@ -707,12 +688,11 @@ class _AppointmentCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
+                  NeuContainer(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.primary(context).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    borderRadius: 10,
+                    variant: NeuVariant.flat,
+                    color: ThemeColors.primary(context).withValues(alpha: 0.15),
                     child: Icon(
                       Icons.medical_services_outlined,
                       size: 18,
@@ -767,9 +747,15 @@ class _AppointmentCard extends StatelessWidget {
               appointment.status != AppointmentStatus.cancelled &&
               appointment.status != AppointmentStatus.noShow) ...[
             const SizedBox(height: 16),
-            Container(
+            SizedBox(
               height: 1,
-              color: isDark ? AppColors.dividerDark : AppColors.divider,
+              child: NeuContainer(
+                borderRadius: 0,
+                variant: NeuVariant.flat,
+                color: ThemeColors.border(context),
+                padding: EdgeInsets.zero,
+                child: const SizedBox.shrink(),
+              ),
             ),
             const SizedBox(height: 16),
             if (isVetOrStaff) ...[
@@ -870,9 +856,15 @@ class _AppointmentCard extends StatelessWidget {
             ],
           ] else if (!isUpcoming) ...[
             const SizedBox(height: 16),
-            Container(
+            SizedBox(
               height: 1,
-              color: isDark ? AppColors.dividerDark : AppColors.divider,
+              child: NeuContainer(
+                borderRadius: 0,
+                variant: NeuVariant.flat,
+                color: ThemeColors.border(context),
+                padding: EdgeInsets.zero,
+                child: const SizedBox.shrink(),
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -893,20 +885,19 @@ class _AppointmentCard extends StatelessWidget {
   }
 
   Color _getStatusColor(BuildContext context, AppointmentStatus status) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case AppointmentStatus.requested:
-        return isDark ? AppColors.warningOnDark : AppColors.warning;
+        return ThemeColors.warning(context);
       case AppointmentStatus.confirmed:
-        return isDark ? AppColors.infoDark : AppColors.info;
+        return ThemeColors.primaryLight(context);
       case AppointmentStatus.checkedIn:
         return ThemeColors.primary(context);
       case AppointmentStatus.inProgress:
         return AppColors.tertiary;
       case AppointmentStatus.completed:
-        return isDark ? AppColors.successOnDark : AppColors.success;
+        return ThemeColors.success(context);
       case AppointmentStatus.cancelled:
-        return isDark ? AppColors.errorOnDark : AppColors.error;
+        return ThemeColors.error(context);
       case AppointmentStatus.noShow:
         return ThemeColors.textSecondary(context);
     }

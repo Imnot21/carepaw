@@ -47,5 +47,8 @@ app.*.map.json
 # Windows shortcuts
 *.lnk
 
+# Node modules
+node_modules/
+
 # Claude Code worktrees
 .claude/worktrees/

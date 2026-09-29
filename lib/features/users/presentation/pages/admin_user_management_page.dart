@@ -95,12 +95,34 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Delete account?'),
-          content: Text(
-            'This permanently deletes ${user.fullName} (${user.email}). '
-            'Their sign-in is revoked and the email is freed to be re-created. '
-            'Pets, appointments, and medical records are left intact. '
-            'This cannot be undone.',
+          title: const Text('Confirm Deletion'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                Text('You are about to permanently delete the following account:'),
+                const SizedBox(height: 10),
+                Text('Name: ${user.fullName}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('Email: ${user.email}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('Role: ${user.role.displayName}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 20),
+                const Text(
+                  'This action will:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text('• Permanently delete this user account from the system'),
+                const Text('• Revoke the user\'s authentication access'),
+                const Text('• Free the email address for potential reuse'),
+                const Text('• Leave associated pets, appointments, and medical records intact'),
+                const SizedBox(height: 20),
+                Text(
+                  'This action CANNOT be undone.',
+                  style: TextStyle(
+                    color: deleteColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -110,7 +132,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
             TextButton(
               style: TextButton.styleFrom(foregroundColor: deleteColor),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete permanently'),
+              child: const Text('Delete Permanently'),
             ),
           ],
         );
@@ -274,7 +296,6 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                     label: 'Password',
                     hint: 'Set a starting password',
                     obscureText: true,
-                    helper: 'Min 8 chars, 1 uppercase, 1 lowercase, 1 number',
                     validator: Validators.requiredWith([Validators.password], 'Password'),
                   ),
                   const SizedBox(height: 16),
@@ -481,7 +502,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                       }
                     },
                     onDelete: () {
-                      if (user.id != null) _confirmDelete(context, user);
+                      if (user != null && user.id != null) _confirmDelete(context, user);
                     },
                   ),
                 )),

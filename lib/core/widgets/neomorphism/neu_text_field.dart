@@ -116,12 +116,11 @@ class _NeuTextFieldState extends State<NeuTextField> {
     final hasError = _errorText != null || widget.error != null;
     final accent = ThemeColors.primary(context);
     final errorColor = ThemeColors.error(context);
-    // Textfield foreground: stark max-contrast. Pure white on the dark field,
-    // dark-navy on the light field — matching "white in dark mode, dark in light".
-    final inputColor = isDark ? Colors.white : AppColors.textPrimary;
+    // Textfield foreground: stark max-contrast. Uses theme-aware colors for proper light/dark mode handling.
+    final inputColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
     final labelColor = inputColor;
-    final hintColor = isDark ? Colors.white70 : AppColors.textSecondary;
-    final disabledLabelColor = isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary;
+    final hintColor = Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54;
+    final disabledLabelColor = ThemeColors.textTertiary(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,16 +160,16 @@ class _NeuTextFieldState extends State<NeuTextField> {
               validator: _validate,
               inputFormatters: widget.inputFormatters,
               autofocus: widget.autofocus,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: inputColor,
-              ),
+              style: AppTextStyles.bodyLarge.copyWith(color: inputColor),
+              cursorColor: accent,
               decoration: InputDecoration(
                 hintText: widget.hint,
                 errorText: null,
                 helperText: widget.helper,
                 helperMaxLines: 2,
                 counterText: '',
-                contentPadding: widget.contentPadding ??
+                contentPadding:
+                    widget.contentPadding ??
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 prefixIcon: widget.prefixIcon != null
                     ? Padding(
@@ -193,8 +192,9 @@ class _NeuTextFieldState extends State<NeuTextField> {
                 errorBorder: InputBorder.none,
                 focusedErrorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
-                hintStyle: AppTextStyles.bodyMedium.copyWith(
-                  color: hintColor,
+                hintStyle: AppTextStyles.bodyMedium.copyWith(color: hintColor),
+                floatingLabelStyle: AppTextStyles.labelLarge.copyWith(
+                  color: inputColor,
                 ),
               ),
             ),
@@ -216,7 +216,9 @@ class _NeuTextFieldState extends State<NeuTextField> {
             child: Text(
               widget.helper!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
               ),
             ),
           ),
@@ -246,10 +248,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
       return Padding(
         padding: const EdgeInsets.all(14),
         child: IconTheme(
-          data: IconThemeData(
-            color: _isFocused ? accent : iconColor,
-            size: 22,
-          ),
+          data: IconThemeData(color: _isFocused ? accent : iconColor, size: 22),
           child: widget.suffixIcon!,
         ),
       );

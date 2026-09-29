@@ -7,6 +7,7 @@ import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -67,7 +68,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                   onPressed: () {
                     context.read<QueueBloc>().add(const QueueRepositionRequested());
                   },
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: ThemeColors.textPrimary(context),
                   tooltip: 'Reposition Queue',
                 ),
               ),
@@ -91,7 +92,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: Theme.of(context).colorScheme.error,
+                      backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       margin: const EdgeInsets.all(16),
@@ -130,33 +131,33 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             NeuContainer(
               borderRadius: 70,
               padding: const EdgeInsets.all(30),
-              color: AppColors.primary,
-              boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+              color: ThemeColors.primary(context),
+              boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
               child: const Icon(
                 Icons.people_outline_rounded,
                 size: 60,
                 color: AppColors.textOnPrimary,
               ),
             ),
-            const SizedBox(height: 24),
-              Text(
-                'Queue Management',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-                textAlign: TextAlign.center,
+            const SizedBox(height: 28),
+            Text(
+              'Queue Management',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Load the queue to see waiting patients',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Load the queue to see waiting patients',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: ThemeColors.textSecondary(context),
+                height: 1.5,
               ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -171,15 +172,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             NeuContainer(
               borderRadius: 70,
               padding: const EdgeInsets.all(30),
-              color: AppColors.error,
-              boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+              color: ThemeColors.error(context),
+              boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 60,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Text(
               'Failed to Load Queue',
               style: AppTextStyles.headlineSmall.copyWith(
@@ -187,15 +188,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               message,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: ThemeColors.textSecondary(context),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             NeuButton(
               text: 'Retry',
               onPressed: () {
@@ -232,7 +233,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                     context.read<QueueBloc>().add(QueueStaffLoadRequested());
                   },
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
                     itemCount: queueEntries.length,
                     itemBuilder: (context, index) {
                       final entry = queueEntries[index];
@@ -278,15 +279,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             NeuContainer(
               borderRadius: 70,
               padding: const EdgeInsets.all(30),
-              color: AppColors.primary,
-              boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+              color: ThemeColors.primary(context),
+              boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
               child: const Icon(
                 Icons.people_outline_rounded,
                 size: 60,
                 color: AppColors.textOnPrimary,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Text(
               'No Patients in Queue',
               style: AppTextStyles.headlineSmall.copyWith(
@@ -298,7 +299,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             Text(
               'Patients will appear here when they check in.\nPull to refresh.',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: ThemeColors.textSecondary(context),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -317,7 +318,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
         title: 'Call Patient',
         content: Text('Call ${entry.pet.name} (#${entry.queueEntry.position}) for their appointment?'),
         icon: Icons.volume_up_rounded,
-        iconColor: Theme.of(dialogContext).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
+        iconColor: ThemeColors.info(dialogContext),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -453,7 +454,7 @@ class _StatsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuContainer(
       borderRadius: 0,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       variant: NeuVariant.flat,
       child: Row(
         children: [
@@ -462,13 +463,13 @@ class _StatsBar extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               label: 'Waiting',
               value: '$totalWaiting',
-              color: Theme.of(context).brightness == Brightness.dark ? AppColors.warningOnDark : AppColors.warning,
+              color: ThemeColors.warning(context),
             ),
           ),
           Container(
             width: 1,
-            height: 40,
-            color: Theme.of(context).colorScheme.outlineVariant,
+            height: 44,
+            color: ThemeColors.border(context),
           ),
           Expanded(
             child: _StatItem(
@@ -480,15 +481,15 @@ class _StatsBar extends StatelessWidget {
           ),
           Container(
             width: 1,
-            height: 40,
-            color: Theme.of(context).colorScheme.outlineVariant,
+            height: 44,
+            color: ThemeColors.border(context),
           ),
           Expanded(
             child: _StatItem(
               icon: Icons.volume_up_outlined,
               label: 'Now Serving',
               value: currentServing > 0 ? '#$currentServing' : '-',
-              color: Theme.of(context).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
+              color: ThemeColors.info(context),
             ),
           ),
         ],
@@ -514,19 +515,18 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
+        NeuContainer(
+          borderRadius: 14,
+          padding: const EdgeInsets.all(12),
+          variant: NeuVariant.flat,
+          color: color.withValues(alpha: 0.12),
           child: Icon(
             icon,
             size: 22,
             color: color,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           value,
           style: AppTextStyles.headlineSmall.copyWith(
@@ -534,10 +534,11 @@ class _StatItem extends StatelessWidget {
             color: color,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: AppTextStyles.labelSmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: ThemeColors.textSecondary(context),
           ),
         ),
       ],
@@ -570,9 +571,8 @@ class _StaffQueueEntryCard extends StatelessWidget {
         (entry.queueEntry.status == QueueStatus.waiting || entry.queueEntry.status == QueueStatus.called);
 
     return NeuCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 14),
       borderColor: isCurrentServing ? statusColor.withValues(alpha: 0.5) : null,
       borderWidth: isCurrentServing ? 1.5 : 0,
       child: Column(
@@ -582,31 +582,33 @@ class _StaffQueueEntryCard extends StatelessWidget {
           Row(
             children: [
               // Position badge
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isCurrentServing
-                      ? statusColor
-                      : statusColor.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                  boxShadow: isCurrentServing
-                      ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.4)
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    '#${entry.queueEntry.position}',
-                    style: AppTextStyles.titleSmall.copyWith(
-                      color: isCurrentServing
-                          ? AppColors.textOnPrimary
-                          : statusColor,
-                      fontWeight: FontWeight.bold,
+              NeuContainer(
+                borderRadius: 20,
+                padding: const EdgeInsets.all(10),
+                variant: NeuVariant.raised,
+                color: isCurrentServing
+                    ? statusColor
+                    : statusColor.withValues(alpha: 0.15),
+                boxShadow: isCurrentServing
+                    ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.4)
+                    : null,
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Center(
+                    child: Text(
+                      '#${entry.queueEntry.position}',
+                      style: AppTextStyles.titleSmall.copyWith(
+                        color: isCurrentServing
+                            ? AppColors.textOnPrimary
+                            : statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               // Pet info
               Expanded(
                 child: Column(
@@ -614,20 +616,22 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          entry.pet.name,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            fontWeight: FontWeight.w700,
+                        Flexible(
+                          child: Text(
+                            entry.pet.name,
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (isCurrentServing) ...[
                           const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          NeuContainer(
+                            borderRadius: 12,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            variant: NeuVariant.flat,
+                            color: statusColor.withValues(alpha: 0.15),
                             child: Text(
                               'NEXT',
                               style: AppTextStyles.labelSmall.copyWith(
@@ -639,11 +643,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
                         ],
                       ],
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       '${entry.pet.species.displayName} • ${entry.pet.breed} • Owner: ${entry.pet.ownerId}',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: ThemeColors.textSecondary(context),
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -658,13 +664,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
               ],
 
               // Status chip
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-                ),
+              NeuContainer(
+                borderRadius: 20,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                variant: NeuVariant.flat,
+                color: statusColor.withValues(alpha: 0.12),
+                borderColor: statusColor.withValues(alpha: 0.3),
+                borderWidth: 1,
                 child: Text(
                   entry.queueEntry.status.displayName,
                   style: AppTextStyles.labelSmall.copyWith(
@@ -676,21 +682,20 @@ class _StaffQueueEntryCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // Appointment info
           NeuContainer(
-            borderRadius: 12,
-            padding: const EdgeInsets.all(12),
+            borderRadius: 14,
+            padding: const EdgeInsets.all(14),
             variant: NeuVariant.inset,
             child: Row(
               children: [
-                Container(
+                NeuContainer(
+                  borderRadius: 10,
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: ThemeColors.primary(context).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  variant: NeuVariant.flat,
+                  color: ThemeColors.primary(context).withValues(alpha: 0.12),
                   child: Icon(
                     Icons.medical_services_outlined,
                     size: 18,
@@ -708,6 +713,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                           color: ThemeColors.textSecondary(context),
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         entry.appointment.reason ?? 'General checkup',
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -718,23 +724,22 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   ),
                 ),
                 if (entry.queueEntry.estimatedWaitMinutes != null) ...[
-                  Container(
+                  NeuContainer(
+                    borderRadius: 10,
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.warning(context).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    variant: NeuVariant.flat,
+                    color: ThemeColors.warning(context).withValues(alpha: 0.12),
                     child: Icon(
                       Icons.timer_outlined,
                       size: 18,
-                      color: Theme.of(context).brightness == Brightness.dark ? AppColors.warningOnDark : AppColors.warning,
+                      color: ThemeColors.warning(context),
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     '${entry.queueEntry.estimatedWaitMinutes} min',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark ? AppColors.warningOnDark : AppColors.warning,
+                      color: ThemeColors.warning(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -745,27 +750,22 @@ class _StaffQueueEntryCard extends StatelessWidget {
 
           // Vet info
           if (entry.veterinarian.fullName.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Row(
               children: [
-                CircleAvatar(
+                NeuAvatar(
                   radius: 18,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(
-                    entry.veterinarian.fullName.isNotEmpty
-                        ? entry.veterinarian.fullName[0]
-                        : 'D',
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  initials: entry.veterinarian.fullName.isNotEmpty
+                      ? entry.veterinarian.fullName[0]
+                      : 'D',
+                  backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                  foregroundColor: ThemeColors.primary(context),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Text(
                   'Dr. ${entry.veterinarian.fullName}',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: ThemeColors.textSecondary(context),
                   ),
                 ),
               ],
@@ -773,7 +773,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
           ],
 
           // Time info
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             children: [
               Icon(
@@ -793,13 +793,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
                 Icon(
                   Icons.volume_up_outlined,
                   size: 14,
-                  color: Theme.of(context).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
+                  color: ThemeColors.info(context),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Called: ${_formatTime(entry.queueEntry.calledAt!)}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).brightness == Brightness.dark ? AppColors.infoDark : AppColors.info,
+                    color: ThemeColors.info(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -809,13 +809,13 @@ class _StaffQueueEntryCard extends StatelessWidget {
                 Icon(
                   Icons.door_front_door_outlined,
                   size: 14,
-                  color: Theme.of(context).brightness == Brightness.dark ? AppColors.successOnDark : AppColors.success,
+                  color: ThemeColors.success(context),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Room ${entry.queueEntry.room}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).brightness == Brightness.dark ? AppColors.successOnDark : AppColors.success,
+                    color: ThemeColors.success(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -824,9 +824,9 @@ class _StaffQueueEntryCard extends StatelessWidget {
           ),
 
           // Action buttons
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           const Divider(height: 1),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildActionButtons(context),
         ],
       ),
@@ -903,16 +903,15 @@ class _StaffQueueEntryCard extends StatelessWidget {
   }
 
   Color _getStatusColor(BuildContext context, QueueStatus status) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case QueueStatus.waiting:
-        return isDark ? AppColors.warningOnDark : AppColors.warning;
+        return ThemeColors.warning(context);
       case QueueStatus.called:
-        return isDark ? AppColors.infoDark : AppColors.info;
+        return ThemeColors.info(context);
       case QueueStatus.inRoom:
         return ThemeColors.primary(context);
       case QueueStatus.completed:
-        return isDark ? AppColors.successOnDark : AppColors.success;
+        return ThemeColors.success(context);
       case QueueStatus.skipped:
         return ThemeColors.textSecondary(context);
     }
@@ -940,13 +939,13 @@ class _PriorityControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _color(context, priority);
-    final chip = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+    final chip = NeuContainer(
+      borderRadius: 20,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      variant: NeuVariant.flat,
+      color: color.withValues(alpha: 0.12),
+      borderColor: color.withValues(alpha: 0.3),
+      borderWidth: 1,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1042,12 +1041,11 @@ class _PremiumDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
+          NeuContainer(
+            borderRadius: 12,
+            padding: const EdgeInsets.all(10),
+            variant: NeuVariant.flat,
+            color: iconColor.withValues(alpha: 0.12),
             child: Icon(icon, size: 22, color: iconColor),
           ),
           const SizedBox(width: 12),
@@ -1083,39 +1081,39 @@ class _NotLoggedInView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 90,
                 padding: const EdgeInsets.all(40),
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                color: ThemeColors.primary(context),
+                boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
                 child: const Icon(
                   Icons.people_outlined,
                   size: 80,
                   color: AppColors.textOnPrimary,
                 ),
               ),
-                const SizedBox(height: 28),
-                Text(
-                  'Please log in to manage queue',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+              const SizedBox(height: 32),
+              Text(
+                'Please log in to manage queue',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Sign in to access queue management',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to access queue management',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: ThemeColors.textSecondary(context),
                 ),
-                const SizedBox(height: 32),
-                NeuButton(
-                  text: 'Log In',
-                  onPressed: () => context.go('/login'),
-                  icon: Icons.login_rounded,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 36),
+              NeuButton(
+                text: 'Log In',
+                onPressed: () => context.go('/login'),
+                icon: Icons.login_rounded,
+              ),
+            ],
           ),
+        ),
       ),
     );
   }
@@ -1137,41 +1135,41 @@ class _AccessDeniedView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 90,
                 padding: const EdgeInsets.all(40),
-                color: AppColors.error,
-                boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+                color: ThemeColors.error(context),
+                boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
                 child: const Icon(
                   Icons.block_rounded,
                   size: 80,
                   color: Colors.white,
                 ),
               ),
-                const SizedBox(height: 28),
-                Text(
-                  'Access Denied',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: ThemeColors.error(context),
-                  ),
-                  textAlign: TextAlign.center,
+              const SizedBox(height: 32),
+              Text(
+                'Access Denied',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: ThemeColors.error(context),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Only veterinarians and clinic staff can manage the queue.\n\nThis feature is for clinic operations only.',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Only veterinarians and clinic staff can manage the queue.\n\nThis feature is for clinic operations only.',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: ThemeColors.textSecondary(context),
                 ),
-                const SizedBox(height: 32),
-                NeuButton(
-                  text: 'Go Back',
-                  onPressed: () => context.pop(),
-                  icon: Icons.arrow_back_rounded,
-                  variant: NeuButtonVariant.secondary,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 36),
+              NeuButton(
+                text: 'Go Back',
+                onPressed: () => context.pop(),
+                icon: Icons.arrow_back_rounded,
+                variant: NeuButtonVariant.secondary,
+              ),
+            ],
           ),
+        ),
       ),
     );
   }

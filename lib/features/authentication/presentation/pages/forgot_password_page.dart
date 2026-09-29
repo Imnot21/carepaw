@@ -4,16 +4,15 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/core/utils/validators.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 
-/// Forgot password page - request password reset email with neumorphic design.
+/// Forgot password page - request password reset email with Soft Clinic design.
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
 
@@ -38,8 +37,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       );
     }
   }
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +67,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -87,21 +84,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    width: 90,
-                    height: 90,
-                    child: NeuContainer(
-                      borderRadius: 26,
-                      variant: NeuVariant.raised,
-                      color: AppColors.primary,
-                      boxShadow: NeuShadow.color(context, AppColors.primary, blur: 16, opacity: 0.32),
-                      child: const Icon(Icons.pets_rounded, size: 50, color: AppColors.textOnPrimary),
+                  const Center(
+                    child: NeuAvatar(
+                      radius: 45,
+                      icon: Icons.pets_rounded,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -117,11 +109,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   Text(
                     'Smart Veterinary Care',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                      color: ThemeColors.textSecondary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 40),
 
                   NeuCard(
                     padding: const EdgeInsets.all(28),
@@ -131,7 +123,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         Text(
                           'Reset Your Password',
                           style: AppTextStyles.headlineMedium.copyWith(
-                            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: ThemeColors.textPrimary(context),
                             fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,
@@ -140,7 +132,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         Text(
                           'Enter your email address and we\'ll send you a link to reset your password.',
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: ThemeColors.textSecondary(context),
                             height: 1.5,
                           ),
                           textAlign: TextAlign.center,
@@ -168,7 +160,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               expanded: true,
                               icon: Icons.send_rounded,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.medium,
+                              size: NeuButtonSize.large,
                             );
                           },
                         ),
@@ -180,22 +172,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             Text(
                               'Remember your password? ',
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                                color: ThemeColors.textSecondary(context),
                               ),
                             ),
-                            TextButton(
+                            NeuButton(
+                              text: 'Back to Login',
                               onPressed: () => Navigator.of(context).pop(),
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                'Back to Login',
-                                style: AppTextStyles.primary(AppTextStyles.bodyMedium).copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              variant: NeuButtonVariant.text,
+                              size: NeuButtonSize.small,
                             ),
                           ],
                         ),

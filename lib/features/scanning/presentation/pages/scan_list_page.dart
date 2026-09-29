@@ -32,8 +32,6 @@ class _ScanListPageState extends State<ScanListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-
   @override
   void initState() {
     super.initState();
@@ -58,15 +56,15 @@ class _ScanListPageState extends State<ScanListPage>
         // Check if user is vet, staff, or admin - only these roles can scan/process OCR
         final user = authState.user;
         final isVetOrStaff = user.role == UserRole.veterinarian ||
-                            user.role == UserRole.staff ||
-                            user.role == UserRole.admin;
+            user.role == UserRole.staff ||
+            user.role == UserRole.admin;
 
         if (!isVetOrStaff) {
           return const _AccessDeniedView();
         }
 
         return Scaffold(
-          backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+          backgroundColor: ThemeColors.background(context),
           body: CustomScrollView(
             slivers: [
               _buildAppBar(),
@@ -94,7 +92,7 @@ class _ScanListPageState extends State<ScanListPage>
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+        titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -103,20 +101,17 @@ class _ScanListPageState extends State<ScanListPage>
               'Scan & OCR',
               style: AppTextStyles.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Scan receipts, medicine boxes & more',
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
               ),
             ),
           ],
-        ),
-        background: Container(
-          color: Colors.transparent,
         ),
       ),
       actions: [
@@ -127,7 +122,7 @@ class _ScanListPageState extends State<ScanListPage>
             // Show scan history
           },
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
       ],
     );
   }
@@ -211,7 +206,7 @@ class _ScanListPageState extends State<ScanListPage>
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 110),
           itemCount: records.length,
           itemBuilder: (context, index) {
             final record = records[index];
@@ -237,7 +232,7 @@ class _ScanListPageState extends State<ScanListPage>
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 110),
             itemCount: records.length,
             itemBuilder: (context, index) {
               final record = records[index];
@@ -265,7 +260,7 @@ class _ScanListPageState extends State<ScanListPage>
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 110),
             itemCount: records.length,
             itemBuilder: (context, index) {
               final record = records[index];
@@ -284,9 +279,8 @@ class _ScanListPageState extends State<ScanListPage>
     final isRejected = record.status == ScanStatus.rejected;
 
     return NeuCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(18),
       borderColor: isPending && highlightPending
           ? ThemeColors.warning(context).withValues(alpha: 0.4)
           : isConfirmed
@@ -304,7 +298,7 @@ class _ScanListPageState extends State<ScanListPage>
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(12),
-                borderRadius: 12,
+                borderRadius: 14,
                 color: _getTypeColor(record.scanType),
                 child: Icon(
                   _getTypeIcon(record.scanType),
@@ -312,7 +306,7 @@ class _ScanListPageState extends State<ScanListPage>
                   color: AppColors.textOnPrimary,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,13 +315,14 @@ class _ScanListPageState extends State<ScanListPage>
                       record.scanType.displayName,
                       style: AppTextStyles.titleMedium.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                        color: ThemeColors.textPrimary(context),
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       formatDateTime(record.createdAt),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        color: ThemeColors.textSecondary(context),
                       ),
                     ),
                   ],
@@ -341,29 +336,29 @@ class _ScanListPageState extends State<ScanListPage>
                 _buildConfidenceIndicator(record.confidenceScore!),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // OCR preview
           if (record.rawOcrText != null && record.rawOcrText!.isNotEmpty) ...[
             NeuContainer(
-              padding: const EdgeInsets.all(12),
-              borderRadius: 10,
+              padding: const EdgeInsets.all(14),
+              borderRadius: 12,
               variant: NeuVariant.inset,
               child: Row(
                 children: [
                   Icon(
                     Icons.text_fields_rounded,
                     size: 18,
-                    color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: ThemeColors.textSecondary(context),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       record.rawOcrText!.length > 80
                           ? '${record.rawOcrText!.substring(0, 80)}...'
                           : record.rawOcrText!,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        color: ThemeColors.textSecondary(context),
                         fontFamily: 'monospace',
                       ),
                       maxLines: 2,
@@ -373,7 +368,7 @@ class _ScanListPageState extends State<ScanListPage>
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
           ],
 
           // Action buttons for pending scans
@@ -391,7 +386,7 @@ class _ScanListPageState extends State<ScanListPage>
                     expanded: true,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: NeuButton(
                     text: 'Review',
@@ -417,7 +412,7 @@ class _ScanListPageState extends State<ScanListPage>
                     expanded: true,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: NeuButton(
                     text: 'Use Data',
@@ -470,7 +465,7 @@ class _ScanListPageState extends State<ScanListPage>
 
     return NeuContainer(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      borderRadius: 8,
+      borderRadius: 10,
       variant: NeuVariant.flat,
       borderColor: color.withValues(alpha: 0.3),
       borderWidth: 1,
@@ -503,7 +498,7 @@ class _ScanListPageState extends State<ScanListPage>
 
     return NeuContainer(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      borderRadius: 8,
+      borderRadius: 10,
       variant: NeuVariant.flat,
       borderColor: color.withValues(alpha: 0.3),
       borderWidth: 1,
@@ -599,24 +594,28 @@ class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      color: isDark ? AppColors.backgroundDark : AppColors.background,
-      child: TabBar(
-        controller: tabController,
-        tabs: tabs,
-        indicatorColor: color,
-        indicatorWeight: 3,
-        labelColor: color,
-        unselectedLabelColor: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-        labelStyle: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w600,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: NeuContainer(
+        variant: NeuVariant.flat,
+        color: ThemeColors.background(context),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: TabBar(
+          controller: tabController,
+          tabs: tabs,
+          indicatorColor: color,
+          indicatorWeight: 3,
+          labelColor: color,
+          unselectedLabelColor: ThemeColors.textSecondary(context),
+          labelStyle: AppTextStyles.labelLarge.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+          dividerColor: Colors.transparent,
+          isScrollable: true,
         ),
-        unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-        dividerColor: Colors.transparent,
-        isScrollable: true,
       ),
     );
   }
@@ -651,7 +650,6 @@ class _NeuEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = ThemeColors.primary(context);
     return Center(
       child: SingleChildScrollView(
@@ -672,7 +670,7 @@ class _NeuEmptyState extends StatelessWidget {
                 title,
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -680,7 +678,7 @@ class _NeuEmptyState extends StatelessWidget {
               Text(
                 message,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -707,9 +705,8 @@ class _NotLoggedInView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -734,7 +731,7 @@ class _NotLoggedInView extends StatelessWidget {
                     'Please log in to use scanning',
                     style: AppTextStyles.headlineSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                      color: ThemeColors.textPrimary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -742,7 +739,7 @@ class _NotLoggedInView extends StatelessWidget {
                   Text(
                     'Sign in to scan receipts, medicine boxes & more',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                      color: ThemeColors.textSecondary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -768,9 +765,8 @@ class _AccessDeniedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -803,7 +799,7 @@ class _AccessDeniedView extends StatelessWidget {
                   Text(
                     'Only veterinarians and clinic staff can use scanning and OCR features.\n\nThis feature is for clinic operations only.',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                      color: ThemeColors.textSecondary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),

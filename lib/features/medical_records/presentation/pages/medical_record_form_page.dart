@@ -106,7 +106,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: AppColors.success,
+                  backgroundColor: ThemeColors.success(context),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -119,7 +119,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.failure.message),
-                  backgroundColor: AppColors.error,
+                  backgroundColor: ThemeColors.error(context),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -159,7 +159,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                 slivers: [
                   // Pet header
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
                     sliver: SliverToBoxAdapter(
                       child: _buildPetHeader(context, speciesColor),
                     ),
@@ -175,17 +175,17 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
                   // Form fields
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                     sliver: SliverList.separated(
                       itemCount: _getFields().length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 16),
+                      separatorBuilder: (_, _) => const SizedBox(height: 18),
                       itemBuilder: (context, index) => _getFields()[index],
                     ),
                   ),
 
                   // Submit button
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
                     sliver: SliverToBoxAdapter(
                       child: _buildSubmitButton(context, isEditing),
                     ),
@@ -215,7 +215,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               Text(
                 'Creating record for',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: ThemeColors.textSecondary(context),
                 ),
               ),
               const SizedBox(height: 2),
@@ -228,15 +228,13 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: speciesColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: speciesColor.withValues(alpha: 0.3),
-            ),
-          ),
+        NeuContainer(
+          borderRadius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          variant: NeuVariant.flat,
+          color: speciesColor.withValues(alpha: 0.12),
+          borderColor: speciesColor.withValues(alpha: 0.3),
+          borderWidth: 1,
           child: Text(
             _selectedType.displayName,
             style: AppTextStyles.labelMedium.copyWith(
@@ -262,12 +260,11 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: speciesColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              NeuContainer(
+                borderRadius: 14,
+                padding: const EdgeInsets.all(12),
+                variant: NeuVariant.flat,
+                color: speciesColor.withValues(alpha: 0.12),
                 child: Icon(
                   Icons.category_outlined,
                   color: speciesColor,
@@ -546,7 +543,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
   }) {
     return NeuCard(
       borderRadius: 20,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -555,9 +552,9 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               Icon(
                 icon,
                 size: 20,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: ThemeColors.textSecondary(context),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 label,
                 style: AppTextStyles.labelLarge.copyWith(
@@ -598,7 +595,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please log in again'),
-          backgroundColor: AppColors.error,
+          backgroundColor: ThemeColors.error(context),
         ),
       );
       return;
@@ -609,7 +606,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please log in again'),
-          backgroundColor: AppColors.error,
+          backgroundColor: ThemeColors.error(context),
         ),
       );
       return;
@@ -768,16 +765,16 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to add medical records for your pet',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
+                color: ThemeColors.textSecondary(context),
               ),
-              const SizedBox(height: 32),
-              NeuButton(
-                text: 'Log In',
-                onPressed: () => context.go('/login'),
-                icon: Icons.login_rounded,
-              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 36),
+            NeuButton(
+              text: 'Log In',
+              onPressed: () => context.go('/login'),
+              icon: Icons.login_rounded,
+            ),
             ],
           ),
         ),
@@ -832,7 +829,7 @@ class _AccessDeniedView extends StatelessWidget {
               Text(
                 'Only veterinarians and clinic staff can create or edit medical records for $petName.\n\nMedical records are created during consultations and will appear here automatically.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: ThemeColors.textSecondary(context),
                 ),
                 textAlign: TextAlign.center,
               ),

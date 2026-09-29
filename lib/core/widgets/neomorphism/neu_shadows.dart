@@ -12,8 +12,10 @@ import '../../../app/theme/app_colors.dart';
 /// lower-right. Pressed elements invert this so they look pushed into the
 /// surface.
 ///
+///
 /// Shadows resolve by [`Brightness`]: light mode uses a white light source,
 /// dark mode inverts the source so the light comes from below (embossed).
+///
 ///
 /// Note: this Flutter build's [`BoxShadow`] has no `inset` parameter, so the
 /// sunken effect is rendered by [`NeuInsetPainter`] instead of BoxShadow lists.
@@ -44,21 +46,21 @@ class NeuShadow {
   /// Raised (default) — the surface appears to float above the canvas.
   static List<BoxShadow> raised(
     BuildContext context, {
-    double distance = 6,
-    double blur = 12,
+    double distance = 8,
+    double blur = 18,
     double? spread,
   }) {
     return [
       BoxShadow(
-        color: _dark(context).withValues(alpha: 0.28),
+        color: _dark(context).withValues(alpha: 0.22),
         offset: Offset(distance, distance),
         blurRadius: blur,
         spreadRadius: spread ?? 0,
       ),
       BoxShadow(
-        color: _light(context).withValues(alpha: 0.6),
-        offset: Offset(-distance, -distance),
-        blurRadius: blur * 0.9,
+        color: _light(context).withValues(alpha: 0.78),
+        offset: Offset(-distance * 0.9, -distance * 0.9),
+        blurRadius: blur * 0.8,
         spreadRadius: spread ?? 0,
       ),
     ];
@@ -67,19 +69,19 @@ class NeuShadow {
   /// Pressed-looking raised plate — moderate dual shadow for active buttons.
   static List<BoxShadow> pressed(
     BuildContext context, {
-    double distance = 4,
-    double blur = 8,
+    double distance = 5,
+    double blur = 12,
   }) {
     return [
       BoxShadow(
-        color: _dark(context).withValues(alpha: 0.22),
+        color: _dark(context).withValues(alpha: 0.18),
         offset: Offset(distance, distance),
         blurRadius: blur,
       ),
       BoxShadow(
-        color: _light(context).withValues(alpha: 0.5),
-        offset: Offset(-distance, -distance),
-        blurRadius: blur,
+        color: _light(context).withValues(alpha: 0.65),
+        offset: Offset(-distance * 0.9, -distance * 0.9),
+        blurRadius: blur * 0.8,
       ),
     ];
   }
@@ -87,19 +89,19 @@ class NeuShadow {
   /// Flat — minimal shadow, for secondary/muted elements.
   static List<BoxShadow> flat(
     BuildContext context, {
-    double distance = 3,
-    double blur = 7,
+    double distance = 4,
+    double blur = 10,
   }) {
     return [
       BoxShadow(
-        color: _dark(context).withValues(alpha: 0.16),
+        color: _dark(context).withValues(alpha: 0.12),
         offset: Offset(distance, distance),
         blurRadius: blur,
       ),
       BoxShadow(
-        color: _light(context).withValues(alpha: 0.4),
-        offset: Offset(-distance, -distance),
-        blurRadius: blur,
+        color: _light(context).withValues(alpha: 0.42),
+        offset: Offset(-distance * 0.8, -distance * 0.8),
+        blurRadius: blur * 0.75,
       ),
     ];
   }
@@ -126,20 +128,20 @@ class NeuShadow {
   /// Sunken (inset) shadow spec — dark edge upper-left, light edge lower-right.
   static List<NeuInsetShadow> inset(
     BuildContext context, {
-    double distance = 4,
-    double blur = 9,
+    double distance = 5,
+    double blur = 12,
     double spread = -1,
   }) {
     return [
       NeuInsetShadow(
-        color: _dark(context).withValues(alpha: 0.3),
+        color: _dark(context).withValues(alpha: 0.24),
         offset: Offset(distance, distance),
         blurRadius: blur,
         spread: spread,
       ),
       NeuInsetShadow(
-        color: _light(context).withValues(alpha: 0.6),
-        offset: Offset(-distance, -distance),
+        color: _light(context).withValues(alpha: 0.7),
+        offset: Offset(-distance * 0.9, -distance * 0.9),
         blurRadius: blur,
         spread: spread,
       ),
@@ -183,10 +185,7 @@ class NeuInsetPainter extends CustomPainter {
   final List<NeuInsetShadow> shadows;
   final double borderRadius;
 
-  const NeuInsetPainter({
-    required this.shadows,
-    required this.borderRadius,
-  });
+  const NeuInsetPainter({required this.shadows, required this.borderRadius});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -204,7 +203,10 @@ class NeuInsetPainter extends CustomPainter {
         ..addRRect(rrect.shift(shadow.offset).inflate(shadow.spread));
       final paint = Paint()
         ..color = shadow.color
-        ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, shadow.blurRadius * 0.5);
+        ..maskFilter = ui.MaskFilter.blur(
+          ui.BlurStyle.normal,
+          shadow.blurRadius * 0.5,
+        );
       canvas.drawPath(path, paint);
     }
     canvas.restore();

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'neu_container.dart';
+import 'neu_shapes.dart';
 
-/// Neumorphic card — a raised surface with optional press feedback.
+/// Neumorphic card — a raised surface with organic flowing contours and press
+/// feedback.
 ///
-/// The workhorse of the CarePaw UI: list tiles, stat tiles, detail panels all
-/// render as [NeuCard]s. Cards sit raised on the soft-gray canvas; a tappable
-/// card springs gently into [NeuVariant.pressed] while being pressed, then
-/// returns to raised on release.
+/// The workhorse of the Soft Clinic UI: list tiles, stat tiles, detail panels
+/// all render as [NeuCard]s. Cards sit raised on the warm bone canvas with a
+/// flowing asymmetric contour; a tappable card springs gently into
+/// [NeuVariant.pressed] while being pressed, then returns to raised on
+/// release.
 class NeuCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -20,6 +23,7 @@ class NeuCard extends StatefulWidget {
   final Color? borderColor;
   final double borderWidth;
   final NeuVariant variant;
+  final ShapeBorder? shape;
 
   const NeuCard({
     super.key,
@@ -35,6 +39,7 @@ class NeuCard extends StatefulWidget {
     this.borderColor,
     this.borderWidth = 0,
     this.variant = NeuVariant.raised,
+    this.shape,
   });
 
   @override
@@ -63,6 +68,9 @@ class _NeuCardState extends State<NeuCard> {
   Widget build(BuildContext context) {
     final visualVariant =
         _pressed && widget.onTap != null ? NeuVariant.pressed : widget.variant;
+    final effectiveShape = widget.shape ?? RoundedRectangleBorder(
+      borderRadius: NeuShape.cardFlow,
+    );
 
     return AnimatedScale(
       scale: _pressed ? 0.985 : 1,
@@ -81,6 +89,7 @@ class _NeuCardState extends State<NeuCard> {
           color: widget.color,
           borderColor: widget.borderColor,
           borderWidth: widget.borderWidth,
+          shape: effectiveShape,
           child: widget.child,
         ),
       ),

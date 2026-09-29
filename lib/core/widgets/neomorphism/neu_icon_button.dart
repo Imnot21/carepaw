@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import 'neu_container.dart';
+import 'neu_progress.dart';
+import 'neu_shapes.dart';
 
-/// Neumorphic circular icon button.
+/// Neumorphic circular icon button — a raised organic plate.
 ///
-/// A raised circular plate with an icon. Pressing it dips the plate into the
-/// canvas. Works for app-bar actions, list-item actions, and toolbars.
+/// Pressing it dips the plate into the canvas. Works for app-bar actions,
+/// list-item actions, and toolbars.
 class NeuIconButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onPressed;
@@ -53,6 +55,9 @@ class _NeuIconButtonState extends State<NeuIconButton> {
           borderRadius: widget.size * 1.2,
           variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
           color: widget.backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: widget.size > 20 ? NeuShape.blobSm : BorderRadius.circular(widget.size * 1.2),
+          ),
           child: SizedBox(
             width: widget.size * 2,
             height: widget.size * 2,
@@ -61,8 +66,10 @@ class _NeuIconButtonState extends State<NeuIconButton> {
                   ? SizedBox(
                       width: widget.size * 0.8,
                       height: widget.size * 0.8,
-                      child: CircularProgressIndicator(
+                      child: NeuCircularProgress(
+                        size: widget.size * 0.8,
                         strokeWidth: 2,
+                        value: -1,
                         color: widget.color ?? ThemeColors.primary(context),
                       ),
                     )

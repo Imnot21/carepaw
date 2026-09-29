@@ -6,15 +6,14 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dar
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/utils/validators.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 
-/// Registration page for new user accounts with neumorphic design.
+/// Registration page for new user accounts with Soft Clinic design.
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -55,8 +54,6 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
@@ -84,23 +81,23 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+        backgroundColor: ThemeColors.background(context),
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+            padding: const EdgeInsets.fromLTRB(28, 40, 28, 28),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildLogo(),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 36),
 
                   Text(
                     'Join CarePaw',
                     style: AppTextStyles.headlineLarge.copyWith(
-                      color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                      color: ThemeColors.textPrimary(context),
                       fontWeight: FontWeight.w700,
                     ),
                     textAlign: TextAlign.center,
@@ -109,14 +106,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     'Create your account to get started',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                      color: ThemeColors.textSecondary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
                   NeuCard(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(28),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -130,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: Validators.requiredWith([Validators.name], 'Full Name'),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
 
                         NeuTextField(
                           controller: _emailController,
@@ -142,7 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: Validators.requiredWith([Validators.email], 'Email'),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
 
                         NeuTextField(
                           controller: _phoneController,
@@ -157,7 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ],
                           textInputAction: TextInputAction.next,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
 
                         NeuTextField(
                           controller: _passwordController,
@@ -169,7 +166,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: Validators.requiredWith([Validators.password], 'Password'),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
 
                         NeuTextField(
                           controller: _confirmPasswordController,
@@ -189,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 28),
 
                         BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
@@ -200,23 +197,23 @@ class _RegisterPageState extends State<RegisterPage> {
                               isLoading: isLoading,
                               expanded: true,
                               variant: NeuButtonVariant.primary,
-                              size: NeuButtonSize.medium,
+                              size: NeuButtonSize.large,
                             );
                           },
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   Text(
                     'By creating an account, you agree to our Terms of Service and Privacy Policy.',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: _isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                      color: ThemeColors.textTertiary(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -224,22 +221,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       Text(
                         'Already have an account? ',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                          color: ThemeColors.textSecondary(context),
                         ),
                       ),
-                      TextButton(
+                      NeuButton(
+                        text: 'Sign In',
                         onPressed: () => Navigator.of(context).pop(),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          'Sign In',
-                          style: AppTextStyles.primary(AppTextStyles.labelMedium).copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        variant: NeuButtonVariant.text,
+                        size: NeuButtonSize.small,
                       ),
                     ],
                   ),
@@ -256,22 +245,15 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildLogo() {
     return Column(
       children: [
-        SizedBox(
-          width: 88,
-          height: 88,
-          child: NeuContainer(
-            borderRadius: 26,
-            variant: NeuVariant.raised,
-            color: AppColors.primary,
-            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 16, opacity: 0.32),
-            child: const Icon(Icons.pets, size: 48, color: AppColors.textOnPrimary),
-          ),
+        const NeuAvatar(
+          radius: 44,
+          icon: Icons.pets,
         ),
         const SizedBox(height: 16),
         Text(
           'CarePaw',
           style: AppTextStyles.displaySmall.copyWith(
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: ThemeColors.textPrimary(context),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -279,7 +261,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Text(
           'Smart Veterinary Care',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+            color: ThemeColors.textSecondary(context),
           ),
         ),
       ],

@@ -157,7 +157,7 @@ Document Visit → Create Prescriptions → Update Records
 5. **Always use transactions** - For related database operations
 6. **Always validate input** - Both client and server side
 7. **Always log sensitive operations** - Audit trail required
-
+8.When I ask you to install, configure, update, or remove something in the development environment, do not merely explain how to do it. First determine the appropriate CLI command or available tool, then execute it. If the first command fails, inspect the error and determine the correct command instead of giving up. Only ask me for clarification when the request genuinely requires information you cannot determine.
 ## Getting Started
 
 1. Ensure Flutter SDK 3.12+ is installed

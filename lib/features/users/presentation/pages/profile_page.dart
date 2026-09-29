@@ -11,10 +11,12 @@ import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
 /// Profile page - shows the authenticated user's info with name/phone editing.
@@ -115,11 +117,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(
+          'Profile',
+          style: AppTextStyles.appBarTitle.copyWith(
+            color: ThemeColors.textPrimary(context),
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -132,43 +138,40 @@ class _ProfilePageState extends State<ProfilePage> {
               child: NeuCircularProgress(size: 32, strokeWidth: 3),
             );
           }
-          return _buildProfile(context, authState.user, isDark);
+          return _buildProfile(context, authState.user);
         },
       ),
+      // Add bottom padding to prevent content from being hidden by navigation bar
+      extendBody: true,
+      bottomNavigationBar: const SizedBox.shrink(), // This ensures the scaffold has a bottom navigation bar space
     );
   }
 
-  Widget _buildProfile(BuildContext context, User user, bool isDark) {
+  Widget _buildProfile(BuildContext context, User user) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: ThemeColors.primary(context).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Icon(
-              Icons.person_outlined,
-              size: 40,
-              color: ThemeColors.primary(context),
-            ),
+          // Avatar — organic blob contour
+          NeuAvatar(
+            radius: 44,
+            icon: Icons.person_outlined,
+            backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.14),
+            foregroundColor: ThemeColors.primary(context),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Name
           Text(
             user.fullName,
-            style: AppTextStyles.headlineSmall.copyWith(
+            style: AppTextStyles.headlineMedium.copyWith(
               fontWeight: FontWeight.w700,
+              color: ThemeColors.textPrimary(context),
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             user.email,
             style: AppTextStyles.bodyMedium.subtleOf(
@@ -176,50 +179,51 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
           NeuContainer(
-            borderRadius: 10,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            borderRadius: 12,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             variant: NeuVariant.flat,
             child: Text(
               user.role.displayName,
               style: AppTextStyles.labelSmall.copyWith(
-                color: ThemeColors.primary(context),
+                color: ThemeColors.textSecondary(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 36),
 
           if (_editing)
             _buildEditForm(context, user)
           else
-            _buildInfoCard(context, user, isDark),
+            _buildInfoCard(context, user),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
           _buildSectionLabel(context, 'Preferences'),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _buildPreferencesCard(context),
           if (user.isAdmin) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             _buildSectionLabel(context, 'Administration'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             _buildAdministrationCard(context),
           ],
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
           _buildLogoutButton(context),
+          // Add padding at the bottom to prevent logout button from being hidden by navigation
+          const SizedBox(height: 84),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, User user, bool isDark) {
+  Widget _buildInfoCard(BuildContext context, User user) {
     return Column(
       children: [
         NeuCard(
-          borderRadius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -227,15 +231,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Profile Details',
                 style: AppTextStyles.titleSmall.copyWith(
                   fontWeight: FontWeight.w700,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               _infoRow(context, 'Full name', user.fullName),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _infoRow(context, 'Phone', user.phone ?? 'Not set'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _infoRow(context, 'Role', user.role.displayName),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _infoRow(
                 context,
                 'Status',
@@ -244,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         NeuButton(
           text: 'Edit Profile',
           variant: NeuButtonVariant.primary,
@@ -259,13 +264,18 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _infoRow(BuildContext context, String label, String value) {
     return Row(
       children: [
-        Text(label, style: AppTextStyles.bodyMedium),
+        Text(
+          label,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: ThemeColors.textSecondary(context),
+          ),
+        ),
         const Spacer(),
         Flexible(
           child: Text(
             value,
             style: AppTextStyles.bodySmall.copyWith(
-              color: ThemeColors.textSecondary(context),
+              color: ThemeColors.textPrimary(context),
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.end,
@@ -279,8 +289,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildEditForm(BuildContext context, User user) {
     return NeuCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Form(
         key: _formKey,
         child: Column(
@@ -290,9 +299,10 @@ class _ProfilePageState extends State<ProfilePage> {
               'Edit Profile',
               style: AppTextStyles.titleSmall.copyWith(
                 fontWeight: FontWeight.w700,
+                color: ThemeColors.textPrimary(context),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             NeuTextField(
               controller: _nameController,
               label: 'Full Name',
@@ -302,7 +312,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Validators.name,
               ], 'Full Name'),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             NeuTextField(
               controller: _phoneController,
               label: 'Phone',
@@ -310,7 +320,7 @@ class _ProfilePageState extends State<ProfilePage> {
               keyboardType: TextInputType.phone,
               helper: 'Philippine mobile number (optional)',
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
@@ -341,17 +351,22 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildSectionLabel(BuildContext context, String title) {
-    return Text(
-      title,
-      style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title.toUpperCase(),
+        style: AppTextStyles.overline.copyWith(
+          color: ThemeColors.textTertiary(context),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 
   /// Merged settings section — app preferences.
   Widget _buildPreferencesCard(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
         children: [
           _SettingTile(
@@ -360,7 +375,20 @@ class _ProfilePageState extends State<ProfilePage> {
             subtitle: 'Manage alerts, categories & delivery',
             onTap: () => context.push(Routes.notifications),
           ),
-          const Divider(height: 1, indent: 56),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              height: 1,
+              child: NeuContainer(
+                padding: EdgeInsets.zero,
+                borderRadius: 0.5,
+                variant: NeuVariant.flat,
+                boxShadow: NeuShadow.none,
+                color: ThemeColors.border(context),
+                child: const SizedBox.shrink(),
+              ),
+            ),
+          ),
           _SettingTile(
             icon: Icons.help_outline,
             title: 'Help & Support',
@@ -375,8 +403,7 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Merged settings section — admin-only clinic configuration entry.
   Widget _buildAdministrationCard(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: _SettingTile(
         icon: Icons.tune_outlined,
         title: 'System Configuration',
@@ -402,31 +429,57 @@ class _ProfilePageState extends State<ProfilePage> {
   void _confirmLogout(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to sign out of CarePaw?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: ThemeColors.textSecondary(context)),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.read<AuthBloc>().add(const AuthLogoutRequested());
-            },
-            child: Text(
-              'Logout',
-              style: TextStyle(
-                color: ThemeColors.error(context),
-                fontWeight: FontWeight.w700,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.all(24),
+        child: NeuCard(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Logout',
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: ThemeColors.textPrimary(context),
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+              Text(
+                'Are you sure you want to sign out of CarePaw?',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: ThemeColors.textSecondary(context),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Cancel',
+                      variant: NeuButtonVariant.outline,
+                      size: NeuButtonSize.medium,
+                      onPressed: () => Navigator.pop(dialogContext),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: NeuButton(
+                      text: 'Logout',
+                      variant: NeuButtonVariant.destructive,
+                      size: NeuButtonSize.medium,
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        context.read<AuthBloc>().add(const AuthLogoutRequested());
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -457,28 +510,48 @@ class _SettingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      leading: NeuContainer(
-        borderRadius: 12,
-        padding: const EdgeInsets.all(8),
-        color: isDark
-            ? AppColors.primary.withValues(alpha: 0.16)
-            : AppColors.primaryTint,
-        child: Icon(icon, color: ThemeColors.primary(context), size: 22),
-      ),
-      title: Text(
-        title,
-        style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
-      ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: ThemeColors.textTertiary(context),
-      ),
+    return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            NeuContainer(
+              borderRadius: 14,
+              padding: const EdgeInsets.all(10),
+              color: isDark
+                  ? AppColors.primary.withValues(alpha: 0.16)
+                  : AppColors.primaryTint,
+              child: Icon(icon, color: ThemeColors.primary(context), size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ThemeColors.textPrimary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: ThemeColors.textTertiary(context),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

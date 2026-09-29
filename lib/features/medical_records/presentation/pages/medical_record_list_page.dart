@@ -17,8 +17,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
@@ -54,10 +54,8 @@ class _NotLoggedInView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         title: const Text('Medical Records'),
         centerTitle: true,
@@ -75,8 +73,8 @@ class _NotLoggedInView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 80,
                 variant: NeuVariant.raised,
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 18, opacity: 0.32),
+                color: ThemeColors.primary(context),
+                boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 18, opacity: 0.32),
                 child: const SizedBox(
                   width: 160,
                   height: 160,
@@ -87,11 +85,11 @@ class _NotLoggedInView extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               Text(
                 'Please log in to view medical records',
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
@@ -100,11 +98,11 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to access your pet\'s health history',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                  color: ThemeColors.textTertiary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               NeuButton(
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
@@ -140,15 +138,14 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   @override
   Widget build(BuildContext context) {
     final speciesColor = widget.pet.species.accentColor;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: _buildAppBar(context),
       body: Column(
         children: [
           // Pet header
-          _buildPetHeader(context, speciesColor, isDark),
+          _buildPetHeader(context, speciesColor),
 
           // Filter chips
           _buildFilterChips(context, speciesColor),
@@ -167,9 +164,9 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                   return _buildErrorState(context, state.failure);
                 } else if (state is MedicalRecordOperationSuccess) {
                   // Success state will be shown briefly then reload
-                  return _buildEmptyState(context, speciesColor, isDark);
+                  return _buildEmptyState(context, speciesColor);
                 }
-                return _buildEmptyState(context, speciesColor, isDark);
+                return _buildEmptyState(context, speciesColor);
               },
             ),
           ),
@@ -180,13 +177,11 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return AppBar(
       title: Text(
         '${widget.pet.name}\'s Records',
         style: AppTextStyles.titleLarge.copyWith(
-          color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+          color: ThemeColors.textPrimary(context),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -210,9 +205,9 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     );
   }
 
-  Widget _buildPetHeader(BuildContext context, Color speciesColor, bool isDark) {
+  Widget _buildPetHeader(BuildContext context, Color speciesColor) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
       child: Row(
         children: [
           // Pet avatar
@@ -221,7 +216,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             radius: 40,
             iconSize: 40,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
           // Pet info
           Expanded(
             child: Column(
@@ -230,7 +225,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 Text(
                   widget.pet.name,
                   style: AppTextStyles.headlineSmall.copyWith(
-                    color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -238,7 +233,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 Text(
                   '${widget.pet.species.displayName}${widget.pet.breed != null ? ' • ${widget.pet.breed}' : ''}',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                    color: ThemeColors.textTertiary(context),
                   ),
                 ),
                 if (widget.pet.ageInYears != null) ...[
@@ -246,13 +241,14 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                   Text(
                     '${widget.pet.ageInYears} years old',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                      color: ThemeColors.textTertiary(context),
                     ),
                   ),
                 ],
               ],
             ),
           ),
+          const SizedBox(width: 12),
           // Record count badge
           BlocBuilder<MedicalRecordBloc, MedicalRecordState>(
             builder: (context, state) {
@@ -263,7 +259,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 count = state.records.length;
               }
               return NeuContainer(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 borderRadius: 20,
                 variant: NeuVariant.raised,
                 borderColor: speciesColor.withValues(alpha: 0.3),
@@ -307,12 +303,12 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     ];
 
     return SizedBox(
-      height: 56,
+      height: 60,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: filters.length + 1, // +1 for "All"
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           if (index == 0) {
             // All filter
@@ -348,8 +344,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     Color speciesColor,
   ) {
     if (records.isEmpty) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      return _buildEmptyState(context, speciesColor, isDark);
+      return _buildEmptyState(context, speciesColor);
     }
 
     // Reload via pull-to-refresh instead of a manual refresh button.
@@ -366,9 +361,9 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         }
       },
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
         itemCount: records.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
           final record = records[index];
           return NeuCard(
@@ -384,7 +379,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, Color speciesColor, bool isDark) {
+  Widget _buildEmptyState(BuildContext context, Color speciesColor) {
     final filterText = _selectedFilter != null
         ? 'No ${_selectedFilter!.displayName.toLowerCase()} records yet'
         : 'No medical records yet';
@@ -411,11 +406,11 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Text(
               filterText,
               style: AppTextStyles.headlineSmall.copyWith(
-                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
@@ -426,11 +421,11 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                   ? 'Add the first record to start tracking ${widget.pet.name}\'s health history'
                   : 'Medical records will appear here when added by your veterinarian',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                color: ThemeColors.textTertiary(context),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             if (isVetOrStaff)
               NeuButton(
                 text: 'Add Record',
@@ -447,8 +442,6 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   }
 
   Widget _buildErrorState(BuildContext context, Failure failure) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -458,7 +451,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             NeuContainer(
               borderRadius: 60,
               variant: NeuVariant.raised,
-              color: AppColors.error,
+              color: ThemeColors.error(context),
               child: const SizedBox(
                 width: 120,
                 height: 120,
@@ -469,23 +462,23 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Text(
               'Unable to load records',
               style: AppTextStyles.headlineSmall.copyWith(
-                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               failure.message,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                color: ThemeColors.textTertiary(context),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             NeuButton(
               text: 'Retry',
               onPressed: () {
@@ -509,20 +502,34 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   }
 
   Widget _buildFab(BuildContext context, Color speciesColor) {
-    return FloatingActionButton.extended(
-      onPressed: () => _navigateToForm(context),
-      backgroundColor: speciesColor,
-      foregroundColor: Colors.white,
-      elevation: 0,
-      icon: const Icon(Icons.add_rounded),
-      label: Text(
-        'Add Record',
-        style: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w600,
+    return Padding(
+      padding: const EdgeInsets.only(right: 4, bottom: 4),
+      child: NeuContainer(
+        borderRadius: 28,
+        variant: NeuVariant.raised,
+        color: speciesColor,
+        boxShadow: NeuShadow.color(context, speciesColor, blur: 20, opacity: 0.4),
+        child: InkWell(
+          onTap: () => _navigateToForm(context),
+          borderRadius: BorderRadius.circular(28),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add_rounded, color: Colors.white, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Add Record',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
       ),
     );
   }
@@ -600,7 +607,6 @@ class _MedicalRecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typeInfo = _getTypeInfo(context, record.recordType);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -609,16 +615,21 @@ class _MedicalRecordCard extends StatelessWidget {
         children: [
           // Type icon with background
           NeuContainer(
-            borderRadius: 16,
+            borderRadius: 18,
             variant: NeuVariant.raised,
             borderColor: typeInfo.color.withValues(alpha: 0.25),
             borderWidth: 1,
-            child: const SizedBox(
+            child: SizedBox(
               width: 56,
               height: 56,
+              child: Icon(
+                typeInfo.icon,
+                size: 26,
+                color: typeInfo.color,
+              ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
           // Record details
           Expanded(
             child: Column(
@@ -626,15 +637,14 @@ class _MedicalRecordCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Container(
+                    NeuContainer(
+                      borderRadius: 8,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 4,
                       ),
-                      decoration: BoxDecoration(
-                        color: typeInfo.color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      variant: NeuVariant.flat,
+                      color: typeInfo.color.withValues(alpha: 0.12),
                       child: Text(
                         record.recordType.displayName,
                         style: AppTextStyles.labelSmall.copyWith(
@@ -647,16 +657,16 @@ class _MedicalRecordCard extends StatelessWidget {
                     Text(
                       _formatDate(record.recordedAt),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                        color: ThemeColors.textTertiary(context),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   record.title,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: ThemeColors.textPrimary(context),
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: 1,
@@ -664,11 +674,11 @@ class _MedicalRecordCard extends StatelessWidget {
                 ),
                 if (record.description != null && record.description!.isNotEmpty)
                   ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       record.description!,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+                        color: ThemeColors.textTertiary(context),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -676,12 +686,12 @@ class _MedicalRecordCard extends StatelessWidget {
                   ],
                 if (record.diagnosis != null && record.diagnosis!.isNotEmpty)
                   ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     NeuContainer(
-                      padding: const EdgeInsets.all(10),
-                      borderRadius: 10,
+                      padding: const EdgeInsets.all(12),
+                      borderRadius: 12,
                       variant: NeuVariant.raised,
-                      borderColor: AppColors.primaryLight.withValues(alpha: 0.2),
+                      borderColor: ThemeColors.primary(context).withValues(alpha: 0.2),
                       borderWidth: 1,
                       child: Row(
                         children: [
@@ -708,12 +718,12 @@ class _MedicalRecordCard extends StatelessWidget {
                   ],
                 if (record.treatment != null && record.treatment!.isNotEmpty)
                   ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     NeuContainer(
-                      padding: const EdgeInsets.all(10),
-                      borderRadius: 10,
+                      padding: const EdgeInsets.all(12),
+                      borderRadius: 12,
                       variant: NeuVariant.raised,
-                      borderColor: AppColors.primary.withValues(alpha: 0.2),
+                      borderColor: ThemeColors.primary(context).withValues(alpha: 0.2),
                       borderWidth: 1,
                       child: Row(
                         children: [
@@ -741,10 +751,11 @@ class _MedicalRecordCard extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 8),
           // Chevron
           Icon(
             Icons.chevron_right_rounded,
-            color: isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+            color: ThemeColors.textTertiary(context),
             size: 24,
           ),
         ],

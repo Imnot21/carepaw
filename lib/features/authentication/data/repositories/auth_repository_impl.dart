@@ -115,6 +115,10 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
+      print('Firebase Auth user created: ${credentials.user?.uid}');
+      if (credentials.user == null) {
+        throw const UnexpectedFailure(message: 'Failed to create Firebase Auth user');
+      }
       final fireUser = credentials.user;
       if (fireUser == null) {
         throw const UnexpectedFailure(message: 'Failed to create account.');
@@ -134,15 +138,58 @@ class AuthRepositoryImpl implements AuthRepository {
         createdAt: now,
         updatedAt: now,
       );
+      print('Creating domain user with data: $domainUser');
+      print('Firebase UID: ${fireUser.uid}');
+      print('Document ID: ${fireUser.uid}');
       try {
-        await _firestore
+        try {
+        print('Attempting to write user document to Firestore');
+        print('Document data: ${UserDocMapper.toData(domainUser)}');
+        final docRef = _firestore
             .collection(FirestoreSchema.users)
-            .doc(fireUser.uid)
-            .set(UserDocMapper.toData(domainUser));
+            .doc(fireUser.uid);
+        await docRef.set(UserDocMapper.toData(domainUser));
+        print('Successfully wrote user document to Firestore');
+        // Verify the document was created
+        final docSnapshot = await docRef.get();
+        if (!docSnapshot.exists) {
+          throw const UnexpectedFailure(message: 'Failed to verify Firestore document creation');
+        }
+        print('Verified document exists in Firestore');
+        // Verify the document data matches what we wrote
+        final writtenData = docSnapshot.data();
+        final expectedData = UserDocMapper.toData(domainUser);
+        if (writtenData != expectedData) {
+          print('Warning: Written data does not match expected data');
+          print('Expected: $expectedData');
+          print('Actual: $writtenData');
+        }
+      } catch (e) {
+        print('Error writing to Firestore: $e');
+        if (e is FirebaseException) {
+          print('Firebase error code: ${e.code}');
+          print('Firebase error message: ${e.message}');
+          // Provide more specific error messages based on Firebase error codes
+          if (e.code == 'permission-denied') {
+            print('Permission denied: Check Firestore rules and ensure the user is properly authenticated');
+          } else if (e.code == 'invalid-argument') {
+            print('Invalid argument: Check the document data and structure');
+          } else if (e.code == 'not-found') {
+            print('Not found: The document path may be incorrect');
+          }
+        }
+        rethrow;
+      }
       } catch (_) {
         // Firestore write failed (e.g. rules deny it). Roll back the just-created
         // Auth user so we don't leave an orphaned account that can never sign in.
+        // Re-authenticate before deleting to ensure we have fresh credentials.
         try {
+          final cred = EmailAuthProvider.credential(
+            email: email,
+            password: password,
+          );
+          await fireUser.reauthenticateWithCredential(cred);
           await fireUser.delete();
         } catch (_) {
           // Best-effort cleanup; if this also fails the orphan is handled by
@@ -310,11 +357,26 @@ class AuthRepositoryImpl implements AuthRepository {
   ///
   /// Used on first sign-in for accounts provisioned outside the app (Firebase
   /// Console, seed scripts) or left orphaned when a registration's Firestore
-  /// write was blocked. Defaults to [UserRole.petOwner]. Returns `null` if the
-  /// profile cannot be written (e.g. Firestore rules still deny it), so the
-  /// caller can fail with an actionable message.
+  /// write was blocked. Assigns [UserRole.admin] if this user should be
+  /// considered an administrator based on email domain matching with the first
+  /// user in the system, otherwise defaults to [UserRole.petOwner]. Returns
+  /// `null` if the profile cannot be written (e.g. Firestore rules still deny
+  /// it), so the caller can fail with an actionable message.
   Future<DomainUser?> _autoProvisionFromAuthUser(User fireUser) async {
     try {
+      // Check if this is the first user in the system
+      final bool isFirstUser = await _isFirstUser();
+
+      UserRole effectiveRole;
+      if (isFirstUser) {
+        // First user gets ADMIN role
+        effectiveRole = UserRole.admin;
+      } else {
+        // Not first user - check if email domain matches the first user's domain
+        final bool shouldBeAdmin = await _shouldBeAdminBasedOnEmailDomain(fireUser.email ?? '');
+        effectiveRole = shouldBeAdmin ? UserRole.admin : UserRole.petOwner;
+      }
+
       final newId = await _userIdSequence.next();
       final now = DateTime.now();
       final domainUser = DomainUser(
@@ -324,7 +386,7 @@ class AuthRepositoryImpl implements AuthRepository {
         fullName: fireUser.displayName?.trim().isNotEmpty == true
             ? fireUser.displayName!
             : (fireUser.email?.split('@').first ?? 'User'),
-        role: UserRole.petOwner,
+        role: effectiveRole,
         isActive: true,
         createdAt: now,
         updatedAt: now,
@@ -338,6 +400,50 @@ class AuthRepositoryImpl implements AuthRepository {
       // Firestore write blocked (rules) or counter unavailable.
       return null;
     }
+  }
+
+  /// Check if this is the first user being created in the system.
+  /// Returns true if no users exist yet in the Firestore users collection.
+  Future<bool> _isFirstUser() async {
+    final snapshot = await _firestore.collection(FirestoreSchema.users).limit(1).get();
+    return snapshot.docs.isEmpty;
+  }
+
+  /// Check if a user should be an admin based on email domain matching
+  /// with the first user in the system. Returns true if:
+  /// 1. There is at least one user in the system (the first user)
+  /// 2. The first user has an email address
+  /// 3. The provided email has the same domain as the first user's email
+  Future<bool> _shouldBeAdminBasedOnEmailDomain(String email) async {
+    if (email.isEmpty || !email.contains('@')) {
+      return false;
+    }
+
+    // Get the first user (by lowest ID, assuming they were created first)
+    final firstUserSnapshot = await _firestore
+        .collection(FirestoreSchema.users)
+        .orderBy(FirestoreSchema.id, descending: false)
+        .limit(1)
+        .get();
+
+    if (firstUserSnapshot.docs.isEmpty) {
+      // No users found - should not happen if !isFirstUser, but handle gracefully
+      return false;
+    }
+
+    final firstUserData = firstUserSnapshot.docs.first.data();
+    final firstUserEmail = firstUserData[FirestoreSchema.email] as String?;
+
+    if (firstUserEmail == null || firstUserEmail.isEmpty || !firstUserEmail.contains('@')) {
+      // First user has no valid email
+      return false;
+    }
+
+    // Extract domains
+    final firstUserDomain = firstUserEmail.split('@').last.toLowerCase();
+    final userDomain = email.split('@').last.toLowerCase();
+
+    return firstUserDomain == userDomain;
   }
 
   AuthResult _buildAuthResult(DomainUser user, String? accessToken) {

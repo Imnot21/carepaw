@@ -10,6 +10,7 @@ import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -117,15 +118,15 @@ class _QueuePageState extends State<QueuePage> {
           NeuContainer(
             borderRadius: 70,
             padding: const EdgeInsets.all(28),
-            color: AppColors.primary,
-            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+            color: ThemeColors.primary(context),
+            boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
             child: const Icon(
               Icons.queue,
               size: 70,
               color: AppColors.textOnPrimary,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           Text(
             'Queue Status',
             style: AppTextStyles.headlineMedium.copyWith(
@@ -172,14 +173,14 @@ class _QueuePageState extends State<QueuePage> {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 88, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 96, 20, 20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _EmptyQueueCard(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
                       _UpcomingCheckInSection(queueEntries: state.queueEntries),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
                       _QueueInfoCard(),
                     ],
                   ),
@@ -195,7 +196,7 @@ class _QueuePageState extends State<QueuePage> {
       onRefresh: refresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 88, 16, 16),
+        padding: const EdgeInsets.fromLTRB(20, 96, 20, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -206,10 +207,10 @@ class _QueuePageState extends State<QueuePage> {
                 petsAhead: petsAhead,
                 estimatedWaitMinutes: estimatedWait,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
             ] else ...[
               _NotInQueueCard(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
             ],
 
             // Your Pets in Queue
@@ -220,15 +221,15 @@ class _QueuePageState extends State<QueuePage> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               ...state.queueEntries.map((entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 14),
                     child: _QueueEntryCard(
                       entry: entry,
                       isCurrentUser: true,
                     ),
                   )),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
             ],
 
             // Queue Info
@@ -249,15 +250,15 @@ class _QueuePageState extends State<QueuePage> {
             NeuContainer(
               borderRadius: 70,
               padding: const EdgeInsets.all(28),
-              color: AppColors.error,
-              boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+              color: ThemeColors.error(context),
+              boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 70,
                 color: AppColors.textOnPrimary,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Text(
               'Failed to Load Queue',
               style: AppTextStyles.headlineMedium.copyWith(
@@ -265,13 +266,13 @@ class _QueuePageState extends State<QueuePage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               message,
               style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             NeuButton(
               text: 'Retry',
               onPressed: () {
@@ -322,27 +323,26 @@ class _UpcomingCheckInSection extends StatelessWidget {
         if (upcoming.isEmpty) return const SizedBox.shrink();
 
         return NeuCard(
-          borderRadius: 20,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.primary(context).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  NeuContainer(
+                    borderRadius: 12,
+                    padding: const EdgeInsets.all(10),
+                    variant: NeuVariant.flat,
+                    color: ThemeColors.primary(context).withValues(alpha: 0.12),
                     child: Icon(Icons.event_available_rounded, size: 20, color: ThemeColors.primary(context)),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Check In', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 2),
                         Text(
                           "You're not in the queue yet. Check in when you arrive at the clinic.",
                           style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
@@ -352,9 +352,9 @@ class _UpcomingCheckInSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               ...upcoming.map((detail) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: _UpcomingCheckInTile(detail: detail),
                   )),
             ],
@@ -386,17 +386,17 @@ class _UpcomingCheckInTile extends StatelessWidget {
     final pet = detail.pet;
 
     return NeuCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           PetUtils.buildAvatar(species: pet.species, radius: 22, iconSize: 22),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(pet.name, style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
                 Text(
                   '${_formatDate(appointment.scheduledAt)} · ${_formatTime(appointment.scheduledAt)}',
                   style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
@@ -445,62 +445,61 @@ class _PositionCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: NeuContainer(
-        padding: const EdgeInsets.all(24),
-        borderRadius: 24,
-        color: AppColors.primary,
-        boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+        padding: const EdgeInsets.all(28),
+        borderRadius: 28,
+        color: ThemeColors.primary(context),
+        boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
         child: Column(
           children: [
             Text(
               'Your Position',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$position',
-            style: AppTextStyles.displayLarge.copyWith(
-              color: AppColors.textOnPrimary,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 10),
+            Text(
+              '$position',
+              style: AppTextStyles.displayLarge.copyWith(
+                color: AppColors.textOnPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            petsAhead != null && petsAhead! > 0
-                ? '$petsAhead ${petsAhead == 1 ? 'pet' : 'pets'} ahead of you'
-                : 'You\'re next!',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+            const SizedBox(height: 6),
+            Text(
+              petsAhead != null && petsAhead! > 0
+                  ? '$petsAhead ${petsAhead == 1 ? 'pet' : 'pets'} ahead of you'
+                  : 'You\'re next!',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+              ),
             ),
-          ),
-          if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
+            if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
+              const SizedBox(height: 20),
+              NeuContainer(
+                borderRadius: 20,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                variant: NeuVariant.flat,
                 color: AppColors.textOnPrimary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.timer_outlined,
-                    size: 18,
-                    color: AppColors.textOnPrimary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Est. wait: $estimatedWaitMinutes min',
-                    style: AppTextStyles.titleMedium.copyWith(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 18,
                       color: AppColors.textOnPrimary,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      'Est. wait: $estimatedWaitMinutes min',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             ],
           ],
         ),
@@ -514,29 +513,28 @@ class _EmptyQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       child: Column(
         children: [
           NeuContainer(
             borderRadius: 48,
-            padding: const EdgeInsets.all(20),
-            color: AppColors.primary,
-            boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+            padding: const EdgeInsets.all(22),
+            color: ThemeColors.primary(context),
+            boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
             child: const Icon(
               Icons.queue_outlined,
               size: 48,
               color: AppColors.textOnPrimary,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             'No Pets in Queue',
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             'You don\'t have any pets currently checked in.\nBook an appointment and check in when you arrive.',
             style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness).copyWith(
@@ -555,31 +553,28 @@ class _NotInQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       child: Column(
         children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: ThemeColors.warning(context).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(48),
-            ),
+          NeuContainer(
+            borderRadius: 48,
+            padding: const EdgeInsets.all(24),
+            variant: NeuVariant.flat,
+            color: ThemeColors.warning(context).withValues(alpha: 0.12),
             child: Icon(
               Icons.info_outline_rounded,
               size: 48,
               color: ThemeColors.warning(context),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             'Not Currently in Queue',
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             'Your pets have upcoming appointments but aren\'t checked in yet.\nCheck in when you arrive at the clinic.',
             style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness).copyWith(
@@ -608,8 +603,7 @@ class _QueueEntryCard extends StatelessWidget {
     final statusColor = _getStatusColor(context, entry.queueEntry.status);
 
     return NeuCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -617,24 +611,27 @@ class _QueueEntryCard extends StatelessWidget {
           Row(
             children: [
               // Position badge
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '#${entry.queueEntry.position}',
-                    style: AppTextStyles.titleSmall.copyWith(
-                      color: AppColors.textOnPrimary,
-                      fontWeight: FontWeight.bold,
+              NeuContainer(
+                borderRadius: 20,
+                padding: const EdgeInsets.all(10),
+                variant: NeuVariant.raised,
+                color: statusColor,
+                boxShadow: NeuShadow.color(context, statusColor, blur: 12, opacity: 0.3),
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Center(
+                    child: Text(
+                      '#${entry.queueEntry.position}',
+                      style: AppTextStyles.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               // Pet info
               Expanded(
                 child: Column(
@@ -646,6 +643,7 @@ class _QueueEntryCard extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       '${entry.pet.species.displayName} • ${entry.pet.breed}',
                       style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
@@ -653,14 +651,15 @@ class _QueueEntryCard extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
               // Status chip
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-                ),
+              NeuContainer(
+                borderRadius: 20,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                variant: NeuVariant.flat,
+                color: statusColor.withValues(alpha: 0.12),
+                borderColor: statusColor.withValues(alpha: 0.3),
+                borderWidth: 1,
                 child: Text(
                   entry.queueEntry.status.displayName,
                   style: AppTextStyles.labelSmall.copyWith(
@@ -672,15 +671,13 @@ class _QueueEntryCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // Appointment info
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: ThemeColors.surfaceContainer(context),
-              borderRadius: BorderRadius.circular(12),
-            ),
+          NeuContainer(
+            borderRadius: 14,
+            padding: const EdgeInsets.all(14),
+            variant: NeuVariant.inset,
             child: Row(
               children: [
                 Icon(
@@ -697,6 +694,7 @@ class _QueueEntryCard extends StatelessWidget {
                         'Appointment',
                         style: AppTextStyles.labelSmall.subtleOf(Theme.of(context).brightness),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         entry.appointment.reason ?? 'General checkup',
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -727,23 +725,18 @@ class _QueueEntryCard extends StatelessWidget {
 
           // Vet info
           if (entry.veterinarian.fullName.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Row(
               children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(
-                    entry.veterinarian.fullName.isNotEmpty
-                        ? entry.veterinarian.fullName[0]
-                        : 'D',
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                NeuAvatar(
+                  radius: 18,
+                  initials: entry.veterinarian.fullName.isNotEmpty
+                      ? entry.veterinarian.fullName[0]
+                      : 'D',
+                  backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                  foregroundColor: ThemeColors.primary(context),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Text(
                   'Dr. ${entry.veterinarian.fullName}',
                   style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
@@ -753,10 +746,10 @@ class _QueueEntryCard extends StatelessWidget {
           ],
 
           // Check-in time
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 16,
-            runSpacing: 6,
+            runSpacing: 8,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -821,16 +814,15 @@ class _QueueEntryCard extends StatelessWidget {
   }
 
   Color _getStatusColor(BuildContext context, QueueStatus status) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case QueueStatus.waiting:
-        return isDark ? AppColors.warningOnDark : AppColors.warning;
+        return ThemeColors.warning(context);
       case QueueStatus.called:
-        return isDark ? AppColors.infoDark : AppColors.info;
+        return ThemeColors.info(context);
       case QueueStatus.inRoom:
         return ThemeColors.primary(context);
       case QueueStatus.completed:
-        return isDark ? AppColors.successOnDark : AppColors.success;
+        return ThemeColors.success(context);
       case QueueStatus.skipped:
         return ThemeColors.textSecondary(context);
     }
@@ -849,8 +841,7 @@ class _QueueInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -861,7 +852,7 @@ class _QueueInfoCard extends StatelessWidget {
                 size: 20,
                 color: ThemeColors.primary(context),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 'How It Works',
                 style: AppTextStyles.titleSmall.copyWith(
@@ -871,25 +862,25 @@ class _QueueInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _InfoRow(
             icon: Icons.check_circle_outline_rounded,
             title: 'Check In',
             description: 'Arrive at the clinic and check in at the front desk',
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _InfoRow(
             icon: Icons.queue_outlined,
             title: 'Wait',
             description: 'Monitor your position here - you\'ll get a notification when called',
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _InfoRow(
             icon: Icons.volume_up_outlined,
             title: 'Called',
             description: 'Listen for your name or check the screen for your room number',
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _InfoRow(
             icon: Icons.door_front_door_outlined,
             title: 'Visit',
@@ -914,23 +905,21 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         NeuContainer(
-          borderRadius: 8,
-          padding: const EdgeInsets.all(6),
-          color: isDark
-              ? ThemeColors.primary(context).withValues(alpha: 0.16)
-              : ThemeColors.primaryTint(context),
+          borderRadius: 10,
+          padding: const EdgeInsets.all(8),
+          variant: NeuVariant.flat,
+          color: ThemeColors.primary(context).withValues(alpha: 0.12),
           child: Icon(
             icon,
             size: 16,
             color: ThemeColors.primary(context),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -941,6 +930,7 @@ class _InfoRow extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 description,
                 style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
@@ -969,15 +959,15 @@ class _NotLoggedInView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 80,
                 padding: const EdgeInsets.all(28),
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                color: ThemeColors.primary(context),
+                boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
                 child: const Icon(
                   Icons.queue_outlined,
                   size: 80,
                   color: AppColors.textOnPrimary,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               Text(
                 'Please log in to view queue',
                 style: AppTextStyles.headlineSmall.copyWith(
@@ -993,7 +983,7 @@ class _NotLoggedInView extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               NeuButton(
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
@@ -1023,15 +1013,15 @@ class _AccessDeniedView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 80,
                 padding: const EdgeInsets.all(28),
-                color: AppColors.error,
-                boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.32),
+                color: ThemeColors.error(context),
+                boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
                 child: const Icon(
                   Icons.block_rounded,
                   size: 80,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               Text(
                 'Access Denied',
                 style: AppTextStyles.headlineSmall.copyWith(
@@ -1048,7 +1038,7 @@ class _AccessDeniedView extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               NeuButton(
                 text: 'Go Back',
                 onPressed: () => context.pop(),
