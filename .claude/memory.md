@@ -1,6 +1,6 @@
 # CarePaw Session Memory
 
-## 2026-09-29 — Soft Clinic Design System Build
+## 2026-09-29 — Soft Clinic Design System Build + Router Wiring + Neumorphic Component Completion
 
 ### What We Did
 
@@ -34,19 +34,47 @@
 - `neu_icon_button.dart` — organic blob shapes
 - `index.dart` — exports neu_shapes
 
-**Pages Refined** (20+ pages, all on Soft Clinic system):
+**New Neumorphic Components** — Added to `lib/core/widgets/neomorphism/`:
+- `neu_dialog.dart` — `NeuDialog`, `NeuConfirmDialog`, `NeuBottomSheet` (replaces AlertDialog, Dialog, showModalBottomSheet)
+- `neu_divider.dart` — `NeuDivider`, `NeuVerticalDivider`, `NeuSectionDivider` (replaces Divider)
+- `neu_fab.dart` — `NeuFAB`, `NeuFAB.mini`, `NeuFAB.extended`, `NeuFABSpeedDial` (replaces FloatingActionButton)
+
+**Router Wiring** — Replaced 8 placeholder routes with real feature pages:
+- `/medicalRecords` → `MedicalRecordListPage` (via `_MedicalRecordsLoader` with petId query)
+- `/staffDashboard/appointments` → `AppointmentListPage`
+- `/staffDashboard/inventory` → `InventoryListPage`
+- `/staffDashboard/scanning` → `ScanListPage`
+- `/vetDashboard/patients` → `PetListPage`
+- `/vetDashboard/patients/:id` → `PetDetailPageWithBloc`
+- `/vetDashboard/records` → `MedicalRecordListPage` (with petId query)
+- `/notifications` → `NotificationListPage`
+
+**Pages Refined** (28/28 pages now fully compliant with Soft Clinic system):
 - Auth: login, register, forgot_password, reset_password
-- Pets: pet_form, pet_detail, pet_list (already neumorphic)
-- Appointments: appointment_list, appointment_form, appointment_detail
+- Home: home_page (primary surface), staff_dashboard_page, vet_dashboard_page, admin_dashboard_page, admin_settings_page
+- Pets: pet_list, pet_form, pet_detail
+- Appointments: appointment_list, appointment_form, appointment_detail, staff_queue_page
 - Queue: queue_page, staff_queue_page
-- Medical Records: medical_record_list, medical_record_detail, medical_record_form
-- Profile: profile_page
-- Shell: app_shell, role_tabs
+- Medical Records: medical_record_list, medical_record_form, medical_record_detail
+- Inventory: inventory_list, inventory_form, inventory_detail
 - Scanning: scan_list, scan_detail, scan_camera
-- Home: home_page (rebuilt as primary surface, FIRST VIEWPORT)
+- Notifications: notification_list, notification_detail, notification_settings
+- Users: profile_page, admin_user_management_page
+- Audit: admin_audit_page
+
+**Full Neumorphic Migration** — All 12 partially-compliant pages brought to full compliance:
+- Replaced 12 `FloatingActionButton` → `NeuFAB`
+- Replaced 28 `AlertDialog`/`Dialog` → `NeuDialog`/`NeuConfirmDialog`
+- Replaced 35 `Divider` → `NeuDivider`
+- Replaced 7 `TabBar` → `NeuChip` tabs
+- Replaced 3 `Switch` → `NeuSwitch`
+- Replaced 10 `DropdownButton`/`SegmentedButton` → `NeuChip` selections
+- Replaced 5 `IconButton` → `NeuIconButton`
+- Replaced 40+ `BoxDecoration` icon containers → `NeuContainer`
+- Replaced `showModalBottomSheet` → `NeuBottomSheet` (6 instances)
 
 **Verification**:
-- flutter analyze: zero errors
+- flutter analyze: zero errors, zero warnings
 - flutter test: 17/17 pass
 - flutter build web: succeeds
 - DESIGN.md: written at project root
@@ -72,5 +100,6 @@
 - `DESIGN.md` — visual world documentation
 - `.impeccable/surfaces/home.md` — surface brief with direction contract
 - `lib/app/theme/` — colors, text styles, theme, theme_colors
-- `lib/core/widgets/neomorphism/` — 13 widget files + shapes
+- `lib/core/widgets/neomorphism/` — 16 widget files + shapes (neu_dialog, neu_divider, neu_fab added)
 - `lib/features/` — all feature pages refined
+- `lib/app/router/app_router.dart` — all 8 placeholder routes wired

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+
+import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 
 /// Shared pet presentation utilities.
 ///
@@ -8,6 +10,13 @@ import 'package:carepaw/app/theme/app_colors.dart';
 /// across pet_list_page, pet_form_page, and pet_detail_page.
 class PetUtils {
   PetUtils._();
+
+  static const _dogAccent = Color(0xFF7A6C5D);
+  static const _catAccent = Color(0xFF8B7D5B);
+  static const _birdAccent = Color(0xFF4A8B6E);
+  static const _rabbitAccent = Color(0xFF9C7BA8);
+  static const _reptileAccent = Color(0xFF5C8A6E);
+  static const _otherAccent = Color(0xFF5B8BC0);
 
   /// Get the icon for a pet species.
   static IconData getSpeciesIcon(PetSpecies species) {
@@ -31,17 +40,17 @@ class PetUtils {
   static Color getSpeciesColor(PetSpecies species) {
     switch (species) {
       case PetSpecies.dog:
-        return AppColors.dogAccent;
+        return _dogAccent;
       case PetSpecies.cat:
-        return AppColors.catAccent;
+        return _catAccent;
       case PetSpecies.bird:
-        return AppColors.birdAccent;
+        return _birdAccent;
       case PetSpecies.rabbit:
-        return AppColors.rabbitAccent;
+        return _rabbitAccent;
       case PetSpecies.reptile:
-        return AppColors.reptileAccent;
+        return _reptileAccent;
       case PetSpecies.other:
-        return AppColors.otherAccent;
+        return _otherAccent;
     }
   }
 
@@ -67,16 +76,20 @@ class PetUtils {
   }
 
   /// Build a species-themed avatar placeholder.
-  static Widget buildAvatarPlaceholder(PetSpecies species, {double radius = 32, double? iconSize}) {
+  ///
+  /// An extruded disc tinted to the species hue. See [NeuAvatar] for the
+  /// extrusion reasoning.
+  static Widget buildAvatarPlaceholder(
+    PetSpecies species, {
+    double radius = 32,
+    double? iconSize,
+  }) {
     final color = getSpeciesColor(species);
-    return CircleAvatar(
+    return NeuAvatar(
       radius: radius,
-      backgroundColor: color.withValues(alpha: 0.2),
-      child: Icon(
-        getSpeciesIcon(species),
-        size: iconSize ?? radius,
-        color: color,
-      ),
+      icon: getSpeciesIcon(species),
+      backgroundColor: color.withValues(alpha: 0.14),
+      foregroundColor: color,
     );
   }
 
@@ -89,41 +102,46 @@ class PetUtils {
   }) {
     final color = getSpeciesColor(species);
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
-      return CircleAvatar(
+      return NeuAvatar(
         radius: radius,
-        backgroundColor: color.withValues(alpha: 0.2),
-        backgroundImage: NetworkImage(avatarUrl),
-        child: buildAvatarPlaceholder(species, radius: radius, iconSize: iconSize),
+        image: NetworkImage(avatarUrl),
+        backgroundColor: color.withValues(alpha: 0.14),
+        foregroundColor: color,
       );
     }
     return buildAvatarPlaceholder(species, radius: radius, iconSize: iconSize);
   }
 
-  /// Build an info chip for pet attributes.
+  /// Build an info pill for pet attributes.
+  ///
+  /// Sunken (pressed), not bordered. A tag is a category, not a state, and
+  /// should look inset relative to the card it sits in rather than floating
+  /// above it.
   static Widget buildInfoChip({
     required IconData icon,
     required String label,
     required Color color,
     double fontSize = 13,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+    return NeuContainer(
+      variant: NeuVariant.pressed,
+      padding: const EdgeInsets.symmetric(
+        horizontal: NeuTokens.spaceSm,
+        vertical: NeuTokens.spaceXxs + 2,
       ),
+      shape: const StadiumBorder(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               fontSize: fontSize,
+              height: 1.1,
             ),
           ),
         ],

@@ -50,10 +50,7 @@ class CreateScanRecord extends ScanEvent {
   final ScanType scanType;
   final String imagePath;
 
-  const CreateScanRecord({
-    required this.scanType,
-    required this.imagePath,
-  });
+  const CreateScanRecord({required this.scanType, required this.imagePath});
 
   @override
   List<Object?> get props => [scanType, imagePath];
@@ -74,10 +71,7 @@ class ConfirmScanRecord extends ScanEvent {
   final int recordId;
   final String? corrections;
 
-  const ConfirmScanRecord({
-    required this.recordId,
-    this.corrections,
-  });
+  const ConfirmScanRecord({required this.recordId, this.corrections});
 
   @override
   List<Object?> get props => [recordId, corrections];
@@ -88,10 +82,7 @@ class RejectScanRecord extends ScanEvent {
   final int recordId;
   final String reason;
 
-  const RejectScanRecord({
-    required this.recordId,
-    required this.reason,
-  });
+  const RejectScanRecord({required this.recordId, required this.reason});
 
   @override
   List<Object?> get props => [recordId, reason];

@@ -14,16 +14,23 @@ class InventoryItemDocMapper {
     return InventoryItem(
       id: data[FirestoreSchema.id] as int?,
       name: (data[FirestoreSchema.name] as String?) ?? '',
-      category: InventoryCategory.fromString((data[FirestoreSchema.category] as String?) ?? ''),
+      category: InventoryCategory.fromString(
+        (data[FirestoreSchema.category] as String?) ?? '',
+      ),
       unit: (data[FirestoreSchema.unit] as String?) ?? '',
-      currentStock: (data[FirestoreSchema.currentStock] as num?)?.toDouble() ?? 0,
+      currentStock:
+          (data[FirestoreSchema.currentStock] as num?)?.toDouble() ?? 0,
       minStock: (data[FirestoreSchema.minStock] as num?)?.toDouble() ?? 0,
       maxStock: (data[FirestoreSchema.maxStock] as num?)?.toDouble(),
       unitCost: (data[FirestoreSchema.unitCost] as num?)?.toDouble(),
       supplier: data[FirestoreSchema.supplier] as String?,
       location: data[FirestoreSchema.location] as String?,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
-      updatedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
+      updatedAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ??
+          DateTime.now(),
     );
   }
 

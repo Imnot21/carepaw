@@ -58,18 +58,21 @@ void main() {
 
     // The signal the block relies on a live auth-state stream. An empty stream
     // keeps the subscription active without injecting unrelated states.
-    when(() => repository.authStateStream)
-        .thenAnswer((_) => Stream<AuthResult?>.empty());
+    when(
+      () => repository.authStateStream,
+    ).thenAnswer((_) => Stream<AuthResult?>.empty());
   });
 
   group('AuthBloc', () {
     blocTest<AuthBloc, AuthState>(
       'emits [Loading, Authenticated] on successful admin login',
       build: () {
-        when(() => repository.login(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => adminResult);
+        when(
+          () => repository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => adminResult);
         return AuthBloc(authRepository: repository);
       },
       act: (bloc) => bloc.add(
@@ -84,13 +87,15 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [Loading, Authenticated] on successful pet-owner registration',
       build: () {
-        when(() => repository.register(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-              fullName: any(named: 'fullName'),
-              phone: any(named: 'phone'),
-              role: any(named: 'role'),
-            )).thenAnswer((_) async => ownerResult);
+        when(
+          () => repository.register(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+            fullName: any(named: 'fullName'),
+            phone: any(named: 'phone'),
+            role: any(named: 'role'),
+          ),
+        ).thenAnswer((_) async => ownerResult);
         return AuthBloc(authRepository: repository);
       },
       act: (bloc) => bloc.add(
@@ -106,17 +111,16 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [Loading, Error] on invalid credentials',
       build: () {
-        when(() => repository.login(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(const InvalidCredentialsFailure());
+        when(
+          () => repository.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(const InvalidCredentialsFailure());
         return AuthBloc(authRepository: repository);
       },
       act: (bloc) => bloc.add(
-        const AuthLoginRequested(
-          email: 'bad@carepaw.app',
-          password: 'wrong',
-        ),
+        const AuthLoginRequested(email: 'bad@carepaw.app', password: 'wrong'),
       ),
       expect: () => [
         const AuthLoading(),

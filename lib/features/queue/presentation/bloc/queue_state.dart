@@ -20,7 +20,8 @@ class QueueLoaded extends QueueState {
   final List<QueueEntryWithDetails> queueEntries;
   final int? userPosition; // Pet owner's position in queue
   final int? petsAhead; // Number of pets ahead
-  final bool higherPriorityAhead; // A triaged (urgent/emergency) entry precedes this owner
+  final bool
+  higherPriorityAhead; // A triaged (urgent/emergency) entry precedes this owner
 
   const QueueLoaded({
     required this.queueEntries,
@@ -30,7 +31,12 @@ class QueueLoaded extends QueueState {
   });
 
   @override
-  List<Object?> get props => [queueEntries, userPosition, petsAhead, higherPriorityAhead];
+  List<Object?> get props => [
+    queueEntries,
+    userPosition,
+    petsAhead,
+    higherPriorityAhead,
+  ];
 
   QueueLoaded copyWith({
     List<QueueEntryWithDetails>? queueEntries,
@@ -62,7 +68,12 @@ class QueueStaffLoaded extends QueueState {
   });
 
   @override
-  List<Object?> get props => [queueEntries, currentServing, totalWaiting, totalInRoom];
+  List<Object?> get props => [
+    queueEntries,
+    currentServing,
+    totalWaiting,
+    totalInRoom,
+  ];
 
   QueueStaffLoaded copyWith({
     List<QueueEntryWithDetails>? queueEntries,

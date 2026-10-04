@@ -5,6 +5,8 @@ import 'package:carepaw/features/notifications/presentation/bloc/notification_bl
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
@@ -12,12 +14,13 @@ import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
-/// Notification settings page with neumorphic design
+/// Notification settings page with the CarePaw surface system
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
 
   @override
-  State<NotificationSettingsPage> createState() => _NotificationSettingsPageState();
+  State<NotificationSettingsPage> createState() =>
+      _NotificationSettingsPageState();
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
@@ -32,7 +35,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: _isDark
+          ? AppColors.backgroundDark
+          : AppColors.background,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
@@ -95,14 +100,18 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               'Notification Settings',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w800,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: _isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               'Customize how you receive alerts',
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: _isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -133,13 +142,17 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   'All Notifications',
                   style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: _isDark
+                        ? AppColors.textPrimaryOnDark
+                        : AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   'Enable or disable all notifications',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: _isDark
+                        ? AppColors.textSecondaryOnDark
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -149,12 +162,12 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             value: isEnabled,
             onChanged: (value) => _updatePreference(
               preferences?.copyWith(inAppEnabled: value) ??
-              NotificationPreferences(
-                userId: 0,
-                inAppEnabled: value,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
+                  NotificationPreferences(
+                    userId: 0,
+                    inAppEnabled: value,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
             ),
           ),
         ],
@@ -213,7 +226,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           'Notification Categories',
           style: AppTextStyles.titleMedium.copyWith(
             fontWeight: FontWeight.w700,
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: _isDark
+                ? AppColors.textPrimaryOnDark
+                : AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -243,13 +258,17 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                           category.title,
                           style: AppTextStyles.titleSmall.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: _isDark
+                                ? AppColors.textPrimaryOnDark
+                                : AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           category.subtitle,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: _isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -281,12 +300,12 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         value: preferences?.pushEnabled ?? true,
         onChanged: (value) => _updatePreference(
           preferences?.copyWith(pushEnabled: value) ??
-          NotificationPreferences(
-            userId: 0,
-            pushEnabled: value,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
+              NotificationPreferences(
+                userId: 0,
+                pushEnabled: value,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
         ),
       ),
       _DeliverySetting(
@@ -296,12 +315,12 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         value: preferences?.emailEnabled ?? false,
         onChanged: (value) => _updatePreference(
           preferences?.copyWith(emailEnabled: value) ??
-          NotificationPreferences(
-            userId: 0,
-            emailEnabled: value,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
+              NotificationPreferences(
+                userId: 0,
+                emailEnabled: value,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
         ),
       ),
       _DeliverySetting(
@@ -311,12 +330,12 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         value: preferences?.inAppEnabled ?? true,
         onChanged: (value) => _updatePreference(
           preferences?.copyWith(inAppEnabled: value) ??
-          NotificationPreferences(
-            userId: 0,
-            inAppEnabled: value,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
+              NotificationPreferences(
+                userId: 0,
+                inAppEnabled: value,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
         ),
       ),
     ];
@@ -328,14 +347,18 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           'Delivery Methods',
           style: AppTextStyles.titleMedium.copyWith(
             fontWeight: FontWeight.w700,
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: _isDark
+                ? AppColors.textPrimaryOnDark
+                : AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           'Choose how you receive notifications',
           style: AppTextStyles.bodySmall.copyWith(
-            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+            color: _isDark
+                ? AppColors.textSecondaryOnDark
+                : AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 12),
@@ -365,22 +388,23 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                           setting.title,
                           style: AppTextStyles.titleSmall.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: _isDark
+                                ? AppColors.textPrimaryOnDark
+                                : AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           setting.subtitle,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: _isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  NeuSwitch(
-                    value: setting.value,
-                    onChanged: setting.onChanged,
-                  ),
+                  NeuSwitch(value: setting.value, onChanged: setting.onChanged),
                 ],
               ),
             );
@@ -410,13 +434,17 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   'Quiet Hours',
                   style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: _isDark
+                        ? AppColors.textPrimaryOnDark
+                        : AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   'Silence notifications during specified hours (coming soon)',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: _isDark
+                        ? AppColors.textSecondaryOnDark
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -435,7 +463,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           'Data Management',
           style: AppTextStyles.titleMedium.copyWith(
             fontWeight: FontWeight.w700,
-            color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+            color: _isDark
+                ? AppColors.textPrimaryOnDark
+                : AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -454,7 +484,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               _buildDataAction(
                 icon: Icons.delete_forever_rounded,
                 title: 'Delete All Notifications',
-                subtitle: 'Permanently delete all notifications (cannot be undone)',
+                subtitle:
+                    'Permanently delete all notifications (cannot be undone)',
                 color: ThemeColors.error(context),
                 onTap: _deleteAllNotifications,
                 isDestructive: true,
@@ -498,13 +529,17 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                       fontWeight: FontWeight.w600,
                       color: isDestructive
                           ? color
-                          : (_isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary),
+                          : (_isDark
+                                ? AppColors.textPrimaryOnDark
+                                : AppColors.textPrimary),
                     ),
                   ),
                   Text(
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                      color: _isDark
+                          ? AppColors.textSecondaryOnDark
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -512,7 +547,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: _isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
+              color: _isDark
+                  ? AppColors.textTertiaryOnDark
+                  : AppColors.textTertiary,
             ),
           ],
         ),
@@ -531,79 +568,82 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     bool enabled,
     NotificationPreferences? current,
   ) {
-    final updated = (current ?? NotificationPreferences(
-      userId: 0,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    )).copyWith(
-      appointmentReminders: type == NotificationType.appointmentReminder ? enabled : (current?.appointmentReminders ?? true),
-      queueUpdates: type == NotificationType.queueUpdate ? enabled : (current?.queueUpdates ?? true),
-      inventoryAlerts: type == NotificationType.inventoryLow ? enabled : (current?.inventoryAlerts ?? true),
-      prescriptionReady: type == NotificationType.prescriptionReady ? enabled : (current?.prescriptionReady ?? true),
-      systemAnnouncements: type == NotificationType.system ? enabled : (current?.systemAnnouncements ?? true),
-    );
+    final updated =
+        (current ??
+                NotificationPreferences(
+                  userId: 0,
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                ))
+            .copyWith(
+              appointmentReminders: type == NotificationType.appointmentReminder
+                  ? enabled
+                  : (current?.appointmentReminders ?? true),
+              queueUpdates: type == NotificationType.queueUpdate
+                  ? enabled
+                  : (current?.queueUpdates ?? true),
+              inventoryAlerts: type == NotificationType.inventoryLow
+                  ? enabled
+                  : (current?.inventoryAlerts ?? true),
+              prescriptionReady: type == NotificationType.prescriptionReady
+                  ? enabled
+                  : (current?.prescriptionReady ?? true),
+              systemAnnouncements: type == NotificationType.system
+                  ? enabled
+                  : (current?.systemAnnouncements ?? true),
+            );
     _updatePreference(updated);
   }
 
   void _clearReadNotifications() {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Read Notifications'),
-        content: const Text('Are you sure you want to delete all read notifications? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      title: 'Clear Read Notifications',
+      message:
+          'Are you sure you want to delete all read notifications? This action cannot be undone.',
+      confirmText: 'Clear',
+      confirmVariant: NeuButtonVariant.destructive,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        context.read<NotificationBloc>().add(
+          const DeleteAllReadNotifications(),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Read notifications cleared'),
+            backgroundColor: ThemeColors.success(context),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<NotificationBloc>().add(const DeleteAllReadNotifications());
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Read notifications cleared'),
-                  backgroundColor: ThemeColors.success(context),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              );
-            },
-            child: Text('Clear', style: TextStyle(color: ThemeColors.warning(context))),
-          ),
-        ],
-      ),
-    );
+        );
+      }
+    });
   }
 
   void _deleteAllNotifications() {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete All Notifications', style: TextStyle(color: ThemeColors.error(context))),
-        content: const Text('This will permanently delete ALL notifications. This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      title: 'Delete All Notifications',
+      message:
+          'This will permanently delete ALL notifications. This action cannot be undone.',
+      confirmText: 'Delete All',
+      confirmVariant: NeuButtonVariant.destructive,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Feature coming soon'),
+            backgroundColor: ThemeColors.primary(context),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Feature coming soon'),
-                  backgroundColor: ThemeColors.primary(context),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              );
-            },
-            child: Text('Delete All', style: TextStyle(color: ThemeColors.error(context))),
-          ),
-        ],
-      ),
-    );
+        );
+      }
+    });
   }
 }
 

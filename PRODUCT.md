@@ -10,7 +10,7 @@ Flutter cross-platform app (iOS, Android, web, desktop builds). Design target is
 
 ## Stack
 
-Flutter 3.12+ / Dart 3.12+, BLoC (`flutter_bloc`), GoRouter, GetIt + Injectable, Firebase (Auth, Cloud Firestore, Cloud Messaging, Cloud Functions, App Check), `flutter_local_notifications`, `flutter_secure_storage`, `shared_preferences`. Custom neumorphic widget library in `lib/core/widgets/neomorphism/`. The codebase answers the stack; no greenfield choice needed.
+Flutter 3.12+ / Dart 3.12+, BLoC (`flutter_bloc`), GoRouter, GetIt + Injectable, Firebase (Auth, Cloud Firestore, Cloud Messaging, Cloud Functions, App Check), `flutter_local_notifications`, `flutter_secure_storage`, `shared_preferences`. Custom surface widget library in `lib/core/widgets/neomorphism/` (the directory name is historical; the widgets are flat-material now — hairline borders and tinted planes, no extrusion). The codebase answers the stack; no greenfield choice needed.
 
 ## Users
 
@@ -60,13 +60,13 @@ Undecided: authentication flow details, notification delivery specifics, offline
 
 - Name: **CarePaw**.
 - Stated concept: "Making veterinary care simpler, smarter, and more pet-friendly."
-- Existing visual direction: neumorphism (see `PLAN_NEUMORPHISM.md` and `lib/core/widgets/neomorphism/`) — soft, tactile, single-hue surfaces. This is the incumbent identity to preserve or explicitly replace in new-work.
+-   Visual direction: the full neumorphic revival documented in `DESIGN.md` — dual light/depth extrusion on every plane (top-left light, bottom-right tinted depth), wells carved into the canvas, and accent-tinted lighting on species discs and filled buttons. This is the user-directed re-execution of `PLAN_NEUMORPHISM.md` with calibrated, token-driven shadows rather than per-call-site guesses; see §2 of the design system for the calibration and §3 for the dark-mode treatment (white light source replaced by a faint charcoal rim).
 - No confirmed logo, typography, or asset commitments beyond the above.
 
 ## Evidence on Hand
 
-- `README.md`, `CLAUDE.md`, `PLAN_NEUMORPHISM.md`, `README_Brag_Alternative.md`.
-- Implemented feature scaffolding: pages, BLoC state management, Firestore repositories, domain entities, neumorphic widget library.
+- `README.md`, `CLAUDE.md`, `PLAN_NEUMORPHISM.md`.
+- Implemented feature scaffolding: pages, BLoC state management, Firestore repositories, domain entities, the `Neu*` surface widget library.
 - Absences future work must not fabricate: real clinic data, testimonials, customer logos, benchmarks, pricing, deployment claims.
 
 ## Product Principles

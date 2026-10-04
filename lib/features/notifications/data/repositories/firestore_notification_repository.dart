@@ -18,8 +18,8 @@ class FirestoreNotificationRepository implements NotificationRepository {
   FirestoreNotificationRepository({
     required FirebaseFirestore firestore,
     required FirestoreIdSequence notificationIdSequence,
-  })  : _firestore = firestore,
-        _idSequence = notificationIdSequence;
+  }) : _firestore = firestore,
+       _idSequence = notificationIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -35,7 +35,9 @@ class FirestoreNotificationRepository implements NotificationRepository {
   @override
   Future<Notification?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : NotificationDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : NotificationDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -52,7 +54,9 @@ class FirestoreNotificationRepository implements NotificationRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _notifications.doc('${toWrite.id}').set(NotificationDocMapper.toData(toWrite));
+    await _notifications
+        .doc('${toWrite.id}')
+        .set(NotificationDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -90,22 +94,26 @@ class FirestoreNotificationRepository implements NotificationRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return NotificationDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return NotificationDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<Notification>> watchAll() {
-    return _notifications.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => NotificationDocMapper.fromData(doc.data()))
-        .toList());
+    return _notifications.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => NotificationDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<Notification, int> ============
 
   @override
-  Future<PaginatedResult<Notification>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<Notification>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -114,11 +122,14 @@ class FirestoreNotificationRepository implements NotificationRepository {
 
   @override
   Future<List<Notification>> findByUser(int userId, {int limit = 50}) async {
-    final snapshot = await _notifications.where(FirestoreSchema.userId, isEqualTo: userId).get();
-    final notifications = snapshot.docs
-        .map((doc) => NotificationDocMapper.fromData(doc.data()))
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final snapshot = await _notifications
+        .where(FirestoreSchema.userId, isEqualTo: userId)
+        .get();
+    final notifications =
+        snapshot.docs
+            .map((doc) => NotificationDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return notifications.take(limit).toList();
   }
 
@@ -128,12 +139,13 @@ class FirestoreNotificationRepository implements NotificationRepository {
         .where(FirestoreSchema.userId, isEqualTo: userId)
         .snapshots()
         .map((snapshot) {
-      final notifications = snapshot.docs
-          .map((doc) => NotificationDocMapper.fromData(doc.data()))
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return notifications.take(limit).toList();
-    });
+          final notifications =
+              snapshot.docs
+                  .map((doc) => NotificationDocMapper.fromData(doc.data()))
+                  .toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return notifications.take(limit).toList();
+        });
   }
 
   @override
@@ -149,7 +161,10 @@ class FirestoreNotificationRepository implements NotificationRepository {
   }
 
   @override
-  Future<List<Notification>> findByType(int userId, NotificationType type) async {
+  Future<List<Notification>> findByType(
+    int userId,
+    NotificationType type,
+  ) async {
     final all = await findByUser(userId, limit: 500);
     return all.where((n) => n.type == type).toList();
   }
@@ -158,7 +173,12 @@ class FirestoreNotificationRepository implements NotificationRepository {
   Future<Notification> markAsRead(int id) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Notification not found');
-    return save(existing.copyWith(isRead: true, readAt: existing.readAt ?? DateTime.now()));
+    return save(
+      existing.copyWith(
+        isRead: true,
+        readAt: existing.readAt ?? DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -197,31 +217,50 @@ class FirestoreNotificationRepository implements NotificationRepository {
   }
 
   @override
-  Future<NotificationPreferences> updatePreferences(NotificationPreferences preferences) async {
+  Future<NotificationPreferences> updatePreferences(
+    NotificationPreferences preferences,
+  ) async {
     final now = DateTime.now();
     final existing = await findPreferences(preferences.userId);
     final toWrite = existing == null
-        ? preferences.copyWith(id: preferences.id ?? preferences.userId, createdAt: now, updatedAt: now)
+        ? preferences.copyWith(
+            id: preferences.id ?? preferences.userId,
+            createdAt: now,
+            updatedAt: now,
+          )
         : preferences.copyWith(createdAt: existing.createdAt, updatedAt: now);
-    await _preferences.doc('${preferences.userId}').set(NotificationPreferencesDocMapper.toData(toWrite));
+    await _preferences
+        .doc('${preferences.userId}')
+        .set(NotificationPreferencesDocMapper.toData(toWrite));
     return toWrite;
   }
 
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<Notification> createWithSync(Notification entity, String tableName) async => save(entity);
+  Future<Notification> createWithSync(
+    Notification entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<Notification> updateWithSync(Notification entity, String tableName) async => save(entity);
+  Future<Notification> updateWithSync(
+    Notification entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => delete(id);
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _notifications.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _notifications
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

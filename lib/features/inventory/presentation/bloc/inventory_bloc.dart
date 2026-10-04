@@ -1,15 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
-import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart' as events;
-import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart' as states;
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart'
+    as events;
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart'
+    as states;
 import 'package:carepaw/core/errors/failures.dart';
 
 /// Inventory BLoC for managing inventory state.
 ///
 /// Handles loading, creating, updating inventory items, batches, and transactions.
-class InventoryBloc
-    extends Bloc<events.InventoryEvent, states.InventoryState> {
+class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
   final InventoryItemRepository _itemRepository;
   final InventoryBatchRepository _batchRepository;
   final InventoryTransactionRepository _transactionRepository;
@@ -18,10 +19,10 @@ class InventoryBloc
     required InventoryItemRepository itemRepository,
     required InventoryBatchRepository batchRepository,
     required InventoryTransactionRepository transactionRepository,
-  })  : _itemRepository = itemRepository,
-        _batchRepository = batchRepository,
-        _transactionRepository = transactionRepository,
-        super(const states.InventoryInitial()) {
+  }) : _itemRepository = itemRepository,
+       _batchRepository = batchRepository,
+       _transactionRepository = transactionRepository,
+       super(const states.InventoryInitial()) {
     on<events.LoadInventoryItems>(_onLoadInventoryItems);
     on<events.LoadInventoryItemsByCategory>(_onLoadInventoryItemsByCategory);
     on<events.LoadLowStockItems>(_onLoadLowStockItems);
@@ -116,9 +117,11 @@ class InventoryBloc
       if (item != null) {
         emit(states.InventoryItemDetailLoaded(item));
       } else {
-        emit(const states.InventoryError(NotFoundFailure(
-          message: 'Inventory item not found',
-        )));
+        emit(
+          const states.InventoryError(
+            NotFoundFailure(message: 'Inventory item not found'),
+          ),
+        );
       }
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
@@ -197,7 +200,11 @@ class InventoryBloc
         updatedAt: DateTime.now(),
       );
       await _itemRepository.save(item);
-      emit(const states.InventoryOperationSuccess('Inventory item created successfully'));
+      emit(
+        const states.InventoryOperationSuccess(
+          'Inventory item created successfully',
+        ),
+      );
       // Reload items
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));
@@ -217,9 +224,11 @@ class InventoryBloc
     try {
       final existingItem = await _itemRepository.findById(event.id);
       if (existingItem == null) {
-        emit(const states.InventoryError(NotFoundFailure(
-          message: 'Inventory item not found',
-        )));
+        emit(
+          const states.InventoryError(
+            NotFoundFailure(message: 'Inventory item not found'),
+          ),
+        );
         return;
       }
       final updatedItem = existingItem.copyWith(
@@ -234,7 +243,11 @@ class InventoryBloc
         updatedAt: DateTime.now(),
       );
       await _itemRepository.save(updatedItem);
-      emit(const states.InventoryOperationSuccess('Inventory item updated successfully'));
+      emit(
+        const states.InventoryOperationSuccess(
+          'Inventory item updated successfully',
+        ),
+      );
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));
     } on Failure catch (failure) {
@@ -252,7 +265,9 @@ class InventoryBloc
     emit(const states.InventoryLoading());
     try {
       await _itemRepository.updateStock(event.id, event.newStock);
-      emit(const states.InventoryOperationSuccess('Stock updated successfully'));
+      emit(
+        const states.InventoryOperationSuccess('Stock updated successfully'),
+      );
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));
     } on Failure catch (failure) {
@@ -270,7 +285,9 @@ class InventoryBloc
     emit(const states.InventoryLoading());
     try {
       await _itemRepository.adjustStock(event.id, event.delta);
-      emit(const states.InventoryOperationSuccess('Stock adjusted successfully'));
+      emit(
+        const states.InventoryOperationSuccess('Stock adjusted successfully'),
+      );
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));
     } on Failure catch (failure) {
@@ -299,7 +316,9 @@ class InventoryBloc
         createdAt: DateTime.now(),
       );
       await _batchRepository.create(batch);
-      emit(const states.InventoryOperationSuccess('Batch created successfully'));
+      emit(
+        const states.InventoryOperationSuccess('Batch created successfully'),
+      );
       final batches = await _batchRepository.findByItem(event.inventoryId);
       emit(states.ItemBatchesLoaded(batches, event.inventoryId));
     } on Failure catch (failure) {
@@ -319,9 +338,11 @@ class InventoryBloc
       // Get current batch quantity
       final batch = await _batchRepository.findById(event.batchId);
       if (batch == null) {
-        emit(const states.InventoryError(NotFoundFailure(
-          message: 'Batch not found',
-        )));
+        emit(
+          const states.InventoryError(
+            NotFoundFailure(message: 'Batch not found'),
+          ),
+        );
         return;
       }
 
@@ -341,10 +362,14 @@ class InventoryBloc
       );
       await _transactionRepository.create(transaction);
       // Update batch quantity
-      await _batchRepository.update(batch.copyWith(
-        quantity: batch.quantity + event.quantity,
-      ));
-      emit(const states.InventoryOperationSuccess('Stock in recorded successfully'));
+      await _batchRepository.update(
+        batch.copyWith(quantity: batch.quantity + event.quantity),
+      );
+      emit(
+        const states.InventoryOperationSuccess(
+          'Stock in recorded successfully',
+        ),
+      );
       final batches = await _batchRepository.findByItem(batch.inventoryId);
       emit(states.ItemBatchesLoaded(batches, batch.inventoryId));
     } on Failure catch (failure) {
@@ -363,16 +388,23 @@ class InventoryBloc
     try {
       final batch = await _batchRepository.findById(event.batchId);
       if (batch == null) {
-        emit(const states.InventoryError(NotFoundFailure(
-          message: 'Batch not found',
-        )));
+        emit(
+          const states.InventoryError(
+            NotFoundFailure(message: 'Batch not found'),
+          ),
+        );
         return;
       }
 
       if (batch.quantity < event.quantity) {
-        emit(states.InventoryError(InsufficientStockFailure(
-          message: 'Insufficient stock in batch (available: ${batch.quantity}, requested: ${event.quantity})',
-        )));
+        emit(
+          states.InventoryError(
+            InsufficientStockFailure(
+              message:
+                  'Insufficient stock in batch (available: ${batch.quantity}, requested: ${event.quantity})',
+            ),
+          ),
+        );
         return;
       }
 
@@ -391,10 +423,14 @@ class InventoryBloc
         createdAt: DateTime.now(),
       );
       await _transactionRepository.create(transaction);
-      await _batchRepository.update(batch.copyWith(
-        quantity: batch.quantity - event.quantity,
-      ));
-      emit(const states.InventoryOperationSuccess('Stock out recorded successfully'));
+      await _batchRepository.update(
+        batch.copyWith(quantity: batch.quantity - event.quantity),
+      );
+      emit(
+        const states.InventoryOperationSuccess(
+          'Stock out recorded successfully',
+        ),
+      );
       final batches = await _batchRepository.findByItem(batch.inventoryId);
       emit(states.ItemBatchesLoaded(batches, batch.inventoryId));
     } on Failure catch (failure) {
@@ -413,17 +449,23 @@ class InventoryBloc
     try {
       final batch = await _batchRepository.findById(event.batchId);
       if (batch == null) {
-        emit(const states.InventoryError(NotFoundFailure(
-          message: 'Batch not found',
-        )));
+        emit(
+          const states.InventoryError(
+            NotFoundFailure(message: 'Batch not found'),
+          ),
+        );
         return;
       }
 
       final newQuantity = batch.quantity + event.quantityChange;
       if (newQuantity < 0) {
-        emit(states.InventoryError(OutOfRangeFailure(
-          message: 'Adjustment would result in negative quantity',
-        )));
+        emit(
+          states.InventoryError(
+            OutOfRangeFailure(
+              message: 'Adjustment would result in negative quantity',
+            ),
+          ),
+        );
         return;
       }
 
@@ -442,10 +484,12 @@ class InventoryBloc
         createdAt: DateTime.now(),
       );
       await _transactionRepository.create(transaction);
-      await _batchRepository.update(batch.copyWith(
-        quantity: newQuantity,
-      ));
-      emit(const states.InventoryOperationSuccess('Adjustment recorded successfully'));
+      await _batchRepository.update(batch.copyWith(quantity: newQuantity));
+      emit(
+        const states.InventoryOperationSuccess(
+          'Adjustment recorded successfully',
+        ),
+      );
       final batches = await _batchRepository.findByItem(batch.inventoryId);
       emit(states.ItemBatchesLoaded(batches, batch.inventoryId));
     } on Failure catch (failure) {
@@ -462,7 +506,9 @@ class InventoryBloc
   ) async {
     emit(const states.InventoryLoading());
     try {
-      final transactions = await _transactionRepository.findByBatch(event.batchId);
+      final transactions = await _transactionRepository.findByBatch(
+        event.batchId,
+      );
       emit(states.BatchTransactionsLoaded(transactions, event.batchId));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));

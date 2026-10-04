@@ -15,16 +15,24 @@ class PetDocMapper {
       id: data[FirestoreSchema.id] as int?,
       ownerId: (data[FirestoreSchema.ownerId] as num?)?.toInt() ?? 0,
       name: (data[FirestoreSchema.name] as String?) ?? '',
-      species: PetSpecies.fromString((data[FirestoreSchema.species] as String?) ?? ''),
+      species: PetSpecies.fromString(
+        (data[FirestoreSchema.species] as String?) ?? '',
+      ),
       breed: data[FirestoreSchema.breed] as String?,
-      birthDate: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.birthDate]),
+      birthDate: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.birthDate],
+      ),
       weightKg: (data[FirestoreSchema.weightKg] as num?)?.toDouble(),
       color: data[FirestoreSchema.color] as String?,
       microchipId: data[FirestoreSchema.microchipId] as String?,
       avatarUrl: data[FirestoreSchema.avatarUrl] as String?,
       isActive: (data[FirestoreSchema.isActive] as bool?) ?? true,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
-      updatedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
+      updatedAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ??
+          DateTime.now(),
     );
   }
 

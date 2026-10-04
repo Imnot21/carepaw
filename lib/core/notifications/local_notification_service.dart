@@ -57,23 +57,31 @@ class LocalNotificationService {
     // This is just to ensure they exist early
     await _notifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(const AndroidNotificationChannel(
-          'carepaw_instant',
-          'CarePaw Instant',
-          description: 'Immediate notifications (appointment confirmations, queue updates)',
-          importance: Importance.high,
-        ));
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            'carepaw_instant',
+            'CarePaw Instant',
+            description:
+                'Immediate notifications (appointment confirmations, queue updates)',
+            importance: Importance.high,
+          ),
+        );
 
     await _notifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(const AndroidNotificationChannel(
-          'carepaw_scheduled',
-          'CarePaw Scheduled',
-          description: 'Scheduled notifications (appointment reminders, prescription refills)',
-          importance: Importance.high,
-        ));
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            'carepaw_scheduled',
+            'CarePaw Scheduled',
+            description:
+                'Scheduled notifications (appointment reminders, prescription refills)',
+            importance: Importance.high,
+          ),
+        );
   }
 
   /// Show an instant notification.
@@ -89,7 +97,8 @@ class LocalNotificationService {
     final androidDetails = AndroidNotificationDetails(
       'carepaw_instant',
       'CarePaw Instant',
-      channelDescription: 'Immediate notifications (appointment confirmations, queue updates)',
+      channelDescription:
+          'Immediate notifications (appointment confirmations, queue updates)',
       importance: _mapPriority(priority),
       priority: _mapPriorityToPriority(priority),
       enableVibration: true,
@@ -102,7 +111,10 @@ class LocalNotificationService {
       presentSound: true,
     );
 
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     await _notifications.show(id, title, body, details, payload: payload);
   }
@@ -122,7 +134,8 @@ class LocalNotificationService {
     final androidDetails = const AndroidNotificationDetails(
       'carepaw_scheduled',
       'CarePaw Scheduled',
-      channelDescription: 'Scheduled notifications (appointment reminders, prescription refills)',
+      channelDescription:
+          'Scheduled notifications (appointment reminders, prescription refills)',
       importance: Importance.high,
       priority: Priority.high,
     );
@@ -133,7 +146,10 @@ class LocalNotificationService {
       presentSound: true,
     );
 
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     await _notifications.zonedSchedule(
       id,
@@ -166,7 +182,8 @@ class LocalNotificationService {
     const androidDetails = AndroidNotificationDetails(
       'carepaw_scheduled',
       'CarePaw Scheduled',
-      channelDescription: 'Scheduled notifications (appointment reminders, prescription refills)',
+      channelDescription:
+          'Scheduled notifications (appointment reminders, prescription refills)',
       importance: Importance.high,
       priority: Priority.high,
     );
@@ -177,7 +194,10 @@ class LocalNotificationService {
       presentSound: true,
     );
 
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     await _notifications.periodicallyShow(
       id,
@@ -244,9 +264,4 @@ class LocalNotificationService {
 }
 
 /// Notification priority enum (maps to platform-specific priorities).
-enum NotificationPriority {
-  low,
-  medium,
-  high,
-  max,
-}
+enum NotificationPriority { low, medium, high, max }

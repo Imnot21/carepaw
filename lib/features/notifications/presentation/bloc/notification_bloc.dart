@@ -1,17 +1,20 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart';
-import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart' as events;
-import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart' as states;
+import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart'
+    as events;
+import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart'
+    as states;
 import 'package:carepaw/core/errors/failures.dart';
 
 /// Notification BLoC for managing notifications and preferences.
-class NotificationBloc extends Bloc<events.NotificationEvent, states.NotificationState> {
+class NotificationBloc
+    extends Bloc<events.NotificationEvent, states.NotificationState> {
   final NotificationRepository _notificationRepository;
 
   NotificationBloc({required NotificationRepository notificationRepository})
-      : _notificationRepository = notificationRepository,
-        super(const states.NotificationInitial()) {
+    : _notificationRepository = notificationRepository,
+      super(const states.NotificationInitial()) {
     on<events.LoadNotifications>(_onLoadNotifications);
     on<events.LoadUnreadCount>(_onLoadUnreadCount);
     on<events.LoadNotificationsByType>(_onLoadNotificationsByType);
@@ -36,10 +39,12 @@ class NotificationBloc extends Bloc<events.NotificationEvent, states.Notificatio
         event.userId ?? 1,
         limit: event.limit ?? 20,
       );
-      emit(states.NotificationsLoaded(
-        notifications: notifications,
-        hasReachedMax: notifications.length < (event.limit ?? 20),
-      ));
+      emit(
+        states.NotificationsLoaded(
+          notifications: notifications,
+          hasReachedMax: notifications.length < (event.limit ?? 20),
+        ),
+      );
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
@@ -53,7 +58,9 @@ class NotificationBloc extends Bloc<events.NotificationEvent, states.Notificatio
     Emitter<states.NotificationState> emit,
   ) async {
     try {
-      final count = await _notificationRepository.getUnreadCount(event.userId ?? 1);
+      final count = await _notificationRepository.getUnreadCount(
+        event.userId ?? 1,
+      );
       emit(states.UnreadCountLoaded(count));
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));

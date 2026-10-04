@@ -10,14 +10,15 @@ import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -47,7 +48,6 @@ class _QueuePageState extends State<QueuePage> {
           return const _NotLoggedInView();
         }
 
-        // Check if user is a pet owner - only pet owners can access this page
         final user = authState.user;
         final isPetOwner = user.role == UserRole.petOwner;
 
@@ -56,9 +56,14 @@ class _QueuePageState extends State<QueuePage> {
         }
 
         return Scaffold(
-          extendBodyBehindAppBar: true,
+          backgroundColor: ThemeColors.background(context),
           appBar: AppBar(
-            title: const Text('Queue Status'),
+            title: Text(
+              'Queue status',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,
@@ -73,7 +78,9 @@ class _QueuePageState extends State<QueuePage> {
                     content: Text(state.message),
                     backgroundColor: ThemeColors.success(context),
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     margin: const EdgeInsets.all(16),
                   ),
                 );
@@ -83,7 +90,9 @@ class _QueuePageState extends State<QueuePage> {
                     content: Text(state.message),
                     backgroundColor: ThemeColors.error(context),
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     margin: const EdgeInsets.all(16),
                   ),
                 );
@@ -116,14 +125,13 @@ class _QueuePageState extends State<QueuePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           NeuContainer(
-            borderRadius: 70,
-            padding: const EdgeInsets.all(28),
-            color: ThemeColors.primary(context),
-            boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
-            child: const Icon(
-              Icons.queue,
-              size: 70,
-              color: AppColors.textOnPrimary,
+            variant: NeuVariant.inset,
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(NeuTokens.spaceLg),
+            child: Icon(
+              Icons.queue_rounded,
+              size: 48,
+              color: ThemeColors.primary(context),
             ),
           ),
           const SizedBox(height: 28),
@@ -137,9 +145,9 @@ class _QueuePageState extends State<QueuePage> {
           const SizedBox(height: 12),
           Text(
             'Pull to refresh or wait for updates',
-            style: AppTextStyles.bodyLarge.subtleOf(Theme.of(context).brightness).copyWith(
-              height: 1.5,
-            ),
+            style: AppTextStyles.bodyLarge
+                .subtleOf(Theme.of(context).brightness)
+                .copyWith(height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],
@@ -222,13 +230,12 @@ class _QueuePageState extends State<QueuePage> {
                 ),
               ),
               const SizedBox(height: 16),
-              ...state.queueEntries.map((entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: _QueueEntryCard(
-                      entry: entry,
-                      isCurrentUser: true,
-                    ),
-                  )),
+              ...state.queueEntries.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: _QueueEntryCard(entry: entry, isCurrentUser: true),
+                ),
+              ),
               const SizedBox(height: 28),
             ],
 
@@ -251,7 +258,12 @@ class _QueuePageState extends State<QueuePage> {
               borderRadius: 70,
               padding: const EdgeInsets.all(28),
               color: ThemeColors.error(context),
-              boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
+              boxShadow: NeuShadow.color(
+                context,
+                ThemeColors.error(context),
+                blur: 24,
+                opacity: 0.32,
+              ),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 70,
@@ -269,7 +281,9 @@ class _QueuePageState extends State<QueuePage> {
             const SizedBox(height: 12),
             Text(
               message,
-              style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+              style: AppTextStyles.bodyMedium.subtleOf(
+                Theme.of(context).brightness,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -306,18 +320,23 @@ class _UpcomingCheckInSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final queuedAppointmentIds =
-        queueEntries.map((e) => e.appointment.id).whereType<int>().toSet();
+    final queuedAppointmentIds = queueEntries
+        .map((e) => e.appointment.id)
+        .whereType<int>()
+        .toSet();
 
     return BlocBuilder<AppointmentBloc, AppointmentState>(
       builder: (context, appointmentState) {
-        if (appointmentState is! AppointmentLoaded) return const SizedBox.shrink();
+        if (appointmentState is! AppointmentLoaded)
+          return const SizedBox.shrink();
 
         final upcoming = appointmentState.upcomingWithPetDetails
-            .where((detail) =>
-                detail.appointment.id != null &&
-                !queuedAppointmentIds.contains(detail.appointment.id) &&
-                !detail.appointment.isTerminal)
+            .where(
+              (detail) =>
+                  detail.appointment.id != null &&
+                  !queuedAppointmentIds.contains(detail.appointment.id) &&
+                  !detail.appointment.isTerminal,
+            )
             .toList();
 
         if (upcoming.isEmpty) return const SizedBox.shrink();
@@ -334,18 +353,29 @@ class _UpcomingCheckInSection extends StatelessWidget {
                     padding: const EdgeInsets.all(10),
                     variant: NeuVariant.flat,
                     color: ThemeColors.primary(context).withValues(alpha: 0.12),
-                    child: Icon(Icons.event_available_rounded, size: 20, color: ThemeColors.primary(context)),
+                    child: Icon(
+                      Icons.event_available_rounded,
+                      size: 20,
+                      color: ThemeColors.primary(context),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Check In', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                        Text(
+                          'Check In',
+                          style: AppTextStyles.titleMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           "You're not in the queue yet. Check in when you arrive at the clinic.",
-                          style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                          style: AppTextStyles.bodySmall.subtleOf(
+                            Theme.of(context).brightness,
+                          ),
                         ),
                       ],
                     ),
@@ -353,10 +383,12 @@ class _UpcomingCheckInSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              ...upcoming.map((detail) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _UpcomingCheckInTile(detail: detail),
-                  )),
+              ...upcoming.map(
+                (detail) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _UpcomingCheckInTile(detail: detail),
+                ),
+              ),
             ],
           ),
         );
@@ -370,11 +402,12 @@ class _UpcomingCheckInTile extends StatelessWidget {
 
   const _UpcomingCheckInTile({required this.detail});
 
-  String _formatDate(DateTime date) =>
-      '${date.month}/${date.day}/${date.year}';
+  String _formatDate(DateTime date) => '${date.month}/${date.day}/${date.year}';
 
   String _formatTime(DateTime date) {
-    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final hour = date.hour > 12
+        ? date.hour - 12
+        : (date.hour == 0 ? 12 : date.hour);
     final minute = date.minute.toString().padLeft(2, '0');
     final period = date.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -395,18 +428,28 @@ class _UpcomingCheckInTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(pet.name, style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w700)),
+                Text(
+                  pet.name,
+                  style: AppTextStyles.titleSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   '${_formatDate(appointment.scheduledAt)} · ${_formatTime(appointment.scheduledAt)}',
-                  style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                  style: AppTextStyles.bodySmall.subtleOf(
+                    Theme.of(context).brightness,
+                  ),
                 ),
-                if (appointment.reason != null && appointment.reason!.trim().isNotEmpty)
+                if (appointment.reason != null &&
+                    appointment.reason!.trim().isNotEmpty)
                   Text(
                     appointment.reason!.trim(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.textSecondary(context)),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                    ),
                   ),
               ],
             ),
@@ -418,8 +461,12 @@ class _UpcomingCheckInTile extends StatelessWidget {
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.small,
             onPressed: () {
-              context.read<QueueBloc>().add(QueueCheckInRequested(appointment.id!));
-              context.read<AppointmentBloc>().add(AppointmentRefreshRequested());
+              context.read<QueueBloc>().add(
+                QueueCheckInRequested(appointment.id!),
+              );
+              context.read<AppointmentBloc>().add(
+                AppointmentRefreshRequested(),
+              );
             },
           ),
         ],
@@ -448,7 +495,12 @@ class _PositionCard extends StatelessWidget {
         padding: const EdgeInsets.all(28),
         borderRadius: 28,
         color: ThemeColors.primary(context),
-        boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
+        boxShadow: NeuShadow.color(
+          context,
+          ThemeColors.primary(context),
+          blur: 24,
+          opacity: 0.32,
+        ),
         child: Column(
           children: [
             Text(
@@ -478,7 +530,10 @@ class _PositionCard extends StatelessWidget {
               const SizedBox(height: 20),
               NeuContainer(
                 borderRadius: 20,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
                 variant: NeuVariant.flat,
                 color: AppColors.textOnPrimary.withValues(alpha: 0.15),
                 child: Row(
@@ -520,7 +575,12 @@ class _EmptyQueueCard extends StatelessWidget {
             borderRadius: 48,
             padding: const EdgeInsets.all(22),
             color: ThemeColors.primary(context),
-            boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
+            boxShadow: NeuShadow.color(
+              context,
+              ThemeColors.primary(context),
+              blur: 24,
+              opacity: 0.32,
+            ),
             child: const Icon(
               Icons.queue_outlined,
               size: 48,
@@ -537,9 +597,9 @@ class _EmptyQueueCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'You don\'t have any pets currently checked in.\nBook an appointment and check in when you arrive.',
-            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness).copyWith(
-              height: 1.5,
-            ),
+            style: AppTextStyles.bodyMedium
+                .subtleOf(Theme.of(context).brightness)
+                .copyWith(height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],
@@ -577,9 +637,9 @@ class _NotInQueueCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Your pets have upcoming appointments but aren\'t checked in yet.\nCheck in when you arrive at the clinic.',
-            style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness).copyWith(
-              height: 1.5,
-            ),
+            style: AppTextStyles.bodyMedium
+                .subtleOf(Theme.of(context).brightness)
+                .copyWith(height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],
@@ -593,10 +653,7 @@ class _QueueEntryCard extends StatelessWidget {
   final QueueEntryWithDetails entry;
   final bool isCurrentUser;
 
-  const _QueueEntryCard({
-    required this.entry,
-    this.isCurrentUser = false,
-  });
+  const _QueueEntryCard({required this.entry, this.isCurrentUser = false});
 
   @override
   Widget build(BuildContext context) {
@@ -616,7 +673,12 @@ class _QueueEntryCard extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 variant: NeuVariant.raised,
                 color: statusColor,
-                boxShadow: NeuShadow.color(context, statusColor, blur: 12, opacity: 0.3),
+                boxShadow: NeuShadow.color(
+                  context,
+                  statusColor,
+                  blur: 12,
+                  opacity: 0.3,
+                ),
                 child: SizedBox(
                   width: 40,
                   height: 40,
@@ -646,7 +708,9 @@ class _QueueEntryCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${entry.pet.species.displayName} • ${entry.pet.breed}',
-                      style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                      style: AppTextStyles.bodySmall.subtleOf(
+                        Theme.of(context).brightness,
+                      ),
                     ),
                   ],
                 ),
@@ -655,7 +719,10 @@ class _QueueEntryCard extends StatelessWidget {
               // Status chip
               NeuContainer(
                 borderRadius: 20,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 variant: NeuVariant.flat,
                 color: statusColor.withValues(alpha: 0.12),
                 borderColor: statusColor.withValues(alpha: 0.3),
@@ -692,7 +759,9 @@ class _QueueEntryCard extends StatelessWidget {
                     children: [
                       Text(
                         'Appointment',
-                        style: AppTextStyles.labelSmall.subtleOf(Theme.of(context).brightness),
+                        style: AppTextStyles.labelSmall.subtleOf(
+                          Theme.of(context).brightness,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -733,13 +802,17 @@ class _QueueEntryCard extends StatelessWidget {
                   initials: entry.veterinarian.fullName.isNotEmpty
                       ? entry.veterinarian.fullName[0]
                       : 'D',
-                  backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                  backgroundColor: ThemeColors.primary(
+                    context,
+                  ).withValues(alpha: 0.15),
                   foregroundColor: ThemeColors.primary(context),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   'Dr. ${entry.veterinarian.fullName}',
-                  style: AppTextStyles.bodyMedium.subtleOf(Theme.of(context).brightness),
+                  style: AppTextStyles.bodyMedium.subtleOf(
+                    Theme.of(context).brightness,
+                  ),
                 ),
               ],
             ),
@@ -762,7 +835,9 @@ class _QueueEntryCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     'Checked in at ${_formatTime(entry.queueEntry.checkedInAt)}',
-                    style: AppTextStyles.bodySmall.mutedOf(Theme.of(context).brightness),
+                    style: AppTextStyles.bodySmall.mutedOf(
+                      Theme.of(context).brightness,
+                    ),
                   ),
                 ],
               ),
@@ -829,7 +904,9 @@ class _QueueEntryCard extends StatelessWidget {
   }
 
   String _formatTime(DateTime dateTime) {
-    final hour = dateTime.hour > 12 ? dateTime.hour - 12 : (dateTime.hour == 0 ? 12 : dateTime.hour);
+    final hour = dateTime.hour > 12
+        ? dateTime.hour - 12
+        : (dateTime.hour == 0 ? 12 : dateTime.hour);
     final minute = dateTime.minute.toString().padLeft(2, '0');
     final period = dateTime.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -872,13 +949,15 @@ class _QueueInfoCard extends StatelessWidget {
           _InfoRow(
             icon: Icons.queue_outlined,
             title: 'Wait',
-            description: 'Monitor your position here - you\'ll get a notification when called',
+            description:
+                'Monitor your position here - you\'ll get a notification when called',
           ),
           const SizedBox(height: 12),
           _InfoRow(
             icon: Icons.volume_up_outlined,
             title: 'Called',
-            description: 'Listen for your name or check the screen for your room number',
+            description:
+                'Listen for your name or check the screen for your room number',
           ),
           const SizedBox(height: 12),
           _InfoRow(
@@ -909,15 +988,10 @@ class _InfoRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         NeuContainer(
-          borderRadius: 10,
-          padding: const EdgeInsets.all(8),
-          variant: NeuVariant.flat,
-          color: ThemeColors.primary(context).withValues(alpha: 0.12),
-          child: Icon(
-            icon,
-            size: 16,
-            color: ThemeColors.primary(context),
-          ),
+          variant: NeuVariant.pressed,
+          borderRadius: NeuTokens.radiusSm,
+          padding: const EdgeInsets.all(NeuTokens.spaceXs),
+          child: Icon(icon, size: 16, color: ThemeColors.primary(context)),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -933,7 +1007,9 @@ class _InfoRow extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 description,
-                style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                style: AppTextStyles.bodySmall.subtleOf(
+                  Theme.of(context).brightness,
+                ),
               ),
             ],
           ),
@@ -950,21 +1026,21 @@ class _NotLoggedInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ThemeColors.background(context),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(NeuTokens.pagePadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               NeuContainer(
-                borderRadius: 80,
-                padding: const EdgeInsets.all(28),
-                color: ThemeColors.primary(context),
-                boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
-                child: const Icon(
+                variant: NeuVariant.inset,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(NeuTokens.spaceLg),
+                child: Icon(
                   Icons.queue_outlined,
-                  size: 80,
-                  color: AppColors.textOnPrimary,
+                  size: 48,
+                  color: ThemeColors.primary(context),
                 ),
               ),
               const SizedBox(height: 32),
@@ -1004,21 +1080,21 @@ class _AccessDeniedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ThemeColors.background(context),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(NeuTokens.pagePadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               NeuContainer(
-                borderRadius: 80,
-                padding: const EdgeInsets.all(28),
-                color: ThemeColors.error(context),
-                boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
-                child: const Icon(
+                variant: NeuVariant.inset,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(NeuTokens.spaceLg),
+                child: Icon(
                   Icons.block_rounded,
-                  size: 80,
-                  color: Colors.white,
+                  size: 48,
+                  color: ThemeColors.error(context),
                 ),
               ),
               const SizedBox(height: 32),

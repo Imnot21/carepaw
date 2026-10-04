@@ -26,14 +26,17 @@ class PasswordHasher {
   /// ```dart
   /// final hash = PasswordHasher.hash('myPassword123');
   /// ```
-  static String hash(String password,
-      {int timeCost = _defaultTimeCost,
-      int memoryCost = _defaultMemoryCost,
-      int parallelism = _defaultParallelism}) {
+  static String hash(
+    String password, {
+    int timeCost = _defaultTimeCost,
+    int memoryCost = _defaultMemoryCost,
+    int parallelism = _defaultParallelism,
+  }) {
     // Generate random salt
     final random = Random.secure();
     final salt = Uint8List.fromList(
-        List<int>.generate(_saltLength, (_) => random.nextInt(256)));
+      List<int>.generate(_saltLength, (_) => random.nextInt(256)),
+    );
 
     // Hash with Argon2id
     final argon2 = Argon2BytesGenerator();
@@ -137,10 +140,12 @@ class PasswordHasher {
   /// Check if a hash needs rehashing (e.g., parameters changed).
   ///
   /// Returns `true` if the hash was created with weaker parameters than current default.
-  static bool needsRehash(String hash,
-      {int timeCost = _defaultTimeCost,
-      int memoryCost = _defaultMemoryCost,
-      int parallelism = _defaultParallelism}) {
+  static bool needsRehash(
+    String hash, {
+    int timeCost = _defaultTimeCost,
+    int memoryCost = _defaultMemoryCost,
+    int parallelism = _defaultParallelism,
+  }) {
     if (!hash.startsWith('\$argon2')) return true;
 
     try {
@@ -182,14 +187,25 @@ class PasswordHasher {
   ///
   /// Call this after verifying a password if you want to upgrade the hash.
   /// Returns the new hash if rehashing was performed, null otherwise.
-  static String? maybeRehash(String password, String hash,
-      {int timeCost = _defaultTimeCost,
-      int memoryCost = _defaultMemoryCost,
-      int parallelism = _defaultParallelism}) {
-    if (needsRehash(hash,
-        timeCost: timeCost, memoryCost: memoryCost, parallelism: parallelism)) {
-      return PasswordHasher.hash(password,
-          timeCost: timeCost, memoryCost: memoryCost, parallelism: parallelism);
+  static String? maybeRehash(
+    String password,
+    String hash, {
+    int timeCost = _defaultTimeCost,
+    int memoryCost = _defaultMemoryCost,
+    int parallelism = _defaultParallelism,
+  }) {
+    if (needsRehash(
+      hash,
+      timeCost: timeCost,
+      memoryCost: memoryCost,
+      parallelism: parallelism,
+    )) {
+      return PasswordHasher.hash(
+        password,
+        timeCost: timeCost,
+        memoryCost: memoryCost,
+        parallelism: parallelism,
+      );
     }
     return null;
   }

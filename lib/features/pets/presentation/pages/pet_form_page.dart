@@ -11,12 +11,14 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
+
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 
 // Common dog breeds by species
 const Map<PetSpecies, List<String>> _commonBreedsBySpecies = {
@@ -102,16 +104,12 @@ const Map<PetSpecies, List<String>> _commonBreedsBySpecies = {
   ],
 };
 
-/// Page for adding or editing a pet with neumorphic design.
+/// Page for adding or editing a pet with the CarePaw surface system.
 class PetFormPage extends StatefulWidget {
   final int ownerId;
   final Pet? pet; // null for create, non-null for edit
 
-  const PetFormPage({
-    super.key,
-    required this.ownerId,
-    this.pet,
-  });
+  const PetFormPage({super.key, required this.ownerId, this.pet});
 
   @override
   State<PetFormPage> createState() => _PetFormPageState();
@@ -166,42 +164,28 @@ class _PetFormPageState extends State<PetFormPage> {
     return BlocListener<PetBloc, PetState>(
       listener: (context, state) {
         if (state is PetError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.failure.message),
-              backgroundColor: ThemeColors.error(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
+          NeuToast.error(context, state.failure.message);
         } else if (state is PetOperationSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: ThemeColors.success(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
+          NeuToast.success(context, state.message);
           Navigator.of(context).pop();
         }
       },
       child: Scaffold(
         backgroundColor: ThemeColors.background(context),
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: ThemeColors.surface(context),
           elevation: 0,
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: NeuIconButton(
             icon: Icons.arrow_back_rounded,
+            tooltip: 'Back',
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
-            isEditing ? 'Edit Pet' : 'Add Pet',
+            isEditing ? 'Edit pet' : 'Add pet',
             style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w700,
-              color: ThemeColors.textPrimary(context),
             ),
           ),
           centerTitle: true,
@@ -220,12 +204,18 @@ class _PetFormPageState extends State<PetFormPage> {
                       NeuAvatar(
                         radius: 50,
                         icon: PetUtils.getSpeciesIcon(_selectedSpecies),
-                        backgroundColor: PetUtils.getSpeciesColor(_selectedSpecies).withValues(alpha: 0.2),
-                        foregroundColor: PetUtils.getSpeciesColor(_selectedSpecies),
+                        backgroundColor: PetUtils.getSpeciesColor(
+                          _selectedSpecies,
+                        ).withValues(alpha: 0.14),
+                        foregroundColor: PetUtils.getSpeciesColor(
+                          _selectedSpecies,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        isEditing ? 'Update ${widget.pet!.name}' : 'Add a new pet',
+                        isEditing
+                            ? 'Update ${widget.pet!.name}'
+                            : 'Add a new pet',
                         style: AppTextStyles.bodyLarge.copyWith(
                           color: ThemeColors.textSecondary(context),
                         ),
@@ -258,7 +248,9 @@ class _PetFormPageState extends State<PetFormPage> {
                       return NeuButton(
                         text: isEditing ? 'Save Changes' : 'Add Pet',
                         variant: NeuButtonVariant.primary,
-                        icon: isEditing ? Icons.save_outlined : Icons.add_rounded,
+                        icon: isEditing
+                            ? Icons.save_outlined
+                            : Icons.add_rounded,
                         onPressed: isLoading ? null : _onSubmit,
                         expanded: true,
                       );
@@ -279,26 +271,22 @@ class _PetFormPageState extends State<PetFormPage> {
     Color speciesColor,
   ) {
     return NeuCard(
-      padding: const EdgeInsets.all(24),
-      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
           Row(
             children: [
               NeuContainer(
-                padding: const EdgeInsets.all(10),
-                borderRadius: 12,
-                variant: NeuVariant.flat,
-                child: Icon(section.icon, size: 22, color: speciesColor),
+                variant: NeuVariant.pressed,
+                borderRadius: NeuTokens.radiusSm,
+                padding: const EdgeInsets.all(NeuTokens.spaceXs),
+                child: Icon(section.icon, size: 20, color: speciesColor),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: NeuTokens.spaceXs),
               Text(
                 section.title,
-                style: AppTextStyles.titleLarge.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -317,7 +305,9 @@ class _PetFormPageState extends State<PetFormPage> {
         ownerId: widget.ownerId,
         name: _nameController.text.trim(),
         species: _selectedSpecies,
-        breed: _breedController.text.trim().isEmpty ? null : _breedController.text.trim(),
+        breed: _breedController.text.trim().isEmpty
+            ? null
+            : _breedController.text.trim(),
         birthDate: _selectedBirthDate,
         weightKg: _weightController.text.isEmpty
             ? null
@@ -355,10 +345,9 @@ class _PetFormPageState extends State<PetFormPage> {
             label: 'Pet Name *',
             hint: 'e.g., Buddy',
             prefixIcon: const Icon(Icons.pets_outlined),
-            validator: Validators.requiredWith(
-              [(value) => Validators.maxLength(value, 50, 'Name')],
-              'Name',
-            ),
+            validator: Validators.requiredWith([
+              (value) => Validators.maxLength(value, 50, 'Name'),
+            ], 'Name'),
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 16),
@@ -420,7 +409,8 @@ class _PetFormPageState extends State<PetFormPage> {
             label: 'Microchip ID',
             hint: 'Optional - e.g., 985112000123456',
             prefixIcon: const Icon(Icons.nfc_outlined),
-            validator: (value) => Validators.maxLength(value, 20, 'Microchip ID'),
+            validator: (value) =>
+                Validators.maxLength(value, 20, 'Microchip ID'),
             textInputAction: TextInputAction.done,
           ),
           const SizedBox(height: 16),
@@ -449,7 +439,7 @@ class _FormSection {
   });
 }
 
-/// Species selector with neumorphic chips
+/// Species selector with filter chips
 class _PetSpeciesSelector extends StatelessWidget {
   final PetSpecies selectedSpecies;
   final ValueChanged<PetSpecies> onChanged;
@@ -491,7 +481,7 @@ class _PetSpeciesSelector extends StatelessWidget {
   }
 }
 
-/// Birth date picker field with neumorphic design
+/// Birth date picker field with the CarePaw surface system
 class _PetBirthDateField extends StatefulWidget {
   final String label;
   final String? hint;
@@ -544,7 +534,9 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
             children: [
               Icon(
                 Icons.calendar_today_outlined,
-                color: hasDate ? ThemeColors.primary(context) : ThemeColors.textSecondary(context),
+                color: hasDate
+                    ? ThemeColors.primary(context)
+                    : ThemeColors.textSecondary(context),
                 size: 22,
               ),
               const SizedBox(width: 12),
@@ -589,9 +581,9 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: ThemeColors.primary(context),
-            ),
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: ThemeColors.primary(context)),
           ),
           child: child!,
         );
@@ -690,7 +682,10 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
             ),
             hint: Text(
               'Select breed',
@@ -699,10 +694,12 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
               ),
             ),
             items: [
-              ...breeds.map((breed) => DropdownMenuItem(
-                value: breed,
-                child: Text(breed, style: AppTextStyles.bodyLarge),
-              )),
+              ...breeds.map(
+                (breed) => DropdownMenuItem(
+                  value: breed,
+                  child: Text(breed, style: AppTextStyles.bodyLarge),
+                ),
+              ),
             ],
             onChanged: (value) {
               setState(() {
@@ -720,7 +717,11 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
                     if (_customController.text.trim().isEmpty) {
                       return 'Please enter breed';
                     }
-                    return Validators.maxLength(_customController.text, 50, 'Breed');
+                    return Validators.maxLength(
+                      _customController.text,
+                      50,
+                      'Breed',
+                    );
                   }
                 : (value) {
                     if (value == null || value.isEmpty) {
@@ -748,15 +749,12 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
   }
 }
 
-/// Active status switch with neumorphic design
+/// Active status switch with the CarePaw surface system
 class _PetActiveSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const _PetActiveSwitch({
-    required this.value,
-    required this.onChanged,
-  });
+  const _PetActiveSwitch({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -770,9 +768,13 @@ class _PetActiveSwitch extends StatelessWidget {
             borderRadius: 12,
             variant: NeuVariant.flat,
             child: Icon(
-              value ? Icons.check_circle_outline_rounded : Icons.archive_outlined,
+              value
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.archive_outlined,
               size: 22,
-              color: value ? ThemeColors.success(context) : ThemeColors.warning(context),
+              color: value
+                  ? ThemeColors.success(context)
+                  : ThemeColors.warning(context),
             ),
           ),
           const SizedBox(width: 16),
@@ -789,7 +791,9 @@ class _PetActiveSwitch extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  value ? 'Pet is active and visible' : 'Pet is inactive (archived)',
+                  value
+                      ? 'Pet is active and visible'
+                      : 'Pet is inactive (archived)',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: ThemeColors.textSecondary(context),
                   ),
@@ -797,10 +801,7 @@ class _PetActiveSwitch extends StatelessWidget {
               ],
             ),
           ),
-          NeuSwitch(
-            value: value,
-            onChanged: onChanged,
-          ),
+          NeuSwitch(value: value, onChanged: onChanged),
         ],
       ),
     );

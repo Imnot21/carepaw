@@ -2,7 +2,8 @@ import 'package:carepaw/core/repositories/base_repository.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
 /// User repository interface - domain layer contract
-abstract class UserRepository extends SoftDeleteRepository<User, int> implements StreamRepository<User, int> {
+abstract class UserRepository extends SoftDeleteRepository<User, int>
+    implements StreamRepository<User, int> {
   /// Find user by email
   Future<User?> findByEmail(String email);
 
@@ -31,7 +32,8 @@ abstract class UserRepository extends SoftDeleteRepository<User, int> implements
   });
 
   /// Update user profile
-  Future<User> updateProfile(int userId, {
+  Future<User> updateProfile(
+    int userId, {
     String? fullName,
     String? phone,
     String? avatarUrl,

@@ -27,11 +27,11 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     required PetRepository petRepository,
     required UserRepository userRepository,
     required AppointmentRepository appointmentRepository,
-  })  : _firestore = firestore,
-        _idSequence = medicalRecordIdSequence,
-        _petRepository = petRepository,
-        _userRepository = userRepository,
-        _appointmentRepository = appointmentRepository;
+  }) : _firestore = firestore,
+       _idSequence = medicalRecordIdSequence,
+       _petRepository = petRepository,
+       _userRepository = userRepository,
+       _appointmentRepository = appointmentRepository;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -47,26 +47,34 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
   @override
   Future<MedicalRecord?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : MedicalRecordDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : MedicalRecordDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
   Future<List<MedicalRecord>> findAll() async {
     final snapshot = await _records.get();
-    return snapshot.docs.map((doc) => MedicalRecordDocMapper.fromData(doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
+        .toList();
   }
 
   @override
   Future<MedicalRecord> save(MedicalRecord entity) async {
     if (entity.id != null) {
-      throw UnsupportedError('Medical records are append-only and cannot be updated');
+      throw UnsupportedError(
+        'Medical records are append-only and cannot be updated',
+      );
     }
     return create(entity);
   }
 
   @override
   Future<void> delete(int id) {
-    throw UnsupportedError('Medical records are append-only and cannot be deleted');
+    throw UnsupportedError(
+      'Medical records are append-only and cannot be deleted',
+    );
   }
 
   @override
@@ -81,21 +89,26 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return MedicalRecordDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return MedicalRecordDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<MedicalRecord>> watchAll() {
-    return _records.snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => MedicalRecordDocMapper.fromData(doc.data())).toList());
+    return _records.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<MedicalRecord, int> ============
 
   @override
-  Future<PaginatedResult<MedicalRecord>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<MedicalRecord>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -104,11 +117,14 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
 
   @override
   Future<List<MedicalRecord>> findByPet(int petId) async {
-    final snapshot = await _records.where(FirestoreSchema.petId, isEqualTo: petId).get();
-    final records = snapshot.docs
-        .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
-        .toList()
-      ..sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
+    final snapshot = await _records
+        .where(FirestoreSchema.petId, isEqualTo: petId)
+        .get();
+    final records =
+        snapshot.docs
+            .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
     return records;
   }
 
@@ -117,20 +133,30 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     return _records
         .where(FirestoreSchema.petId, isEqualTo: petId)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => MedicalRecordDocMapper.fromData(doc.data())).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
+              .toList(),
+        );
   }
 
   @override
-  Future<List<MedicalRecord>> findByType(int petId, MedicalRecordType recordType) async {
+  Future<List<MedicalRecord>> findByType(
+    int petId,
+    MedicalRecordType recordType,
+  ) async {
     final petRecords = await findByPet(petId);
     return petRecords.where((r) => r.recordType == recordType).toList();
   }
 
   @override
   Future<List<MedicalRecord>> findByAppointment(int appointmentId) async {
-    final snapshot = await _records.where(FirestoreSchema.appointmentId, isEqualTo: appointmentId).get();
-    return snapshot.docs.map((doc) => MedicalRecordDocMapper.fromData(doc.data())).toList();
+    final snapshot = await _records
+        .where(FirestoreSchema.appointmentId, isEqualTo: appointmentId)
+        .get();
+    return snapshot.docs
+        .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
+        .toList();
   }
 
   @override
@@ -143,10 +169,11 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
   @override
   Future<List<MedicalRecordWithDetails>> getRecent({int limit = 20}) async {
     final snapshot = await _records.limit(100).get();
-    final records = snapshot.docs
-        .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
-        .toList()
-      ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    final records =
+        snapshot.docs
+            .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
     final recent = records.take(limit).toList();
     return _enrich(recent);
   }
@@ -157,7 +184,9 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _records.doc('${toWrite.id}').set(MedicalRecordDocMapper.toData(toWrite));
+    await _records
+        .doc('${toWrite.id}')
+        .set(MedicalRecordDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -174,20 +203,22 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     String? attachments,
   }) async {
     final now = DateTime.now();
-    return create(MedicalRecord(
-      petId: petId,
-      veterinarianId: veterinarianId,
-      appointmentId: appointmentId,
-      recordType: MedicalRecordType.visit,
-      title: title,
-      description: description,
-      diagnosis: diagnosis,
-      treatment: treatment,
-      medications: medications,
-      attachments: attachments,
-      recordedAt: now,
-      createdAt: now,
-    ));
+    return create(
+      MedicalRecord(
+        petId: petId,
+        veterinarianId: veterinarianId,
+        appointmentId: appointmentId,
+        recordType: MedicalRecordType.visit,
+        title: title,
+        description: description,
+        diagnosis: diagnosis,
+        treatment: treatment,
+        medications: medications,
+        attachments: attachments,
+        recordedAt: now,
+        createdAt: now,
+      ),
+    );
   }
 
   @override
@@ -200,17 +231,19 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     String? medications,
   }) async {
     final now = DateTime.now();
-    return create(MedicalRecord(
-      petId: petId,
-      veterinarianId: veterinarianId,
-      appointmentId: appointmentId,
-      recordType: MedicalRecordType.vaccination,
-      title: title,
-      description: description,
-      medications: medications,
-      recordedAt: now,
-      createdAt: now,
-    ));
+    return create(
+      MedicalRecord(
+        petId: petId,
+        veterinarianId: veterinarianId,
+        appointmentId: appointmentId,
+        recordType: MedicalRecordType.vaccination,
+        title: title,
+        description: description,
+        medications: medications,
+        recordedAt: now,
+        createdAt: now,
+      ),
+    );
   }
 
   @override
@@ -221,15 +254,17 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     required String description,
   }) async {
     final now = DateTime.now();
-    return create(MedicalRecord(
-      petId: petId,
-      veterinarianId: veterinarianId,
-      recordType: MedicalRecordType.allergy,
-      title: title,
-      description: description,
-      recordedAt: now,
-      createdAt: now,
-    ));
+    return create(
+      MedicalRecord(
+        petId: petId,
+        veterinarianId: veterinarianId,
+        recordType: MedicalRecordType.allergy,
+        title: title,
+        description: description,
+        recordedAt: now,
+        createdAt: now,
+      ),
+    );
   }
 
   @override
@@ -241,57 +276,79 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     required String description,
   }) async {
     final now = DateTime.now();
-    return create(MedicalRecord(
-      petId: petId,
-      veterinarianId: veterinarianId,
-      appointmentId: appointmentId,
-      recordType: MedicalRecordType.labResult,
-      title: title,
-      description: description,
-      recordedAt: now,
-      createdAt: now,
-    ));
+    return create(
+      MedicalRecord(
+        petId: petId,
+        veterinarianId: veterinarianId,
+        appointmentId: appointmentId,
+        recordType: MedicalRecordType.labResult,
+        title: title,
+        description: description,
+        recordedAt: now,
+        createdAt: now,
+      ),
+    );
   }
 
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<MedicalRecord> createWithSync(MedicalRecord entity, String tableName) async => create(entity);
+  Future<MedicalRecord> createWithSync(
+    MedicalRecord entity,
+    String tableName,
+  ) async => create(entity);
 
   @override
   Future<MedicalRecord> updateWithSync(MedicalRecord entity, String tableName) {
-    throw UnsupportedError('Medical records are append-only and cannot be updated');
+    throw UnsupportedError(
+      'Medical records are append-only and cannot be updated',
+    );
   }
 
   @override
   Future<void> deleteWithSync(int id, String tableName) {
-    throw UnsupportedError('Medical records are append-only and cannot be deleted');
+    throw UnsupportedError(
+      'Medical records are append-only and cannot be deleted',
+    );
   }
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _records.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _records
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 
-  Future<List<MedicalRecordWithDetails>> _enrich(List<MedicalRecord> records) async {
+  Future<List<MedicalRecordWithDetails>> _enrich(
+    List<MedicalRecord> records,
+  ) async {
     final result = <MedicalRecordWithDetails>[];
     for (final record in records) {
       final pet = await _petRepository.findById(record.petId);
       if (pet == null) continue;
-      final veterinarian = await _userRepository.findById(record.veterinarianId);
+      final veterinarian = await _userRepository.findById(
+        record.veterinarianId,
+      );
       if (veterinarian == null) continue;
       Appointment? appointment;
       if (record.appointmentId != null) {
-        appointment = await _appointmentRepository.findById(record.appointmentId!);
+        appointment = await _appointmentRepository.findById(
+          record.appointmentId!,
+        );
       }
-      result.add(MedicalRecordWithDetails(
-        record: record,
-        pet: pet,
-        veterinarian: veterinarian,
-        appointment: appointment,
-      ));
+      result.add(
+        MedicalRecordWithDetails(
+          record: record,
+          pet: pet,
+          veterinarian: veterinarian,
+          appointment: appointment,
+        ),
+      );
     }
     return result;
   }

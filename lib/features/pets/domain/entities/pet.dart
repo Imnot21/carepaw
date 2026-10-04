@@ -39,7 +39,8 @@ class Pet extends Equatable {
     if (birthDate == null) return null;
     final now = DateTime.now();
     int age = now.year - birthDate!.year;
-    if (now.month < birthDate!.month || (now.month == birthDate!.month && now.day < birthDate!.day)) {
+    if (now.month < birthDate!.month ||
+        (now.month == birthDate!.month && now.day < birthDate!.day)) {
       age--;
     }
     return age;
@@ -57,20 +58,20 @@ class Pet extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        ownerId,
-        name,
-        species,
-        breed,
-        birthDate,
-        weightKg,
-        color,
-        microchipId,
-        avatarUrl,
-        isActive,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    ownerId,
+    name,
+    species,
+    breed,
+    birthDate,
+    weightKg,
+    color,
+    microchipId,
+    avatarUrl,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
 
   Pet copyWith({
     int? id,

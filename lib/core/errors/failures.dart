@@ -13,10 +13,7 @@ abstract class Failure extends Equatable {
   final String message;
   final String? code;
 
-  const Failure({
-    required this.message,
-    this.code,
-  });
+  const Failure({required this.message, this.code});
 
   @override
   List<Object?> get props => [message, code];
@@ -44,16 +41,14 @@ class CancelledFailure extends Failure {
 
 /// Base class for network-related failures
 abstract class NetworkFailure extends Failure {
-  const NetworkFailure({
-    required super.message,
-    super.code,
-  });
+  const NetworkFailure({required super.message, super.code});
 }
 
 /// No internet connection
 class NoConnectionFailure extends NetworkFailure {
   const NoConnectionFailure({
-    super.message = 'No internet connection. Please check your network settings.',
+    super.message =
+        'No internet connection. Please check your network settings.',
     super.code = 'NO_CONNECTION',
   });
 }
@@ -86,10 +81,7 @@ class BadRequestFailure extends NetworkFailure {
 
 /// Base class for authentication failures
 abstract class AuthFailure extends Failure {
-  const AuthFailure({
-    required super.message,
-    super.code,
-  });
+  const AuthFailure({required super.message, super.code});
 }
 
 /// Invalid credentials
@@ -152,10 +144,7 @@ class AccountLockedFailure extends AuthFailure {
 
 /// Base class for validation failures
 abstract class ValidationFailure extends Failure {
-  const ValidationFailure({
-    required super.message,
-    super.code,
-  });
+  const ValidationFailure({required super.message, super.code});
 }
 
 /// Required field empty
@@ -185,7 +174,8 @@ class InvalidPhoneFailure extends ValidationFailure {
 /// Password requirements not met
 class PasswordRequirementsFailure extends ValidationFailure {
   const PasswordRequirementsFailure({
-    super.message = 'Password must be at least 8 characters with uppercase, lowercase, and number.',
+    super.message =
+        'Password must be at least 8 characters with uppercase, lowercase, and number.',
     super.code = 'PASSWORD_REQUIREMENTS',
   });
 }
@@ -202,10 +192,7 @@ class OutOfRangeFailure extends ValidationFailure {
 
 /// Base class for data-related failures
 abstract class DataFailure extends Failure {
-  const DataFailure({
-    required super.message,
-    super.code,
-  });
+  const DataFailure({required super.message, super.code});
 }
 
 /// Item not found
@@ -236,10 +223,7 @@ class CacheFailure extends DataFailure {
 
 /// Base class for storage failures
 abstract class StorageFailure extends Failure {
-  const StorageFailure({
-    required super.message,
-    super.code,
-  });
+  const StorageFailure({required super.message, super.code});
 }
 
 /// Failed to read from storage
@@ -299,7 +283,8 @@ class MedicineExpiredFailure extends Failure {
 /// OCR processing failed
 class OcrProcessingFailure extends Failure {
   const OcrProcessingFailure({
-    super.message = 'Failed to process image. Please try again with a clearer photo.',
+    super.message =
+        'Failed to process image. Please try again with a clearer photo.',
     super.code = 'OCR_PROCESSING_ERROR',
   });
 }

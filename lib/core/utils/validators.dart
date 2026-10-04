@@ -96,9 +96,7 @@ class Validators {
 
   /// Philippine mobile number regex
   /// Supports: +63 9XX XXX XXXX, 09XX XXX XXXX, +639XXXXXXXXX, 09XXXXXXXXX
-  static final RegExp _phPhoneRegex = RegExp(
-    r'^(\+63|0)9\d{9}$',
-  );
+  static final RegExp _phPhoneRegex = RegExp(r'^(\+63|0)9\d{9}$');
 
   /// Validates Philippine mobile number format
   ///
@@ -129,7 +127,9 @@ class Validators {
     final cleaned = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
     // Philippine landline: +63 2 XXXX XXXX or 02 XXXX XXXX (Metro Manila)
     // Other areas have different area codes
-    final landlineRegex = RegExp(r'^(\+63|0)(2|3[2-9]|4[2-9]|5[2-9]|6[2-9]|7[2-9]|8[2-9])\d{7}$');
+    final landlineRegex = RegExp(
+      r'^(\+63|0)(2|3[2-9]|4[2-9]|5[2-9]|6[2-9]|7[2-9]|8[2-9])\d{7}$',
+    );
 
     if (!landlineRegex.hasMatch(cleaned)) {
       return 'Please enter a valid Philippine landline number';
@@ -254,11 +254,17 @@ class Validators {
   }
 
   /// Validates age is at least minimum years
-  static String? minimumAge(DateTime? birthDate, int minAge, [String? fieldName]) {
+  static String? minimumAge(
+    DateTime? birthDate,
+    int minAge, [
+    String? fieldName,
+  ]) {
     if (birthDate == null) return null;
 
     final now = DateTime.now();
-    final age = now.year - birthDate.year -
+    final age =
+        now.year -
+        birthDate.year -
         (now.month < birthDate.month ||
                 (now.month == birthDate.month && now.day < birthDate.day)
             ? 1
@@ -311,7 +317,10 @@ class Validators {
   // ============ Composite Validators ============
 
   /// Combines multiple validators
-  static String? combine(String? value, List<String? Function(String?)> validators) {
+  static String? combine(
+    String? value,
+    List<String? Function(String?)> validators,
+  ) {
     for (final validator in validators) {
       final error = validator(value);
       if (error != null) return error;

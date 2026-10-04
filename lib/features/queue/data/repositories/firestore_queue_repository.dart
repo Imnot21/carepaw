@@ -27,11 +27,11 @@ class FirestoreQueueRepository implements QueueRepository {
     required AppointmentRepository appointmentRepository,
     required PetRepository petRepository,
     required UserRepository userRepository,
-  })  : _firestore = firestore,
-        _idSequence = queueIdSequence,
-        _appointmentRepository = appointmentRepository,
-        _petRepository = petRepository,
-        _userRepository = userRepository;
+  }) : _firestore = firestore,
+       _idSequence = queueIdSequence,
+       _appointmentRepository = appointmentRepository,
+       _petRepository = petRepository,
+       _userRepository = userRepository;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -50,7 +50,9 @@ class FirestoreQueueRepository implements QueueRepository {
   @override
   Future<QueueEntry?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : QueueEntryDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : QueueEntryDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -59,13 +61,21 @@ class FirestoreQueueRepository implements QueueRepository {
     // the collection forever, so fetching the whole collection would grow
     // without bound as the clinic operates. `whereIn` on a single field needs
     // no composite index.
-    final snapshot = await _queue.where(FirestoreSchema.status, whereIn: [
-      QueueStatus.waiting.value,
-      QueueStatus.called.value,
-      QueueStatus.inRoom.value,
-    ]).get();
-    final entries = snapshot.docs.map((doc) => QueueEntryDocMapper.fromData(doc.data())).toList()
-      ..sort(QueueEntry.byQueueOrder);
+    final snapshot = await _queue
+        .where(
+          FirestoreSchema.status,
+          whereIn: [
+            QueueStatus.waiting.value,
+            QueueStatus.called.value,
+            QueueStatus.inRoom.value,
+          ],
+        )
+        .get();
+    final entries =
+        snapshot.docs
+            .map((doc) => QueueEntryDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort(QueueEntry.byQueueOrder);
     return entries;
   }
 
@@ -73,7 +83,9 @@ class FirestoreQueueRepository implements QueueRepository {
   /// filtered in Dart without a composite index.
   Future<List<QueueEntry>> _findAllIncludingTerminal() async {
     final snapshot = await _queue.get();
-    return snapshot.docs.map((doc) => QueueEntryDocMapper.fromData(doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => QueueEntryDocMapper.fromData(doc.data()))
+        .toList();
   }
 
   @override
@@ -109,13 +121,15 @@ class FirestoreQueueRepository implements QueueRepository {
   Future<void> restore(int id) async {
     final existing = await findById(id);
     if (existing == null || !existing.isSkipped) return;
-    await save(existing.copyWith(
-      status: QueueStatus.waiting,
-      calledAt: null,
-      roomEnteredAt: null,
-      completedAt: null,
-      updatedAt: DateTime.now(),
-    ));
+    await save(
+      existing.copyWith(
+        status: QueueStatus.waiting,
+        calledAt: null,
+        roomEnteredAt: null,
+        completedAt: null,
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -133,32 +147,41 @@ class FirestoreQueueRepository implements QueueRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return QueueEntryDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return QueueEntryDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<QueueEntry>> watchAll() {
     // Mirror findAll() filtering so the stream does not pull the entire
     // history of completed/skipped entries into every listener.
-    return _queue.where(FirestoreSchema.status, whereIn: [
-      QueueStatus.waiting.value,
-      QueueStatus.called.value,
-      QueueStatus.inRoom.value,
-    ]).snapshots().map((snapshot) {
-      final entries = snapshot.docs
-          .map((doc) => QueueEntryDocMapper.fromData(doc.data()))
-          .toList()
-        ..sort(QueueEntry.byQueueOrder);
-      return entries;
-    });
+    return _queue
+        .where(
+          FirestoreSchema.status,
+          whereIn: [
+            QueueStatus.waiting.value,
+            QueueStatus.called.value,
+            QueueStatus.inRoom.value,
+          ],
+        )
+        .snapshots()
+        .map((snapshot) {
+          final entries =
+              snapshot.docs
+                  .map((doc) => QueueEntryDocMapper.fromData(doc.data()))
+                  .toList()
+                ..sort(QueueEntry.byQueueOrder);
+          return entries;
+        });
   }
 
   // ============ PaginatedRepository<QueueEntry, int> ============
 
   @override
-  Future<PaginatedResult<QueueEntry>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<QueueEntry>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -167,7 +190,10 @@ class FirestoreQueueRepository implements QueueRepository {
 
   @override
   Future<QueueEntry?> findByAppointment(int appointmentId) async {
-    final snapshot = await _queue.where(FirestoreSchema.appointmentId, isEqualTo: appointmentId).limit(1).get();
+    final snapshot = await _queue
+        .where(FirestoreSchema.appointmentId, isEqualTo: appointmentId)
+        .limit(1)
+        .get();
     if (snapshot.docs.isEmpty) return null;
     return QueueEntryDocMapper.fromData(snapshot.docs.first.data());
   }
@@ -192,7 +218,9 @@ class FirestoreQueueRepository implements QueueRepository {
     // check-in is only cosmetic and is normalized on the next reposition.
     final active = await findAll();
     if (active.isEmpty) return 1;
-    final maxPosition = active.map((e) => e.position).reduce((a, b) => a > b ? a : b);
+    final maxPosition = active
+        .map((e) => e.position)
+        .reduce((a, b) => a > b ? a : b);
     return maxPosition + 1;
   }
 
@@ -260,8 +288,11 @@ class FirestoreQueueRepository implements QueueRepository {
   Future<QueueEntry> moveToRoom(int queueId, String room) async {
     final existing = await findById(queueId);
     if (existing == null) throw Exception('Queue entry not found');
-    if (!existing.canMoveToRoom) throw Exception('Queue entry cannot be moved to a room');
-    final targetRoom = room.trim().isEmpty ? (existing.room ?? _defaultRoom) : room.trim();
+    if (!existing.canMoveToRoom)
+      throw Exception('Queue entry cannot be moved to a room');
+    final targetRoom = room.trim().isEmpty
+        ? (existing.room ?? _defaultRoom)
+        : room.trim();
     return save(existing.moveToRoom(targetRoom));
   }
 
@@ -269,7 +300,8 @@ class FirestoreQueueRepository implements QueueRepository {
   Future<QueueEntry> complete(int queueId) async {
     final existing = await findById(queueId);
     if (existing == null) throw Exception('Queue entry not found');
-    if (!existing.canComplete) throw Exception('Queue entry cannot be completed');
+    if (!existing.canComplete)
+      throw Exception('Queue entry cannot be completed');
     final completed = await save(existing.complete());
     await repositionQueue();
     return completed;
@@ -294,10 +326,9 @@ class FirestoreQueueRepository implements QueueRepository {
     // entry. Retriaging a completed/skipped entry only updates its persisted
     // priority — repositionQueue skips terminal entries, so the live queue is
     // unaffected.
-    final updated = await save(existing.copyWith(
-      priority: priority,
-      updatedAt: DateTime.now(),
-    ));
+    final updated = await save(
+      existing.copyWith(priority: priority, updatedAt: DateTime.now()),
+    );
 
     // Rewrites positions 1..N in priority order so the entry lands in its
     // tier's slot. Not a Firestore transaction; a concurrent complete/skip/
@@ -334,26 +365,41 @@ class FirestoreQueueRepository implements QueueRepository {
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<QueueEntry> createWithSync(QueueEntry entity, String tableName) async => save(entity);
+  Future<QueueEntry> createWithSync(
+    QueueEntry entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<QueueEntry> updateWithSync(QueueEntry entity, String tableName) async => save(entity);
+  Future<QueueEntry> updateWithSync(
+    QueueEntry entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => softDelete(id);
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _queue.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _queue
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 
-  Future<List<QueueEntryWithDetails>> _enrichWithDetails(List<QueueEntry> entries) async {
+  Future<List<QueueEntryWithDetails>> _enrichWithDetails(
+    List<QueueEntry> entries,
+  ) async {
     // Entries are enriched concurrently; each entry then resolves pet/vet in
     // parallel. Overall wall time is O(max entry depth) not O(N * depth).
     Future<QueueEntryWithDetails?> enrichOne(QueueEntry entry) async {
-      final appointment = await _appointmentRepository.findById(entry.appointmentId);
+      final appointment = await _appointmentRepository.findById(
+        entry.appointmentId,
+      );
       if (appointment == null) return null;
       final petFuture = _petRepository.findById(appointment.petId);
       final vetFuture = _userRepository.findById(appointment.veterinarianId);

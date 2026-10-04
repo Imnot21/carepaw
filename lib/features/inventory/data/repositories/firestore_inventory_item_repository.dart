@@ -19,8 +19,8 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
   FirestoreInventoryItemRepository({
     required FirebaseFirestore firestore,
     required FirestoreIdSequence inventoryItemIdSequence,
-  })  : _firestore = firestore,
-        _idSequence = inventoryItemIdSequence;
+  }) : _firestore = firestore,
+       _idSequence = inventoryItemIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -54,7 +54,9 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _items.doc('${toWrite.id}').set(InventoryItemDocMapper.toData(toWrite));
+    await _items
+        .doc('${toWrite.id}')
+        .set(InventoryItemDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -103,23 +105,28 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first)) return null;
-      return InventoryItemDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first))
+            return null;
+          return InventoryItemDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<InventoryItem>> watchAll() {
-    return _items.snapshots().map((snapshot) => snapshot.docs
-        .where((doc) => !_isDeleted(doc))
-        .map((doc) => InventoryItemDocMapper.fromData(doc.data()))
-        .toList());
+    return _items.snapshots().map(
+      (snapshot) => snapshot.docs
+          .where((doc) => !_isDeleted(doc))
+          .map((doc) => InventoryItemDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<InventoryItem, int> ============
 
   @override
-  Future<PaginatedResult<InventoryItem>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<InventoryItem>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -143,36 +150,45 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
     final normalized = query.trim().toLowerCase();
     final all = await findAll();
     if (normalized.isEmpty) return all;
-    return all.where((item) => item.name.toLowerCase().contains(normalized)).toList();
+    return all
+        .where((item) => item.name.toLowerCase().contains(normalized))
+        .toList();
   }
 
   @override
   Future<InventoryItem> updateStock(int id, double newStock) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Inventory item not found');
-    return save(existing.copyWith(
-      currentStock: newStock,
-      updatedAt: DateTime.now(),
-    ));
+    return save(
+      existing.copyWith(currentStock: newStock, updatedAt: DateTime.now()),
+    );
   }
 
   @override
   Future<InventoryItem> adjustStock(int id, double delta) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Inventory item not found');
-    return save(existing.copyWith(
-      currentStock: existing.currentStock + delta,
-      updatedAt: DateTime.now(),
-    ));
+    return save(
+      existing.copyWith(
+        currentStock: existing.currentStock + delta,
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<InventoryItem> createWithSync(InventoryItem entity, String tableName) async => save(entity);
+  Future<InventoryItem> createWithSync(
+    InventoryItem entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<InventoryItem> updateWithSync(InventoryItem entity, String tableName) async => save(entity);
+  Future<InventoryItem> updateWithSync(
+    InventoryItem entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => softDelete(id);
@@ -182,8 +198,13 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
   bool _isDeleted(DocumentSnapshot<Map<String, dynamic>> doc) =>
       (doc.data() ?? const {})[_deletedField] == true;
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _items.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _items
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

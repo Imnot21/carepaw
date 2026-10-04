@@ -3,7 +3,10 @@ import 'package:carepaw/features/medical_records/domain/entities/vaccination.dar
 
 /// Vaccination repository interface - domain layer contract
 abstract class VaccinationRepository
-    implements StreamRepository<Vaccination, int>, PaginatedRepository<Vaccination, int>, BaseRepository<Vaccination, int> {
+    implements
+        StreamRepository<Vaccination, int>,
+        PaginatedRepository<Vaccination, int>,
+        BaseRepository<Vaccination, int> {
   /// Sync-aware operations
   @override
   Future<Vaccination> createWithSync(Vaccination entity, String tableName);
@@ -11,6 +14,7 @@ abstract class VaccinationRepository
   Future<Vaccination> updateWithSync(Vaccination entity, String tableName);
   @override
   Future<void> deleteWithSync(int id, String tableName);
+
   /// Find all vaccinations for a pet
   Future<List<Vaccination>> findByPet(int petId);
 

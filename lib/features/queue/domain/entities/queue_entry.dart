@@ -114,36 +114,34 @@ class QueueEntry extends Equatable {
   }
 
   /// Check if can skip (must be waiting or called)
-  bool get canSkip => status == QueueStatus.waiting || status == QueueStatus.called;
+  bool get canSkip =>
+      status == QueueStatus.waiting || status == QueueStatus.called;
 
   /// Skip the queue entry
   QueueEntry skip() {
     if (!canSkip) {
       throw Exception('Cannot skip: invalid status');
     }
-    return copyWith(
-      status: QueueStatus.skipped,
-      updatedAt: DateTime.now(),
-    );
+    return copyWith(status: QueueStatus.skipped, updatedAt: DateTime.now());
   }
 
   @override
   List<Object?> get props => [
-        id,
-        appointmentId,
-        position,
-        status,
-        priority,
-        checkedInAt,
-        calledAt,
-        roomEnteredAt,
-        completedAt,
-        room,
-        estimatedWaitMinutes,
-        notes,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    appointmentId,
+    position,
+    status,
+    priority,
+    checkedInAt,
+    calledAt,
+    roomEnteredAt,
+    completedAt,
+    room,
+    estimatedWaitMinutes,
+    notes,
+    createdAt,
+    updatedAt,
+  ];
 
   QueueEntry copyWith({
     int? id,

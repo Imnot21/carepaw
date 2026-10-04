@@ -49,7 +49,9 @@ class RoleTabs {
   /// over their parent tabs (e.g. '/staff').
   int indexFor(String path) {
     // Normalize path by removing trailing slash if present (except for root)
-    final normalizedPath = path == '/' ? '/' : path.replaceAll(RegExp(r'/+$'), '');
+    final normalizedPath = path == '/'
+        ? '/'
+        : path.replaceAll(RegExp(r'/+$'), '');
 
     int bestMatchIndex = -1;
     int bestMatchLength = -1;
@@ -57,7 +59,9 @@ class RoleTabs {
     for (var i = 0; i < tabs.length; i++) {
       final base = tabs[i].location;
       // Normalize base the same way
-      final normalizedBase = base == '/' ? '/' : base.replaceAll(RegExp(r'/+$'), '');
+      final normalizedBase = base == '/'
+          ? '/'
+          : base.replaceAll(RegExp(r'/+$'), '');
 
       // Check if this tab's base matches the path (exact or as prefix)
       bool isMatch = false;

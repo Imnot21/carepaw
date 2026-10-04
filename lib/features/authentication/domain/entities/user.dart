@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 /// User entity - domain layer representation
 class User extends Equatable {
   final int? id;
+
   /// Firebase Auth UID for cloud-backed accounts. Null for legacy/local-only records.
   final String? firebaseUid;
   final String email;
@@ -41,17 +42,17 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        firebaseUid,
-        email,
-        fullName,
-        phone,
-        role,
-        avatarUrl,
-        isActive,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    firebaseUid,
+    email,
+    fullName,
+    phone,
+    role,
+    avatarUrl,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
 
   User copyWith({
     int? id,

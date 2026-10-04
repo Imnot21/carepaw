@@ -114,6 +114,7 @@ abstract class SecureStorageKeys {
   static const String authToken = 'auth_token';
   static const String refreshToken = 'refresh_token';
   static const String apiKey = 'api_key';
-  static const String userPassword = 'user_password'; // Only if absolutely necessary
+  static const String userPassword =
+      'user_password'; // Only if absolutely necessary
   static const String tokenExpiry = 'token_expiry';
 }

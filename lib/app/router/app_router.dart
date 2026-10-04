@@ -40,6 +40,21 @@ import 'package:carepaw/features/users/presentation/bloc/user_management_bloc.da
 import 'package:carepaw/features/users/presentation/bloc/user_management_event.dart';
 import 'package:carepaw/features/users/presentation/pages/admin_user_management_page.dart';
 import 'package:carepaw/features/users/presentation/pages/profile_page.dart';
+import 'package:carepaw/features/medical_records/presentation/pages/medical_record_list_page.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
+import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:carepaw/features/inventory/presentation/pages/inventory_list_page.dart';
+import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
+import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart';
+import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
+import 'package:carepaw/features/scanning/presentation/pages/scan_list_page.dart';
+import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
+import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
+import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
+import 'package:carepaw/features/notifications/presentation/pages/notification_list_page.dart';
+import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
+import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/shell/app_shell.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
@@ -110,7 +125,7 @@ class AppRouter {
         },
       ),
 
-      // Authenticated content lives inside the neumorphic bottom-nav shell.
+      // Authenticated content lives inside the bottom-nav shell.
       // Each child route is a top-level destination; the shell renders the
       // active page and highlights the matching tab for the user's role.
       ShellRoute(
@@ -302,8 +317,22 @@ class AppRouter {
           GoRoute(
             path: Routes.medicalRecords,
             name: RouteNames.medicalRecordsRoute,
-            builder: (context, state) =>
-                const PlaceholderPage(title: 'Medical Records'),
+            builder: (context, state) {
+              final petId = int.tryParse(
+                state.uri.queryParameters['petId'] ?? '',
+              );
+              if (petId == null) {
+                return const PlaceholderPage(
+                  title: 'Medical Records - Pet Required',
+                );
+              }
+              return BlocProvider(
+                create: (context) =>
+                    PetBloc(petRepository: getIt<PetRepository>())
+                      ..add(LoadPetsById(petId)),
+                child: _MedicalRecordsLoader(petId: petId),
+              );
+            },
           ),
 
           // Staff routes
@@ -315,8 +344,13 @@ class AppRouter {
               GoRoute(
                 path: 'appointments',
                 name: RouteNames.staffAppointments,
-                builder: (context, state) =>
-                    const PlaceholderPage(title: 'Staff Appointments'),
+                builder: (context, state) => BlocProvider(
+                  create: (context) => AppointmentBloc(
+                    repository: getIt<AppointmentRepository>(),
+                    authBloc: context.read<AuthBloc>(),
+                  )..add(const AppointmentLoadRequested()),
+                  child: const AppointmentListPage(),
+                ),
               ),
               GoRoute(
                 path: 'queue',
@@ -332,14 +366,25 @@ class AppRouter {
               GoRoute(
                 path: 'inventory',
                 name: RouteNames.staffInventory,
-                builder: (context, state) =>
-                    const PlaceholderPage(title: 'Inventory'),
+                builder: (context, state) => BlocProvider(
+                  create: (context) => InventoryBloc(
+                    itemRepository: getIt<InventoryItemRepository>(),
+                    batchRepository: getIt<InventoryBatchRepository>(),
+                    transactionRepository:
+                        getIt<InventoryTransactionRepository>(),
+                  )..add(const LoadInventoryItems()),
+                  child: const InventoryListPage(),
+                ),
               ),
               GoRoute(
                 path: 'scanning',
                 name: RouteNames.staffScanning,
-                builder: (context, state) =>
-                    const PlaceholderPage(title: 'Scanning'),
+                builder: (context, state) => BlocProvider(
+                  create: (context) =>
+                      ScanBloc(scanRepository: getIt<ScanRecordRepository>())
+                        ..add(const LoadScanRecords()),
+                  child: const ScanListPage(),
+                ),
               ),
             ],
           ),
@@ -353,22 +398,42 @@ class AppRouter {
               GoRoute(
                 path: 'patients',
                 name: RouteNames.vetPatients,
-                builder: (context, state) =>
-                    const PlaceholderPage(title: 'Patients'),
+                builder: (context, state) => BlocProvider(
+                  create: (context) =>
+                      PetBloc(petRepository: getIt<PetRepository>()),
+                  child: const PetListPage(),
+                ),
               ),
               GoRoute(
                 path: 'patients/:id',
                 name: RouteNames.vetPatientDetail,
                 builder: (context, state) {
-                  final id = state.pathParameters['id'];
-                  return PlaceholderPage(title: 'Patient - $id');
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  if (id == null) {
+                    return const PlaceholderPage(title: 'Invalid Pet ID');
+                  }
+                  return PetDetailPageWithBloc(petId: id);
                 },
               ),
               GoRoute(
                 path: 'records',
                 name: RouteNames.vetRecords,
-                builder: (context, state) =>
-                    const PlaceholderPage(title: 'Records'),
+                builder: (context, state) {
+                  final petId = int.tryParse(
+                    state.uri.queryParameters['petId'] ?? '',
+                  );
+                  if (petId == null) {
+                    return const PlaceholderPage(
+                      title: 'Records - Pet Required',
+                    );
+                  }
+                  return BlocProvider(
+                    create: (context) =>
+                        PetBloc(petRepository: getIt<PetRepository>())
+                          ..add(LoadPetsById(petId)),
+                    child: _MedicalRecordsLoader(petId: petId),
+                  );
+                },
               ),
             ],
           ),
@@ -411,8 +476,12 @@ class AppRouter {
           GoRoute(
             path: Routes.notifications,
             name: RouteNames.notifications,
-            builder: (context, state) =>
-                const PlaceholderPage(title: 'Notifications'),
+            builder: (context, state) => BlocProvider(
+              create: (context) => NotificationBloc(
+                notificationRepository: getIt<NotificationRepository>(),
+              )..add(const LoadNotifications()),
+              child: const NotificationListPage(),
+            ),
           ),
           GoRoute(
             path: Routes.profile,
@@ -662,6 +731,58 @@ class ErrorPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Loads a pet by ID and displays its medical records.
+class _MedicalRecordsLoader extends StatelessWidget {
+  final int petId;
+
+  const _MedicalRecordsLoader({required this.petId});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PetBloc, PetState>(
+      builder: (context, state) {
+        if (state is PetDetailLoaded) {
+          return MedicalRecordListPage(pet: state.pet);
+        }
+        if (state is PetError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Medical Records')),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load pet',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.failure.message,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return Scaffold(
+          appBar: AppBar(title: const Text('Medical Records')),
+          body: const Center(child: NeuCircularProgress()),
+        );
+      },
     );
   }
 }

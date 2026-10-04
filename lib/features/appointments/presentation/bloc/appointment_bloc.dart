@@ -64,37 +64,61 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
 
         // Also load with pet details for better UI
         final now = DateTime.now();
-        final allWithDetails = await _repository.findWithPetDetailsByOwner(ownerId);
+        final allWithDetails = await _repository.findWithPetDetailsByOwner(
+          ownerId,
+        );
 
-        upcomingWithPetDetails = allWithDetails
-            .where((a) => a.appointment.scheduledAt.isAfter(now) && !a.appointment.isTerminal)
-            .toList()
-          ..sort((a, b) => a.appointment.scheduledAt.compareTo(b.appointment.scheduledAt));
+        upcomingWithPetDetails =
+            allWithDetails
+                .where(
+                  (a) =>
+                      a.appointment.scheduledAt.isAfter(now) &&
+                      !a.appointment.isTerminal,
+                )
+                .toList()
+              ..sort(
+                (a, b) => a.appointment.scheduledAt.compareTo(
+                  b.appointment.scheduledAt,
+                ),
+              );
 
-        pastWithPetDetails = allWithDetails
-            .where((a) => a.appointment.scheduledAt.isBefore(now) || a.appointment.isTerminal)
-            .toList()
-          ..sort((a, b) => b.appointment.scheduledAt.compareTo(a.appointment.scheduledAt));
+        pastWithPetDetails =
+            allWithDetails
+                .where(
+                  (a) =>
+                      a.appointment.scheduledAt.isBefore(now) ||
+                      a.appointment.isTerminal,
+                )
+                .toList()
+              ..sort(
+                (a, b) => b.appointment.scheduledAt.compareTo(
+                  a.appointment.scheduledAt,
+                ),
+              );
       }
 
       final now = DateTime.now();
-      final upcoming = appointments
-          .where((a) => a.scheduledAt.isAfter(now) && !a.isTerminal)
-          .toList()
-        ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+      final upcoming =
+          appointments
+              .where((a) => a.scheduledAt.isAfter(now) && !a.isTerminal)
+              .toList()
+            ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
 
-      final past = appointments
-          .where((a) => a.scheduledAt.isBefore(now) || a.isTerminal)
-          .toList()
-        ..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
+      final past =
+          appointments
+              .where((a) => a.scheduledAt.isBefore(now) || a.isTerminal)
+              .toList()
+            ..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
 
-      emit(AppointmentLoaded(
-        appointments: appointments,
-        upcomingAppointments: upcoming,
-        pastAppointments: past,
-        upcomingWithPetDetails: upcomingWithPetDetails,
-        pastWithPetDetails: pastWithPetDetails,
-      ));
+      emit(
+        AppointmentLoaded(
+          appointments: appointments,
+          upcomingAppointments: upcoming,
+          pastAppointments: past,
+          upcomingWithPetDetails: upcomingWithPetDetails,
+          pastWithPetDetails: pastWithPetDetails,
+        ),
+      );
     } catch (e) {
       emit(AppointmentError(ErrorHandler.getErrorMessage(e)));
     }
@@ -112,11 +136,13 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
 
       // Also load with pet details - we need ownerId, so find pet first
       // For now, just use appointments without pet details
-      emit(AppointmentLoaded(
-        appointments: appointments,
-        upcomingAppointments: appointments,
-        pastAppointments: const [],
-      ));
+      emit(
+        AppointmentLoaded(
+          appointments: appointments,
+          upcomingAppointments: appointments,
+          pastAppointments: const [],
+        ),
+      );
     } catch (e) {
       emit(AppointmentError(ErrorHandler.getErrorMessage(e)));
     }
@@ -130,7 +156,9 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     emit(const AppointmentLoading());
 
     try {
-      final appointmentWithDetails = await _repository.findWithDetails(event.appointmentId);
+      final appointmentWithDetails = await _repository.findWithDetails(
+        event.appointmentId,
+      );
       if (appointmentWithDetails != null) {
         emit(AppointmentDetailLoaded(appointmentWithDetails));
       } else {
@@ -285,7 +313,10 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     emit(const AppointmentLoading());
 
     try {
-      final appointment = await _repository.cancel(event.appointmentId, event.reason);
+      final appointment = await _repository.cancel(
+        event.appointmentId,
+        event.reason,
+      );
       emit(AppointmentStatusUpdated(appointment));
 
       // Reload appointments
@@ -307,7 +338,10 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     emit(const AppointmentLoading());
 
     try {
-      final appointment = await _repository.reschedule(event.appointmentId, event.newTime);
+      final appointment = await _repository.reschedule(
+        event.appointmentId,
+        event.newTime,
+      );
       emit(AppointmentUpdated(appointment));
 
       // Reload appointments

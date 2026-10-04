@@ -49,20 +49,20 @@ class MedicalRecord extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        petId,
-        veterinarianId,
-        appointmentId,
-        recordType,
-        title,
-        description,
-        diagnosis,
-        treatment,
-        medications,
-        attachments,
-        recordedAt,
-        createdAt,
-      ];
+    id,
+    petId,
+    veterinarianId,
+    appointmentId,
+    recordType,
+    title,
+    description,
+    diagnosis,
+    treatment,
+    medications,
+    attachments,
+    recordedAt,
+    createdAt,
+  ];
 
   MedicalRecord copyWith({
     int? id,

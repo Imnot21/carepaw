@@ -2,8 +2,11 @@ import 'package:carepaw/core/repositories/base_repository.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart';
 
 /// Notification repository interface - domain layer contract
-abstract class NotificationRepository extends SoftDeleteRepository<Notification, int>
-    implements StreamRepository<Notification, int>, PaginatedRepository<Notification, int> {
+abstract class NotificationRepository
+    extends SoftDeleteRepository<Notification, int>
+    implements
+        StreamRepository<Notification, int>,
+        PaginatedRepository<Notification, int> {
   /// Sync-aware operations
   @override
   Future<Notification> createWithSync(Notification entity, String tableName);
@@ -13,6 +16,7 @@ abstract class NotificationRepository extends SoftDeleteRepository<Notification,
 
   @override
   Future<void> deleteWithSync(int id, String tableName);
+
   /// Find notifications for a user
   Future<List<Notification>> findByUser(int userId, {int limit = 50});
 
@@ -41,5 +45,7 @@ abstract class NotificationRepository extends SoftDeleteRepository<Notification,
   Future<NotificationPreferences?> findPreferences(int userId);
 
   /// Update notification preferences
-  Future<NotificationPreferences> updatePreferences(NotificationPreferences preferences);
+  Future<NotificationPreferences> updatePreferences(
+    NotificationPreferences preferences,
+  );
 }

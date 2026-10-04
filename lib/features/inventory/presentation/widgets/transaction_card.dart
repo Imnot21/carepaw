@@ -52,7 +52,9 @@ class TransactionCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: typeColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -79,8 +81,11 @@ class TransactionCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.access_time_rounded,
-                        size: 12, color: ThemeColors.textTertiary(context)),
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 12,
+                      color: ThemeColors.textTertiary(context),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       formatDateTime(transaction.createdAt),
@@ -90,8 +95,11 @@ class TransactionCard extends StatelessWidget {
                     ),
                     if (transaction.referenceType != null) ...[
                       const SizedBox(width: 12),
-                      Icon(Icons.link_rounded,
-                          size: 12, color: ThemeColors.textTertiary(context)),
+                      Icon(
+                        Icons.link_rounded,
+                        size: 12,
+                        color: ThemeColors.textTertiary(context),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${transaction.referenceType}: ${transaction.referenceId}',

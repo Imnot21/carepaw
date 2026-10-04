@@ -29,15 +29,15 @@ class AuditLog extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        action,
-        entityType,
-        entityId,
-        oldValues,
-        newValues,
-        createdAt,
-      ];
+    id,
+    userId,
+    action,
+    entityType,
+    entityId,
+    oldValues,
+    newValues,
+    createdAt,
+  ];
 
   AuditLog copyWith({
     int? id,

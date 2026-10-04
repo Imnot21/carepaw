@@ -14,8 +14,8 @@ class MedicalRecordBloc
   final MedicalRecordRepository _medicalRecordRepository;
 
   MedicalRecordBloc({required MedicalRecordRepository medicalRecordRepository})
-      : _medicalRecordRepository = medicalRecordRepository,
-        super(const states.MedicalRecordInitial()) {
+    : _medicalRecordRepository = medicalRecordRepository,
+      super(const states.MedicalRecordInitial()) {
     on<events.LoadMedicalRecords>(_onLoadMedicalRecords);
     on<events.LoadMedicalRecordsByType>(_onLoadMedicalRecordsByType);
     on<events.LoadMedicalRecordDetails>(_onLoadMedicalRecordDetails);
@@ -68,13 +68,17 @@ class MedicalRecordBloc
   ) async {
     emit(const states.MedicalRecordLoading());
     try {
-      final record = await _medicalRecordRepository.findWithDetails(event.recordId);
+      final record = await _medicalRecordRepository.findWithDetails(
+        event.recordId,
+      );
       if (record != null) {
         emit(states.MedicalRecordDetailLoaded(record));
       } else {
-        emit(const states.MedicalRecordError(NotFoundFailure(
-          message: 'Medical record not found',
-        )));
+        emit(
+          const states.MedicalRecordError(
+            NotFoundFailure(message: 'Medical record not found'),
+          ),
+        );
       }
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
@@ -101,9 +105,11 @@ class MedicalRecordBloc
         medications: event.medications,
         attachments: event.attachments,
       );
-      emit(const states.MedicalRecordOperationSuccess(
-        'Visit record created successfully',
-      ));
+      emit(
+        const states.MedicalRecordOperationSuccess(
+          'Visit record created successfully',
+        ),
+      );
       // Reload records for the pet
       final records = await _medicalRecordRepository.findByPet(event.petId);
       emit(states.MedicalRecordsLoaded(records));
@@ -129,9 +135,11 @@ class MedicalRecordBloc
         description: event.description,
         medications: event.medications,
       );
-      emit(const states.MedicalRecordOperationSuccess(
-        'Vaccination record created successfully',
-      ));
+      emit(
+        const states.MedicalRecordOperationSuccess(
+          'Vaccination record created successfully',
+        ),
+      );
       final records = await _medicalRecordRepository.findByPet(event.petId);
       emit(states.MedicalRecordsLoaded(records));
     } on Failure catch (failure) {
@@ -154,9 +162,11 @@ class MedicalRecordBloc
         title: event.title,
         description: event.description,
       );
-      emit(const states.MedicalRecordOperationSuccess(
-        'Allergy record created successfully',
-      ));
+      emit(
+        const states.MedicalRecordOperationSuccess(
+          'Allergy record created successfully',
+        ),
+      );
       final records = await _medicalRecordRepository.findByPet(event.petId);
       emit(states.MedicalRecordsLoaded(records));
     } on Failure catch (failure) {
@@ -180,9 +190,11 @@ class MedicalRecordBloc
         title: event.title,
         description: event.description,
       );
-      emit(const states.MedicalRecordOperationSuccess(
-        'Lab result record created successfully',
-      ));
+      emit(
+        const states.MedicalRecordOperationSuccess(
+          'Lab result record created successfully',
+        ),
+      );
       final records = await _medicalRecordRepository.findByPet(event.petId);
       emit(states.MedicalRecordsLoaded(records));
     } on Failure catch (failure) {
@@ -199,7 +211,9 @@ class MedicalRecordBloc
   ) async {
     emit(const states.MedicalRecordLoading());
     try {
-      final records = await _medicalRecordRepository.getRecent(limit: event.limit);
+      final records = await _medicalRecordRepository.getRecent(
+        limit: event.limit,
+      );
       emit(states.RecentRecordsLoaded(records));
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));

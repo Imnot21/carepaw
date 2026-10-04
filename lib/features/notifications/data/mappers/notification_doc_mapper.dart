@@ -17,14 +17,18 @@ class NotificationDocMapper {
     return Notification(
       id: data[FirestoreSchema.id] as int?,
       userId: (data[FirestoreSchema.userId] as num?)?.toInt() ?? 0,
-      type: NotificationType.fromString((data[FirestoreSchema.typeNotif] as String?) ?? ''),
+      type: NotificationType.fromString(
+        (data[FirestoreSchema.typeNotif] as String?) ?? '',
+      ),
       title: (data[FirestoreSchema.titleNotif] as String?) ?? '',
       message: (data[FirestoreSchema.message] as String?) ?? '',
       referenceId: (data[FirestoreSchema.referenceIdNotif] as num?)?.toInt(),
       referenceType: data[FirestoreSchema.referenceTypeNotif] as String?,
       isRead: (data[FirestoreSchema.isRead] as bool?) ?? false,
       readAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.readAt]),
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
       scheduledFor: DateFieldCodec.fromFirestoreDate(data[scheduledForField]),
     );
   }
@@ -40,9 +44,15 @@ class NotificationDocMapper {
       FirestoreSchema.referenceIdNotif: notification.referenceId,
       FirestoreSchema.referenceTypeNotif: notification.referenceType,
       FirestoreSchema.isRead: notification.isRead,
-      FirestoreSchema.readAt: DateFieldCodec.toFirestoreDate(notification.readAt),
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(notification.createdAt),
-      scheduledForField: DateFieldCodec.toFirestoreDate(notification.scheduledFor),
+      FirestoreSchema.readAt: DateFieldCodec.toFirestoreDate(
+        notification.readAt,
+      ),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        notification.createdAt,
+      ),
+      scheduledForField: DateFieldCodec.toFirestoreDate(
+        notification.scheduledFor,
+      ),
     };
   }
 }
@@ -65,8 +75,12 @@ class NotificationPreferencesDocMapper {
       emailEnabled: (data['emailEnabled'] as bool?) ?? true,
       pushEnabled: (data['pushEnabled'] as bool?) ?? true,
       inAppEnabled: (data['inAppEnabled'] as bool?) ?? true,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
-      updatedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
+      updatedAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -83,8 +97,12 @@ class NotificationPreferencesDocMapper {
       'emailEnabled': preferences.emailEnabled,
       'pushEnabled': preferences.pushEnabled,
       'inAppEnabled': preferences.inAppEnabled,
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(preferences.createdAt),
-      FirestoreSchema.updatedAt: DateFieldCodec.toFirestoreDate(preferences.updatedAt),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        preferences.createdAt,
+      ),
+      FirestoreSchema.updatedAt: DateFieldCodec.toFirestoreDate(
+        preferences.updatedAt,
+      ),
     };
   }
 }

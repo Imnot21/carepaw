@@ -5,15 +5,21 @@ import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -42,9 +48,9 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           return const _NotLoggedInView();
         }
 
-        // Check if user is vet, staff, or admin - only these roles can manage queue
         final user = authState.user;
-        final isVetOrStaff = user.role == UserRole.veterinarian ||
+        final isVetOrStaff =
+            user.role == UserRole.veterinarian ||
             user.role == UserRole.staff ||
             user.role == UserRole.admin;
 
@@ -53,9 +59,14 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
         }
 
         return Scaffold(
-          extendBodyBehindAppBar: true,
+          backgroundColor: ThemeColors.background(context),
           appBar: AppBar(
-            title: const Text('Queue Management'),
+            title: Text(
+              'Queue management',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,
@@ -66,7 +77,9 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 child: NeuIconButton(
                   icon: Icons.reorder_rounded,
                   onPressed: () {
-                    context.read<QueueBloc>().add(const QueueRepositionRequested());
+                    context.read<QueueBloc>().add(
+                      const QueueRepositionRequested(),
+                    );
                   },
                   color: ThemeColors.textPrimary(context),
                   tooltip: 'Reposition Queue',
@@ -75,47 +88,51 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             ],
           ),
           body: BlocConsumer<QueueBloc, QueueState>(
-              listener: (context, state) {
-                if (state is QueueOperationSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: ThemeColors.success(context),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      margin: const EdgeInsets.all(16),
+            listener: (context, state) {
+              if (state is QueueOperationSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: ThemeColors.success(context),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  );
-                  // Reload queue after successful operation
-                  context.read<QueueBloc>().add(QueueStaffLoadRequested());
-                } else if (state is QueueError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: ThemeColors.error(context),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      margin: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+                // Reload queue after successful operation
+                context.read<QueueBloc>().add(QueueStaffLoadRequested());
+              } else if (state is QueueError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: ThemeColors.error(context),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is QueueLoading) {
-                  return const Center(child: NeuCircularProgress());
-                }
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state is QueueLoading) {
+                return const Center(child: NeuCircularProgress());
+              }
 
-                if (state is QueueError) {
-                  return _buildErrorState(state.message);
-                }
+              if (state is QueueError) {
+                return _buildErrorState(state.message);
+              }
 
-                if (state is QueueStaffLoaded) {
-                  return _buildStaffQueueView(state);
-                }
+              if (state is QueueStaffLoaded) {
+                return _buildStaffQueueView(state);
+              }
 
-                return _buildInitialState();
-              },
-            ),
+              return _buildInitialState();
+            },
+          ),
         );
       },
     );
@@ -132,7 +149,12 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               borderRadius: 70,
               padding: const EdgeInsets.all(30),
               color: ThemeColors.primary(context),
-              boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
+              boxShadow: NeuShadow.color(
+                context,
+                ThemeColors.primary(context),
+                blur: 24,
+                opacity: 0.32,
+              ),
               child: const Icon(
                 Icons.people_outline_rounded,
                 size: 60,
@@ -173,7 +195,12 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               borderRadius: 70,
               padding: const EdgeInsets.all(30),
               color: ThemeColors.error(context),
-              boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
+              boxShadow: NeuShadow.color(
+                context,
+                ThemeColors.error(context),
+                blur: 24,
+                opacity: 0.32,
+              ),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 60,
@@ -241,25 +268,28 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                         entry: entry,
                         onPriorityChanged: (priority) {
                           context.read<QueueBloc>().add(
-                                QueueSetPriorityRequested(
-                                  entry.queueEntry.id!,
-                                  priority,
-                                ),
-                              );
+                            QueueSetPriorityRequested(
+                              entry.queueEntry.id!,
+                              priority,
+                            ),
+                          );
                         },
                         onCall: entry.queueEntry.status == QueueStatus.waiting
                             ? () => _showCallDialog(entry)
                             : null,
-                        onMoveToRoom: entry.queueEntry.status == QueueStatus.called
+                        onMoveToRoom:
+                            entry.queueEntry.status == QueueStatus.called
                             ? () => _showMoveToRoomDialog(entry)
                             : null,
-                        onComplete: entry.queueEntry.status == QueueStatus.inRoom
+                        onComplete:
+                            entry.queueEntry.status == QueueStatus.inRoom
                             ? () => _showCompleteDialog(entry)
                             : null,
-                        onSkip: entry.queueEntry.status == QueueStatus.waiting ||
-                            entry.queueEntry.status == QueueStatus.called
-                                ? () => _showSkipDialog(entry)
-                                : null,
+                        onSkip:
+                            entry.queueEntry.status == QueueStatus.waiting ||
+                                entry.queueEntry.status == QueueStatus.called
+                            ? () => _showSkipDialog(entry)
+                            : null,
                       );
                     },
                   ),
@@ -280,7 +310,12 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               borderRadius: 70,
               padding: const EdgeInsets.all(30),
               color: ThemeColors.primary(context),
-              boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
+              boxShadow: NeuShadow.color(
+                context,
+                ThemeColors.primary(context),
+                blur: 24,
+                opacity: 0.32,
+              ),
               child: const Icon(
                 Icons.people_outline_rounded,
                 size: 60,
@@ -311,128 +346,83 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
   }
 
   void _showCallDialog(QueueEntryWithDetails entry) {
-    final pageContext = context;
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => _PremiumDialog(
-        title: 'Call Patient',
-        content: Text('Call ${entry.pet.name} (#${entry.queueEntry.position}) for their appointment?'),
-        icon: Icons.volume_up_rounded,
-        iconColor: ThemeColors.info(dialogContext),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Call Now',
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              pageContext.read<QueueBloc>().add(QueueCallNextRequested());
-            },
-            variant: NeuButtonVariant.primary,
-          ),
-        ],
-      ),
+      title: 'Call Patient',
+      message:
+          'Call ${entry.pet.name} (#${entry.queueEntry.position}) for their appointment?',
+      confirmText: 'Call Now',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.primary,
+      onConfirm: () => context.read<QueueBloc>().add(QueueCallNextRequested()),
     );
   }
 
   void _showMoveToRoomDialog(QueueEntryWithDetails entry) {
-    final pageContext = context;
-    final roomController = TextEditingController(text: entry.queueEntry.room ?? '1');
-
-    showDialog(
+    final roomController = TextEditingController(
+      text: entry.queueEntry.room ?? '1',
+    );
+    NeuDialog.show(
       context: context,
-      builder: (dialogContext) => _PremiumDialog(
-        title: 'Move to Room',
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Move ${entry.pet.name} to a room:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: roomController,
-              decoration: const InputDecoration(
-                labelText: 'Room Number',
-                hintText: 'e.g., 1, 2, A, B',
-                border: OutlineInputBorder(),
-              ),
-              autofocus: true,
-            ),
-          ],
-        ),
-        icon: Icons.door_front_door_rounded,
-        iconColor: ThemeColors.primary(dialogContext),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Move',
-            onPressed: () {
-              final room = roomController.text.trim();
-              Navigator.pop(dialogContext);
-              pageContext.read<QueueBloc>().add(QueueMoveToRoomRequested(entry.queueEntry.id!, room));
-            },
-            variant: NeuButtonVariant.primary,
+      title: 'Move to Room',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Move ${entry.pet.name} to a room:'),
+          const SizedBox(height: 16),
+          NeuTextField(
+            controller: roomController,
+            label: 'Room Number',
+            hint: 'e.g., 1, 2, A, B',
+            autofocus: true,
           ),
         ],
       ),
+      actions: [
+        NeuButton(
+          text: 'Cancel',
+          variant: NeuButtonVariant.ghost,
+          onPressed: () => context.pop(),
+        ),
+        NeuButton(
+          text: 'Move',
+          variant: NeuButtonVariant.primary,
+          onPressed: () {
+            final room = roomController.text.trim();
+            context.pop();
+            context.read<QueueBloc>().add(
+              QueueMoveToRoomRequested(entry.queueEntry.id!, room),
+            );
+          },
+        ),
+      ],
     );
   }
 
   void _showCompleteDialog(QueueEntryWithDetails entry) {
-    final pageContext = context;
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => _PremiumDialog(
-        title: 'Complete Visit',
-        content: Text('Mark ${entry.pet.name}\'s visit as completed?'),
-        icon: Icons.check_circle_outline_rounded,
-        iconColor: ThemeColors.success(dialogContext),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Complete',
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              pageContext.read<QueueBloc>().add(QueueCompleteRequested(entry.queueEntry.id!));
-            },
-            variant: NeuButtonVariant.primary,
-          ),
-        ],
+      title: 'Complete Visit',
+      message: 'Mark ${entry.pet.name}\'s visit as completed?',
+      confirmText: 'Complete',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.primary,
+      onConfirm: () => context.read<QueueBloc>().add(
+        QueueCompleteRequested(entry.queueEntry.id!),
       ),
     );
   }
 
   void _showSkipDialog(QueueEntryWithDetails entry) {
-    final pageContext = context;
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => _PremiumDialog(
-        title: 'Skip Patient',
-        content: Text('Skip ${entry.pet.name}? They will be removed from the queue.'),
-        icon: Icons.skip_next_rounded,
-        iconColor: ThemeColors.error(dialogContext),
-        isDestructive: true,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Skip',
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              pageContext.read<QueueBloc>().add(QueueSkipRequested(entry.queueEntry.id!));
-            },
-            variant: NeuButtonVariant.destructive,
-          ),
-        ],
+      title: 'Skip Patient',
+      message: 'Skip ${entry.pet.name}? They will be removed from the queue.',
+      confirmText: 'Skip',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.destructive,
+      onConfirm: () => context.read<QueueBloc>().add(
+        QueueSkipRequested(entry.queueEntry.id!),
       ),
     );
   }
@@ -466,11 +456,7 @@ class _StatsBar extends StatelessWidget {
               color: ThemeColors.warning(context),
             ),
           ),
-          Container(
-            width: 1,
-            height: 44,
-            color: ThemeColors.border(context),
-          ),
+          Container(width: 1, height: 44, color: ThemeColors.border(context)),
           Expanded(
             child: _StatItem(
               icon: Icons.door_front_door_outlined,
@@ -479,11 +465,7 @@ class _StatsBar extends StatelessWidget {
               color: ThemeColors.primary(context),
             ),
           ),
-          Container(
-            width: 1,
-            height: 44,
-            color: ThemeColors.border(context),
-          ),
+          Container(width: 1, height: 44, color: ThemeColors.border(context)),
           Expanded(
             child: _StatItem(
               icon: Icons.volume_up_outlined,
@@ -520,11 +502,7 @@ class _StatItem extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           variant: NeuVariant.flat,
           color: color.withValues(alpha: 0.12),
-          child: Icon(
-            icon,
-            size: 22,
-            color: color,
-          ),
+          child: Icon(icon, size: 22, color: color),
         ),
         const SizedBox(height: 8),
         Text(
@@ -567,8 +545,10 @@ class _StaffQueueEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(context, entry.queueEntry.status);
-    final isCurrentServing = entry.queueEntry.position == 1 &&
-        (entry.queueEntry.status == QueueStatus.waiting || entry.queueEntry.status == QueueStatus.called);
+    final isCurrentServing =
+        entry.queueEntry.position == 1 &&
+        (entry.queueEntry.status == QueueStatus.waiting ||
+            entry.queueEntry.status == QueueStatus.called);
 
     return NeuCard(
       padding: const EdgeInsets.all(20),
@@ -590,7 +570,12 @@ class _StaffQueueEntryCard extends StatelessWidget {
                     ? statusColor
                     : statusColor.withValues(alpha: 0.15),
                 boxShadow: isCurrentServing
-                    ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.4)
+                    ? NeuShadow.color(
+                        context,
+                        statusColor,
+                        blur: 16,
+                        opacity: 0.4,
+                      )
                     : null,
                 child: SizedBox(
                   width: 40,
@@ -629,7 +614,10 @@ class _StaffQueueEntryCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           NeuContainer(
                             borderRadius: 12,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             variant: NeuVariant.flat,
                             color: statusColor.withValues(alpha: 0.15),
                             child: Text(
@@ -654,8 +642,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onPriorityChanged != null &&
-                  entry.queueEntry.id != null) ...[
+              if (onPriorityChanged != null && entry.queueEntry.id != null) ...[
                 _PriorityControl(
                   priority: entry.queueEntry.priority,
                   onChanged: onPriorityChanged,
@@ -666,7 +653,10 @@ class _StaffQueueEntryCard extends StatelessWidget {
               // Status chip
               NeuContainer(
                 borderRadius: 20,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 variant: NeuVariant.flat,
                 color: statusColor.withValues(alpha: 0.12),
                 borderColor: statusColor.withValues(alpha: 0.3),
@@ -758,7 +748,9 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   initials: entry.veterinarian.fullName.isNotEmpty
                       ? entry.veterinarian.fullName[0]
                       : 'D',
-                  backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                  backgroundColor: ThemeColors.primary(
+                    context,
+                  ).withValues(alpha: 0.15),
                   foregroundColor: ThemeColors.primary(context),
                 ),
                 const SizedBox(width: 12),
@@ -825,7 +817,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
 
           // Action buttons
           const SizedBox(height: 16),
-          const Divider(height: 1),
+          NeuDivider(thickness: 1),
           const SizedBox(height: 16),
           _buildActionButtons(context),
         ],
@@ -918,7 +910,9 @@ class _StaffQueueEntryCard extends StatelessWidget {
   }
 
   String _formatTime(DateTime dateTime) {
-    final hour = dateTime.hour > 12 ? dateTime.hour - 12 : (dateTime.hour == 0 ? 12 : dateTime.hour);
+    final hour = dateTime.hour > 12
+        ? dateTime.hour - 12
+        : (dateTime.hour == 0 ? 12 : dateTime.hour);
     final minute = dateTime.minute.toString().padLeft(2, '0');
     final period = dateTime.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -933,64 +927,23 @@ class _PriorityControl extends StatelessWidget {
 
   const _PriorityControl({required this.priority, this.onChanged});
 
-  Color _color(BuildContext context, QueuePriority p) =>
-      _priorityColor(context, p);
-
   @override
   Widget build(BuildContext context) {
-    final color = _color(context, priority);
-    final chip = NeuContainer(
-      borderRadius: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      variant: NeuVariant.flat,
-      color: color.withValues(alpha: 0.12),
-      borderColor: color.withValues(alpha: 0.3),
-      borderWidth: 1,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _iconFor(priority),
-            size: 14,
-            color: color,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            priority.displayName,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: 2),
-          Icon(Icons.arrow_drop_down_rounded, size: 16, color: color),
-        ],
-      ),
-    );
-
-    return PopupMenuButton<QueuePriority>(
-      onSelected: onChanged,
-      tooltip: 'Change priority',
-      itemBuilder: (context) => QueuePriority.values.map((p) {
-        return PopupMenuItem<QueuePriority>(
-          value: p,
-          child: Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: _priorityColor(context, p),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(p.displayName),
-            ],
-          ),
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: QueuePriority.values.map((p) {
+        final isSelected = priority == p;
+        final color = _priorityColor(context, p);
+        return NeuChip(
+          label: p.displayName,
+          icon: _iconFor(p),
+          selected: isSelected,
+          selectedColor: color,
+          onTap: () => onChanged?.call(p),
+          unselectedVariant: NeuVariant.raised,
         );
       }).toList(),
-      child: chip,
     );
   }
 
@@ -1018,53 +971,6 @@ Color _priorityColor(BuildContext context, QueuePriority priority) {
   }
 }
 
-/// Premium dialog wrapper
-class _PremiumDialog extends StatelessWidget {
-  final String title;
-  final Widget content;
-  final IconData icon;
-  final Color iconColor;
-  final bool isDestructive;
-  final List<Widget> actions;
-
-  const _PremiumDialog({
-    required this.title,
-    required this.content,
-    required this.icon,
-    required this.iconColor,
-    required this.actions,
-    this.isDestructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          NeuContainer(
-            borderRadius: 12,
-            padding: const EdgeInsets.all(10),
-            variant: NeuVariant.flat,
-            color: iconColor.withValues(alpha: 0.12),
-            child: Icon(icon, size: 22, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-      content: content,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      actions: actions,
-    );
-  }
-}
-
 /// Not logged in view
 class _NotLoggedInView extends StatelessWidget {
   const _NotLoggedInView();
@@ -1082,7 +988,12 @@ class _NotLoggedInView extends StatelessWidget {
                 borderRadius: 90,
                 padding: const EdgeInsets.all(40),
                 color: ThemeColors.primary(context),
-                boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 24, opacity: 0.32),
+                boxShadow: NeuShadow.color(
+                  context,
+                  ThemeColors.primary(context),
+                  blur: 24,
+                  opacity: 0.32,
+                ),
                 child: const Icon(
                   Icons.people_outlined,
                   size: 80,
@@ -1136,7 +1047,12 @@ class _AccessDeniedView extends StatelessWidget {
                 borderRadius: 90,
                 padding: const EdgeInsets.all(40),
                 color: ThemeColors.error(context),
-                boxShadow: NeuShadow.color(context, ThemeColors.error(context), blur: 24, opacity: 0.32),
+                boxShadow: NeuShadow.color(
+                  context,
+                  ThemeColors.error(context),
+                  blur: 24,
+                  opacity: 0.32,
+                ),
                 child: const Icon(
                   Icons.block_rounded,
                   size: 80,

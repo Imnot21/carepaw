@@ -47,19 +47,13 @@ class ErrorHandler {
       );
     }
     if (exception is NotFoundException) {
-      return NotFoundFailure(
-        message: exception.message,
-        code: exception.code,
-      );
+      return NotFoundFailure(message: exception.message, code: exception.code);
     }
     if (exception is ConflictException) {
       return const AppointmentConflictFailure();
     }
     if (exception is ServerException) {
-      return ServerFailure(
-        message: exception.message,
-        code: exception.code,
-      );
+      return ServerFailure(message: exception.message, code: exception.code);
     }
 
     // Cache exceptions
@@ -69,15 +63,10 @@ class ErrorHandler {
 
     // Database exceptions
     if (exception is ConstraintViolationException) {
-      return RequiredFieldFailure(
-        message: exception.message,
-      );
+      return RequiredFieldFailure(message: exception.message);
     }
     if (exception is DatabaseException) {
-      return NotFoundFailure(
-        message: exception.message,
-        code: exception.code,
-      );
+      return NotFoundFailure(message: exception.message, code: exception.code);
     }
 
     // Auth exceptions
@@ -85,16 +74,12 @@ class ErrorHandler {
       return const SessionExpiredFailure();
     }
     if (exception is AuthException) {
-      return InvalidCredentialsFailure(
-        message: exception.message,
-      );
+      return InvalidCredentialsFailure(message: exception.message);
     }
 
     // Validation exceptions
     if (exception is ValidationException) {
-      return RequiredFieldFailure(
-        message: exception.message,
-      );
+      return RequiredFieldFailure(message: exception.message);
     }
 
     // OCR exceptions
@@ -109,23 +94,16 @@ class ErrorHandler {
 
     // Permission exceptions
     if (exception is PermissionDeniedException) {
-      return const UnauthorizedFailure(
-        message: 'Permission denied.',
-      );
+      return const UnauthorizedFailure(message: 'Permission denied.');
     }
 
     // Format exceptions (custom)
     if (exception is FormatException) {
-      return const InvalidEmailFailure(
-        message: 'Invalid data format.',
-      );
+      return const InvalidEmailFailure(message: 'Invalid data format.');
     }
 
     // Default fallback
-    return UnexpectedFailure(
-      message: exception.message,
-      code: exception.code,
-    );
+    return UnexpectedFailure(message: exception.message, code: exception.code);
   }
 
   /// Handle other common exceptions
@@ -137,9 +115,7 @@ class ErrorHandler {
 
     // Format exception (Dart)
     if (exception is FormatException) {
-      return const InvalidEmailFailure(
-        message: 'Invalid data format.',
-      );
+      return const InvalidEmailFailure(message: 'Invalid data format.');
     }
 
     // Range error
@@ -149,9 +125,7 @@ class ErrorHandler {
 
     // ArgumentError
     if (exception is ArgumentError) {
-      return const UnexpectedFailure(
-        message: 'Invalid argument provided.',
-      );
+      return const UnexpectedFailure(message: 'Invalid argument provided.');
     }
 
     // StateError
@@ -163,15 +137,11 @@ class ErrorHandler {
 
     // TypeError
     if (exception is TypeError) {
-      return const UnexpectedFailure(
-        message: 'Type error occurred.',
-      );
+      return const UnexpectedFailure(message: 'Type error occurred.');
     }
 
     // Default to unexpected failure
-    return UnexpectedFailure(
-      message: exception.toString(),
-    );
+    return UnexpectedFailure(message: exception.toString());
   }
 
   /// Get user-friendly error message from any error

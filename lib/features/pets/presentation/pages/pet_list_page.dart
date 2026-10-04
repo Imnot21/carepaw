@@ -19,10 +19,11 @@ import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 
-/// Page showing the list of user's pets with neumorphic design.
+/// Page showing the list of user's pets with the CarePaw surface system.
 class PetListPage extends StatelessWidget {
   const PetListPage({super.key});
 
@@ -35,25 +36,26 @@ class PetListPage extends StatelessWidget {
         }
 
         final user = authState.user;
-        final isVetOrStaff = user.role == UserRole.veterinarian ||
-                             user.role == UserRole.staff ||
-                             user.role == UserRole.admin;
+        final isVetOrStaff =
+            user.role == UserRole.veterinarian ||
+            user.role == UserRole.staff ||
+            user.role == UserRole.admin;
 
         if (isVetOrStaff) {
           // Vet/Staff/Admin see all pets
           return BlocProvider(
-            create: (context) => PetBloc(
-              petRepository: context.read<PetRepository>(),
-            )..add(const LoadAllPets()),
+            create: (context) =>
+                PetBloc(petRepository: context.read<PetRepository>())
+                  ..add(const LoadAllPets()),
             child: const _StaffPetListView(),
           );
         } else {
           // Pet owners see only their pets
           final ownerId = user.id!;
           return BlocProvider(
-            create: (context) => PetBloc(
-              petRepository: context.read<PetRepository>(),
-            )..add(LoadPets(ownerId: ownerId)),
+            create: (context) =>
+                PetBloc(petRepository: context.read<PetRepository>())
+                  ..add(LoadPets(ownerId: ownerId)),
             child: _PetListView(ownerId: ownerId),
           );
         }
@@ -83,7 +85,12 @@ class _NotLoggedInView extends StatelessWidget {
                   borderRadius: 80,
                   variant: NeuVariant.raised,
                   color: AppColors.primary,
-                  boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                  boxShadow: NeuShadow.color(
+                    context,
+                    AppColors.primary,
+                    blur: 24,
+                    opacity: 0.32,
+                  ),
                   child: const Icon(
                     Icons.pets_outlined,
                     size: 80,
@@ -96,7 +103,9 @@ class _NotLoggedInView extends StatelessWidget {
                 'Please log in to view your pets',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -104,7 +113,9 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to manage your pets\' profiles and book appointments',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -182,7 +193,9 @@ class _PetListViewState extends State<_PetListView> {
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
-                        context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+                        context.read<PetBloc>().add(
+                          LoadPets(ownerId: widget.ownerId),
+                        );
                       },
                       tooltip: 'Clear search',
                     )
@@ -190,7 +203,9 @@ class _PetListViewState extends State<_PetListView> {
               onChanged: (value) {
                 setState(() => _searchQuery = value);
                 if (value.isEmpty) {
-                  context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+                  context.read<PetBloc>().add(
+                    LoadPets(ownerId: widget.ownerId),
+                  );
                 } else {
                   context.read<PetBloc>().add(
                     SearchPets(ownerId: widget.ownerId, query: value),
@@ -210,7 +225,9 @@ class _PetListViewState extends State<_PetListView> {
                       content: Text(state.failure.message),
                       backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       margin: const EdgeInsets.all(16),
                     ),
                   );
@@ -220,7 +237,9 @@ class _PetListViewState extends State<_PetListView> {
                       content: Text(state.message),
                       backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       margin: const EdgeInsets.all(16),
                     ),
                   );
@@ -235,12 +254,16 @@ class _PetListViewState extends State<_PetListView> {
                   final pets = state.pets;
 
                   if (pets.isEmpty) {
-                    return _EmptyPetsView(onAddPet: () => _navigateToAddPet(context));
+                    return _EmptyPetsView(
+                      onAddPet: () => _navigateToAddPet(context),
+                    );
                   }
 
                   return RefreshIndicator(
                     onRefresh: () async {
-                      context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+                      context.read<PetBloc>().add(
+                        LoadPets(ownerId: widget.ownerId),
+                      );
                     },
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
@@ -259,7 +282,9 @@ class _PetListViewState extends State<_PetListView> {
                 }
 
                 if (state is PetOperationSuccess) {
-                  context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+                  context.read<PetBloc>().add(
+                    LoadPets(ownerId: widget.ownerId),
+                  );
                   return const NeuSkeletonList();
                 }
 
@@ -285,11 +310,9 @@ class _PetListViewState extends State<_PetListView> {
   }
 
   void _navigateToPetDetail(BuildContext context, Pet pet) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PetDetailPage(pet: pet),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => PetDetailPage(pet: pet)));
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
@@ -304,37 +327,20 @@ class _PetListViewState extends State<_PetListView> {
   }
 
   void _showDeleteConfirmation(BuildContext context, Pet pet) {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Delete ${pet.name}?'),
-        content: Text(
-          'Are you sure you want to delete ${pet.name}? '
-          'This action can be undone by restoring the pet.',
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Delete',
-            variant: NeuButtonVariant.destructive,
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<PetBloc>().add(DeletePet(petId: pet.id!));
-            },
-            icon: Icons.delete,
-            size: NeuButtonSize.medium,
-          ),
-        ],
-      ),
+      title: 'Delete ${pet.name}?',
+      message:
+          'Are you sure you want to delete ${pet.name}? This action can be undone by restoring the pet.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.destructive,
+      onConfirm: () => context.read<PetBloc>().add(DeletePet(petId: pet.id!)),
     );
   }
 }
 
-/// Individual pet card with neumorphic design
+/// Individual pet card with the CarePaw surface system
 class _PetCard extends StatelessWidget {
   final Pet pet;
   final VoidCallback onTap;
@@ -355,22 +361,18 @@ class _PetCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: NeuTokens.tightGap),
       child: NeuCard(
         onTap: onTap,
-        borderRadius: 20,
-        borderColor: !pet.isActive
-            ? ThemeColors.warning(context).withValues(alpha: 0.4)
-            : null,
+        showBorder: !pet.isActive,
+        borderColor: !pet.isActive ? ThemeColors.warning(context) : null,
         borderWidth: !pet.isActive ? 2 : 0,
         child: Row(
           children: [
-            // Pet avatar
             PetUtils.buildAvatar(
               species: pet.species,
               avatarUrl: pet.avatarUrl,
-              radius: 40,
-              iconSize: 40,
+              radius: 36,
             ),
             const SizedBox(width: 16),
 
@@ -386,7 +388,9 @@ class _PetCard extends StatelessWidget {
                           pet.name,
                           style: AppTextStyles.titleLarge.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: isDark
+                                ? AppColors.textPrimaryOnDark
+                                : AppColors.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -398,9 +402,15 @@ class _PetCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: ThemeColors.warning(context).withValues(alpha: 0.15),
+                            color: ThemeColors.warning(
+                              context,
+                            ).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: ThemeColors.warning(context).withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: ThemeColors.warning(
+                                context,
+                              ).withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
                             'Inactive',
@@ -416,17 +426,15 @@ class _PetCard extends StatelessWidget {
                   // Species and breed
                   Row(
                     children: [
-                      Icon(
-                        speciesIcon,
-                        size: 16,
-                        color: speciesColor,
-                      ),
+                      Icon(speciesIcon, size: 16, color: speciesColor),
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
                             (pet.breed != null ? ' • ${pet.breed}' : ''),
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryOnDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -445,7 +453,9 @@ class _PetCard extends StatelessWidget {
                         Text(
                           PetUtils.calculateAge(pet.birthDate!),
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -462,7 +472,9 @@ class _PetCard extends StatelessWidget {
                         Text(
                           '${pet.weightKg!.toStringAsFixed(1)} kg',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -520,18 +532,29 @@ class _PetCard extends StatelessWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 20, color: ThemeColors.error(context)),
+                      Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: ThemeColors.error(context),
+                      ),
                       const SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
+                      Text(
+                        'Delete',
+                        style: TextStyle(color: ThemeColors.error(context)),
+                      ),
                     ],
                   ),
                 ),
               ],
               child: NeuContainer(
-                borderRadius: 12,
-                padding: const EdgeInsets.all(8),
+                borderRadius: NeuTokens.radiusSm,
+                padding: const EdgeInsets.all(NeuTokens.spaceXs),
                 variant: NeuVariant.raised,
-                child: Icon(Icons.more_vert, size: 22, color: ThemeColors.textSecondary(context)),
+                child: Icon(
+                  Icons.more_vert,
+                  size: 22,
+                  color: ThemeColors.textSecondary(context),
+                ),
               ),
             ),
           ],
@@ -549,43 +572,35 @@ class _EmptyPetsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(NeuTokens.pagePadding),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: NeuContainer(
-                borderRadius: 90,
-                variant: NeuVariant.raised,
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
-                child: const Icon(
-                  Icons.pets_outlined,
-                  size: 90,
-                  color: AppColors.textOnPrimary,
-                ),
+            NeuContainer(
+              variant: NeuVariant.inset,
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(NeuTokens.spaceLg + 12),
+              child: Icon(
+                Icons.pets_outlined,
+                size: 56,
+                color: ThemeColors.primary(context),
               ),
             ),
             const SizedBox(height: 28),
             Text(
-              'No Pets Yet',
+              'No pets yet',
               style: AppTextStyles.headlineMedium.copyWith(
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: NeuTokens.spaceXs),
             Text(
-              'Add your first pet to get started with CarePaw.\nYou\'ll be able to book appointments, track health,\nand manage their medical records.',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-                height: 1.5,
-              ),
+              'Add your first pet to get started with CarePaw.\nYou\u2019ll be able to book appointments, track health,\nand manage their medical records.',
+              style: AppTextStyles.bodyLarge
+                  .subtleOf(Theme.of(context).brightness)
+                  .copyWith(height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -671,9 +686,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                 if (value.isEmpty) {
                   context.read<PetBloc>().add(const LoadAllPets());
                 } else {
-                  context.read<PetBloc>().add(
-                    SearchAllPets(query: value),
-                  );
+                  context.read<PetBloc>().add(SearchAllPets(query: value));
                 }
               },
             ),
@@ -689,7 +702,9 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                       content: Text(state.failure.message),
                       backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       margin: const EdgeInsets.all(16),
                     ),
                   );
@@ -699,7 +714,9 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                       content: Text(state.message),
                       backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       margin: const EdgeInsets.all(16),
                     ),
                   );
@@ -714,7 +731,9 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                   final pets = state.pets;
 
                   if (pets.isEmpty) {
-                    return _EmptyPetsView(onAddPet: () => _navigateToAddPet(context));
+                    return _EmptyPetsView(
+                      onAddPet: () => _navigateToAddPet(context),
+                    );
                   }
 
                   return RefreshIndicator(
@@ -763,11 +782,9 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
   }
 
   void _navigateToPetDetail(BuildContext context, Pet pet) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PetDetailPage(pet: pet),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => PetDetailPage(pet: pet)));
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
@@ -780,32 +797,15 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
   }
 
   void _showDeleteConfirmation(BuildContext context, Pet pet) {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Delete ${pet.name}?'),
-        content: Text(
-          'Are you sure you want to delete ${pet.name}? '
-          'This action can be undone by restoring the pet.',
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Delete',
-            variant: NeuButtonVariant.destructive,
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<PetBloc>().add(DeletePet(petId: pet.id!));
-            },
-            icon: Icons.delete,
-            size: NeuButtonSize.medium,
-          ),
-        ],
-      ),
+      title: 'Delete ${pet.name}?',
+      message:
+          'Are you sure you want to delete ${pet.name}? This action can be undone by restoring the pet.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.destructive,
+      onConfirm: () => context.read<PetBloc>().add(DeletePet(petId: pet.id!)),
     );
   }
 }
@@ -862,7 +862,9 @@ class _StaffPetCard extends StatelessWidget {
                           pet.name,
                           style: AppTextStyles.titleLarge.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                            color: isDark
+                                ? AppColors.textPrimaryOnDark
+                                : AppColors.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -874,9 +876,15 @@ class _StaffPetCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: ThemeColors.warning(context).withValues(alpha: 0.15),
+                            color: ThemeColors.warning(
+                              context,
+                            ).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: ThemeColors.warning(context).withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: ThemeColors.warning(
+                                context,
+                              ).withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
                             'Inactive',
@@ -892,17 +900,15 @@ class _StaffPetCard extends StatelessWidget {
                   // Species and breed
                   Row(
                     children: [
-                      Icon(
-                        speciesIcon,
-                        size: 16,
-                        color: speciesColor,
-                      ),
+                      Icon(speciesIcon, size: 16, color: speciesColor),
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
                             (pet.breed != null ? ' • ${pet.breed}' : ''),
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryOnDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -920,7 +926,9 @@ class _StaffPetCard extends StatelessWidget {
                       Text(
                         'Owner ID: ${pet.ownerId}',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryOnDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -938,7 +946,9 @@ class _StaffPetCard extends StatelessWidget {
                         Text(
                           PetUtils.calculateAge(pet.birthDate!),
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -955,7 +965,9 @@ class _StaffPetCard extends StatelessWidget {
                         Text(
                           '${pet.weightKg!.toStringAsFixed(1)} kg',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -1013,18 +1025,29 @@ class _StaffPetCard extends StatelessWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 20, color: ThemeColors.error(context)),
+                      Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: ThemeColors.error(context),
+                      ),
                       const SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
+                      Text(
+                        'Delete',
+                        style: TextStyle(color: ThemeColors.error(context)),
+                      ),
                     ],
                   ),
                 ),
               ],
               child: NeuContainer(
-                borderRadius: 12,
-                padding: const EdgeInsets.all(8),
+                borderRadius: NeuTokens.radiusSm,
+                padding: const EdgeInsets.all(NeuTokens.spaceXs),
                 variant: NeuVariant.raised,
-                child: Icon(Icons.more_vert, size: 22, color: ThemeColors.textSecondary(context)),
+                child: Icon(
+                  Icons.more_vert,
+                  size: 22,
+                  color: ThemeColors.textSecondary(context),
+                ),
               ),
             ),
           ],

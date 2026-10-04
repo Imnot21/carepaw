@@ -13,12 +13,10 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
   final AuthBloc _authBloc;
   Stream<List<QueueEntryWithDetails>>? _queueStream;
 
-  QueueBloc({
-    required QueueRepository repository,
-    required AuthBloc authBloc,
-  }) : _repository = repository,
-       _authBloc = authBloc,
-       super(QueueInitial()) {
+  QueueBloc({required QueueRepository repository, required AuthBloc authBloc})
+    : _repository = repository,
+      _authBloc = authBloc,
+      super(QueueInitial()) {
     on<QueueLoadRequested>(_onLoadRequested);
     on<QueueStaffLoadRequested>(_onStaffLoadRequested);
     on<QueueWatchRequested>(_onWatchRequested);
@@ -54,22 +52,29 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
           .toList();
 
       // Calculate user's position
-      final waitingEntries = allQueue
-          .where((e) =>
-              e.queueEntry.status == QueueStatus.waiting ||
-              e.queueEntry.status == QueueStatus.called)
-          .toList()
-        ..sort((a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry));
+      final waitingEntries =
+          allQueue
+              .where(
+                (e) =>
+                    e.queueEntry.status == QueueStatus.waiting ||
+                    e.queueEntry.status == QueueStatus.called,
+              )
+              .toList()
+            ..sort(
+              (a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry),
+            );
 
       final (userPosition, petsAhead, higherPriorityAhead) =
           _computeOwnerPlacement(waitingEntries, ownerId);
 
-      emit(QueueLoaded(
-        queueEntries: userQueue,
-        userPosition: userPosition,
-        petsAhead: petsAhead,
-        higherPriorityAhead: higherPriorityAhead,
-      ));
+      emit(
+        QueueLoaded(
+          queueEntries: userQueue,
+          userPosition: userPosition,
+          petsAhead: petsAhead,
+          higherPriorityAhead: higherPriorityAhead,
+        ),
+      );
     } catch (e) {
       emit(QueueError('Failed to load queue: $e'));
     }
@@ -96,7 +101,8 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
   ) async {
     try {
       final authState = _authBloc.state;
-      final isStaff = authState is AuthAuthenticated &&
+      final isStaff =
+          authState is AuthAuthenticated &&
           (authState.user.role == UserRole.staff ||
               authState.user.role == UserRole.veterinarian ||
               authState.user.role == UserRole.admin);
@@ -111,22 +117,29 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
               .where((entry) => entry.pet.ownerId == ownerId)
               .toList();
 
-          final waitingEntries = queueEntries
-              .where((e) =>
-                  e.queueEntry.status == QueueStatus.waiting ||
-                  e.queueEntry.status == QueueStatus.called)
-              .toList()
-            ..sort((a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry));
+          final waitingEntries =
+              queueEntries
+                  .where(
+                    (e) =>
+                        e.queueEntry.status == QueueStatus.waiting ||
+                        e.queueEntry.status == QueueStatus.called,
+                  )
+                  .toList()
+                ..sort(
+                  (a, b) => QueueEntry.byQueueOrder(a.queueEntry, b.queueEntry),
+                );
 
           final (userPosition, petsAhead, higherPriorityAhead) =
               _computeOwnerPlacement(waitingEntries, ownerId);
 
-          emit(QueueLoaded(
-            queueEntries: userQueue,
-            userPosition: userPosition,
-            petsAhead: petsAhead,
-            higherPriorityAhead: higherPriorityAhead,
-          ));
+          emit(
+            QueueLoaded(
+              queueEntries: userQueue,
+              userPosition: userPosition,
+              petsAhead: petsAhead,
+              higherPriorityAhead: higherPriorityAhead,
+            ),
+          );
         }
       }
     } catch (e) {
@@ -264,10 +277,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
   }
 
   /// Clear error state
-  void _onErrorCleared(
-    QueueErrorCleared event,
-    Emitter<QueueState> emit,
-  ) {
+  void _onErrorCleared(QueueErrorCleared event, Emitter<QueueState> emit) {
     if (state is QueueError) {
       emit(QueueInitial());
     }
@@ -304,12 +314,14 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
       }
     }
 
-    emit(QueueStaffLoaded(
-      queueEntries: sortedEntries,
-      currentServing: currentServing,
-      totalWaiting: totalWaiting,
-      totalInRoom: totalInRoom,
-    ));
+    emit(
+      QueueStaffLoaded(
+        queueEntries: sortedEntries,
+        currentServing: currentServing,
+        totalWaiting: totalWaiting,
+        totalInRoom: totalInRoom,
+      ),
+    );
   }
 
   @override

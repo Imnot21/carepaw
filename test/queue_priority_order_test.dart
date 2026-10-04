@@ -30,14 +30,8 @@ void main() {
 
   group('QueuePriority', () {
     test('ranks emergency above urgent above routine', () {
-      expect(
-        QueuePriority.emergency.rank < QueuePriority.urgent.rank,
-        isTrue,
-      );
-      expect(
-        QueuePriority.urgent.rank < QueuePriority.routine.rank,
-        isTrue,
-      );
+      expect(QueuePriority.emergency.rank < QueuePriority.urgent.rank, isTrue);
+      expect(QueuePriority.urgent.rank < QueuePriority.routine.rank, isTrue);
     });
 
     test('fromString falls back to routine for unknown/missing values', () {
@@ -65,8 +59,11 @@ void main() {
 
     test('emergency outranks routine even when checked in later', () {
       final routine = entry(id: 1, checkedInAt: t1);
-      final emergency = entry(id: 7, checkedInAt: t3,
-          priority: QueuePriority.emergency);
+      final emergency = entry(
+        id: 7,
+        checkedInAt: t3,
+        priority: QueuePriority.emergency,
+      );
       // Later arrival, but Emergency — must sort ahead of the earlier Routine.
       expect(QueueEntry.byQueueOrder(emergency, routine), lessThan(0));
     });
@@ -90,8 +87,16 @@ void main() {
     test('retriaging a later arrival to Emergency promotes it to #1', () {
       // Simulate the run the plan's manual walkthrough asserts: owner checks
       // in two Routine patients, then staff retriages patient #2 to Emergency.
-      var patient1 = entry(id: 1, checkedInAt: t1, priority: QueuePriority.routine);
-      var patient2 = entry(id: 2, checkedInAt: t2, priority: QueuePriority.routine);
+      var patient1 = entry(
+        id: 1,
+        checkedInAt: t1,
+        priority: QueuePriority.routine,
+      );
+      var patient2 = entry(
+        id: 2,
+        checkedInAt: t2,
+        priority: QueuePriority.routine,
+      );
 
       var queued = [patient1, patient2]..sort(QueueEntry.byQueueOrder);
       expect(queued.first.id, 1); // FIFO before triage

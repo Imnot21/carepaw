@@ -46,10 +46,12 @@ void main() {
     );
 
     // Default load returns both roles.
-    when(() => repository.findByRole(UserRole.staff))
-        .thenAnswer((_) async => [staff]);
-    when(() => repository.findByRole(UserRole.veterinarian))
-        .thenAnswer((_) async => [vet]);
+    when(
+      () => repository.findByRole(UserRole.staff),
+    ).thenAnswer((_) async => [staff]);
+    when(
+      () => repository.findByRole(UserRole.veterinarian),
+    ).thenAnswer((_) async => [vet]);
   });
 
   group('UserManagementBloc', () {
@@ -66,8 +68,9 @@ void main() {
     blocTest<UserManagementBloc, UserManagementState>(
       'emits [Loading, Error] when the repository throws a Failure',
       build: () {
-        when(() => repository.findByRole(UserRole.staff))
-            .thenThrow(const AccountLockedFailure());
+        when(
+          () => repository.findByRole(UserRole.staff),
+        ).thenThrow(const AccountLockedFailure());
         return UserManagementBloc(userRepository: repository);
       },
       act: (bloc) => bloc.add(const UserManagementLoadRequested()),
@@ -89,16 +92,19 @@ void main() {
           createdAt: DateTime(2026, 1, 1),
           updatedAt: DateTime(2026, 1, 1),
         );
-        when(() => repository.createAccount(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-              fullName: any(named: 'fullName'),
-              phone: any(named: 'phone'),
-              role: any(named: 'role'),
-            )).thenAnswer((_) async => created);
+        when(
+          () => repository.createAccount(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+            fullName: any(named: 'fullName'),
+            phone: any(named: 'phone'),
+            role: any(named: 'role'),
+          ),
+        ).thenAnswer((_) async => created);
         // After creation the refreshed list includes the new user.
-        when(() => repository.findByRole(UserRole.staff))
-            .thenAnswer((_) async => [staff, created]);
+        when(
+          () => repository.findByRole(UserRole.staff),
+        ).thenAnswer((_) async => [staff, created]);
         return UserManagementBloc(userRepository: repository);
       },
       act: (bloc) => bloc.add(
@@ -115,18 +121,16 @@ void main() {
           'Account created. The user can now sign in with these credentials.',
         ),
         const UserManagementLoading(),
-        anyOf(
-          isA<UserManagementLoaded>(),
-          isA<UserManagementError>(),
-        ),
+        anyOf(isA<UserManagementLoaded>(), isA<UserManagementError>()),
       ],
     );
 
     blocTest<UserManagementBloc, UserManagementState>(
       'changeRole emits ActionSuccess then refreshes the list',
       build: () {
-        when(() => repository.changeRole(any(), any()))
-            .thenAnswer((_) async => staff);
+        when(
+          () => repository.changeRole(any(), any()),
+        ).thenAnswer((_) async => staff);
         return UserManagementBloc(userRepository: repository);
       },
       act: (bloc) => bloc.add(
@@ -145,8 +149,9 @@ void main() {
     blocTest<UserManagementBloc, UserManagementState>(
       'toggleActive emits ActionSuccess then refreshes the list',
       build: () {
-        when(() => repository.setActive(any(), any()))
-            .thenAnswer((_) async => staff);
+        when(
+          () => repository.setActive(any(), any()),
+        ).thenAnswer((_) async => staff);
         return UserManagementBloc(userRepository: repository);
       },
       act: (bloc) => bloc.add(

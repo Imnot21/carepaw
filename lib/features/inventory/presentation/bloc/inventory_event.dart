@@ -107,15 +107,15 @@ class CreateInventoryItem extends InventoryEvent {
 
   @override
   List<Object?> get props => [
-        name,
-        category,
-        unit,
-        minStock,
-        maxStock,
-        unitCost,
-        supplier,
-        location,
-      ];
+    name,
+    category,
+    unit,
+    minStock,
+    maxStock,
+    unitCost,
+    supplier,
+    location,
+  ];
 }
 
 /// Update an inventory item.
@@ -144,16 +144,16 @@ class UpdateInventoryItem extends InventoryEvent {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        category,
-        unit,
-        minStock,
-        maxStock,
-        unitCost,
-        supplier,
-        location,
-      ];
+    id,
+    name,
+    category,
+    unit,
+    minStock,
+    maxStock,
+    unitCost,
+    supplier,
+    location,
+  ];
 }
 
 /// Update stock level.
@@ -200,14 +200,14 @@ class CreateBatch extends InventoryEvent {
 
   @override
   List<Object?> get props => [
-        inventoryId,
-        batchNumber,
-        quantity,
-        receivedAt,
-        expiresAt,
-        costPerUnit,
-        supplier,
-      ];
+    inventoryId,
+    batchNumber,
+    quantity,
+    receivedAt,
+    expiresAt,
+    costPerUnit,
+    supplier,
+  ];
 }
 
 /// Create a stock in transaction.
@@ -232,14 +232,14 @@ class CreateStockInTransaction extends InventoryEvent {
 
   @override
   List<Object?> get props => [
-        batchId,
-        quantity,
-        reason,
-        referenceType,
-        referenceId,
-        performedBy,
-        notes,
-      ];
+    batchId,
+    quantity,
+    reason,
+    referenceType,
+    referenceId,
+    performedBy,
+    notes,
+  ];
 }
 
 /// Create a stock out transaction.
@@ -264,14 +264,14 @@ class CreateStockOutTransaction extends InventoryEvent {
 
   @override
   List<Object?> get props => [
-        batchId,
-        quantity,
-        reason,
-        referenceType,
-        referenceId,
-        performedBy,
-        notes,
-      ];
+    batchId,
+    quantity,
+    reason,
+    referenceType,
+    referenceId,
+    performedBy,
+    notes,
+  ];
 }
 
 /// Create an adjustment transaction.
@@ -292,12 +292,12 @@ class CreateAdjustmentTransaction extends InventoryEvent {
 
   @override
   List<Object?> get props => [
-        batchId,
-        quantityChange,
-        reason,
-        performedBy,
-        notes,
-      ];
+    batchId,
+    quantityChange,
+    reason,
+    performedBy,
+    notes,
+  ];
 }
 
 /// Load transactions for a batch.

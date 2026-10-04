@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carepaw/features/notifications/domain/entities/notification.dart' as domain;
+import 'package:carepaw/features/notifications/domain/entities/notification.dart'
+    as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
@@ -11,7 +12,7 @@ import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
-/// Notification detail page with neumorphic design
+/// Notification detail page with the CarePaw surface system
 class NotificationDetailPage extends StatefulWidget {
   final domain.Notification notification;
 
@@ -30,7 +31,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     final typeColor = _getTypeColor(notification.type);
 
     return Scaffold(
-      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: _isDark
+          ? AppColors.backgroundDark
+          : AppColors.background,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(notification, typeColor),
@@ -76,7 +79,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               'Notification',
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: _isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 2),
@@ -149,7 +154,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                       notification.title,
                       style: AppTextStyles.headlineSmall.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                        color: _isDark
+                            ? AppColors.textPrimaryOnDark
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -201,7 +208,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           Text(
             notification.message,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              color: _isDark
+                  ? AppColors.textPrimaryOnDark
+                  : AppColors.textPrimary,
               height: 1.6,
             ),
           ),
@@ -228,7 +237,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                 'Details',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: _isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
               ),
             ],
@@ -237,11 +248,17 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           _buildMetaRow('Created', formatDateTime(notification.createdAt)),
           if (notification.readAt != null)
             _buildMetaRow('Read At', formatDateTime(notification.readAt!)),
-          _buildMetaRow('Notification ID', notification.id?.toString() ?? 'N/A'),
+          _buildMetaRow(
+            'Notification ID',
+            notification.id?.toString() ?? 'N/A',
+          ),
           _buildMetaRow('Type', notification.type.displayName),
           _buildMetaRow('Status', notification.isRead ? 'Read' : 'Unread'),
           if (notification.referenceType != null)
-            _buildMetaRow('Reference', '${notification.referenceType}: ${notification.referenceId}'),
+            _buildMetaRow(
+              'Reference',
+              '${notification.referenceType}: ${notification.referenceId}',
+            ),
         ],
       ),
     );
@@ -258,7 +275,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             child: Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: _isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -268,7 +287,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             child: Text(
               value,
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: _isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
             ),
           ),
@@ -326,7 +347,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Notification'),
-        content: const Text('Are you sure you want to delete this notification? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this notification? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -340,7 +363,10 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               );
               Navigator.pop(context, true);
             },
-            child: Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: ThemeColors.error(context)),
+            ),
           ),
         ],
       ),
@@ -358,7 +384,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       case domain.NotificationType.inventoryLow:
         return _isDark ? AppColors.successOnDark : AppColors.success;
       case domain.NotificationType.system:
-        return _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
+        return _isDark
+            ? AppColors.textSecondaryOnDark
+            : AppColors.textSecondary;
     }
   }
 

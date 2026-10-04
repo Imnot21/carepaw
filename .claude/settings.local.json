@@ -13,7 +13,52 @@
       "Bash(git push *)",
       "Bash(flutter --version)",
       "Bash(git fetch *)",
-      "PowerShell(flutter analyze *)"
+      "PowerShell(flutter analyze *)",
+      "Bash(flutter test *)",
+      "Skill(update-config)",
+      "Bash(plugin *)",
+      "Bash(claude plugin *)",
+      "Bash(claude code *)",
+      "Bash(npx impeccable *)",
+      "PowerShell(& \"C:\\\\Users\\\\kahel\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\impeccable.cmd\" context --target lib/features/authentication/presentation/pages/login_page.dart)",
+      "Bash(flutter doctor *)",
+      "Bash(flutter pub *)",
+      "Bash(impeccable.cmd craft *)",
+      "Bash(.claudeskillsimpeccablescriptsimpeccable context *)",
+      "Bash(impeccable context *)",
+      "Bash(C:Userskahel.claudeskillsimpeccablescriptsimpeccable.cmd context *)",
+      "Bash(claude *)",
+      "WebSearch",
+      "PowerShell(npm view *)",
+      "Bash(npm view *)"
     ]
-  }
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"C:\\\\Users\\\\kahel\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\impeccable\" ] || \"C:\\\\Users\\\\kahel\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\impeccable\" hook",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"C:\\\\Users\\\\kahel\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\impeccable\" ] || \"C:\\\\Users\\\\kahel\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\impeccable\" hook",
+            "timeout": 30,
+            "statusMessage": "Design deep pass"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Impeccable design detector: immediate-tier checks after Edit/Write on UI files, full-rule deep pass on Stop."
 }

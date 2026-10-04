@@ -26,7 +26,8 @@ Failure mapFirebaseAuthException(FirebaseAuthException e) {
       return const NoConnectionFailure();
     case 'operation-not-allowed':
       return const UnauthorizedFailure(
-        message: 'Email/password sign-in is not enabled. Enable it in the Firebase console.',
+        message:
+            'Email/password sign-in is not enabled. Enable it in the Firebase console.',
       );
     case 'invalid-action-code':
       return const InvalidCredentialsFailure(

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
 import 'neu_progress.dart';
-import 'neu_shapes.dart';
 
-/// Neumorphic circular icon button — a raised organic plate.
+/// Circular icon button.
 ///
-/// Pressing it dips the plate into the canvas. Works for app-bar actions,
-/// list-item actions, and toolbars.
+/// A bordered circle on the canvas; pressing tints it with the accent. Works
+/// for app-bar actions, list-item actions, and toolbars.
 class NeuIconButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onPressed;
@@ -41,43 +40,57 @@ class _NeuIconButtonState extends State<NeuIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    final button = AnimatedScale(
-      scale: _pressed ? 0.92 : 1,
-      duration: const Duration(milliseconds: 90),
-      curve: Curves.easeOut,
-      child: GestureDetector(
-        onTap: _enabled ? widget.onPressed : null,
-        onTapDown: (_) => _enabled ? setState(() => _pressed = true) : null,
-        onTapUp: (_) => _enabled ? setState(() => _pressed = false) : null,
-        onTapCancel: () => _enabled ? setState(() => _pressed = false) : null,
-        behavior: HitTestBehavior.opaque,
-        child: NeuContainer(
-          borderRadius: widget.size * 1.2,
-          variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
-          color: widget.backgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: widget.size > 20 ? NeuShape.blobSm : BorderRadius.circular(widget.size * 1.2),
-          ),
-          child: SizedBox(
-            width: widget.size * 2,
-            height: widget.size * 2,
-            child: Center(
-              child: widget.isLoading
-                  ? SizedBox(
-                      width: widget.size * 0.8,
-                      height: widget.size * 0.8,
-                      child: NeuCircularProgress(
-                        size: widget.size * 0.8,
-                        strokeWidth: 2,
-                        value: -1,
+    final button = Semantics(
+      button: true,
+      enabled: _enabled,
+      label: widget.tooltip,
+      child: AnimatedScale(
+        scale: _pressed ? NeuTokens.scalePressedSmall : 1,
+        duration: NeuTokens.durationFast,
+        curve: NeuTokens.curveDefault,
+        child: GestureDetector(
+          onTap: _enabled ? widget.onPressed : null,
+          onTapDown: (_) => _enabled ? setState(() => _pressed = true) : null,
+          onTapUp: (_) => _enabled ? setState(() => _pressed = false) : null,
+          onTapCancel: () => _enabled ? setState(() => _pressed = false) : null,
+          behavior: HitTestBehavior.opaque,
+          child: NeuContainer(
+            borderRadius: widget.size * 1.2,
+            variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
+            color:
+                widget.backgroundColor ??
+                (_pressed
+                    ? ThemeColors.primary(context).withValues(alpha: 0.12)
+                    : null),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.size * 1.2),
+            ),
+            borderColor: _pressed
+                ? ThemeColors.primary(context).withValues(alpha: 0.45)
+                : null,
+            borderWidth: _pressed ? NeuTokens.borderWidthFocus : 0,
+            child: SizedBox(
+              // Minimum 48×48 touch target per WCAG 2.5.8
+              width: widget.size * 2 < 48 ? 48 : widget.size * 2,
+              height: widget.size * 2 < 48 ? 48 : widget.size * 2,
+              child: Center(
+                child: widget.isLoading
+                    ? SizedBox(
+                        width: widget.size * 0.8,
+                        height: widget.size * 0.8,
+                        child: NeuCircularProgress(
+                          size: widget.size * 0.8,
+                          strokeWidth: 2,
+                          value: -1,
+                          color: widget.color ?? ThemeColors.primary(context),
+                        ),
+                      )
+                    : Icon(
+                        widget.icon,
+                        size: widget.size,
                         color: widget.color ?? ThemeColors.primary(context),
                       ),
-                    )
-                  : Icon(
-                      widget.icon,
-                      size: widget.size,
-                      color: widget.color ?? ThemeColors.primary(context),
-                    ),
+              ),
             ),
           ),
         ),

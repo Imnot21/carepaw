@@ -6,6 +6,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/features/audit/domain/entities/audit_log.dart';
 import 'package:carepaw/features/audit/presentation/bloc/audit_log_bloc.dart';
@@ -32,16 +34,21 @@ class AdminAuditPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
+          NeuIconButton(
+            icon: Icons.refresh_rounded,
             tooltip: 'Refresh',
             onPressed: () {
               final state = context.read<AuditLogBloc>().state;
-              context.read<AuditLogBloc>().add(AuditLogLoadRequested(
-                    actionFilter: state is AuditLogLoaded ? state.actionFilter : null,
-                    entityTypeFilter:
-                        state is AuditLogLoaded ? state.entityTypeFilter : null,
-                  ));
+              context.read<AuditLogBloc>().add(
+                AuditLogLoadRequested(
+                  actionFilter: state is AuditLogLoaded
+                      ? state.actionFilter
+                      : null,
+                  entityTypeFilter: state is AuditLogLoaded
+                      ? state.entityTypeFilter
+                      : null,
+                ),
+              );
             },
           ),
           const SizedBox(width: 8),
@@ -57,9 +64,15 @@ class AdminAuditPage extends StatelessWidget {
             if (state is AuditLogError) {
               return _AuditErrorView(message: state.failure.message);
             }
-            final entries = state is AuditLogLoaded ? state.entries : const <AuditLog>[];
-            final actionFilter = state is AuditLogLoaded ? state.actionFilter : null;
-            final entityFilter = state is AuditLogLoaded ? state.entityTypeFilter : null;
+            final entries = state is AuditLogLoaded
+                ? state.entries
+                : const <AuditLog>[];
+            final actionFilter = state is AuditLogLoaded
+                ? state.actionFilter
+                : null;
+            final entityFilter = state is AuditLogLoaded
+                ? state.entityTypeFilter
+                : null;
             return _AuditContent(
               entries: entries,
               actionFilter: actionFilter,
@@ -94,21 +107,30 @@ class _AuditErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 40, color: ThemeColors.error(context)),
+            Icon(
+              Icons.error_outline,
+              size: 40,
+              color: ThemeColors.error(context),
+            ),
             const SizedBox(height: 12),
             Text('Could not load audit logs', style: AppTextStyles.titleSmall),
             const SizedBox(height: 6),
-            Text(message,
-                style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
-                textAlign: TextAlign.center),
+            Text(
+              message,
+              style: AppTextStyles.bodySmall.subtleOf(
+                Theme.of(context).brightness,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             NeuButton(
               text: 'Try again',
               variant: NeuButtonVariant.primary,
               size: NeuButtonSize.small,
               icon: Icons.refresh_rounded,
-              onPressed: () =>
-                  context.read<AuditLogBloc>().add(const AuditLogLoadRequested()),
+              onPressed: () => context.read<AuditLogBloc>().add(
+                const AuditLogLoadRequested(),
+              ),
             ),
           ],
         ),
@@ -145,8 +167,9 @@ class _AuditContent extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
             physics: const BouncingScrollPhysics(),
             itemCount: entries.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) => _AuditLogCard(entry: entries[index]),
+            separatorBuilder: (_, _) => const NeuDivider(thickness: 1),
+            itemBuilder: (context, index) =>
+                _AuditLogCard(entry: entries[index]),
           ),
         ),
       ],
@@ -171,8 +194,11 @@ class _AuditEmptyView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 16,
                 padding: const EdgeInsets.all(16),
-                child: Icon(Icons.receipt_long_outlined,
-                    color: ThemeColors.primary(context), size: 40),
+                child: Icon(
+                  Icons.receipt_long_outlined,
+                  color: ThemeColors.primary(context),
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 16),
               Text('No audit entries yet', style: AppTextStyles.titleSmall),
@@ -180,7 +206,9 @@ class _AuditEmptyView extends StatelessWidget {
               Text(
                 'Sensitive operations such as account creation, role changes, and '
                 'activation toggles will appear here automatically.',
-                style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                style: AppTextStyles.bodySmall.subtleOf(
+                  Theme.of(context).brightness,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -205,7 +233,8 @@ class _AuditFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = entries.map((e) => e.action).toSet().toList()..sort();
-    final entityTypes = entries.map((e) => e.entityType).toSet().toList()..sort();
+    final entityTypes = entries.map((e) => e.entityType).toSet().toList()
+      ..sort();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
@@ -222,18 +251,18 @@ class _AuditFilterBar extends StatelessWidget {
                   NeuChip(
                     label: 'All',
                     selected: actionFilter == null,
-                    onTap: () => context
-                        .read<AuditLogBloc>()
-                        .add(const AuditLogActionFilterChanged(null)),
+                    onTap: () => context.read<AuditLogBloc>().add(
+                      const AuditLogActionFilterChanged(null),
+                    ),
                   ),
                   for (final action in actions) ...[
                     const SizedBox(width: 8),
                     NeuChip(
                       label: _actionLabel(action),
                       selected: actionFilter == action,
-                      onTap: () => context
-                          .read<AuditLogBloc>()
-                          .add(AuditLogActionFilterChanged(action)),
+                      onTap: () => context.read<AuditLogBloc>().add(
+                        AuditLogActionFilterChanged(action),
+                      ),
                     ),
                   ],
                 ],
@@ -251,18 +280,18 @@ class _AuditFilterBar extends StatelessWidget {
                   NeuChip(
                     label: 'All',
                     selected: entityFilter == null,
-                    onTap: () => context
-                        .read<AuditLogBloc>()
-                        .add(const AuditLogEntityTypeFilterChanged(null)),
+                    onTap: () => context.read<AuditLogBloc>().add(
+                      const AuditLogEntityTypeFilterChanged(null),
+                    ),
                   ),
                   for (final entity in entityTypes) ...[
                     const SizedBox(width: 8),
                     NeuChip(
                       label: _entityLabel(entity),
                       selected: entityFilter == entity,
-                      onTap: () => context
-                          .read<AuditLogBloc>()
-                          .add(AuditLogEntityTypeFilterChanged(entity)),
+                      onTap: () => context.read<AuditLogBloc>().add(
+                        AuditLogEntityTypeFilterChanged(entity),
+                      ),
                     ),
                   ],
                 ],
@@ -315,7 +344,11 @@ class _AuditLogCard extends StatelessWidget {
               color: actionColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(_actionIcon(entry.action), color: actionColor, size: 22),
+            child: Icon(
+              _actionIcon(entry.action),
+              color: actionColor,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -328,8 +361,9 @@ class _AuditLogCard extends StatelessWidget {
                       child: Text(
                         _actionLabel(entry.action),
                         style: AppTextStyles.titleSmall.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: actionColor),
+                          fontWeight: FontWeight.w700,
+                          color: actionColor,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -337,8 +371,9 @@ class _AuditLogCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       _formatTime(entry.createdAt),
-                      style: AppTextStyles.labelSmall
-                          .copyWith(color: ThemeColors.textSecondary(context)),
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: ThemeColors.textSecondary(context),
+                      ),
                     ),
                   ],
                 ),
@@ -346,7 +381,9 @@ class _AuditLogCard extends StatelessWidget {
                 Text(
                   'User #${entry.userId} on ${_entityLabel(entry.entityType)} '
                   '${entry.entityId}',
-                  style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                  style: AppTextStyles.bodySmall.subtleOf(
+                    Theme.of(context).brightness,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

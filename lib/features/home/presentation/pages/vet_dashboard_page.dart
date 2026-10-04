@@ -5,16 +5,17 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/app/router/routes.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 
-/// Veterinarian Dashboard - Clinical features for veterinarians
-/// Only accessible by VETERINARIAN and ADMIN roles
 class VetDashboardPage extends StatefulWidget {
   const VetDashboardPage({super.key});
 
@@ -62,9 +63,9 @@ class _LoadingView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const NeuCircularProgress(),
-          const SizedBox(height: 16),
+          const SizedBox(height: NeuTokens.spaceMd),
           Text(
-            'Loading...',
+            'Loading\u2026',
             style: AppTextStyles.bodyMedium.subtleOf(
               Theme.of(context).brightness,
             ),
@@ -82,49 +83,42 @@ class _AccessDeniedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(NeuTokens.pagePadding),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NeuContainer(
-              borderRadius: 80,
-              padding: const EdgeInsets.all(28),
-              color: AppColors.error,
-              boxShadow: NeuShadow.color(
-                context,
-                AppColors.error,
-                blur: 24,
-                opacity: 0.32,
-              ),
-              child: const Icon(
+              variant: NeuVariant.inset,
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(NeuTokens.spaceLg),
+              child: Icon(
                 Icons.block_rounded,
-                size: 72,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Access Denied',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w600,
+                size: 48,
                 color: ThemeColors.error(context),
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: NeuTokens.spaceLg),
             Text(
-              'This area is for veterinarians only.\n\nUse the appropriate dashboard for your role.',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: ThemeColors.textSecondary(context),
+              'Access denied',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: NeuTokens.spaceXs),
+            Text(
+              'This area is for veterinarians only.',
+              style: AppTextStyles.bodyMedium.subtleOf(
+                Theme.of(context).brightness,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: NeuTokens.spaceMd),
             NeuButton(
-              text: 'Go Back',
-              onPressed: () => context.pop(),
+              text: 'Go back',
               icon: Icons.arrow_back_rounded,
               variant: NeuButtonVariant.secondary,
+              onPressed: () => context.pop(),
               expanded: true,
             ),
           ],
@@ -134,7 +128,8 @@ class _AccessDeniedView extends StatelessWidget {
   }
 }
 
-/// Main veterinarian dashboard content
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _VetDashboardContent extends StatelessWidget {
   final dynamic user;
 
@@ -148,25 +143,24 @@ class _VetDashboardContent extends StatelessWidget {
 
         return CustomScrollView(
           slivers: [
-            // App bar with greeting
             SliverAppBar(
               floating: true,
               snap: true,
               backgroundColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
+              titleSpacing: NeuTokens.pagePadding,
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Good ${_getGreeting()}, Dr. $userName!',
+                    'Good ${_getGreeting()}, Dr. $userName',
                     style: AppTextStyles.titleLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'Veterinarian Dashboard',
+                    'Veterinarian dashboard',
                     style: AppTextStyles.bodySmall.subtleOf(
                       Theme.of(context).brightness,
                     ),
@@ -174,28 +168,28 @@ class _VetDashboardContent extends StatelessWidget {
                 ],
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () => context.push(Routes.notifications),
+                NeuIconButton(
+                  icon: Icons.notifications_none_rounded,
                   tooltip: 'Notifications',
+                  onPressed: () => context.push(Routes.notifications),
                 ),
+                const SizedBox(width: NeuTokens.spaceXs),
               ],
             ),
-
-            // Main content
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(
+                  NeuTokens.pagePadding,
+                  NeuTokens.spaceMd,
+                  NeuTokens.pagePadding,
+                  NeuTokens.spaceXl,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Quick Actions
-                    _VetQuickActionsSection(),
-                    const SizedBox(height: 24),
-
-                    // Quick Links
-                    _VetQuickLinksSection(),
-                    const SizedBox(height: 24),
+                    const _VetQuickActionsSection(),
+                    SizedBox(height: NeuTokens.sectionGap),
+                    const _VetQuickLinksSection(),
                   ],
                 ),
               ),
@@ -214,75 +208,70 @@ class _VetDashboardContent extends StatelessWidget {
   }
 }
 
-/// Quick actions for veterinarian
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _VetQuickActionsSection extends StatelessWidget {
+  const _VetQuickActionsSection();
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Clinical Actions',
+          'Clinical actions',
           style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: NeuTokens.tightGap),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 4,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisSpacing: NeuTokens.tightGap,
+          mainAxisSpacing: NeuTokens.tightGap,
           childAspectRatio: 0.9,
           children: [
             _VetActionCard(
               icon: Icons.note_add_outlined,
-              label: 'New\nVisit Record',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'New Visit Record'),
+              label: 'New\nvisit record',
+              onTap: () => _showComingSoon(context, 'New visit record'),
             ),
             _VetActionCard(
               icon: Icons.medication_outlined,
-              label: 'Prescribe\nMedication',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'Prescribe Medication'),
+              label: 'Prescribe\nmedication',
+              onTap: () => _showComingSoon(context, 'Prescribe medication'),
             ),
             _VetActionCard(
               icon: Icons.vaccines_outlined,
-              label: 'Add\nVaccination',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'Add Vaccination'),
+              label: 'Add\nvaccination',
+              onTap: () => _showComingSoon(context, 'Add vaccination'),
             ),
             _VetActionCard(
               icon: Icons.science_outlined,
-              label: 'Order\nLab Tests',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'Order Lab Tests'),
+              label: 'Order\nlab tests',
+              onTap: () => _showComingSoon(context, 'Order lab tests'),
             ),
             _VetActionCard(
-              icon: Icons.note_add_outlined,
-              label: 'Clinical\nNotes',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'Clinical Notes'),
+              icon: Icons.note_outlined,
+              label: 'Clinical\nnotes',
+              onTap: () => _showComingSoon(context, 'Clinical notes'),
             ),
             _VetActionCard(
               icon: Icons.attach_file_outlined,
-              label: 'Attach\nResults',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'Attach Results'),
+              label: 'Attach\nresults',
+              onTap: () => _showComingSoon(context, 'Attach results'),
             ),
             _VetActionCard(
               icon: Icons.history_outlined,
-              label: 'Patient\nHistory',
-              color: ThemeColors.primary(context),
+              label: 'Patient\nhistory',
               onTap: () => context.push(Routes.vetPatients),
             ),
             _VetActionCard(
               icon: Icons.print_outlined,
-              label: 'Generate\nSummary',
-              color: ThemeColors.primary(context),
-              onTap: () => _showComingSoon(context, 'Generate Summary'),
+              label: 'Generate\nsummary',
+              onTap: () => _showComingSoon(context, 'Generate summary'),
             ),
           ],
         ),
@@ -291,48 +280,37 @@ class _VetQuickActionsSection extends StatelessWidget {
   }
 
   void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    NeuToast.info(context, '$feature coming soon');
   }
 }
 
 class _VetActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
   final VoidCallback onTap;
 
   const _VetActionCard({
     required this.icon,
     required this.label,
-    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final accent = ThemeColors.primary(context);
     return NeuCard(
       onTap: onTap,
-      borderRadius: 16,
-      padding: const EdgeInsets.all(12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 28),
+          NeuContainer(
+            variant: NeuVariant.pressed,
+            borderRadius: NeuTokens.radiusSm,
+            padding: const EdgeInsets.all(NeuTokens.spaceXs),
+            child: Icon(icon, color: accent, size: NeuTokens.iconLg - 4),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: NeuTokens.spaceXs),
           Flexible(
             child: Text(
               label,
@@ -341,7 +319,7 @@ class _VetActionCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.labelSmall.copyWith(
                 fontWeight: FontWeight.w600,
-                color: color,
+                color: accent,
                 height: 1.1,
               ),
             ),
@@ -352,8 +330,11 @@ class _VetActionCard extends StatelessWidget {
   }
 }
 
-/// Quick links for vet
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _VetQuickLinksSection extends StatelessWidget {
+  const _VetQuickLinksSection();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -362,12 +343,11 @@ class _VetQuickLinksSection extends StatelessWidget {
         Text(
           'More',
           style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: NeuTokens.tightGap),
         NeuCard(
-          borderRadius: 20,
           padding: EdgeInsets.zero,
           child: Column(
             children: [
@@ -377,19 +357,19 @@ class _VetQuickLinksSection extends StatelessWidget {
                 subtitle: 'Lab results & alerts',
                 onTap: () => context.push(Routes.notifications),
               ),
-              const Divider(height: 1, indent: 56),
+              NeuDivider(indent: 56),
               _LinkTile(
                 icon: Icons.medical_services_outlined,
-                title: 'Medical Records',
+                title: 'Medical records',
                 subtitle: 'Full patient history access',
                 onTap: () => context.push(Routes.medicalRecords),
               ),
-              const Divider(height: 1, indent: 56),
+              NeuDivider(indent: 56),
               _LinkTile(
                 icon: Icons.inventory_2_outlined,
-                title: 'Medicine Catalog',
+                title: 'Medicine catalog',
                 subtitle: 'Available medications & dosages',
-                onTap: () => _showComingSoon(context, 'Medicine Catalog'),
+                onTap: () => _showComingSoon(context, 'Medicine catalog'),
               ),
             ],
           ),
@@ -399,12 +379,7 @@ class _VetQuickLinksSection extends StatelessWidget {
   }
 
   void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    NeuToast.info(context, '$feature coming soon');
   }
 }
 
@@ -423,31 +398,49 @@ class _LinkTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Material(
-      color: Colors.transparent,
-      child: ListTile(
-        leading: NeuContainer(
-          borderRadius: 12,
-          padding: const EdgeInsets.all(8),
-          color: isDark
-              ? AppColors.primary.withValues(alpha: 0.16)
-              : AppColors.primaryTint,
-          child: Icon(icon, color: ThemeColors.primary(context), size: 22),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: NeuTokens.spaceMd,
+          vertical: NeuTokens.spaceSm + 2,
         ),
-        title: Text(
-          title,
-          style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+        child: Row(
+          children: [
+            NeuContainer(
+              variant: NeuVariant.pressed,
+              borderRadius: NeuTokens.radiusSm,
+              padding: const EdgeInsets.all(NeuTokens.spaceXs),
+              child: Icon(
+                icon,
+                color: ThemeColors.primary(context),
+                size: NeuTokens.iconSm,
+              ),
+            ),
+            const SizedBox(width: NeuTokens.tightGap),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.bodySmall.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: ThemeColors.textTertiary(context)),
+          ],
         ),
-        subtitle: Text(
-          subtitle,
-          style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
-        ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: ThemeColors.textTertiary(context),
-        ),
-        onTap: onTap,
       ),
     );
   }

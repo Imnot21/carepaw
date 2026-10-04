@@ -10,6 +10,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 
 /// Page showing detailed view of a medical record with premium design.
 class MedicalRecordDetailPage extends StatelessWidget {
@@ -30,9 +32,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           record.recordType.displayName,
-          style: AppTextStyles.titleLarge.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -69,9 +69,17 @@ class MedicalRecordDetailPage extends StatelessWidget {
                   // Type badge
                   NeuContainer(
                     borderRadius: 30,
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 12,
+                    ),
                     color: typeInfo.color,
-                    boxShadow: NeuShadow.color(context, typeInfo.color, blur: 16, opacity: 0.28),
+                    boxShadow: NeuShadow.color(
+                      context,
+                      typeInfo.color,
+                      blur: 16,
+                      opacity: 0.28,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -160,56 +168,68 @@ class MedicalRecordDetailPage extends StatelessWidget {
     final sections = <_DetailSection>[];
 
     if (record.description != null && record.description!.isNotEmpty) {
-      sections.add(_DetailSection(
-        title: 'Description',
-        icon: Icons.description_outlined,
-        color: ThemeColors.primary(context),
-        content: record.description!,
-      ));
+      sections.add(
+        _DetailSection(
+          title: 'Description',
+          icon: Icons.description_outlined,
+          color: ThemeColors.primary(context),
+          content: record.description!,
+        ),
+      );
     }
 
     if (record.diagnosis != null && record.diagnosis!.isNotEmpty) {
-      sections.add(_DetailSection(
-        title: 'Diagnosis',
-        icon: Icons.medical_services_outlined,
-        color: ThemeColors.info(context),
-        content: record.diagnosis!,
-      ));
+      sections.add(
+        _DetailSection(
+          title: 'Diagnosis',
+          icon: Icons.medical_services_outlined,
+          color: ThemeColors.info(context),
+          content: record.diagnosis!,
+        ),
+      );
     }
 
     if (record.treatment != null && record.treatment!.isNotEmpty) {
-      sections.add(_DetailSection(
-        title: 'Treatment',
-        icon: Icons.healing_outlined,
-        color: AppColors.tertiary,
-        content: record.treatment!,
-      ));
+      sections.add(
+        _DetailSection(
+          title: 'Treatment',
+          icon: Icons.healing_outlined,
+          color: AppColors.tertiary,
+          content: record.treatment!,
+        ),
+      );
     }
 
     if (record.medications != null && record.medications!.isNotEmpty) {
-      sections.add(_DetailSection(
-        title: 'Medications',
-        icon: Icons.medication_outlined,
-        color: AppColors.quaternary,
-        content: record.medications!,
-      ));
+      sections.add(
+        _DetailSection(
+          title: 'Medications',
+          icon: Icons.medication_outlined,
+          color: AppColors.quaternary,
+          content: record.medications!,
+        ),
+      );
     }
 
     if (record.attachments != null && record.attachments!.isNotEmpty) {
-      sections.add(_DetailSection(
-        title: 'Attachments',
-        icon: Icons.attachment_outlined,
-        color: ThemeColors.textSecondary(context),
-        content: record.attachments!,
-      ));
+      sections.add(
+        _DetailSection(
+          title: 'Attachments',
+          icon: Icons.attachment_outlined,
+          color: ThemeColors.textSecondary(context),
+          content: record.attachments!,
+        ),
+      );
     }
 
-    sections.add(_DetailSection(
-      title: 'Record Information',
-      icon: Icons.info_outline,
-      color: ThemeColors.textTertiary(context),
-      content: _buildMetadata(),
-    ));
+    sections.add(
+      _DetailSection(
+        title: 'Record Information',
+        icon: Icons.info_outline,
+        color: ThemeColors.textTertiary(context),
+        content: _buildMetadata(),
+      ),
+    );
 
     return sections;
   }
@@ -228,17 +248,55 @@ class MedicalRecordDetailPage extends StatelessWidget {
 
   String _formatFullDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year} at '
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   void _navigateToEdit(BuildContext context) {
-    // TODO: Implement edit navigation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit functionality coming soon')),
+    NeuBottomSheet.show(
+      context: context,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Edit Record',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Edit functionality coming soon',
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            NeuButton(
+              text: 'Close',
+              onPressed: () => context.pop(),
+              variant: NeuButtonVariant.primary,
+              icon: Icons.check_rounded,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -285,12 +343,7 @@ class _SectionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          Text(
-            content,
-            style: AppTextStyles.bodyLarge.copyWith(
-              height: 1.6,
-            ),
-          ),
+          Text(content, style: AppTextStyles.bodyLarge.copyWith(height: 1.6)),
         ],
       ),
     );

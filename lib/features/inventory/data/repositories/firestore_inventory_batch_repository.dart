@@ -21,9 +21,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
     required FirebaseFirestore firestore,
     required FirestoreIdSequence inventoryBatchIdSequence,
     required InventoryItemRepository itemRepository,
-  })  : _firestore = firestore,
-        _idSequence = inventoryBatchIdSequence,
-        _itemRepository = itemRepository;
+  }) : _firestore = firestore,
+       _idSequence = inventoryBatchIdSequence,
+       _itemRepository = itemRepository;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -37,7 +37,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
   @override
   Future<InventoryBatch?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : InventoryBatchDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : InventoryBatchDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -54,7 +56,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _batches.doc('${toWrite.id}').set(InventoryBatchDocMapper.toData(toWrite));
+    await _batches
+        .doc('${toWrite.id}')
+        .set(InventoryBatchDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -74,7 +78,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
 
   @override
   Future<void> restore(int id) {
-    throw UnsupportedError('Inventory batches cannot be restored after deletion');
+    throw UnsupportedError(
+      'Inventory batches cannot be restored after deletion',
+    );
   }
 
   @override
@@ -89,22 +95,26 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return InventoryBatchDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return InventoryBatchDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<InventoryBatch>> watchAll() {
-    return _batches.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => InventoryBatchDocMapper.fromData(doc.data()))
-        .toList());
+    return _batches.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => InventoryBatchDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<InventoryBatch, int> ============
 
   @override
-  Future<PaginatedResult<InventoryBatch>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<InventoryBatch>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -113,7 +123,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
 
   @override
   Future<List<InventoryBatch>> findByItem(int itemId) async {
-    final snapshot = await _batches.where(FirestoreSchema.inventoryId, isEqualTo: itemId).get();
+    final snapshot = await _batches
+        .where(FirestoreSchema.inventoryId, isEqualTo: itemId)
+        .get();
     return snapshot.docs
         .map((doc) => InventoryBatchDocMapper.fromData(doc.data()))
         .toList();
@@ -134,7 +146,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
   Future<List<InventoryBatch>> findExpired() async {
     final now = DateTime.now();
     final all = await findAll();
-    return all.where((b) => b.expiresAt != null && b.expiresAt!.isBefore(now)).toList();
+    return all
+        .where((b) => b.expiresAt != null && b.expiresAt!.isBefore(now))
+        .toList();
   }
 
   @override
@@ -154,7 +168,9 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
     for (final batchEntity in itemBatches) {
       if (remaining <= 0) break;
       if (batchEntity.quantity <= 0) continue;
-      final take = remaining > batchEntity.quantity ? batchEntity.quantity : remaining;
+      final take = remaining > batchEntity.quantity
+          ? batchEntity.quantity
+          : remaining;
       batch.update(_batches.doc('${batchEntity.id}'), {
         FirestoreSchema.quantity: batchEntity.quantity - take,
         FirestoreSchema.updatedAt: DateTime.now(),
@@ -167,7 +183,10 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
       // Keep the aggregate item stock in sync.
       final item = await _itemRepository.findById(itemId);
       if (item != null) {
-        await _itemRepository.updateStock(itemId, (item.currentStock - consumed).clamp(0, double.infinity));
+        await _itemRepository.updateStock(
+          itemId,
+          (item.currentStock - consumed).clamp(0, double.infinity),
+        );
       }
     }
     return consumed;
@@ -182,18 +201,29 @@ class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<InventoryBatch> createWithSync(InventoryBatch entity, String tableName) async => save(entity);
+  Future<InventoryBatch> createWithSync(
+    InventoryBatch entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<InventoryBatch> updateWithSync(InventoryBatch entity, String tableName) async => save(entity);
+  Future<InventoryBatch> updateWithSync(
+    InventoryBatch entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => delete(id);
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _batches.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _batches
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

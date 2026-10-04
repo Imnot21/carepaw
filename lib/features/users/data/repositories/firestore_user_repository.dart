@@ -15,7 +15,8 @@ import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/features/audit/domain/entities/audit_log.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart' as domain;
+import 'package:carepaw/features/authentication/domain/entities/user.dart'
+    as domain;
 
 /// User repository implementation - data layer (Firestore-backed).
 ///
@@ -39,14 +40,17 @@ class FirestoreUserRepository implements UserRepository {
        _firebaseAuth = firebaseAuth,
        _userIdSequence = userIdSequence;
 
-  CollectionReference<Map<String, dynamic>> get _users => _firestore
-      .collection(FirestoreSchema.users);
+  CollectionReference<Map<String, dynamic>> get _users =>
+      _firestore.collection(FirestoreSchema.users);
 
   // ============ BaseRepository<User, int> ============
 
   @override
   Future<domain.User?> findById(int id) async {
-    final snapshot = await _users.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+    final snapshot = await _users
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     if (snapshot.docs.isEmpty) {
       return null;
     }
@@ -56,10 +60,7 @@ class FirestoreUserRepository implements UserRepository {
   @override
   Future<List<domain.User>> findAll() async {
     final snapshot = await _users.get();
-    return snapshot.docs
-        .map(_docToUser)
-        .where((u) => u.isActive)
-        .toList();
+    return snapshot.docs.map(_docToUser).where((u) => u.isActive).toList();
   }
 
   @override
@@ -119,9 +120,9 @@ class FirestoreUserRepository implements UserRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return _docToUser(snapshot.docs.first);
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return _docToUser(snapshot.docs.first);
+        });
   }
 
   @override
@@ -175,28 +176,34 @@ class FirestoreUserRepository implements UserRepository {
       if (actorId == 0) return;
 
       final auditRepository = getIt<AuditLogRepository>();
-      await auditRepository.write(AuditLog(
-        userId: actorId,
-        action: action,
-        entityType: 'USER',
-        entityId: '${targetUser.id ?? ''}',
-        oldValues: oldValues,
-        newValues: newValues,
-        createdAt: DateTime.now(),
-      ));
+      await auditRepository.write(
+        AuditLog(
+          userId: actorId,
+          action: action,
+          entityType: 'USER',
+          entityId: '${targetUser.id ?? ''}',
+          oldValues: oldValues,
+          newValues: newValues,
+          createdAt: DateTime.now(),
+        ),
+      );
     } catch (_) {
       // Best-effort: ignore audit write failures.
     }
   }
 
   Future<int?> _findAppIdByFirebaseUid(String firebaseUid) async {
-    final snapshot = await _users.where(FirestoreSchema.firebaseUid, isEqualTo: firebaseUid).limit(1).get();
+    final snapshot = await _users
+        .where(FirestoreSchema.firebaseUid, isEqualTo: firebaseUid)
+        .limit(1)
+        .get();
     if (snapshot.docs.isEmpty) return null;
     return (snapshot.docs.first.data()[FirestoreSchema.id] as num?)?.toInt();
   }
 
   @override
-  Future<List<domain.User>> findVeterinarians() => findByRole(domain.UserRole.veterinarian);
+  Future<List<domain.User>> findVeterinarians() =>
+      findByRole(domain.UserRole.veterinarian);
 
   @override
   Future<List<domain.User>> search(String query) async {
@@ -205,10 +212,12 @@ class FirestoreUserRepository implements UserRepository {
     final snapshot = await _users.get();
     return snapshot.docs
         .map(_docToUser)
-        .where((u) =>
-            u.isActive &&
-            (u.fullName.toLowerCase().contains(normalized) ||
-                u.email.toLowerCase().contains(normalized)))
+        .where(
+          (u) =>
+              u.isActive &&
+              (u.fullName.toLowerCase().contains(normalized) ||
+                  u.email.toLowerCase().contains(normalized)),
+        )
         .toList();
   }
 
@@ -220,7 +229,8 @@ class FirestoreUserRepository implements UserRepository {
   }
 
   @override
-  Future<domain.User> updateProfile(int userId, {
+  Future<domain.User> updateProfile(
+    int userId, {
     String? fullName,
     String? phone,
     String? avatarUrl,
@@ -245,10 +255,7 @@ class FirestoreUserRepository implements UserRepository {
     if (existing == null) {
       throw Exception('User not found');
     }
-    final updated = existing.copyWith(
-      role: newRole,
-      updatedAt: DateTime.now(),
-    );
+    final updated = existing.copyWith(role: newRole, updatedAt: DateTime.now());
     final oldValues = <String, dynamic>{'role': existing.role.value};
     final newValues = <String, dynamic>{'role': newRole.value};
     await save(updated);
@@ -345,29 +352,37 @@ class FirestoreUserRepository implements UserRepository {
             firestoreDeleted = true;
             break;
           }
-          if (i < 2) { // Don't wait after the last attempt
+          if (i < 2) {
+            // Don't wait after the last attempt
             await Future.delayed(const Duration(milliseconds: 500));
           }
         }
 
         if (!firestoreDeleted) {
-          throw ServerFailure(message: 'Deletion failed - user still exists in Firestore after verification');
+          throw ServerFailure(
+            message:
+                'Deletion failed - user still exists in Firestore after verification',
+          );
         }
 
         // NOTE: Auth verification cannot be performed from the client SDK.
         // The Cloud Function is responsible for deleting the user from Auth.
       } on SocketException {
         throw const NoConnectionFailure(
-          message: 'Could not reach the server. Check your connection and try again.',
+          message:
+              'Could not reach the server. Check your connection and try again.',
         );
       } on TimeoutException {
         throw const TimeoutFailure(
-          message: 'Request timed out. Please check your connection and try again.',
+          message:
+              'Request timed out. Please check your connection and try again.',
         );
       } on HttpException catch (e) {
         throw ServerFailure(message: 'Network error: ${e.message}');
       } catch (e) {
-        throw ServerFailure(message: 'Unexpected error during deletion: ${e.toString()}');
+        throw ServerFailure(
+          message: 'Unexpected error during deletion: ${e.toString()}',
+        );
       }
     } on FirebaseAuthException catch (e) {
       throw mapFirebaseAuthException(e);
@@ -412,7 +427,9 @@ class FirestoreUserRepository implements UserRepository {
 
       // Check if this user should be an admin (first user or email domain match with first user)
       final bool shouldBeAdmin = await _shouldBeAdmin(email);
-      final domain.UserRole effectiveRole = shouldBeAdmin ? domain.UserRole.admin : role;
+      final domain.UserRole effectiveRole = shouldBeAdmin
+          ? domain.UserRole.admin
+          : role;
 
       final newId = await _userIdSequence.next();
       final now = DateTime.now();
@@ -440,7 +457,10 @@ class FirestoreUserRepository implements UserRepository {
       await _writeAudit(
         action: 'USER_CREATE',
         targetUser: created,
-        newValues: <String, dynamic>{'role': effectiveRole.value, 'email': email},
+        newValues: <String, dynamic>{
+          'role': effectiveRole.value,
+          'email': email,
+        },
       );
       return created;
     } on Failure {
@@ -455,12 +475,16 @@ class FirestoreUserRepository implements UserRepository {
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<domain.User> createWithSync(domain.User entity, String tableName) async =>
-      save(entity);
+  Future<domain.User> createWithSync(
+    domain.User entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<domain.User> updateWithSync(domain.User entity, String tableName) async =>
-      save(entity);
+  Future<domain.User> updateWithSync(
+    domain.User entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => softDelete(id);
@@ -472,8 +496,13 @@ class FirestoreUserRepository implements UserRepository {
   }
 
   /// Find the first Firestore document whose app-facing int `id` matches.
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _users.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _users
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.first;
   }
@@ -517,7 +546,9 @@ class FirestoreUserRepository implements UserRepository {
     final firstUserData = firstUserSnapshot.docs.first.data();
     final firstUserEmail = firstUserData[FirestoreSchema.email] as String?;
 
-    if (firstUserEmail == null || firstUserEmail.isEmpty || !firstUserEmail.contains('@')) {
+    if (firstUserEmail == null ||
+        firstUserEmail.isEmpty ||
+        !firstUserEmail.contains('@')) {
       // First user has no valid email
       return false;
     }
@@ -548,7 +579,8 @@ class FirestoreUserRepository implements UserRepository {
         return const NotFoundFailure(message: 'User not found.');
       case HttpStatus.conflict:
         return const UnexpectedFailure(
-          message: 'Cannot delete this account. It may be your own account '
+          message:
+              'Cannot delete this account. It may be your own account '
               'or the last administrator.',
         );
       default:

@@ -2,8 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
-import 'package:carepaw/features/users/presentation/bloc/user_management_event.dart' as events;
-import 'package:carepaw/features/users/presentation/bloc/user_management_state.dart' as states;
+import 'package:carepaw/features/users/presentation/bloc/user_management_event.dart'
+    as events;
+import 'package:carepaw/features/users/presentation/bloc/user_management_state.dart'
+    as states;
 import 'package:carepaw/core/errors/failures.dart';
 
 /// User management BLoC for the admin's Users page.
@@ -11,12 +13,13 @@ import 'package:carepaw/core/errors/failures.dart';
 /// Handles loading the staff/veterinarian list, creating new accounts
 /// (via the Firestore-backed [UserRepository.createAccount]), changing roles,
 /// and toggling active status. Keeps business logic out of the widgets.
-class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserManagementState> {
+class UserManagementBloc
+    extends Bloc<events.UserManagementEvent, states.UserManagementState> {
   final UserRepository _userRepository;
 
   UserManagementBloc({UserRepository? userRepository})
-      : _userRepository = userRepository ?? getIt<UserRepository>(),
-        super(const states.UserManagementInitial()) {
+    : _userRepository = userRepository ?? getIt<UserRepository>(),
+      super(const states.UserManagementInitial()) {
     on<events.UserManagementLoadRequested>(_onLoadRequested);
     on<events.UserManagementCreateRequested>(_onCreateRequested);
     on<events.UserManagementChangeRoleRequested>(_onChangeRoleRequested);
@@ -37,7 +40,9 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString())));
+      emit(
+        states.UserManagementError(UnexpectedFailure(message: e.toString())),
+      );
     }
   }
 
@@ -67,15 +72,22 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
         phone: event.phone?.trim(),
         role: event.role,
       );
-      emit(const states.UserManagementActionSuccess(
-        'Account created. The user can now sign in with these credentials.',
-      ));
+      emit(
+        const states.UserManagementActionSuccess(
+          'Account created. The user can now sign in with these credentials.',
+        ),
+      );
       // Refresh the list to include the new account.
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, _currentUsers()));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), _currentUsers()));
+      emit(
+        states.UserManagementError(
+          UnexpectedFailure(message: e.toString()),
+          _currentUsers(),
+        ),
+      );
     }
   }
 
@@ -90,14 +102,21 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     }
     try {
       await _userRepository.changeRole(event.userId, event.newRole);
-      emit(states.UserManagementActionSuccess(
-        'Role updated to ${event.newRole.displayName}.',
-      ));
+      emit(
+        states.UserManagementActionSuccess(
+          'Role updated to ${event.newRole.displayName}.',
+        ),
+      );
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), prev));
+      emit(
+        states.UserManagementError(
+          UnexpectedFailure(message: e.toString()),
+          prev,
+        ),
+      );
     }
   }
 
@@ -112,14 +131,21 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     }
     try {
       await _userRepository.setActive(event.userId, event.isActive);
-      emit(states.UserManagementActionSuccess(
-        event.isActive ? 'User re-activated.' : 'User de-activated.',
-      ));
+      emit(
+        states.UserManagementActionSuccess(
+          event.isActive ? 'User re-activated.' : 'User de-activated.',
+        ),
+      );
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), prev));
+      emit(
+        states.UserManagementError(
+          UnexpectedFailure(message: e.toString()),
+          prev,
+        ),
+      );
     }
   }
 
@@ -134,14 +160,21 @@ class UserManagementBloc extends Bloc<events.UserManagementEvent, states.UserMan
     }
     try {
       await _userRepository.deleteUser(event.userId);
-      emit(const states.UserManagementActionSuccess(
-        'Account permanently deleted. The email is now free to be re-created.',
-      ));
+      emit(
+        const states.UserManagementActionSuccess(
+          'Account permanently deleted. The email is now free to be re-created.',
+        ),
+      );
       add(const events.UserManagementLoadRequested());
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
-      emit(states.UserManagementError(UnexpectedFailure(message: e.toString()), prev));
+      emit(
+        states.UserManagementError(
+          UnexpectedFailure(message: e.toString()),
+          prev,
+        ),
+      );
     }
   }
 }

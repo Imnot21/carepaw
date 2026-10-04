@@ -41,7 +41,13 @@ class AppointmentLoaded extends AppointmentState {
   });
 
   @override
-  List<Object?> get props => [appointments, upcomingAppointments, pastAppointments, upcomingWithPetDetails, pastWithPetDetails];
+  List<Object?> get props => [
+    appointments,
+    upcomingAppointments,
+    pastAppointments,
+    upcomingWithPetDetails,
+    pastWithPetDetails,
+  ];
 
   /// Get appointments grouped by status for UI
   Map<AppointmentStatus, List<Appointment>> get byStatus {

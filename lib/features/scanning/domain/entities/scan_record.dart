@@ -38,22 +38,23 @@ class ScanRecord extends Equatable {
   bool get isRejected => status == ScanStatus.rejected;
 
   /// Check if scan has high confidence
-  bool get hasHighConfidence => confidenceScore != null && confidenceScore! >= 0.8;
+  bool get hasHighConfidence =>
+      confidenceScore != null && confidenceScore! >= 0.8;
 
   @override
   List<Object?> get props => [
-        id,
-        scanType,
-        imagePath,
-        rawOcrText,
-        extractedData,
-        confidenceScore,
-        status,
-        confirmedBy,
-        confirmedAt,
-        corrections,
-        createdAt,
-      ];
+    id,
+    scanType,
+    imagePath,
+    rawOcrText,
+    extractedData,
+    confidenceScore,
+    status,
+    confirmedBy,
+    confirmedAt,
+    corrections,
+    createdAt,
+  ];
 
   ScanRecord copyWith({
     int? id,

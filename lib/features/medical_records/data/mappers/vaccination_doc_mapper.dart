@@ -14,14 +14,23 @@ class VaccinationDocMapper {
     return Vaccination(
       id: data[FirestoreSchema.id] as int?,
       petId: (data[FirestoreSchema.petId] as num?)?.toInt() ?? 0,
-      veterinarianId: (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
+      veterinarianId:
+          (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
       vaccineName: (data[FirestoreSchema.vaccineName] as String?) ?? '',
       manufacturer: data[FirestoreSchema.manufacturer] as String?,
       batchNumber: data[FirestoreSchema.batchNumber] as String?,
-      administeredAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.administeredAt]) ?? DateTime.now(),
-      nextDueAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.nextDueAt]),
+      administeredAt:
+          DateFieldCodec.fromFirestoreDate(
+            data[FirestoreSchema.administeredAt],
+          ) ??
+          DateTime.now(),
+      nextDueAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.nextDueAt],
+      ),
       notes: data[FirestoreSchema.notes] as String?,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -34,10 +43,16 @@ class VaccinationDocMapper {
       FirestoreSchema.vaccineName: vaccination.vaccineName,
       FirestoreSchema.manufacturer: vaccination.manufacturer,
       FirestoreSchema.batchNumber: vaccination.batchNumber,
-      FirestoreSchema.administeredAt: DateFieldCodec.toFirestoreDate(vaccination.administeredAt),
-      FirestoreSchema.nextDueAt: DateFieldCodec.toFirestoreDate(vaccination.nextDueAt),
+      FirestoreSchema.administeredAt: DateFieldCodec.toFirestoreDate(
+        vaccination.administeredAt,
+      ),
+      FirestoreSchema.nextDueAt: DateFieldCodec.toFirestoreDate(
+        vaccination.nextDueAt,
+      ),
       FirestoreSchema.notes: vaccination.notes,
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(vaccination.createdAt),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        vaccination.createdAt,
+      ),
     };
   }
 }

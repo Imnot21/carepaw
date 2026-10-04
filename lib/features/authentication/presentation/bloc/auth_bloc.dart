@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
-import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart' as events;
-import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart' as states;
+import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart'
+    as events;
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart'
+    as states;
 import 'package:carepaw/core/errors/failures.dart';
 
 /// Authentication BLoC for managing auth state.
@@ -12,8 +14,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
   final AuthRepository _authRepository;
 
   AuthBloc({required AuthRepository authRepository})
-      : _authRepository = authRepository,
-        super(const states.AuthInitial()) {
+    : _authRepository = authRepository,
+      super(const states.AuthInitial()) {
     on<events.AuthLoginRequested>(_onLoginRequested);
     on<events.AuthRegisterRequested>(_onRegisterRequested);
     on<events.AuthLogoutRequested>(_onLogoutRequested);
@@ -191,8 +193,12 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     emit(const states.AuthLoading());
     // TODO: Implement biometric authentication
     // For now, emit error
-    emit(states.AuthError(
-      UnexpectedFailure(message: 'Biometric authentication not yet implemented'),
-    ));
+    emit(
+      states.AuthError(
+        UnexpectedFailure(
+          message: 'Biometric authentication not yet implemented',
+        ),
+      ),
+    );
   }
 }

@@ -47,17 +47,17 @@ class Vaccination extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        petId,
-        veterinarianId,
-        vaccineName,
-        manufacturer,
-        batchNumber,
-        administeredAt,
-        nextDueAt,
-        notes,
-        createdAt,
-      ];
+    id,
+    petId,
+    veterinarianId,
+    vaccineName,
+    manufacturer,
+    batchNumber,
+    administeredAt,
+    nextDueAt,
+    notes,
+    createdAt,
+  ];
 
   Vaccination copyWith({
     int? id,

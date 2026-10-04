@@ -9,6 +9,7 @@ import 'package:carepaw/features/scanning/presentation/pages/scan_detail_page.da
 import 'package:carepaw/features/scanning/presentation/pages/scan_camera_page.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
@@ -20,7 +21,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
-/// Scan list page with neumorphic design
+/// Scan list page with the CarePaw surface system
 class ScanListPage extends StatefulWidget {
   const ScanListPage({super.key});
 
@@ -55,7 +56,8 @@ class _ScanListPageState extends State<ScanListPage>
 
         // Check if user is vet, staff, or admin - only these roles can scan/process OCR
         final user = authState.user;
-        final isVetOrStaff = user.role == UserRole.veterinarian ||
+        final isVetOrStaff =
+            user.role == UserRole.veterinarian ||
             user.role == UserRole.staff ||
             user.role == UserRole.admin;
 
@@ -66,11 +68,7 @@ class _ScanListPageState extends State<ScanListPage>
         return Scaffold(
           backgroundColor: ThemeColors.background(context),
           body: CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              _buildTabBar(),
-              _buildTabContent(),
-            ],
+            slivers: [_buildAppBar(), _buildTabBar(), _buildTabContent()],
           ),
           floatingActionButton: NeuButton(
             text: 'New Scan',
@@ -132,14 +130,7 @@ class _ScanListPageState extends State<ScanListPage>
       pinned: true,
       delegate: _ScanTabBarDelegate(
         tabController: _tabController,
-        tabs: [
-          const Tab(text: 'All'),
-          const Tab(text: 'Receipts'),
-          const Tab(text: 'Medicine'),
-          const Tab(text: 'Pending'),
-          const Tab(text: 'Confirmed'),
-        ],
-        color: ThemeColors.primary(context),
+        tabs: const ['All', 'Receipts', 'Medicine', 'Pending', 'Confirmed'],
       ),
     );
   }
@@ -196,7 +187,9 @@ class _ScanListPageState extends State<ScanListPage>
         if (records.isEmpty) {
           return _NeuEmptyState(
             icon: _getTypeIcon(type ?? ScanType.other),
-            title: type != null ? 'No ${type.displayName} Scans' : 'No Scans Yet',
+            title: type != null
+                ? 'No ${type.displayName} Scans'
+                : 'No Scans Yet',
             message: type != null
                 ? 'Scan your first ${type.displayName.toLowerCase()}'
                 : 'Start by scanning a document',
@@ -284,10 +277,10 @@ class _ScanListPageState extends State<ScanListPage>
       borderColor: isPending && highlightPending
           ? ThemeColors.warning(context).withValues(alpha: 0.4)
           : isConfirmed
-              ? ThemeColors.success(context).withValues(alpha: 0.3)
-              : isRejected
-                  ? ThemeColors.error(context).withValues(alpha: 0.3)
-                  : _getTypeColor(record.scanType).withValues(alpha: 0.15),
+          ? ThemeColors.success(context).withValues(alpha: 0.3)
+          : isRejected
+          ? ThemeColors.error(context).withValues(alpha: 0.3)
+          : _getTypeColor(record.scanType).withValues(alpha: 0.15),
       borderWidth: 1,
       onTap: () => _navigateToDetail(record),
       child: Column(
@@ -381,8 +374,9 @@ class _ScanListPageState extends State<ScanListPage>
                     variant: NeuButtonVariant.primary,
                     icon: Icons.psychology_rounded,
                     size: NeuButtonSize.medium,
-                    onPressed: () =>
-                        context.read<ScanBloc>().add(ProcessScanOcr(record.id!)),
+                    onPressed: () => context.read<ScanBloc>().add(
+                      ProcessScanOcr(record.id!),
+                    ),
                     expanded: true,
                   ),
                 ),
@@ -550,21 +544,19 @@ class _ScanListPageState extends State<ScanListPage>
   }
 
   void _navigateToCamera() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ScanCameraPage()),
-    ).then((_) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ScanCameraPage())).then((_) {
       if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
     });
   }
 
   void _navigateToDetail(ScanRecord record) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ScanDetailPage(record: record),
-      ),
-    ).then((_) {
-      if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
-    });
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => ScanDetailPage(record: record)))
+        .then((_) {
+          if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
+        });
   }
 
   void _useScanData(ScanRecord record) {
@@ -582,39 +574,38 @@ class _ScanListPageState extends State<ScanListPage>
 
 class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabController tabController;
-  final List<Tab> tabs;
-  final Color color;
+  final List<String> tabs;
 
-  _ScanTabBarDelegate({
-    required this.tabController,
-    required this.tabs,
-    required this.color,
-  });
+  _ScanTabBarDelegate({required this.tabController, required this.tabs});
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: NeuContainer(
         variant: NeuVariant.flat,
         color: ThemeColors.background(context),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: TabBar(
-          controller: tabController,
-          tabs: tabs,
-          indicatorColor: color,
-          indicatorWeight: 3,
-          labelColor: color,
-          unselectedLabelColor: ThemeColors.textSecondary(context),
-          labelStyle: AppTextStyles.labelLarge.copyWith(
-            fontWeight: FontWeight.w600,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(tabs.length, (index) {
+              final isSelected = tabController.index == index;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: NeuChip(
+                  label: tabs[index],
+                  selected: isSelected,
+                  onTap: () => tabController.animateTo(index),
+                  selectedColor: ThemeColors.primary(context),
+                ),
+              );
+            }),
           ),
-          unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-          dividerColor: Colors.transparent,
-          isScrollable: true,
         ),
       ),
     );
@@ -632,7 +623,7 @@ class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-/// Neumorphic empty state used across the scan list tabs.
+/// Empty state used across the scan list tabs.
 class _NeuEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;

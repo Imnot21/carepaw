@@ -1,102 +1,154 @@
 import 'package:flutter/material.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 
-/// Admin settings page - real app configuration values.
-///
-/// Displays the actual configuration constants that govern the system
-/// (audit retention, queue timing, pagination defaults, OCR thresholds).
-/// No fabricated metrics or fake counters - just the real config knobs.
 class AdminSettingsPage extends StatelessWidget {
   const AdminSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(
+          'Settings',
+          style: AppTextStyles.headlineSmall.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: ThemeColors.surface(context),
       ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          NeuTokens.pagePadding,
+          NeuTokens.spaceMd,
+          NeuTokens.pagePadding,
+          NeuTokens.spaceXl,
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: NeuTokens.maxContentWidth,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSection(
                 context,
-                title: 'Audit Log',
+                title: 'Audit log',
                 icon: Icons.receipt_long_outlined,
                 items: [
-                  _SettingItem('Retention', '${AppConstants.auditLogRetentionDays} days'),
+                  _SettingItem(
+                    'Retention',
+                    '${AppConstants.auditLogRetentionDays} days',
+                  ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: NeuTokens.tightGap),
               _buildSection(
                 context,
                 title: 'Queue',
                 icon: Icons.queue_outlined,
                 items: [
-                  _SettingItem('Slot duration', '${AppConstants.estimatedTimePerAppointment} min'),
-                  _SettingItem('Check-in window', '${AppConstants.checkInWindowMinutes} min before'),
-                  _SettingItem('Late arrival', '${AppConstants.lateArrivalMinutes} min after scheduled'),
+                  _SettingItem(
+                    'Slot duration',
+                    '${AppConstants.estimatedTimePerAppointment} min',
+                  ),
+                  _SettingItem(
+                    'Check-in window',
+                    '${AppConstants.checkInWindowMinutes} min before',
+                  ),
+                  _SettingItem(
+                    'Late arrival',
+                    '${AppConstants.lateArrivalMinutes} min after scheduled',
+                  ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: NeuTokens.tightGap),
               _buildSection(
                 context,
                 title: 'Inventory',
                 icon: Icons.inventory_2_outlined,
                 items: [
-                  _SettingItem('Low stock alert', 'Below ${AppConstants.lowStockThreshold} units'),
-                  _SettingItem('Expiration warning', '${AppConstants.expirationWarningDays} days'),
-                  _SettingItem('Critical expiration', '${AppConstants.criticalExpirationDays} days'),
+                  _SettingItem(
+                    'Low stock alert',
+                    'Below ${AppConstants.lowStockThreshold} units',
+                  ),
+                  _SettingItem(
+                    'Expiration warning',
+                    '${AppConstants.expirationWarningDays} days',
+                  ),
+                  _SettingItem(
+                    'Critical expiration',
+                    '${AppConstants.criticalExpirationDays} days',
+                  ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: NeuTokens.tightGap),
               _buildSection(
                 context,
                 title: 'OCR',
                 icon: Icons.document_scanner_outlined,
                 items: [
-                  _SettingItem('Min confidence', '${(AppConstants.ocrConfidenceThreshold * 100).round()}%'),
-                  _SettingItem('Max image size', '${AppConstants.maxImageSizeBytes ~/ (1024 * 1024)} MB'),
-                  _SettingItem('Formats', AppConstants.supportedImageFormats.join(', ')),
+                  _SettingItem(
+                    'Min confidence',
+                    '${(AppConstants.ocrConfidenceThreshold * 100).round()}%',
+                  ),
+                  _SettingItem(
+                    'Max image size',
+                    '${AppConstants.maxImageSizeBytes ~/ (1024 * 1024)} MB',
+                  ),
+                  _SettingItem(
+                    'Formats',
+                    AppConstants.supportedImageFormats.join(', '),
+                  ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: NeuTokens.tightGap),
               _buildSection(
                 context,
                 title: 'Pagination',
                 icon: Icons.format_list_numbered_outlined,
                 items: [
-                  _SettingItem('Default page size', '${AppConstants.defaultPageSize}'),
+                  _SettingItem(
+                    'Default page size',
+                    '${AppConstants.defaultPageSize}',
+                  ),
                   _SettingItem('Max page size', '${AppConstants.maxPageSize}'),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: NeuTokens.tightGap),
               _buildSection(
                 context,
                 title: 'Authentication',
                 icon: Icons.lock_outline,
                 items: [
-                  _SettingItem('Max login attempts', '${AppConstants.maxLoginAttempts}'),
-                  _SettingItem('Lockout duration', '${AppConstants.lockoutDurationMinutes} min'),
-                  _SettingItem('Session timeout', '${AppConstants.sessionTimeoutHours} hours'),
-                  _SettingItem('Password history', '${AppConstants.passwordHistoryCount}'),
+                  _SettingItem(
+                    'Max login attempts',
+                    '${AppConstants.maxLoginAttempts}',
+                  ),
+                  _SettingItem(
+                    'Lockout duration',
+                    '${AppConstants.lockoutDurationMinutes} min',
+                  ),
+                  _SettingItem(
+                    'Session timeout',
+                    '${AppConstants.sessionTimeoutHours} hours',
+                  ),
+                  _SettingItem(
+                    'Password history',
+                    '${AppConstants.passwordHistoryCount}',
+                  ),
                 ],
               ),
-              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -104,56 +156,58 @@ class AdminSettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(BuildContext context, {
+  Widget _buildSection(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required List<_SettingItem> items,
   }) {
     final accent = ThemeColors.primary(context);
     return NeuCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               NeuContainer(
-                borderRadius: 10,
-                padding: const EdgeInsets.all(8),
-                variant: NeuVariant.flat,
-                child: Icon(icon, color: accent, size: 20),
+                variant: NeuVariant.pressed,
+                borderRadius: NeuTokens.radiusSm,
+                padding: const EdgeInsets.all(NeuTokens.spaceXs),
+                child: Icon(icon, color: accent, size: NeuTokens.iconSm),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: NeuTokens.spaceXs),
               Text(
                 title,
-                style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w700),
+                style: AppTextStyles.titleSmall.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: NeuTokens.tightGap),
           for (var i = 0; i < items.length; i++) ...[
             Row(
               children: [
                 Expanded(
                   child: Text(
                     items[i].label,
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyMedium.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
                   ),
                 ),
                 Text(
                   items[i].value,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: ThemeColors.textSecondary(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
             if (i < items.length - 1) ...[
-              const SizedBox(height: 8),
-              Divider(height: 1, color: ThemeColors.textSecondary(context).withValues(alpha: 0.2)),
-              const SizedBox(height: 8),
+              const SizedBox(height: NeuTokens.spaceXs),
+              NeuDivider(),
+              const SizedBox(height: NeuTokens.spaceXs),
             ],
           ],
         ],

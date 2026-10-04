@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
-import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart' as scan_event;
+import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart'
+    as scan_event;
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -120,11 +122,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
     );
   }
 
-  Widget _buildScanCard(
-    ScanRecord record,
-    Color typeColor,
-    Color statusColor,
-  ) {
+  Widget _buildScanCard(ScanRecord record, Color typeColor, Color statusColor) {
     return NeuCard(
       padding: const EdgeInsets.all(24),
       borderColor: typeColor.withValues(alpha: 0.2),
@@ -183,17 +181,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
           const SizedBox(height: 24),
 
           // Divider
-          SizedBox(
-            height: 1,
-            child: NeuContainer(
-              padding: EdgeInsets.zero,
-              borderRadius: 0.5,
-              variant: NeuVariant.flat,
-              boxShadow: NeuShadow.none,
-              color: ThemeColors.border(context),
-              child: const SizedBox.shrink(),
-            ),
-          ),
+          const NeuDivider(),
           const SizedBox(height: 24),
 
           // Confidence score
@@ -222,8 +210,8 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               color: record.confidenceScore! >= 0.8
                   ? ThemeColors.success(context)
                   : record.confidenceScore! >= 0.5
-                      ? ThemeColors.warning(context)
-                      : ThemeColors.error(context),
+                  ? ThemeColors.warning(context)
+                  : ThemeColors.error(context),
             ),
             const SizedBox(height: 24),
           ],
@@ -421,7 +409,9 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               variant: NeuButtonVariant.primary,
               icon: Icons.check_circle_rounded,
               onPressed: () {
-                context.read<ScanBloc>().add(scan_event.ConfirmScanRecord(recordId: record.id!));
+                context.read<ScanBloc>().add(
+                  scan_event.ConfirmScanRecord(recordId: record.id!),
+                );
                 Navigator.pop(context, true);
               },
               expanded: true,
@@ -442,13 +432,17 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
           child: NeuButton(
             text: isPending ? 'Reject' : 'Delete',
             variant: NeuButtonVariant.outline,
-            icon: isPending ? Icons.close_rounded : Icons.delete_outline_rounded,
+            icon: isPending
+                ? Icons.close_rounded
+                : Icons.delete_outline_rounded,
             onPressed: () {
               if (isPending) {
-                context.read<ScanBloc>().add(scan_event.RejectScanRecord(
-                  recordId: record.id!,
-                  reason: 'User rejected scan',
-                ));
+                context.read<ScanBloc>().add(
+                  scan_event.RejectScanRecord(
+                    recordId: record.id!,
+                    reason: 'User rejected scan',
+                  ),
+                );
                 Navigator.pop(context, true);
               } else {
                 _showDeleteConfirmation();
@@ -462,61 +456,20 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
   }
 
   void _showDeleteConfirmation() {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        insetPadding: const EdgeInsets.all(24),
-        child: NeuCard(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Delete Scan Record',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: ThemeColors.textPrimary(context),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Are you sure you want to delete this scan record? This action cannot be undone.',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: NeuButton(
-                      text: 'Cancel',
-                      variant: NeuButtonVariant.outline,
-                      size: NeuButtonSize.medium,
-                      onPressed: () => Navigator.pop(dialogContext),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: NeuButton(
-                      text: 'Delete',
-                      variant: NeuButtonVariant.destructive,
-                      size: NeuButtonSize.medium,
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        context.read<ScanBloc>().add(scan_event.DeleteScanRecord(widget.record.id!));
-                        Navigator.pop(context, true);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+      title: 'Delete Scan Record',
+      message:
+          'Are you sure you want to delete this scan record? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.destructive,
+      onConfirm: () {
+        context.read<ScanBloc>().add(
+          scan_event.DeleteScanRecord(widget.record.id!),
+        );
+        Navigator.pop(context, true);
+      },
     );
   }
 

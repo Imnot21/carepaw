@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_bottom_nav.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -12,9 +11,9 @@ import 'role_tabs.dart';
 /// The primary application shell.
 ///
 /// Renders the active feature page (provided by the router as [child]) inside
-/// a [Scaffold] whose bottom bar is a neumorphic [`NeuBottomNav`]. The tab set
-/// adapts to the signed-in user's role, and the active slot tracks the current
-/// route so nested screens keep their section highlighted.
+/// a [Scaffold] whose bottom bar is a [`NeuBottomNav`]. The tab set adapts to
+/// the signed-in user's role, and the active slot tracks the current route so
+/// nested screens keep their section highlighted.
 class AppShell extends StatelessWidget {
   final Widget child;
 
@@ -33,25 +32,11 @@ class AppShell extends StatelessWidget {
     final currentIndex = tabs.indexFor(GoRouterState.of(context).uri.path);
 
     return Scaffold(
-      extendBody: true,
+      extendBody: false,
       backgroundColor: ThemeColors.background(context),
-      body: NeuContainer(
-        variant: NeuVariant.transparent,
-        borderRadius: 0,
-        padding: EdgeInsets.zero,
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            ThemeColors.surface(context),
-            ThemeColors.surface(context).withValues(alpha: 0.92),
-          ],
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: child,
-        ),
-      ),
+      // The canvas is the warm bone background, not a white wash. Cards supply
+      // the white planes; the page itself stays at the back.
+      body: SafeArea(bottom: false, child: child),
       bottomNavigationBar: NeuBottomNav(
         items: [
           for (final tab in tabs.tabs)

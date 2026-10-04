@@ -32,11 +32,12 @@ class _NeuShimmerState extends State<NeuShimmer>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: widget.duration)..repeat();
-    _animation = Tween<double>(begin: -1.5, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat();
+    _animation = Tween<double>(
+      begin: -1.5,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -49,9 +50,10 @@ class _NeuShimmerState extends State<NeuShimmer>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final base =
-        widget.base ?? (isDark ? AppColors.surfaceContainerDark : AppColors.border);
-    final highlight = widget.highlight ??
-        (isDark ? AppColors.surfaceDarkMode : AppColors.surface);
+        widget.base ?? (isDark ? AppColors.skeletonDark : AppColors.skeleton);
+    final highlight =
+        widget.highlight ??
+        (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceMuted);
 
     return AnimatedBuilder(
       animation: _animation,
@@ -73,11 +75,11 @@ class _NeuShimmerState extends State<NeuShimmer>
   }
 }
 
-/// A single neumorphic skeleton block (rounded, tinted to the canvas).
+/// A single skeleton block (rounded, tinted against the surface).
 ///
-/// The placeholder color inverts with the theme: darker than the canvas in
-/// light mode, lighter in dark mode, so it reads as a raised block. Wrap with
-/// [NeuShimmer] for the animated sheen.
+/// The placeholder color inverts with the theme: darker than the surface in
+/// light mode, lighter in dark mode. Wrap with [NeuShimmer] for the animated
+/// sheen.
 class NeuSkeletonBox extends StatelessWidget {
   final double width;
   final double height;
@@ -101,20 +103,22 @@ class NeuSkeletonBox extends StatelessWidget {
       height: height,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: color ??
+          color:
+              color ??
               (Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.surfaceContainerDark
-                  : AppColors.border),
-          borderRadius:
-              BorderRadius.circular(circle ? height / 2 : borderRadius),
+                  ? AppColors.skeletonDark
+                  : AppColors.skeleton),
+          borderRadius: BorderRadius.circular(
+            circle ? height / 2 : borderRadius,
+          ),
         ),
       ),
     );
   }
 }
 
-/// A full-page skeleton list of neumorphic card placeholders — the replacement
-/// for the list pages' centered spinner.
+/// A full-page skeleton list of card placeholders — the replacement for the
+/// list pages' centered spinner.
 class NeuSkeletonList extends StatelessWidget {
   final int itemCount;
   final EdgeInsetsGeometry padding;
@@ -151,8 +155,8 @@ class _SkeletonCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDarkMode : AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -160,7 +164,7 @@ class _SkeletonCard extends StatelessWidget {
           const SizedBox(
             width: 46,
             height: 46,
-            child: NeuSkeletonBox(circle: true, color: Colors.transparent),
+            child: NeuSkeletonBox(circle: true),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -181,7 +185,7 @@ class _SkeletonCard extends StatelessWidget {
           const SizedBox(
             width: 60,
             height: 26,
-            child: NeuSkeletonBox(borderRadius: 13, color: Colors.transparent),
+            child: NeuSkeletonBox(borderRadius: 13),
           ),
         ],
       ),
@@ -240,8 +244,8 @@ class _SkeletonBlock extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDarkMode : AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,

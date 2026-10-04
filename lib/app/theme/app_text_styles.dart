@@ -1,68 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_colors.dart';
+import 'theme_colors.dart';
 
-/// Soft Clinic typography — warm humanist display voice, quiet system body.
+/// CarePaw typography — warm humanist display voice, quiet system body.
 ///
-/// Display and headline styles set in Nunito (rounded, organic, friendly) to
-/// carry the brand's warm character. Body, labels, and controls stay on the
-/// system face (Roboto / San Francisco) for native legibility and zero cost.
-/// The scale is minimalist: clear weight and size steps, generous line
-/// heights, no decorative effects.
+/// Display and headline styles are set in Nunito (rounded, organic, friendly)
+/// to carry the brand's character. Body, labels, and controls stay on the system
+/// face (Roboto / San Francisco) for native legibility and zero cost.
+///
+/// **Colour is never baked into a style.** Every getter below returns a style
+/// with `color: null`, so it inherits the ambient text colour — the
+/// `DefaultTextStyle` of its subtree, or `ColorScheme.onSurface` at the root.
+/// `AppTheme` supplies the correct value per brightness through
+/// `ColorScheme.apply`, so a heading is black on the light canvas and white on
+/// the dark one without a single per-call-site `copyWith(color:)`.
+///
+/// If you need a specific colour, resolve it against the context:
+/// ```dart
+/// AppTextStyles.headlineSmall.copyWith(color: ThemeColors.textPrimary(context))
+/// ```
 class AppTextStyles {
   AppTextStyles._();
 
   // ============ Display (Nunito — rounded, organic) ============
 
   static TextStyle get displayLarge => GoogleFonts.nunito(
-        fontSize: 34,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.5,
-        height: 1.15,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
+    height: 1.15,
+  );
 
   static TextStyle get displayMedium => GoogleFonts.nunito(
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
-        height: 1.2,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.3,
+    height: 1.2,
+  );
 
   static TextStyle get displaySmall => GoogleFonts.nunito(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
-        height: 1.25,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    height: 1.25,
+  );
 
   // ============ Headline (Nunito) ============
 
   static TextStyle get headlineLarge => GoogleFonts.nunito(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
-        height: 1.25,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    height: 1.25,
+  );
 
   static TextStyle get headlineMedium => GoogleFonts.nunito(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.1,
-        height: 1.3,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.1,
+    height: 1.3,
+  );
 
   static TextStyle get headlineSmall => GoogleFonts.nunito(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0,
-        height: 1.35,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.35,
+  );
 
   // ============ Title (system face — native legibility) ============
 
@@ -136,12 +140,11 @@ class AppTextStyles {
   // ============ Specialized ============
 
   static TextStyle get appBarTitle => GoogleFonts.nunito(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0,
-        height: 1.4,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.4,
+  );
 
   static const TextStyle cardTitle = TextStyle(
     fontSize: 16,
@@ -172,20 +175,18 @@ class AppTextStyles {
   );
 
   static TextStyle get numberLarge => GoogleFonts.nunito(
-        fontSize: 34,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
-        height: 1.1,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.3,
+    height: 1.1,
+  );
 
   static TextStyle get numberMedium => GoogleFonts.nunito(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.1,
-        height: 1.2,
-        color: AppColors.textPrimary,
-      );
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.1,
+    height: 1.2,
+  );
 
   static const TextStyle numberSmall = TextStyle(
     fontSize: 16,
@@ -202,70 +203,130 @@ class AppTextStyles {
     height: 1.5,
   );
 
-  // ============ Color helpers ============
+  // ============ Context-aware colour resolution ============
+  //
+  // These take the colours that `AppTheme` resolves per brightness, so they are
+  // correct in both modes. Prefer `ThemeColors` directly where it reads better;
+  // these exist for the call sites that already hold a style.
 
-  static TextStyle primary(TextStyle style) =>
-      style.copyWith(color: AppColors.primary);
+  static TextStyle primaryOf(BuildContext context, TextStyle style) =>
+      style.copyWith(color: ThemeColors.primary(context));
 
-  static TextStyle secondary(TextStyle style) =>
-      style.copyWith(color: AppColors.textSecondary);
+  static TextStyle secondaryOf(BuildContext context, TextStyle style) =>
+      style.copyWith(color: ThemeColors.textSecondary(context));
 
-  static TextStyle subtle(TextStyle style) =>
-      style.copyWith(color: AppColors.textSecondary);
+  static TextStyle tertiaryOf(BuildContext context, TextStyle style) =>
+      style.copyWith(color: ThemeColors.textTertiary(context));
 
-  static TextStyle subtleDark(TextStyle style) =>
-      style.copyWith(color: AppColors.textSecondaryOnDark);
+  static TextStyle successOf(BuildContext context, TextStyle style) =>
+      style.copyWith(color: ThemeColors.success(context));
 
-  static TextStyle muted(TextStyle style) =>
-      style.copyWith(color: AppColors.textTertiary);
+  static TextStyle errorOf(BuildContext context, TextStyle style) =>
+      style.copyWith(color: ThemeColors.error(context));
 
-  static TextStyle mutedDark(TextStyle style) =>
-      style.copyWith(color: AppColors.textTertiaryOnDark);
+  static TextStyle warningOf(BuildContext context, TextStyle style) =>
+      style.copyWith(color: ThemeColors.warning(context));
 
-  static TextStyle highContrast(TextStyle style) => style.copyWith(
-        color: AppColors.textPrimary,
-        fontWeight: FontWeight.w700,
+  static TextStyle linkOf(BuildContext context, TextStyle style) {
+    final accent = ThemeColors.primary(context);
+    return style.copyWith(
+      color: accent,
+      decoration: TextDecoration.underline,
+      decorationColor: accent,
+      decorationThickness: 1.5,
+    );
+  }
+
+  // ============ Brightness-keyed helpers (no BuildContext) ============
+  //
+  // Use these when there is no context in scope. They take the brightness
+  // explicitly rather than guessing, so a caller can never silently get the
+  // wrong mode.
+
+  static TextStyle primaryAt(Brightness brightness, TextStyle style) =>
+      style.copyWith(
+        color: brightness == Brightness.dark
+            ? const Color(0xFFF0927A)
+            : const Color(0xFFE27D60),
       );
 
-  static TextStyle link(TextStyle style) => style.copyWith(
-        color: AppColors.primary,
-        decoration: TextDecoration.underline,
-        decorationColor: AppColors.primary,
-        decorationThickness: 1.5,
+  static TextStyle secondaryAt(Brightness brightness, TextStyle style) =>
+      style.copyWith(
+        color: brightness == Brightness.dark
+            ? const Color(0xFFE5E7EB)
+            : const Color(0xFF2B2B2B),
       );
 
-  static TextStyle successText(TextStyle style) =>
-      style.copyWith(color: AppColors.success);
+  static TextStyle tertiaryAt(Brightness brightness, TextStyle style) =>
+      style.copyWith(
+        color: brightness == Brightness.dark
+            ? const Color(0xFFD1D5DB)
+            : const Color(0xFF4A4A4A),
+      );
 
-  static TextStyle warningText(TextStyle style) =>
-      style.copyWith(color: AppColors.warning);
+  static TextStyle successAt(Brightness brightness, TextStyle style) =>
+      style.copyWith(
+        color: brightness == Brightness.dark
+            ? const Color(0xFF4ADE80)
+            : const Color(0xFF16A34A),
+      );
 
-  static TextStyle error(TextStyle style) =>
-      style.copyWith(color: AppColors.error);
+  static TextStyle errorAt(Brightness brightness, TextStyle style) =>
+      style.copyWith(
+        color: brightness == Brightness.dark
+            ? const Color(0xFFF87171)
+            : const Color(0xFFDC2626),
+      );
 
-  static TextStyle info(TextStyle style) =>
-      style.copyWith(color: AppColors.info);
+  static TextStyle warningAt(Brightness brightness, TextStyle style) =>
+      style.copyWith(
+        color: brightness == Brightness.dark
+            ? const Color(0xFFFBBF24)
+            : const Color(0xFFD97706),
+      );
 }
 
 extension TextStyleX on TextStyle {
-  TextStyle withColor(Color color, {FontWeight? weight}) => copyWith(
-        color: color,
-        fontWeight: weight,
-      );
+  TextStyle withColor(Color color, {FontWeight? weight}) =>
+      copyWith(color: color, fontWeight: weight);
 
-  TextStyle get subtle => copyWith(color: AppColors.textSecondary);
+  // ── Brightness-keyed colour ──
+  // `subtleOf` / `mutedOf` are the safe entry points. The context-free
+  // `subtle` / `muted` getters are kept for call sites that only ever run in
+  // light mode; anything brightness-sensitive should use the `*Of(context)`
+  // resolvers on AppTextStyles instead of these.
 
-  TextStyle subtleDark() => copyWith(color: AppColors.textSecondaryOnDark);
+  TextStyle subtleOf(Brightness brightness) => brightness == Brightness.dark
+      ? copyWith(color: const Color(0xFFE5E7EB))
+      : copyWith(color: const Color(0xFF2B2B2B));
 
-  TextStyle subtleOf(Brightness brightness) =>
-      brightness == Brightness.dark ? subtleDark() : subtle;
+  TextStyle mutedOf(Brightness brightness) => brightness == Brightness.dark
+      ? copyWith(color: const Color(0xFFD1D5DB))
+      : copyWith(color: const Color(0xFF4A4A4A));
 
-  TextStyle get muted => copyWith(color: AppColors.textTertiary);
+  TextStyle primaryOf(BuildContext context) =>
+      copyWith(color: ThemeColors.primary(context));
 
-  TextStyle mutedDark() => copyWith(color: AppColors.textTertiaryOnDark);
+  TextStyle successOf(BuildContext context) =>
+      copyWith(color: ThemeColors.success(context));
 
-  TextStyle mutedOf(Brightness brightness) =>
-      brightness == Brightness.dark ? mutedDark() : muted;
+  TextStyle errorOf(BuildContext context) =>
+      copyWith(color: ThemeColors.error(context));
+
+  TextStyle warningOf(BuildContext context) =>
+      copyWith(color: ThemeColors.warning(context));
+
+  TextStyle linkOf(BuildContext context) {
+    final accent = ThemeColors.primary(context);
+    return copyWith(
+      color: accent,
+      decoration: TextDecoration.underline,
+      decorationColor: accent,
+      decorationThickness: 1.5,
+    );
+  }
+
+  // ── Weight ──
 
   TextStyle get bold => copyWith(fontWeight: FontWeight.w700);
 
@@ -277,29 +338,31 @@ extension TextStyleX on TextStyle {
 
   TextStyle get light => copyWith(fontWeight: FontWeight.w300);
 
-  TextStyle gradient(Gradient _) => copyWith(color: AppColors.primary);
-
-  TextStyle get primaryGradient => copyWith(color: AppColors.primary);
-
-  TextStyle glow(Color color) => copyWith(
-        shadows: [
-          Shadow(
-            color: color.withValues(alpha: 0.35),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      );
-
-  TextStyle get primaryGlow => glow(AppColors.primary);
-
-  TextStyle get underline => copyWith(
-        decoration: TextDecoration.underline,
-        decorationColor: color,
-        decorationThickness: 1.5,
-      );
+  // ── Tracking ──
 
   TextStyle get wide => copyWith(letterSpacing: (letterSpacing ?? 0) + 0.5);
 
   TextStyle get tight => copyWith(letterSpacing: (letterSpacing ?? 0) - 0.25);
+
+  // ── Decoration ──
+
+  TextStyle underline(Color decorationColor) => copyWith(
+    decoration: TextDecoration.underline,
+    decorationColor: decorationColor,
+    decorationThickness: 1.5,
+  );
+
+  // ── Emphasis ──
+
+  /// Warm lift for a hero figure or a short, load-bearing phrase. Purely a
+  /// shadow, so it composes with whatever colour the style already resolves.
+  TextStyle glow(Color color, {double opacity = 0.35}) => copyWith(
+    shadows: [
+      Shadow(
+        color: color.withValues(alpha: opacity),
+        blurRadius: 6,
+        offset: const Offset(0, 1),
+      ),
+    ],
+  );
 }

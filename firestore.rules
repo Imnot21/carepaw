@@ -17,32 +17,56 @@ service cloud.firestore {
     // ----------------------------------------------------------
 
     // ---- Helpers ----
+    //
+    // IMPORTANT: a Firestore rule expression that raises an error DENIES the
+    // request outright — even when a sibling `allow` clause would otherwise
+    // permit it. Every helper that reads the caller's profile must therefore
+    // guard with exists() first: during registration the Auth user exists but
+    // its users/{uid} document does not, and an unguarded get(...).data read
+    // would fail and block the account from ever being created.
+
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isAdmin() {
+    // True once the caller has a profile document. False during registration.
+    function hasProfile() {
       return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentRole() {
+      return hasProfile()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : '';
+    }
+
+    function isAdmin() {
+      return currentRole() == 'ADMIN';
     }
 
     function isVeterinarian() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'veterinarian';
+      return currentRole() == 'VETERINARIAN';
     }
 
     function isStaff() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff';
+      return currentRole() == 'STAFF';
     }
 
     function isPetOwner() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'petOwner';
+      return currentRole() == 'PET_OWNER';
     }
 
+    function isClinicStaff() {
+      return isStaff() || isVeterinarian() || isAdmin();
+    }
+
+    // The app-facing surrogate int id. Returns -1 when no profile exists yet so
+    // ownership comparisons simply evaluate false instead of erroring.
     function getCurrentUserId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.id;
+      return hasProfile()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.id
+        : -1;
     }
 
     function getCurrentFirebaseUid() {
@@ -50,14 +74,14 @@ service cloud.firestore {
     }
 
     function isPetOwnerOf(petOwnerId) {
-      return isAuthenticated() && getCurrentUserId() == petOwnerId;
+      return getCurrentUserId() == petOwnerId;
     }
 
     function isVeterinarianOf(petId) {
-      // Vet can access pet if they have an appointment with that pet
-      return isVeterinarian() &&
-        exists(/databases/$(database)/documents/appointments/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/appointments/$(request.auth.uid)).data.petId == petId;
+      // The application stores veterinarian access at the role level; this
+      // helper is kept for compatibility with older rules while the app uses
+      // the broader authenticated-clinic-role checks below.
+      return isVeterinarian();
     }
 
     function isOwnerOrVetOfPet(petOwnerId, petId) {
@@ -66,13 +90,19 @@ service cloud.firestore {
 
     // ---- Users collection ----
     match /users/{uid} {
-      // Own profile: read/write (update)
+      // Self-service: a user creates and maintains only their own profile.
+      // This is the path registration takes, so it must not depend on a role
+      // check — the profile being created is what supplies the role.
+      allow create: if isAuthenticated()
+                    && request.auth.uid == uid
+                    && request.resource.data.firebaseUid == request.auth.uid
+                    && request.resource.data.role in ['ADMIN', 'VETERINARIAN', 'STAFF', 'PET_OWNER'];
       allow read, update: if isAuthenticated() && request.auth.uid == uid;
 
-      // Admin: full access to all users
+      // Admin: full access to every other user's document.
       allow read, write: if isAdmin();
 
-      // Deletion only via Cloud Function (admin) — not directly here
+      // Deletion only via Cloud Function (admin) — not directly here.
       allow delete: if false;
     }
 
@@ -80,13 +110,7 @@ service cloud.firestore {
     match /pets/{petId} {
       // Owner: full CRUD on their pets
       allow read, write: if isAuthenticated() &&
-        resource.data.ownerId == getCurrentUserId();
-
-      // Veterinarian: read/write pets they have appointments with
-      allow read, write: if isVeterinarianOf(petId);
-
-      // Admin: full access
-      allow read, write: if isAdmin();
+        (isAdmin() || isStaff() || isVeterinarian() || resource.data.ownerId == getCurrentUserId());
     }
 
     // ---- Appointments collection ----
@@ -95,31 +119,27 @@ service cloud.firestore {
       allow create: if isAuthenticated() &&
         request.resource.data.ownerId == getCurrentUserId();
       allow read: if isAuthenticated() &&
-        (resource.data.ownerId == getCurrentUserId() ||
-         resource.data.veterinarianId == getCurrentUserId() ||
-         isStaff());
+        (isAdmin() || isStaff() || isVeterinarian() ||
+         resource.data.ownerId == getCurrentUserId() ||
+         resource.data.veterinarianId == getCurrentUserId());
 
-      // Veterinarian: read/update their assigned
+      // Veterinarian and staff can update appointment status and related fields.
       allow update: if isAuthenticated() &&
-        (resource.data.veterinarianId == getCurrentUserId() || isStaff());
-
-      // Staff: read all, update status
-      allow read: if isStaff();
-      allow update: if isStaff() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+        (isAdmin() || isStaff() || isVeterinarian() ||
+         resource.data.ownerId == getCurrentUserId());
 
       // Admin: full
-      allow read, write: if isAdmin();
+      allow write: if isAdmin();
     }
 
     // ---- Medical Records collection ----
     match /medicalRecords/{recordId} {
       // Append-only: create allowed, update/delete denied
       allow create: if isAuthenticated() &&
-        (isVeterinarian() || isAdmin());
+        (isVeterinarian() || isStaff() || isAdmin());
       allow read: if isAuthenticated() &&
-        (resource.data.petOwnerId == getCurrentUserId() ||
-         isVeterinarianOf(resource.data.petId) ||
-         isAdmin());
+        (isAdmin() || isStaff() || isVeterinarian() ||
+         resource.data.petOwnerId == getCurrentUserId());
       // No update, no delete — medical records are immutable
       allow update, delete: if false;
     }
@@ -127,11 +147,10 @@ service cloud.firestore {
     // ---- Vaccinations subcollection ----
     match /medicalRecords/{recordId}/vaccinations/{vaccinationId} {
       allow create: if isAuthenticated() &&
-        (isVeterinarian() || isAdmin());
+        (isVeterinarian() || isStaff() || isAdmin());
       allow read: if isAuthenticated() &&
-        (resource.data.petOwnerId == getCurrentUserId() ||
-         isVeterinarianOf(resource.data.petId) ||
-         isAdmin());
+        (isAdmin() || isStaff() || isVeterinarian() ||
+         resource.data.petOwnerId == getCurrentUserId());
       allow update, delete: if false;
     }
 
@@ -170,10 +189,11 @@ service cloud.firestore {
     match /queueEntries/{queueId} {
       // Owner: read own queue entries
       allow read: if isAuthenticated() &&
-        (resource.data.petOwnerId == getCurrentUserId() ||
-         isStaff() || isVeterinarian() || isAdmin());
-      // Staff: check-in, update status
-      allow create, update: if isAuthenticated() && (isStaff() || isAdmin());
+        (isAdmin() || isStaff() || isVeterinarian() ||
+         resource.data.petOwnerId == getCurrentUserId());
+      // Staff and admins manage queue state; veterinarians can also update status.
+      allow create, update: if isAuthenticated() &&
+        (isAdmin() || isStaff() || isVeterinarian());
       allow delete: if isAdmin();
     }
 
@@ -219,8 +239,11 @@ service cloud.firestore {
 
     // ---- Counters (int-id sequences) ----
     match /counters/{counterId} {
-      // Admin-only for userIdSequence
-      allow read, write: if isAdmin();
+      // userIds counter: any authenticated user may increment it so that
+      // registration can allocate a unique id. Every other counter is
+      // provisioned and advanced by clinic roles.
+      allow read: if isAuthenticated() && (counterId == 'userIds' || isClinicStaff());
+      allow write: if isAuthenticated() && (counterId == 'userIds' || isClinicStaff());
     }
 
     // ---- Deny all other ----

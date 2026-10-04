@@ -24,8 +24,9 @@ class ThemeColors {
   static Color textPrimary(BuildContext context) =>
       _isDark(context) ? AppColors.textPrimaryOnDark : AppColors.textPrimary;
 
-  static Color textSecondary(BuildContext context) =>
-      _isDark(context) ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
+  static Color textSecondary(BuildContext context) => _isDark(context)
+      ? AppColors.textSecondaryOnDark
+      : AppColors.textSecondary;
 
   static Color textTertiary(BuildContext context) =>
       _isDark(context) ? AppColors.textTertiaryOnDark : AppColors.textTertiary;
@@ -51,11 +52,38 @@ class ThemeColors {
   static Color border(BuildContext context) =>
       _isDark(context) ? AppColors.borderDark : AppColors.border;
 
-  static Color surfaceVariant(BuildContext context) =>
-      _isDark(context) ? AppColors.surfaceVariantDark : AppColors.surfaceVariant;
+  static Color surfaceVariant(BuildContext context) => _isDark(context)
+      ? AppColors.surfaceVariantDark
+      : AppColors.surfaceVariant;
 
   static Color surfaceInset(BuildContext context) =>
       _isDark(context) ? AppColors.surfaceInsetDark : AppColors.surfaceInset;
+
+  static Color surfaceMuted(BuildContext context) =>
+      _isDark(context) ? AppColors.surfaceMutedDark : AppColors.surfaceMuted;
+
+  /// Emphasized hairline — focused fields, selected chips, active outlines.
+  static Color borderStrong(BuildContext context) =>
+      _isDark(context) ? AppColors.borderStrongDark : AppColors.borderStrong;
+
+  static Color surfaceContainer(BuildContext context) => _isDark(context)
+      ? AppColors.surfaceContainerDark
+      : AppColors.surfaceContainer;
+
+  static Color divider(BuildContext context) =>
+      _isDark(context) ? AppColors.dividerDark : AppColors.divider;
+
+  /// Top-left light source for extruded surfaces.
+  static Color shadowLight(BuildContext context) =>
+      _isDark(context) ? AppColors.shadowLightDark : AppColors.shadowLight;
+
+  /// Bottom-right depth shadow for extruded surfaces.
+  static Color shadowDepth(BuildContext context) =>
+      _isDark(context) ? AppColors.shadowDepthDark : AppColors.shadowDepth;
+
+  /// Drop shadow for floating chrome — nav bar, FAB, dialog, sheet.
+  static Color shadowFloating(BuildContext context) =>
+      _isDark(context) ? AppColors.shadowDepthDark : AppColors.shadowFloating;
 
   static Color onPrimary(BuildContext context) => AppColors.textOnPrimary;
 }

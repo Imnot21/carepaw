@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
@@ -29,6 +30,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 
 /// Appointment form page for creating or editing appointments
 class AppointmentFormPage extends StatefulWidget {
@@ -80,12 +82,14 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       context.read<PetBloc>().add(LoadPets(ownerId: ownerId));
       _veterinariansFuture = getIt<UserRepository>().findVeterinarians();
       if (!_isVetOrStaff) {
-        _veterinariansFuture.then((vets) {
-          if (!mounted) return;
-          if (vets.isNotEmpty && _selectedVeterinarianId == null) {
-            setState(() => _selectedVeterinarianId = vets.first.id);
-          }
-        }).catchError((_) {});
+        _veterinariansFuture
+            .then((vets) {
+              if (!mounted) return;
+              if (vets.isNotEmpty && _selectedVeterinarianId == null) {
+                setState(() => _selectedVeterinarianId = vets.first.id);
+              }
+            })
+            .catchError((_) {});
       }
     } else {
       _veterinariansFuture = Future.value(const <User>[]);
@@ -113,10 +117,16 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 context.go(Routes.appointments);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isEditing ? 'Appointment updated' : 'Appointment requested'),
+                    content: Text(
+                      isEditing
+                          ? 'Appointment updated'
+                          : 'Appointment requested',
+                    ),
                     backgroundColor: ThemeColors.success(context),
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     margin: const EdgeInsets.all(16),
                   ),
                 );
@@ -129,7 +139,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                     content: Text(state.message),
                     backgroundColor: ThemeColors.error(context),
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     margin: const EdgeInsets.all(16),
                   ),
                 );
@@ -179,7 +191,8 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   sliver: SliverList.separated(
                     itemCount: _isVetOrStaff ? 6 : 4,
                     separatorBuilder: (_, _) => const SizedBox(height: 20),
-                    itemBuilder: (context, index) => _buildFormSection(context, index, isEditing),
+                    itemBuilder: (context, index) =>
+                        _buildFormSection(context, index, isEditing),
                   ),
                 ),
                 // Submit button at bottom
@@ -189,7 +202,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                     child: Column(
                       children: [
                         NeuButton(
-                          text: isEditing ? 'Update Appointment' : 'Request Appointment',
+                          text: isEditing
+                              ? 'Update Appointment'
+                              : 'Request Appointment',
                           onPressed: _isLoading ? null : _submitForm,
                           isLoading: _isLoading,
                           expanded: true,
@@ -286,51 +301,30 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NeuContainer(
-                variant: NeuVariant.inset,
-                borderRadius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                borderColor: _selectedPetId == null && pets.isNotEmpty
-                    ? ThemeColors.error(context)
-                    : null,
-                borderWidth: _selectedPetId == null && pets.isNotEmpty ? 1 : 0,
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    isExpanded: true,
-                    value: _selectedPetId,
-                    hint: Text('Select a pet', style: AppTextStyles.bodyLarge.copyWith(color: ThemeColors.textSecondary(context))),
-                    items: pets.map((pet) {
-                      return DropdownMenuItem<int>(
-                        value: pet.id,
-                        child: Row(
-                          children: [
-                            NeuContainer(
-                              padding: const EdgeInsets.all(6),
-                              borderRadius: 8,
-                              variant: NeuVariant.flat,
-                              color: PetUtils.getSpeciesColor(pet.species).withValues(alpha: 0.15),
-                              child: Icon(
-                                PetUtils.getSpeciesIcon(pet.species),
-                                size: 18,
-                                color: PetUtils.getSpeciesColor(pet.species),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(pet.name, style: AppTextStyles.bodyLarge),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedPetId = value),
-                  ),
-                ),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: pets.map((pet) {
+                  final isSelected = _selectedPetId == pet.id;
+                  final speciesColor = PetUtils.getSpeciesColor(pet.species);
+                  return NeuChip(
+                    label: pet.name,
+                    icon: PetUtils.getSpeciesIcon(pet.species),
+                    selected: isSelected,
+                    selectedColor: speciesColor,
+                    onTap: () => setState(() => _selectedPetId = pet.id),
+                    unselectedVariant: NeuVariant.raised,
+                  );
+                }).toList(),
               ),
               if (_selectedPetId == null && pets.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'Please select a pet',
-                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.error(context),
+                    ),
                   ),
                 ),
               if (pets.isEmpty)
@@ -338,7 +332,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'No pets found. Please add a pet first.',
-                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.error(context),
+                    ),
                   ),
                 ),
             ],
@@ -365,7 +361,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           }
 
           final veterinarians = snapshot.data ?? [];
-          final assignedVet = veterinarians.isNotEmpty ? veterinarians.first : null;
+          final assignedVet = veterinarians.isNotEmpty
+              ? veterinarians.first
+              : null;
 
           return _buildSectionCard(
             context,
@@ -381,8 +379,12 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 children: [
                   NeuAvatar(
                     radius: 24,
-                    initials: assignedVet?.fullName.isNotEmpty == true ? assignedVet!.fullName[0].toUpperCase() : 'D',
-                    backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
+                    initials: assignedVet?.fullName.isNotEmpty == true
+                        ? assignedVet!.fullName[0].toUpperCase()
+                        : 'D',
+                    backgroundColor: ThemeColors.primary(
+                      context,
+                    ).withValues(alpha: 0.15),
                     foregroundColor: ThemeColors.primary(context),
                   ),
                   const SizedBox(width: 16),
@@ -391,16 +393,22 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          assignedVet != null ? 'Dr. ${assignedVet.fullName}' : 'Veterinarian not assigned',
+                          assignedVet != null
+                              ? 'Dr. ${assignedVet.fullName}'
+                              : 'Veterinarian not assigned',
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: assignedVet != null ? ThemeColors.textPrimary(context) : ThemeColors.error(context),
+                            color: assignedVet != null
+                                ? ThemeColors.textPrimary(context)
+                                : ThemeColors.error(context),
                           ),
                         ),
                         if (assignedVet != null)
                           Text(
                             'Your clinic veterinarian',
-                            style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                            style: AppTextStyles.bodySmall.subtleOf(
+                              Theme.of(context).brightness,
+                            ),
                           ),
                       ],
                     ),
@@ -442,7 +450,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               borderWidth: 1,
               child: Row(
                 children: [
-                  Icon(Icons.error_outline_rounded, color: ThemeColors.error(context), size: 22),
+                  Icon(
+                    Icons.error_outline_rounded,
+                    color: ThemeColors.error(context),
+                    size: 22,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -461,11 +473,16 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         final veterinarians = snapshot.data ?? [];
 
         if (_selectedVeterinarianId != null && veterinarians.isNotEmpty) {
-          final hasVet = veterinarians.any((v) => v.id == _selectedVeterinarianId);
+          final hasVet = veterinarians.any(
+            (v) => v.id == _selectedVeterinarianId,
+          );
           if (!hasVet) {
-            _selectedVeterinarianId = veterinarians.isNotEmpty ? veterinarians.first.id : null;
+            _selectedVeterinarianId = veterinarians.isNotEmpty
+                ? veterinarians.first.id
+                : null;
           }
-        } else if (veterinarians.isNotEmpty && _selectedVeterinarianId == null) {
+        } else if (veterinarians.isNotEmpty &&
+            _selectedVeterinarianId == null) {
           _selectedVeterinarianId = veterinarians.first.id;
         }
 
@@ -479,46 +496,30 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NeuContainer(
-                variant: NeuVariant.inset,
-                borderRadius: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                borderColor: _selectedVeterinarianId == null && veterinarians.isNotEmpty
-                    ? ThemeColors.error(context)
-                    : null,
-                borderWidth: _selectedVeterinarianId == null && veterinarians.isNotEmpty ? 1 : 0,
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    isExpanded: true,
-                    value: _selectedVeterinarianId,
-                    hint: Text('Select a veterinarian', style: AppTextStyles.bodyLarge.copyWith(color: ThemeColors.textSecondary(context))),
-                    items: veterinarians.map((vet) {
-                      return DropdownMenuItem<int>(
-                        value: vet.id,
-                        child: Row(
-                          children: [
-                            NeuAvatar(
-                              radius: 16,
-                              initials: vet.fullName.isNotEmpty ? vet.fullName[0] : 'D',
-                              backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.15),
-                              foregroundColor: ThemeColors.primary(context),
-                            ),
-                            const SizedBox(width: 12),
-                            Text('Dr. ${vet.fullName}', style: AppTextStyles.bodyLarge),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedVeterinarianId = value),
-                  ),
-                ),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: veterinarians.map((vet) {
+                  final isSelected = _selectedVeterinarianId == vet.id;
+                  return NeuChip(
+                    label: 'Dr. ${vet.fullName}',
+                    icon: Icons.medical_services_rounded,
+                    selected: isSelected,
+                    selectedColor: ThemeColors.primary(context),
+                    onTap: () =>
+                        setState(() => _selectedVeterinarianId = vet.id),
+                    unselectedVariant: NeuVariant.raised,
+                  );
+                }).toList(),
               ),
               if (_selectedVeterinarianId == null && veterinarians.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'Please select a veterinarian',
-                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.error(context),
+                    ),
                   ),
                 ),
               if (veterinarians.isEmpty)
@@ -526,7 +527,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     'No veterinarians available',
-                    style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.error(context),
+                    ),
                   ),
                 ),
             ],
@@ -562,11 +565,17 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   padding: const EdgeInsets.all(8),
                   borderRadius: 10,
                   variant: NeuVariant.flat,
-                  color: (hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context)).withValues(alpha: 0.15),
+                  color:
+                      (hasDate
+                              ? ThemeColors.info(context)
+                              : ThemeColors.textSecondary(context))
+                          .withValues(alpha: 0.15),
                   child: Icon(
                     Icons.calendar_today_rounded,
                     size: 20,
-                    color: hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context),
+                    color: hasDate
+                        ? ThemeColors.info(context)
+                        : ThemeColors.textSecondary(context),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -584,7 +593,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 ),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: hasDate ? ThemeColors.info(context) : ThemeColors.textSecondary(context),
+                  color: hasDate
+                      ? ThemeColors.info(context)
+                      : ThemeColors.textSecondary(context),
                 ),
               ],
             ),
@@ -594,7 +605,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               padding: const EdgeInsets.only(top: 8, left: 4),
               child: Text(
                 'Please select a date and time',
-                style: AppTextStyles.bodySmall.copyWith(color: ThemeColors.error(context)),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: ThemeColors.error(context),
+                ),
               ),
             ),
         ],
@@ -640,7 +653,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         validator: (value) => Validators.required(value, 'Reason'),
         maxLines: 3,
         minLines: 2,
-        prefixIcon: Icon(Icons.description_outlined, color: ThemeColors.textSecondary(context), size: 20),
+        prefixIcon: Icon(
+          Icons.description_outlined,
+          color: ThemeColors.textSecondary(context),
+          size: 20,
+        ),
       ),
     );
   }
@@ -658,7 +675,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         hint: 'Any additional information for the veterinarian...',
         maxLines: 4,
         minLines: 3,
-        prefixIcon: Icon(Icons.note_outlined, color: ThemeColors.textSecondary(context), size: 20),
+        prefixIcon: Icon(
+          Icons.note_outlined,
+          color: ThemeColors.textSecondary(context),
+          size: 20,
+        ),
       ),
     );
   }
@@ -675,7 +696,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     return NeuCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(24),
-      shape: RoundedRectangleBorder(borderRadius: NeuShape.cardFlow),
+      shape: RoundedRectangleBorder(borderRadius: NeuShape.card),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -734,51 +755,20 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   }
 
   Future<void> _pickDateTime() async {
-    final date = await showDatePicker(
+    final initialDate =
+        _selectedDateTime ?? DateTime.now().add(const Duration(days: 1));
+
+    await NeuBottomSheet.show(
       context: context,
-      initialDate: _selectedDateTime ?? DateTime.now().add(const Duration(days: 1)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: ThemeColors.primary(context),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (date != null && mounted) {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_selectedDateTime ?? DateTime.now().add(const Duration(hours: 1))),
-        builder: (context, child) {
-          return Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: ThemeColors.primary(context),
-              ),
-            ),
-            child: child!,
-          );
+      isScrollControlled: true,
+      maxHeight: MediaQuery.of(context).size.height * 0.6,
+      child: _DateTimePickerSheet(
+        initialDate: initialDate,
+        onDateTimeSelected: (dateTime) {
+          setState(() => _selectedDateTime = dateTime);
         },
-      );
-
-      if (time != null && mounted) {
-        setState(() {
-          _selectedDateTime = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            time.hour,
-            time.minute,
-          );
-        });
-      }
-    }
+      ),
+    );
   }
 
   Future<void> _submitForm() async {
@@ -790,7 +780,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           content: const Text('Please select a pet'),
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -813,7 +805,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               content: const Text('No veterinarian available for this clinic'),
               backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
               margin: const EdgeInsets.all(16),
             ),
           );
@@ -825,7 +819,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             content: const Text('Please select a veterinarian'),
             backgroundColor: ThemeColors.error(context),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -839,7 +835,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           content: const Text('Please select a date and time'),
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -852,7 +850,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           content: const Text('Cannot schedule appointment in the past'),
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -871,51 +871,35 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       durationMinutes: duration,
       status: AppointmentStatus.requested,
       reason: _reasonController.text.trim(),
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
     if (widget.appointmentId != null) {
-      context.read<AppointmentBloc>().add(AppointmentUpdateRequested(appointment));
+      context.read<AppointmentBloc>().add(
+        AppointmentUpdateRequested(appointment),
+      );
     } else {
-      context.read<AppointmentBloc>().add(AppointmentCreateRequested(appointment));
+      context.read<AppointmentBloc>().add(
+        AppointmentCreateRequested(appointment),
+      );
     }
   }
 
   void _showDeleteConfirmation() {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            NeuContainer(
-              padding: const EdgeInsets.all(8),
-              borderRadius: 10,
-              variant: NeuVariant.flat,
-              color: ThemeColors.error(context).withValues(alpha: 0.15),
-              child: Icon(Icons.delete_outline_rounded, size: 22, color: ThemeColors.error(context)),
-            ),
-            const SizedBox(width: 12),
-            Text('Delete Appointment', style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w700)),
-          ],
-        ),
-        content: const Text('Are you sure you want to delete this appointment? This action cannot be undone.'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          NeuButton(
-            text: 'Delete',
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<AppointmentBloc>().add(AppointmentDeleteRequested(widget.appointmentId!));
-            },
-            variant: NeuButtonVariant.destructive,
-          ),
-        ],
+      title: 'Delete Appointment',
+      message:
+          'Are you sure you want to delete this appointment? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.destructive,
+      onConfirm: () => context.read<AppointmentBloc>().add(
+        AppointmentDeleteRequested(widget.appointmentId!),
       ),
     );
   }
@@ -925,9 +909,117 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   }
 
   String _formatTime(DateTime date) {
-    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final hour = date.hour > 12
+        ? date.hour - 12
+        : (date.hour == 0 ? 12 : date.hour);
     final minute = date.minute.toString().padLeft(2, '0');
     final period = date.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
+  }
+}
+
+/// Date/time picker sheet using the CarePaw surface system
+class _DateTimePickerSheet extends StatefulWidget {
+  final DateTime initialDate;
+  final ValueChanged<DateTime> onDateTimeSelected;
+
+  const _DateTimePickerSheet({
+    required this.initialDate,
+    required this.onDateTimeSelected,
+  });
+
+  @override
+  State<_DateTimePickerSheet> createState() => _DateTimePickerSheetState();
+}
+
+class _DateTimePickerSheetState extends State<_DateTimePickerSheet> {
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate;
+    _selectedTime = TimeOfDay.fromDateTime(widget.initialDate);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Select Date & Time',
+          style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 24),
+        // Date picker
+        NeuContainer(
+          borderRadius: 16,
+          padding: const EdgeInsets.all(16),
+          variant: NeuVariant.raised,
+          child: CalendarDatePicker(
+            initialDate: _selectedDate,
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 365)),
+            onDateChanged: (date) => setState(() => _selectedDate = date),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Time picker
+        NeuContainer(
+          borderRadius: 16,
+          padding: const EdgeInsets.all(16),
+          variant: NeuVariant.raised,
+          child: SizedBox(
+            height: 200,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.time,
+              initialDateTime: DateTime(
+                2024,
+                1,
+                1,
+                _selectedTime.hour,
+                _selectedTime.minute,
+              ),
+              use24hFormat: false,
+              onDateTimeChanged: (dateTime) => setState(
+                () => _selectedTime = TimeOfDay.fromDateTime(dateTime),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: NeuButton(
+                text: 'Cancel',
+                variant: NeuButtonVariant.ghost,
+                onPressed: () => context.pop(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: NeuButton(
+                text: 'Confirm',
+                variant: NeuButtonVariant.primary,
+                onPressed: () {
+                  final dateTime = DateTime(
+                    _selectedDate.year,
+                    _selectedDate.month,
+                    _selectedDate.day,
+                    _selectedTime.hour,
+                    _selectedTime.minute,
+                  );
+                  widget.onDateTimeSelected(dateTime);
+                  context.pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

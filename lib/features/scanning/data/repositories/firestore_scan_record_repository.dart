@@ -20,8 +20,8 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
   FirestoreScanRecordRepository({
     required FirebaseFirestore firestore,
     required FirestoreIdSequence scanRecordIdSequence,
-  })  : _firestore = firestore,
-        _idSequence = scanRecordIdSequence;
+  }) : _firestore = firestore,
+       _idSequence = scanRecordIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -34,7 +34,9 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
   @override
   Future<ScanRecord?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : ScanRecordDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : ScanRecordDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -51,7 +53,9 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _records.doc('${toWrite.id}').set(ScanRecordDocMapper.toData(toWrite));
+    await _records
+        .doc('${toWrite.id}')
+        .set(ScanRecordDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -86,22 +90,26 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return ScanRecordDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return ScanRecordDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<ScanRecord>> watchAll() {
-    return _records.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => ScanRecordDocMapper.fromData(doc.data()))
-        .toList());
+    return _records.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => ScanRecordDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<ScanRecord, int> ============
 
   @override
-  Future<PaginatedResult<ScanRecord>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<ScanRecord>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -110,17 +118,22 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
 
   @override
   Future<List<ScanRecord>> findByType(ScanType scanType) async {
-    final snapshot = await _records.where(FirestoreSchema.scanType, isEqualTo: scanType.value).get();
-    final scans = snapshot.docs
-        .map((doc) => ScanRecordDocMapper.fromData(doc.data()))
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final snapshot = await _records
+        .where(FirestoreSchema.scanType, isEqualTo: scanType.value)
+        .get();
+    final scans =
+        snapshot.docs
+            .map((doc) => ScanRecordDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return scans;
   }
 
   @override
   Future<List<ScanRecord>> findByStatus(ScanStatus status) async {
-    final snapshot = await _records.where(FirestoreSchema.statusScan, isEqualTo: status.value).get();
+    final snapshot = await _records
+        .where(FirestoreSchema.statusScan, isEqualTo: status.value)
+        .get();
     return snapshot.docs
         .map((doc) => ScanRecordDocMapper.fromData(doc.data()))
         .toList();
@@ -129,32 +142,39 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
   @override
   Future<List<ScanRecord>> findPending() async {
     final pending = await findByStatus(ScanStatus.pending);
-    return pending
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return pending..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   @override
-  Future<ScanRecord> confirm(int id, int confirmedBy, String? corrections) async {
+  Future<ScanRecord> confirm(
+    int id,
+    int confirmedBy,
+    String? corrections,
+  ) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Scan record not found');
-    return save(existing.copyWith(
-      status: ScanStatus.confirmed,
-      confirmedBy: confirmedBy,
-      confirmedAt: DateTime.now(),
-      corrections: corrections ?? existing.corrections,
-    ));
+    return save(
+      existing.copyWith(
+        status: ScanStatus.confirmed,
+        confirmedBy: confirmedBy,
+        confirmedAt: DateTime.now(),
+        corrections: corrections ?? existing.corrections,
+      ),
+    );
   }
 
   @override
   Future<ScanRecord> reject(int id, int rejectedBy, String reason) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Scan record not found');
-    return save(existing.copyWith(
-      status: ScanStatus.rejected,
-      confirmedBy: rejectedBy,
-      confirmedAt: DateTime.now(),
-      corrections: reason,
-    ));
+    return save(
+      existing.copyWith(
+        status: ScanStatus.rejected,
+        confirmedBy: rejectedBy,
+        confirmedAt: DateTime.now(),
+        corrections: reason,
+      ),
+    );
   }
 
   @override
@@ -180,18 +200,29 @@ class FirestoreScanRecordRepository implements ScanRecordRepository {
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<ScanRecord> createWithSync(ScanRecord entity, String tableName) async => save(entity);
+  Future<ScanRecord> createWithSync(
+    ScanRecord entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<ScanRecord> updateWithSync(ScanRecord entity, String tableName) async => save(entity);
+  Future<ScanRecord> updateWithSync(
+    ScanRecord entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => softDelete(id);
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _records.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _records
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

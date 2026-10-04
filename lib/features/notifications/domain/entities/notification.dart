@@ -32,22 +32,23 @@ class Notification extends Equatable {
   bool get isUnread => !isRead;
 
   /// Check if notification is scheduled for future
-  bool get isScheduled => scheduledFor != null && scheduledFor!.isAfter(DateTime.now());
+  bool get isScheduled =>
+      scheduledFor != null && scheduledFor!.isAfter(DateTime.now());
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        type,
-        title,
-        message,
-        referenceId,
-        referenceType,
-        isRead,
-        readAt,
-        createdAt,
-        scheduledFor,
-      ];
+    id,
+    userId,
+    type,
+    title,
+    message,
+    referenceId,
+    referenceType,
+    isRead,
+    readAt,
+    createdAt,
+    scheduledFor,
+  ];
 
   Notification copyWith({
     int? id,
@@ -144,19 +145,19 @@ class NotificationPreferences extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        appointmentReminders,
-        queueUpdates,
-        prescriptionReady,
-        inventoryAlerts,
-        systemAnnouncements,
-        emailEnabled,
-        pushEnabled,
-        inAppEnabled,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    userId,
+    appointmentReminders,
+    queueUpdates,
+    prescriptionReady,
+    inventoryAlerts,
+    systemAnnouncements,
+    emailEnabled,
+    pushEnabled,
+    inAppEnabled,
+    createdAt,
+    updatedAt,
+  ];
 
   NotificationPreferences copyWith({
     int? id,

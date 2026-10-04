@@ -20,9 +20,12 @@ class AuditLogDocMapper {
       action: (data[FirestoreSchema.action] as String?) ?? '',
       entityType: (data[FirestoreSchema.entityType] as String?) ?? '',
       entityId: (data[FirestoreSchema.entityId] as String?) ?? '',
-      oldValues: (data[FirestoreSchema.oldValues] as Map?)?.cast<String, dynamic>(),
-      newValues: (data[FirestoreSchema.newValues] as Map?)?.cast<String, dynamic>(),
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+      oldValues: (data[FirestoreSchema.oldValues] as Map?)
+          ?.cast<String, dynamic>(),
+      newValues: (data[FirestoreSchema.newValues] as Map?)
+          ?.cast<String, dynamic>(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
           DateTime.now(),
     );
   }

@@ -11,8 +11,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   final PetRepository _petRepository;
 
   PetBloc({required PetRepository petRepository})
-      : _petRepository = petRepository,
-        super(const PetInitial()) {
+    : _petRepository = petRepository,
+      super(const PetInitial()) {
     on<LoadPets>(_onLoadPets);
     on<CreatePet>(_onCreatePet);
     on<UpdatePet>(_onUpdatePet);
@@ -25,10 +25,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Load all pets for the current user.
-  Future<void> _onLoadPets(
-    LoadPets event,
-    Emitter<PetState> emit,
-  ) async {
+  Future<void> _onLoadPets(LoadPets event, Emitter<PetState> emit) async {
     emit(const PetLoading());
     try {
       final pets = await _petRepository.findByOwner(event.ownerId);
@@ -41,10 +38,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Create a new pet.
-  Future<void> _onCreatePet(
-    CreatePet event,
-    Emitter<PetState> emit,
-  ) async {
+  Future<void> _onCreatePet(CreatePet event, Emitter<PetState> emit) async {
     emit(const PetLoading());
     try {
       final createdPet = await _petRepository.save(event.pet);
@@ -60,10 +54,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Update an existing pet.
-  Future<void> _onUpdatePet(
-    UpdatePet event,
-    Emitter<PetState> emit,
-  ) async {
+  Future<void> _onUpdatePet(UpdatePet event, Emitter<PetState> emit) async {
     emit(const PetLoading());
     try {
       await _petRepository.save(event.pet);
@@ -79,10 +70,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Delete a pet (soft delete).
-  Future<void> _onDeletePet(
-    DeletePet event,
-    Emitter<PetState> emit,
-  ) async {
+  Future<void> _onDeletePet(DeletePet event, Emitter<PetState> emit) async {
     emit(const PetLoading());
     try {
       await _petRepository.softDelete(event.petId);
@@ -103,7 +91,10 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   ) async {
     emit(const PetLoading());
     try {
-      final updatedPet = await _petRepository.updateWeight(event.petId, event.weightKg);
+      final updatedPet = await _petRepository.updateWeight(
+        event.petId,
+        event.weightKg,
+      );
       emit(const PetOperationSuccess('Weight updated successfully'));
       // Reload pets to show updated list
       final pets = await _petRepository.findByOwner(updatedPet.ownerId);
@@ -116,13 +107,13 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Search pets by name.
-  Future<void> _onSearchPets(
-    SearchPets event,
-    Emitter<PetState> emit,
-  ) async {
+  Future<void> _onSearchPets(SearchPets event, Emitter<PetState> emit) async {
     emit(const PetLoading());
     try {
-      final pets = await _petRepository.searchByName(event.ownerId, event.query);
+      final pets = await _petRepository.searchByName(
+        event.ownerId,
+        event.query,
+      );
       emit(PetsLoaded(pets));
     } on Failure catch (failure) {
       emit(PetError(failure));
@@ -152,10 +143,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Load all pets (for staff/admin).
-  Future<void> _onLoadAllPets(
-    LoadAllPets event,
-    Emitter<PetState> emit,
-  ) async {
+  Future<void> _onLoadAllPets(LoadAllPets event, Emitter<PetState> emit) async {
     emit(const PetLoading());
     try {
       final pets = await _petRepository.findAll();

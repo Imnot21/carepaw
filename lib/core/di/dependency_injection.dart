@@ -42,143 +42,173 @@ Future<void> configureDependencies() async {
   // They are used directly as static classes in the code.
 
   // Register Firestore (needs Firebase to be initialized first)
-  getIt.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
+  getIt.registerLazySingleton<FirebaseFirestore>(
+    () => FirebaseFirestore.instance,
+  );
 
   // User ID sequence (Firestore counter for app-facing int IDs)
-  getIt.registerLazySingleton<UserIdSequence>(() => UserIdSequence(getIt<FirebaseFirestore>()));
+  getIt.registerLazySingleton<UserIdSequence>(
+    () => UserIdSequence(getIt<FirebaseFirestore>()),
+  );
 
   // Auth Repository - Firebase-backed (real Firebase Authentication + Firestore profiles)
-  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
-    firebaseAuth: FirebaseAuth.instance,
-    firestore: getIt<FirebaseFirestore>(),
-    userIdSequence: getIt<UserIdSequence>(),
-  ));
+  getIt.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      firebaseAuth: FirebaseAuth.instance,
+      firestore: getIt<FirebaseFirestore>(),
+      userIdSequence: getIt<UserIdSequence>(),
+    ),
+  );
 
   // Register Repositories
   // UserRepository - Firestore-backed source of truth (admin account creation etc.)
-  getIt.registerLazySingleton<UserRepository>(() => FirestoreUserRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    firebaseAuth: FirebaseAuth.instance,
-    userIdSequence: getIt<UserIdSequence>(),
-  ));
-  // Pets
-  getIt.registerLazySingleton<PetRepository>(() => FirestorePetRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    petIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'petIds',
+  getIt.registerLazySingleton<UserRepository>(
+    () => FirestoreUserRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      firebaseAuth: FirebaseAuth.instance,
+      userIdSequence: getIt<UserIdSequence>(),
     ),
-  ));
+  );
+  // Pets
+  getIt.registerLazySingleton<PetRepository>(
+    () => FirestorePetRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      petIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'petIds',
+      ),
+    ),
+  );
 
   // Appointments
-  getIt.registerLazySingleton<AppointmentRepository>(() => FirestoreAppointmentRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    appointmentIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'appointmentIds',
+  getIt.registerLazySingleton<AppointmentRepository>(
+    () => FirestoreAppointmentRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      appointmentIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'appointmentIds',
+      ),
+      petRepository: getIt<PetRepository>(),
+      userRepository: getIt<UserRepository>(),
     ),
-    petRepository: getIt<PetRepository>(),
-    userRepository: getIt<UserRepository>(),
-  ));
+  );
 
   // Queue
-  getIt.registerLazySingleton<QueueRepository>(() => FirestoreQueueRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    queueIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'queueIds',
+  getIt.registerLazySingleton<QueueRepository>(
+    () => FirestoreQueueRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      queueIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'queueIds',
+      ),
+      appointmentRepository: getIt<AppointmentRepository>(),
+      petRepository: getIt<PetRepository>(),
+      userRepository: getIt<UserRepository>(),
     ),
-    appointmentRepository: getIt<AppointmentRepository>(),
-    petRepository: getIt<PetRepository>(),
-    userRepository: getIt<UserRepository>(),
-  ));
+  );
 
   // Medical Records
-  getIt.registerLazySingleton<MedicalRecordRepository>(() => FirestoreMedicalRecordRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    medicalRecordIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'medicalRecordIds',
+  getIt.registerLazySingleton<MedicalRecordRepository>(
+    () => FirestoreMedicalRecordRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      medicalRecordIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'medicalRecordIds',
+      ),
+      petRepository: getIt<PetRepository>(),
+      userRepository: getIt<UserRepository>(),
+      appointmentRepository: getIt<AppointmentRepository>(),
     ),
-    petRepository: getIt<PetRepository>(),
-    userRepository: getIt<UserRepository>(),
-    appointmentRepository: getIt<AppointmentRepository>(),
-  ));
+  );
 
   // Vaccinations
-  getIt.registerLazySingleton<VaccinationRepository>(() => FirestoreVaccinationRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    vaccinationIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'vaccinationIds',
+  getIt.registerLazySingleton<VaccinationRepository>(
+    () => FirestoreVaccinationRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      vaccinationIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'vaccinationIds',
+      ),
+      petRepository: getIt<PetRepository>(),
+      userRepository: getIt<UserRepository>(),
     ),
-    petRepository: getIt<PetRepository>(),
-    userRepository: getIt<UserRepository>(),
-  ));
+  );
 
   // Inventory Items
-  getIt.registerLazySingleton<InventoryItemRepository>(() => FirestoreInventoryItemRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    inventoryItemIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'inventoryItemIds',
+  getIt.registerLazySingleton<InventoryItemRepository>(
+    () => FirestoreInventoryItemRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      inventoryItemIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'inventoryItemIds',
+      ),
     ),
-  ));
+  );
 
   // Inventory Batches
-  getIt.registerLazySingleton<InventoryBatchRepository>(() => FirestoreInventoryBatchRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    inventoryBatchIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'inventoryBatchIds',
+  getIt.registerLazySingleton<InventoryBatchRepository>(
+    () => FirestoreInventoryBatchRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      inventoryBatchIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'inventoryBatchIds',
+      ),
+      itemRepository: getIt<InventoryItemRepository>(),
     ),
-    itemRepository: getIt<InventoryItemRepository>(),
-  ));
+  );
 
   // Inventory Transactions
-  getIt.registerLazySingleton<InventoryTransactionRepository>(() => FirestoreInventoryTransactionRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    inventoryTransactionIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'inventoryTransactionIds',
+  getIt.registerLazySingleton<InventoryTransactionRepository>(
+    () => FirestoreInventoryTransactionRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      inventoryTransactionIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'inventoryTransactionIds',
+      ),
     ),
-  ));
+  );
 
   // Scan Records
-  getIt.registerLazySingleton<ScanRecordRepository>(() => FirestoreScanRecordRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    scanRecordIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'scanRecordIds',
+  getIt.registerLazySingleton<ScanRecordRepository>(
+    () => FirestoreScanRecordRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      scanRecordIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'scanRecordIds',
+      ),
     ),
-  ));
+  );
 
   // Notifications
-  getIt.registerLazySingleton<NotificationRepository>(() => FirestoreNotificationRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    notificationIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'notificationIds',
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => FirestoreNotificationRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      notificationIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'notificationIds',
+      ),
     ),
-  ));
+  );
 
   // Audit logs (append-only)
-  getIt.registerLazySingleton<AuditLogRepository>(() => FirestoreAuditLogRepository(
-    firestore: getIt<FirebaseFirestore>(),
-    auditLogIdSequence: FirestoreIdSequence(
-      getIt<FirebaseFirestore>(),
-      counterCollection: 'counters',
-      counterDoc: 'auditLogIds',
+  getIt.registerLazySingleton<AuditLogRepository>(
+    () => FirestoreAuditLogRepository(
+      firestore: getIt<FirebaseFirestore>(),
+      auditLogIdSequence: FirestoreIdSequence(
+        getIt<FirebaseFirestore>(),
+        counterCollection: 'counters',
+        counterDoc: 'auditLogIds',
+      ),
     ),
-  ));
+  );
 }

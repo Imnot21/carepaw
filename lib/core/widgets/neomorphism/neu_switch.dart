@@ -1,78 +1,89 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
-import 'neu_container.dart';
-import 'neu_shadows.dart';
+import '../../../app/theme/design_tokens.dart';
 
-/// Neumorphic toggle switch.
+/// Toggle switch.
 ///
-/// A recessed (inset-edged) track that fills with the blue accent when active.
-/// The thumb is a small raised plate that slides across; the whole control
-/// carries the physical pressed feel of the design language. The recessed
-/// edges are painted by [`NeuInsetPainter`] so the track stays animatable.
+/// Off: a muted well with a white thumb and a hairline edge. On: the accent
+/// fill with a thumb in the theme's on-accent color. The thumb travels; the
+/// track has no shadow.
 class NeuSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
   final bool enabled;
+
+  /// Semantic label read by screen readers (e.g. "Dark mode", "Notifications").
+  final String? label;
 
   const NeuSwitch({
     super.key,
     required this.value,
     this.onChanged,
     this.enabled = true,
+    this.label,
   });
 
   @override
   Widget build(BuildContext context) {
+    const trackWidth = NeuTokens.switchTrackWidth;
+    const trackHeight = NeuTokens.switchTrackHeight;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const trackWidth = 56.0, trackHeight = 32.0;
-    final trackColor = value
-        ? AppColors.primary
-        : (isDark ? AppColors.surfaceContainerDark : AppColors.surfaceInset);
+    final accent = ThemeColors.primary(context);
 
-    final track = AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      width: trackWidth,
-      height: trackHeight,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        color: trackColor,
-        boxShadow: value
-            ? NeuShadow.color(context, AppColors.primary, blur: 10, opacity: 0.35)
-            : null,
-      ),
-      child: AnimatedAlign(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        child: NeuContainer(
-          borderRadius: 14,
-          variant: value ? NeuVariant.pressed : NeuVariant.raised,
-          child: SizedBox(
-            width: 26,
-            height: 26,
+    final trackColor = value
+        ? accent
+        : (isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset);
+    final thumbColor = value
+        ? ThemeColors.onPrimary(context)
+        : (isDark ? AppColors.textSecondaryOnDark : AppColors.textPrimary);
+    final borderColor = value ? accent : ThemeColors.border(context);
+
+    final control = RepaintBoundary(
+      child: AnimatedContainer(
+        duration: NeuTokens.durationMedium,
+        curve: NeuTokens.curveDefault,
+        width: trackWidth,
+        height: trackHeight,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: trackColor,
+          borderRadius: BorderRadius.circular(trackHeight / 2),
+          border: Border.all(
+            color: borderColor,
+            width: NeuTokens.borderWidthThin,
+          ),
+        ),
+        child: AnimatedAlign(
+          duration: NeuTokens.durationMedium,
+          curve: NeuTokens.curveDefault,
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: NeuTokens.switchThumbSize,
+            height: NeuTokens.switchThumbSize,
+            decoration: BoxDecoration(
+              color: thumbColor,
+              shape: BoxShape.circle,
+            ),
             child: value
-                ? const Icon(Icons.check, size: 16, color: AppColors.textOnPrimary)
+                ? Icon(Icons.check, size: NeuTokens.iconXs, color: accent)
                 : null,
           ),
         ),
       ),
     );
 
-    // Recessed edge shadows painted over the animated track.
-    final control = CustomPaint(
-      foregroundPainter: NeuInsetPainter(
-        shadows: NeuShadow.inset(context, distance: 3, blur: 6, spread: -2),
-        borderRadius: 18,
-      ),
-      child: track,
-    );
-
-    return GestureDetector(
+    return Semantics(
+      toggled: value,
+      enabled: enabled,
+      label: label,
       onTap: enabled && onChanged != null ? () => onChanged!(!value) : null,
-      behavior: HitTestBehavior.opaque,
-      child: Opacity(opacity: enabled ? 1 : 0.5, child: control),
+      child: GestureDetector(
+        onTap: enabled && onChanged != null ? () => onChanged!(!value) : null,
+        behavior: HitTestBehavior.opaque,
+        child: Opacity(
+          opacity: enabled ? 1 : NeuTokens.opacityDisabled,
+          child: control,
+        ),
+      ),
     );
   }
 }

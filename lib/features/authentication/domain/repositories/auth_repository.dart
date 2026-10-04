@@ -9,10 +9,7 @@ abstract class AuthRepository {
   ///
   /// Returns [AuthResult] containing user info and tokens on success.
   /// Throws [AuthFailure] on invalid credentials, user not found, or account locked.
-  Future<AuthResult> login({
-    required String email,
-    required String password,
-  });
+  Future<AuthResult> login({required String email, required String password});
 
   /// Register a new user account.
   ///

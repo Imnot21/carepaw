@@ -89,9 +89,10 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         }
 
         final user = authState.user;
-        final isVetOrStaff = user.role == UserRole.veterinarian ||
-                            user.role == UserRole.staff ||
-                            user.role == UserRole.admin;
+        final isVetOrStaff =
+            user.role == UserRole.veterinarian ||
+            user.role == UserRole.staff ||
+            user.role == UserRole.admin;
 
         if (!isVetOrStaff) {
           return _AccessDeniedView(petName: widget.pet.name);
@@ -304,29 +305,33 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     final fields = <Widget>[];
 
     // Title (required for all types)
-    fields.add(_buildField(
-      context: context,
-      controller: _titleController,
-      label: 'Title *',
-      hint: 'e.g., Annual checkup, Vaccination, Surgery follow-up',
-      icon: Icons.title_outlined,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Title is required';
-        }
-        return null;
-      },
-    ));
+    fields.add(
+      _buildField(
+        context: context,
+        controller: _titleController,
+        label: 'Title *',
+        hint: 'e.g., Annual checkup, Vaccination, Surgery follow-up',
+        icon: Icons.title_outlined,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Title is required';
+          }
+          return null;
+        },
+      ),
+    );
 
     // Description (optional for all types)
-    fields.add(_buildField(
-      context: context,
-      controller: _descriptionController,
-      label: 'Description',
-      hint: 'Brief description of the visit/reason',
-      icon: Icons.description_outlined,
-      maxLines: 3,
-    ));
+    fields.add(
+      _buildField(
+        context: context,
+        controller: _descriptionController,
+        label: 'Description',
+        hint: 'Brief description of the visit/reason',
+        icon: Icons.description_outlined,
+        maxLines: 3,
+      ),
+    );
 
     // Type-specific fields
     switch (_selectedType) {
@@ -520,14 +525,16 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     }
 
     // Attachments (optional for all types)
-    fields.add(_buildField(
-      context: context,
-      controller: _attachmentsController,
-      label: 'Attachments',
-      hint: 'Photo references, document links, etc.',
-      icon: Icons.attachment_outlined,
-      maxLines: 2,
-    ));
+    fields.add(
+      _buildField(
+        context: context,
+        controller: _attachmentsController,
+        label: 'Attachments',
+        hint: 'Photo references, document links, etc.',
+        icon: Icons.attachment_outlined,
+        maxLines: 2,
+      ),
+    );
 
     return fields;
   }
@@ -549,11 +556,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                size: 20,
-                color: ThemeColors.textSecondary(context),
-              ),
+              Icon(icon, size: 20, color: ThemeColors.textSecondary(context)),
               const SizedBox(width: 10),
               Text(
                 label,
@@ -612,9 +615,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
       return;
     }
 
-    context.read<MedicalRecordBloc>().add(
-      _createEvent(userId),
-    );
+    context.read<MedicalRecordBloc>().add(_createEvent(userId));
   }
 
   MedicalRecordEvent _createEvent(int userId) {
@@ -716,8 +717,9 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
           petId: widget.pet.id!,
           veterinarianId: userId,
           title: _titleController.text.trim(),
-          description: '${_diagnosisController.text.trim()}\n\nReaction: ${_treatmentController.text.trim()}'
-              .trim(),
+          description:
+              '${_diagnosisController.text.trim()}\n\nReaction: ${_treatmentController.text.trim()}'
+                  .trim(),
         );
     }
   }
@@ -746,7 +748,12 @@ class _NotLoggedInView extends StatelessWidget {
                 borderRadius: 80,
                 padding: const EdgeInsets.all(40),
                 color: AppColors.primary,
-                boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.32),
+                boxShadow: NeuShadow.color(
+                  context,
+                  AppColors.primary,
+                  blur: 24,
+                  opacity: 0.32,
+                ),
                 child: const Icon(
                   Icons.medical_information_outlined,
                   size: 80,
@@ -765,16 +772,16 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to add medical records for your pet',
                 style: AppTextStyles.bodyLarge.copyWith(
-                color: ThemeColors.textSecondary(context),
+                  color: ThemeColors.textSecondary(context),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 36),
-            NeuButton(
-              text: 'Log In',
-              onPressed: () => context.go('/login'),
-              icon: Icons.login_rounded,
-            ),
+              const SizedBox(height: 36),
+              NeuButton(
+                text: 'Log In',
+                onPressed: () => context.go('/login'),
+                icon: Icons.login_rounded,
+              ),
             ],
           ),
         ),
@@ -809,7 +816,12 @@ class _AccessDeniedView extends StatelessWidget {
                 borderRadius: 80,
                 padding: const EdgeInsets.all(40),
                 color: AppColors.error,
-                boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.28),
+                boxShadow: NeuShadow.color(
+                  context,
+                  AppColors.error,
+                  blur: 24,
+                  opacity: 0.28,
+                ),
                 child: const Icon(
                   Icons.block_rounded,
                   size: 80,

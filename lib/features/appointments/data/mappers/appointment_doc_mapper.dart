@@ -14,19 +14,37 @@ class AppointmentDocMapper {
     return Appointment(
       id: data[FirestoreSchema.id] as int?,
       petId: (data[FirestoreSchema.petId] as num?)?.toInt() ?? 0,
-      veterinarianId: (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
-      scheduledAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.scheduledAt]) ?? DateTime.now(),
-      durationMinutes: (data[FirestoreSchema.durationMinutes] as num?)?.toInt() ?? 30,
-      status: AppointmentStatus.fromString((data[FirestoreSchema.status] as String?) ?? ''),
+      veterinarianId:
+          (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
+      scheduledAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.scheduledAt]) ??
+          DateTime.now(),
+      durationMinutes:
+          (data[FirestoreSchema.durationMinutes] as num?)?.toInt() ?? 30,
+      status: AppointmentStatus.fromString(
+        (data[FirestoreSchema.status] as String?) ?? '',
+      ),
       reason: data[FirestoreSchema.reason] as String?,
       notes: data[FirestoreSchema.notes] as String?,
-      checkInAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.checkInAt]),
-      startedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.startedAt]),
-      completedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.completedAt]),
-      cancelledAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.cancelledAt]),
+      checkInAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.checkInAt],
+      ),
+      startedAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.startedAt],
+      ),
+      completedAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.completedAt],
+      ),
+      cancelledAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.cancelledAt],
+      ),
       cancellationReason: data[FirestoreSchema.cancellationReason] as String?,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
-      updatedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
+      updatedAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.updatedAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -36,18 +54,32 @@ class AppointmentDocMapper {
       FirestoreSchema.id: appointment.id,
       FirestoreSchema.petId: appointment.petId,
       FirestoreSchema.veterinarianId: appointment.veterinarianId,
-      FirestoreSchema.scheduledAt: DateFieldCodec.toFirestoreDate(appointment.scheduledAt),
+      FirestoreSchema.scheduledAt: DateFieldCodec.toFirestoreDate(
+        appointment.scheduledAt,
+      ),
       FirestoreSchema.durationMinutes: appointment.durationMinutes,
       FirestoreSchema.status: appointment.status.value,
       FirestoreSchema.reason: appointment.reason,
       FirestoreSchema.notes: appointment.notes,
-      FirestoreSchema.checkInAt: DateFieldCodec.toFirestoreDate(appointment.checkInAt),
-      FirestoreSchema.startedAt: DateFieldCodec.toFirestoreDate(appointment.startedAt),
-      FirestoreSchema.completedAt: DateFieldCodec.toFirestoreDate(appointment.completedAt),
-      FirestoreSchema.cancelledAt: DateFieldCodec.toFirestoreDate(appointment.cancelledAt),
+      FirestoreSchema.checkInAt: DateFieldCodec.toFirestoreDate(
+        appointment.checkInAt,
+      ),
+      FirestoreSchema.startedAt: DateFieldCodec.toFirestoreDate(
+        appointment.startedAt,
+      ),
+      FirestoreSchema.completedAt: DateFieldCodec.toFirestoreDate(
+        appointment.completedAt,
+      ),
+      FirestoreSchema.cancelledAt: DateFieldCodec.toFirestoreDate(
+        appointment.cancelledAt,
+      ),
       FirestoreSchema.cancellationReason: appointment.cancellationReason,
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(appointment.createdAt),
-      FirestoreSchema.updatedAt: DateFieldCodec.toFirestoreDate(appointment.updatedAt),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        appointment.createdAt,
+      ),
+      FirestoreSchema.updatedAt: DateFieldCodec.toFirestoreDate(
+        appointment.updatedAt,
+      ),
     };
   }
 }

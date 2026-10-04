@@ -3,7 +3,9 @@ import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
 
 /// Queue repository interface - domain layer contract
 abstract class QueueRepository extends SoftDeleteRepository<QueueEntry, int>
-    implements StreamRepository<QueueEntry, int>, PaginatedRepository<QueueEntry, int> {
+    implements
+        StreamRepository<QueueEntry, int>,
+        PaginatedRepository<QueueEntry, int> {
   /// Sync-aware operations
   @override
   Future<QueueEntry> createWithSync(QueueEntry entity, String tableName);
@@ -13,6 +15,7 @@ abstract class QueueRepository extends SoftDeleteRepository<QueueEntry, int>
 
   @override
   Future<void> deleteWithSync(int id, String tableName);
+
   /// Find queue entry by appointment
   Future<QueueEntry?> findByAppointment(int appointmentId);
 

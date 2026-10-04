@@ -9,7 +9,8 @@ class AppConstants {
 
   static const String appName = 'CarePaw';
   static const String appVersion = '0.1.0';
-  static const String appDescription = 'Smart Veterinary Patient Management System';
+  static const String appDescription =
+      'Smart Veterinary Patient Management System';
 
   // ============ Timing ============
 
@@ -101,7 +102,10 @@ class AppConstants {
   static const int notificationRetentionDays = 90;
 
   /// Reminder hours before appointment
-  static const List<int> appointmentReminderHours = [24, 2]; // 24h and 2h before
+  static const List<int> appointmentReminderHours = [
+    24,
+    2,
+  ]; // 24h and 2h before
 
   // ============ Audit Log ============
 

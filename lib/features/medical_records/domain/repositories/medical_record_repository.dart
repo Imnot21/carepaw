@@ -4,10 +4,14 @@ import 'package:carepaw/features/medical_records/domain/entities/medical_record.
 /// Medical record repository interface - domain layer contract
 /// Note: Medical records are append-only (immutable), so no update/delete operations
 abstract class MedicalRecordRepository
-    implements StreamRepository<MedicalRecord, int>, PaginatedRepository<MedicalRecord, int>, BaseRepository<MedicalRecord, int> {
+    implements
+        StreamRepository<MedicalRecord, int>,
+        PaginatedRepository<MedicalRecord, int>,
+        BaseRepository<MedicalRecord, int> {
   /// Sync-aware operations
   @override
   Future<MedicalRecord> createWithSync(MedicalRecord entity, String tableName);
+
   /// Find all medical records for a pet (chronological)
   Future<List<MedicalRecord>> findByPet(int petId);
 
@@ -15,7 +19,10 @@ abstract class MedicalRecordRepository
   Stream<List<MedicalRecord>> watchByPet(int petId);
 
   /// Find medical records by type for a pet
-  Future<List<MedicalRecord>> findByType(int petId, MedicalRecordType recordType);
+  Future<List<MedicalRecord>> findByType(
+    int petId,
+    MedicalRecordType recordType,
+  );
 
   /// Find medical records for an appointment
   Future<List<MedicalRecord>> findByAppointment(int appointmentId);

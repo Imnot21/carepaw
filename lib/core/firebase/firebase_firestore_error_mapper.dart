@@ -21,7 +21,9 @@ Failure mapFirestoreException(FirebaseException e) {
         message: 'You are not signed in. Please log in and try again.',
       );
     case 'not-found':
-      return const NotFoundFailure(message: 'The requested document was not found.');
+      return const NotFoundFailure(
+        message: 'The requested document was not found.',
+      );
     case 'already-exists':
       return const AlreadyExistsFailure();
     case 'failed-precondition':
@@ -30,7 +32,8 @@ Failure mapFirestoreException(FirebaseException e) {
       );
     case 'aborted':
       return UnexpectedFailure(
-        message: 'The operation was aborted (transaction conflict). Please retry.',
+        message:
+            'The operation was aborted (transaction conflict). Please retry.',
       );
     case 'unavailable':
       return const NoConnectionFailure(
@@ -42,7 +45,8 @@ Failure mapFirestoreException(FirebaseException e) {
       );
     case 'resource-exhausted':
       return UnexpectedFailure(
-        message: 'Firestore quota exceeded or too many requests. Please try again later.',
+        message:
+            'Firestore quota exceeded or too many requests. Please try again later.',
       );
     case 'internal':
       return ServerFailure(

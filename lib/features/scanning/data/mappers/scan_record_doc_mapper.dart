@@ -13,16 +13,25 @@ class ScanRecordDocMapper {
   static ScanRecord fromData(Map<String, dynamic> data) {
     return ScanRecord(
       id: data[FirestoreSchema.id] as int?,
-      scanType: ScanType.fromString((data[FirestoreSchema.scanType] as String?) ?? ''),
+      scanType: ScanType.fromString(
+        (data[FirestoreSchema.scanType] as String?) ?? '',
+      ),
       imagePath: (data[FirestoreSchema.imagePath] as String?) ?? '',
       rawOcrText: data[FirestoreSchema.rawOcrText] as String?,
       extractedData: data[FirestoreSchema.extractedData] as String?,
-      confidenceScore: (data[FirestoreSchema.confidenceScore] as num?)?.toDouble(),
-      status: ScanStatus.fromString((data[FirestoreSchema.statusScan] as String?) ?? ''),
+      confidenceScore: (data[FirestoreSchema.confidenceScore] as num?)
+          ?.toDouble(),
+      status: ScanStatus.fromString(
+        (data[FirestoreSchema.statusScan] as String?) ?? '',
+      ),
       confirmedBy: (data[FirestoreSchema.confirmedBy] as num?)?.toInt(),
-      confirmedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.confirmedAt]),
+      confirmedAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.confirmedAt],
+      ),
       corrections: data[FirestoreSchema.corrections] as String?,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -37,7 +46,9 @@ class ScanRecordDocMapper {
       FirestoreSchema.confidenceScore: scan.confidenceScore,
       FirestoreSchema.statusScan: scan.status.value,
       FirestoreSchema.confirmedBy: scan.confirmedBy,
-      FirestoreSchema.confirmedAt: DateFieldCodec.toFirestoreDate(scan.confirmedAt),
+      FirestoreSchema.confirmedAt: DateFieldCodec.toFirestoreDate(
+        scan.confirmedAt,
+      ),
       FirestoreSchema.corrections: scan.corrections,
       FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(scan.createdAt),
     };

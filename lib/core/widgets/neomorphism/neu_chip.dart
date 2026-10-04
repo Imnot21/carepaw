@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
-import 'neu_shadows.dart';
+import 'neu_style.dart';
 
-/// Neumorphic filter / choice chip — an organic pill contour.
+/// Filter / choice chip — an extruded pill.
 ///
-/// A small raised plate that switches to a selected state (terracotta accent
-/// glow), or an unselected raised/flat state. Used for queue filters, species
-/// chips, and appointment-type pickers.
+/// Unselected stands proud of the canvas. Selected **sinks into it**: the light
+/// and depth swap and the fill takes the accent tint, so selection is a change
+/// of lighting rather than a border that appeared. Nothing about the chip grows
+/// or changes size, which keeps a filter row from reflowing as it is used.
 class NeuChip extends StatefulWidget {
   final String label;
   final IconData? icon;
@@ -17,6 +18,10 @@ class NeuChip extends StatefulWidget {
   final bool enabled;
   final Color? selectedColor;
   final NeuVariant unselectedVariant;
+
+  /// Optional style override. When provided, its [NeumorphicStyle.borderRadius]
+  /// and [NeumorphicStyle.padding] take precedence over the token defaults.
+  final NeumorphicStyle? style;
 
   const NeuChip({
     super.key,
@@ -27,6 +32,7 @@ class NeuChip extends StatefulWidget {
     this.enabled = true,
     this.selectedColor,
     this.unselectedVariant = NeuVariant.raised,
+    this.style,
   });
 
   @override
@@ -34,45 +40,65 @@ class NeuChip extends StatefulWidget {
 }
 
 class _NeuChipState extends State<NeuChip> {
-  bool _pressed = false;
-
   @override
   Widget build(BuildContext context) {
     final accent = widget.selectedColor ?? ThemeColors.primary(context);
+    final radius = widget.style?.borderRadius ?? NeuTokens.radiusPill;
 
-    return GestureDetector(
-      onTap: widget.enabled ? widget.onTap : null,
-      onTapDown: (_) => widget.enabled ? setState(() => _pressed = true) : null,
-      onTapUp: (_) => widget.enabled ? setState(() => _pressed = false) : null,
-      onTapCancel: () => widget.enabled ? setState(() => _pressed = false) : null,
-      child: Opacity(
-        opacity: widget.enabled ? 1 : 0.5,
-        child: AnimatedScale(
-          scale: _pressed ? 0.95 : 1,
-          duration: const Duration(milliseconds: 80),
+    return Semantics(
+      button: true,
+      selected: widget.selected,
+      enabled: widget.enabled,
+      label: widget.label,
+      child: GestureDetector(
+        onTap: widget.enabled ? widget.onTap : null,
+        child: Opacity(
+          opacity: widget.enabled ? 1 : NeuTokens.opacityDisabled,
           child: NeuContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            borderRadius: 20,
-            variant: widget.selected ? NeuVariant.pressed : widget.unselectedVariant,
-            boxShadow: widget.selected ? NeuShadow.color(context, accent, blur: 14, opacity: 0.35) : null,
-            borderColor: widget.selected ? accent : null,
-            borderWidth: widget.selected ? 1 : 0,
+            style: widget.style?.copyWith(borderRadius: radius),
+            padding:
+                widget.style?.padding ??
+                const EdgeInsets.symmetric(
+                  horizontal: NeuTokens.spaceSm,
+                  vertical: NeuTokens.spaceXs,
+                ),
+            borderRadius: radius,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius),
+            ),
+            variant: widget.selected
+                ? NeuVariant.pressed
+                : widget.unselectedVariant,
+            color: widget.selected
+                ? Color.alphaBlend(
+                    accent.withValues(alpha: 0.16),
+                    ThemeColors.surfaceMuted(context),
+                  )
+                : (widget.style?.color ?? null),
+            borderColor: null,
+            borderWidth: 0,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (widget.icon != null) ...[
                   Icon(
                     widget.icon,
-                    size: 16,
-                    color: widget.selected ? accent : ThemeColors.textSecondary(context),
+                    size: NeuTokens.iconXs,
+                    color: widget.selected
+                        ? accent
+                        : ThemeColors.textSecondary(context),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: NeuTokens.spaceXxs + 2),
                 ],
                 Text(
                   widget.label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: widget.selected ? accent : ThemeColors.textPrimary(context),
-                    fontWeight: FontWeight.w600,
+                    color: widget.selected
+                        ? accent
+                        : ThemeColors.textPrimary(context),
+                    fontWeight: widget.selected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                   ),
                 ),
               ],

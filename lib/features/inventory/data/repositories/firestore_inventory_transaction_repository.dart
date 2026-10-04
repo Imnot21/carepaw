@@ -15,12 +15,13 @@ import 'package:carepaw/features/inventory/domain/repositories/inventory_reposit
 /// append-only audit records of every inventory movement.
 ///
 /// The former Drift repository is intentionally set aside and no longer wired.
-class FirestoreInventoryTransactionRepository implements InventoryTransactionRepository {
+class FirestoreInventoryTransactionRepository
+    implements InventoryTransactionRepository {
   FirestoreInventoryTransactionRepository({
     required FirebaseFirestore firestore,
     required FirestoreIdSequence inventoryTransactionIdSequence,
-  })  : _firestore = firestore,
-        _idSequence = inventoryTransactionIdSequence;
+  }) : _firestore = firestore,
+       _idSequence = inventoryTransactionIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -33,7 +34,9 @@ class FirestoreInventoryTransactionRepository implements InventoryTransactionRep
   @override
   Future<InventoryTransaction?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : InventoryTransactionDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : InventoryTransactionDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -50,7 +53,9 @@ class FirestoreInventoryTransactionRepository implements InventoryTransactionRep
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _transactions.doc('${toWrite.id}').set(InventoryTransactionDocMapper.toData(toWrite));
+    await _transactions
+        .doc('${toWrite.id}')
+        .set(InventoryTransactionDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -72,22 +77,28 @@ class FirestoreInventoryTransactionRepository implements InventoryTransactionRep
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return InventoryTransactionDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return InventoryTransactionDocMapper.fromData(
+            snapshot.docs.first.data(),
+          );
+        });
   }
 
   @override
   Stream<List<InventoryTransaction>> watchAll() {
-    return _transactions.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => InventoryTransactionDocMapper.fromData(doc.data()))
-        .toList());
+    return _transactions.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => InventoryTransactionDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<InventoryTransaction, int> ============
 
   @override
-  Future<PaginatedResult<InventoryTransaction>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<InventoryTransaction>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -96,16 +107,22 @@ class FirestoreInventoryTransactionRepository implements InventoryTransactionRep
 
   @override
   Future<List<InventoryTransaction>> findByBatch(int batchId) async {
-    final snapshot = await _transactions.where(FirestoreSchema.batchId, isEqualTo: batchId).get();
-    final transactions = snapshot.docs
-        .map((doc) => InventoryTransactionDocMapper.fromData(doc.data()))
-        .toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final snapshot = await _transactions
+        .where(FirestoreSchema.batchId, isEqualTo: batchId)
+        .get();
+    final transactions =
+        snapshot.docs
+            .map((doc) => InventoryTransactionDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return transactions;
   }
 
   @override
-  Future<List<InventoryTransaction>> findByReference(String referenceType, int referenceId) async {
+  Future<List<InventoryTransaction>> findByReference(
+    String referenceType,
+    int referenceId,
+  ) async {
     final snapshot = await _transactions
         .where(FirestoreSchema.referenceType, isEqualTo: referenceType)
         .where(FirestoreSchema.referenceId, isEqualTo: referenceId)
@@ -116,23 +133,35 @@ class FirestoreInventoryTransactionRepository implements InventoryTransactionRep
   }
 
   @override
-  Future<InventoryTransaction> create(InventoryTransaction transaction) => save(transaction);
+  Future<InventoryTransaction> create(InventoryTransaction transaction) =>
+      save(transaction);
 
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<InventoryTransaction> createWithSync(InventoryTransaction entity, String tableName) async => save(entity);
+  Future<InventoryTransaction> createWithSync(
+    InventoryTransaction entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<InventoryTransaction> updateWithSync(InventoryTransaction entity, String tableName) async => save(entity);
+  Future<InventoryTransaction> updateWithSync(
+    InventoryTransaction entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => delete(id);
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _transactions.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _transactions
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

@@ -15,7 +15,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
-/// Inventory form page with neumorphic design.
+/// Inventory form page with the CarePaw surface system.
 class InventoryFormPage extends StatefulWidget {
   final InventoryItem? item;
 
@@ -104,13 +104,10 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          _buildForm(),
-        ],
-      ),
+      backgroundColor: _isDark
+          ? AppColors.backgroundDark
+          : AppColors.background,
+      body: CustomScrollView(slivers: [_buildAppBar(), _buildForm()]),
       bottomNavigationBar: _buildBottomBar(),
     );
   }
@@ -146,8 +143,11 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                     variant: NeuVariant.raised,
                     color: _getCategoryColor(_selectedCategory),
                     boxShadow: NeuShadow.color(
-                        context, _getCategoryColor(_selectedCategory),
-                        blur: 16, opacity: 0.3),
+                      context,
+                      _getCategoryColor(_selectedCategory),
+                      blur: 16,
+                      opacity: 0.3,
+                    ),
                     child: Icon(
                       _getCategoryIcon(_selectedCategory),
                       size: 32,
@@ -300,7 +300,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                               if (num == null || num < 0) {
                                 return 'Invalid number';
                               }
-                              final min = double.tryParse(_minStockController.text);
+                              final min = double.tryParse(
+                                _minStockController.text,
+                              );
                               if (min != null && num < min) {
                                 return 'Must be ≥ min stock';
                               }
@@ -324,7 +326,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                           keyboardType: TextInputType.number,
                           prefixIcon: const Icon(Icons.attach_money_rounded),
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
                           ],
                           validator: (value) {
                             if (value != null && value.trim().isNotEmpty) {
@@ -384,8 +388,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                 padding: const EdgeInsets.all(16),
                 borderRadius: 16,
                 variant: NeuVariant.raised,
-                borderColor:
-                    _getCategoryColor(_selectedCategory).withValues(alpha: 0.2),
+                borderColor: _getCategoryColor(
+                  _selectedCategory,
+                ).withValues(alpha: 0.2),
                 borderWidth: 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,8 +415,11 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                             variant: NeuVariant.raised,
                             color: _getCategoryColor(_selectedCategory),
                             boxShadow: NeuShadow.color(
-                                context, _getCategoryColor(_selectedCategory),
-                                blur: 12, opacity: 0.28),
+                              context,
+                              _getCategoryColor(_selectedCategory),
+                              blur: 12,
+                              opacity: 0.28,
+                            ),
                             child: Icon(
                               _getCategoryIcon(_selectedCategory),
                               size: 24,
@@ -460,7 +468,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                               Text(
                                 'Max: ${_maxStockController.text}',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context).brightness == Brightness.dark
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
                                       ? AppColors.infoDark
                                       : AppColors.info,
                                   fontWeight: FontWeight.w600,
@@ -588,28 +598,32 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
         : _locationController.text.trim();
 
     if (_isEditing) {
-      context.read<InventoryBloc>().add(UpdateInventoryItem(
-            id: widget.item!.id!,
-            name: name,
-            category: _selectedCategory,
-            unit: unit,
-            minStock: minStock,
-            maxStock: maxStock,
-            unitCost: unitCost,
-            supplier: supplier,
-            location: location,
-          ));
+      context.read<InventoryBloc>().add(
+        UpdateInventoryItem(
+          id: widget.item!.id!,
+          name: name,
+          category: _selectedCategory,
+          unit: unit,
+          minStock: minStock,
+          maxStock: maxStock,
+          unitCost: unitCost,
+          supplier: supplier,
+          location: location,
+        ),
+      );
     } else {
-      context.read<InventoryBloc>().add(CreateInventoryItem(
-            name: name,
-            category: _selectedCategory,
-            unit: unit,
-            minStock: minStock,
-            maxStock: maxStock,
-            unitCost: unitCost,
-            supplier: supplier,
-            location: location,
-          ));
+      context.read<InventoryBloc>().add(
+        CreateInventoryItem(
+          name: name,
+          category: _selectedCategory,
+          unit: unit,
+          minStock: minStock,
+          maxStock: maxStock,
+          unitCost: unitCost,
+          supplier: supplier,
+          location: location,
+        ),
+      );
     }
 
     // Listen for success/error
@@ -630,7 +644,8 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
           Navigator.pop(context, true);
@@ -645,7 +660,8 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         }

@@ -20,8 +20,8 @@ class FirestoreAuditLogRepository implements AuditLogRepository {
     required FirebaseFirestore firestore,
     required FirestoreIdSequence auditLogIdSequence,
     this._maxQuery = 1000,
-  })  : _firestore = firestore,
-        _idSequence = auditLogIdSequence;
+  }) : _firestore = firestore,
+       _idSequence = auditLogIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -38,7 +38,9 @@ class FirestoreAuditLogRepository implements AuditLogRepository {
   @override
   Future<AuditLog?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : AuditLogDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : AuditLogDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -79,9 +81,15 @@ class FirestoreAuditLogRepository implements AuditLogRepository {
   }
 
   @override
-  Future<List<AuditLog>> findByEntityType(String entityType, {int limit = 100}) async {
+  Future<List<AuditLog>> findByEntityType(
+    String entityType, {
+    int limit = 100,
+  }) async {
     final all = await _findOrderedByCreatedAtDesc(limit: _maxQuery);
-    return all.where((log) => log.entityType == entityType).take(limit).toList();
+    return all
+        .where((log) => log.entityType == entityType)
+        .take(limit)
+        .toList();
   }
 
   @override
@@ -96,14 +104,18 @@ class FirestoreAuditLogRepository implements AuditLogRepository {
         .orderBy(FirestoreSchema.createdAt, descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => AuditLogDocMapper.fromData(doc.data())).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => AuditLogDocMapper.fromData(doc.data()))
+              .toList(),
+        );
   }
 
   // ============ Sync-aware operations (not applicable; append-only) ============
 
   @override
-  Future<AuditLog> createWithSync(AuditLog entity, String tableName) async => save(entity);
+  Future<AuditLog> createWithSync(AuditLog entity, String tableName) async =>
+      save(entity);
 
   @override
   Future<AuditLog> updateWithSync(AuditLog entity, String tableName) async {
@@ -120,11 +132,18 @@ class FirestoreAuditLogRepository implements AuditLogRepository {
         .orderBy(FirestoreSchema.createdAt, descending: true)
         .limit(limit)
         .get();
-    return snapshot.docs.map((doc) => AuditLogDocMapper.fromData(doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => AuditLogDocMapper.fromData(doc.data()))
+        .toList();
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _audit.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _audit
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 }

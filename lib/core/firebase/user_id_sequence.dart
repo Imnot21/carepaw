@@ -21,7 +21,9 @@ class UserIdSequence {
     final docRef = _firestore.collection(_counterCollection).doc(_counterDoc);
     return _firestore.runTransaction((txn) async {
       final snapshot = await txn.get(docRef);
-      final raw = snapshot.exists ? (snapshot.data()?[_valueField] as int?) : null;
+      final raw = snapshot.exists
+          ? (snapshot.data()?[_valueField] as int?)
+          : null;
       final current = raw ?? 0;
       final nextValue = current + 1;
       txn.set(docRef, {_valueField: nextValue});

@@ -2,8 +2,11 @@ import 'package:carepaw/core/repositories/base_repository.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 
 /// Scan record repository interface - domain layer contract
-abstract class ScanRecordRepository extends SoftDeleteRepository<ScanRecord, int>
-    implements StreamRepository<ScanRecord, int>, PaginatedRepository<ScanRecord, int> {
+abstract class ScanRecordRepository
+    extends SoftDeleteRepository<ScanRecord, int>
+    implements
+        StreamRepository<ScanRecord, int>,
+        PaginatedRepository<ScanRecord, int> {
   /// Sync-aware operations
   @override
   Future<ScanRecord> createWithSync(ScanRecord entity, String tableName);
@@ -13,6 +16,7 @@ abstract class ScanRecordRepository extends SoftDeleteRepository<ScanRecord, int
 
   @override
   Future<void> deleteWithSync(int id, String tableName);
+
   /// Find scan records by type
   Future<List<ScanRecord>> findByType(ScanType scanType);
 

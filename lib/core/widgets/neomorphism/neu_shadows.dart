@@ -1,219 +1,202 @@
-import 'dart:ui' as ui;
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/design_tokens.dart';
 
-/// Neomorphism shadow system.
+/// The extrusion engine.
 ///
-/// The core of the design language. Every raised element casts a **dual
-/// shadow**: a white (or lighter-than-canvas) light source from the upper-left
-/// and a muted blue-gray (or darker-than-canvas) depth shadow from the
-/// lower-right. Pressed elements invert this so they look pushed into the
-/// surface.
+/// Every raised plane in CarePaw is lit from the top-left and casts depth to the
+/// bottom-right. Both halves are always drawn: a lone shadow reads as a sticker
+/// floating above the page, not as a surface with volume.
 ///
+/// Three calibration rules keep the extrusion legible instead of mushy:
 ///
-/// Shadows resolve by [`Brightness`]: light mode uses a white light source,
-/// dark mode inverts the source so the light comes from below (embossed).
+/// 1. **The depth shadow is tinted.** It is the canvas hue darkened, never a
+///    neutral gray — a gray shadow on `#F8F5F0` reads as dirt.
+/// 2. **Blur runs at roughly twice the distance.** A tight shadow reads as a
+///    hard bevel; a soft one reads as a lit surface.
+/// 3. **Dark mode drops the light source.** A white highlight on charcoal
+///    describes a light that is not there, so the top-left half becomes a faint
+///    rim in the surface's own hue and the depth shadow carries the volume.
 ///
-///
-/// Note: this Flutter build's [`BoxShadow`] has no `inset` parameter, so the
-/// sunken effect is rendered by [`NeuInsetPainter`] instead of BoxShadow lists.
-class NeuShadow {
-  NeuShadow._();
+/// All values resolve by [Brightness] and come from [NeuTokens], so the whole
+/// system can be retuned from one file.
+abstract final class NeuShadow {
+  const NeuShadow._();
 
-  /// Resolve the canvas color for the current brightness.
-  static Color _surface(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? AppColors.surfaceDarkMode
-          : AppColors.surface;
+  static bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
 
-  /// Resolve the light-source shadow color for the current brightness.
-  static Color _light(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? AppColors.shadowLightOnDark
-          : AppColors.shadowLight;
+  /// Resolve the canvas colour for the current brightness.
+  static Color surfaceOf(BuildContext context) =>
+      _isDark(context) ? AppColors.surfaceDarkMode : AppColors.surface;
 
-  /// Resolve the depth shadow color for the current brightness.
-  static Color _dark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? AppColors.shadowDarkOnDark
-          : AppColors.shadowDark;
+  static Color _light(BuildContext context, double opacity) =>
+      _lightColorOf(context).withValues(alpha: opacity);
 
-  /// The surface color a neumorphic element should render on.
-  static Color surfaceOf(BuildContext context) => _surface(context);
+  static Color _depth(BuildContext context, double opacity) =>
+      _depthColorOf(context).withValues(alpha: opacity);
 
-  /// Raised (default) — the surface appears to float above the canvas.
+  static Color _lightColorOf(BuildContext context) =>
+      _isDark(context) ? AppColors.shadowLightDark : AppColors.shadowLight;
+
+  static Color _depthColorOf(BuildContext context) =>
+      _isDark(context) ? AppColors.shadowDepthDark : AppColors.shadowDepth;
+
+  static Color _floatingColorOf(BuildContext context) =>
+      _isDark(context) ? AppColors.shadowDepthDark : AppColors.shadowFloating;
+
+  /// Raised — the workhorse. A card sitting proud of the canvas.
+  ///
+  /// Light mode draws the full pair. Dark mode tightens the distance slightly
+  /// and leans harder on the depth shadow, because a charcoal surface loses
+  /// more of its silhouette than a white one.
   static List<BoxShadow> raised(
     BuildContext context, {
-    double distance = 8,
-    double blur = 18,
+    double? distance,
+    double? blur,
     double? spread,
   }) {
+    final dark = _isDark(context);
+    final d =
+        distance ??
+        (dark
+            ? NeuTokens.shadowExtrudeDistanceDark
+            : NeuTokens.shadowExtrudeDistance);
+    final b = blur ?? NeuTokens.shadowExtrudeBlur;
+    final lightOpacity = dark
+        ? NeuTokens.shadowExtrudeLightOpacityDark
+        : NeuTokens.shadowExtrudeLightOpacity;
+    final depthOpacity = dark
+        ? NeuTokens.shadowExtrudeDarkOpacityDark
+        : NeuTokens.shadowExtrudeDarkOpacity;
+
     return [
       BoxShadow(
-        color: _dark(context).withValues(alpha: 0.22),
-        offset: Offset(distance, distance),
-        blurRadius: blur,
+        color: _light(context, lightOpacity),
+        offset: Offset(-d, -d),
+        blurRadius: b,
         spreadRadius: spread ?? 0,
       ),
       BoxShadow(
-        color: _light(context).withValues(alpha: 0.78),
-        offset: Offset(-distance * 0.9, -distance * 0.9),
-        blurRadius: blur * 0.8,
+        color: _depth(context, depthOpacity),
+        offset: Offset(d, d),
+        blurRadius: b,
         spreadRadius: spread ?? 0,
       ),
     ];
   }
 
-  /// Pressed-looking raised plate — moderate dual shadow for active buttons.
-  static List<BoxShadow> pressed(
-    BuildContext context, {
-    double distance = 5,
-    double blur = 12,
-  }) {
+  /// Pressed — the same pair with the light and the depth swapped.
+  ///
+  /// This is what makes a card appear to sink into the canvas rather than
+  /// shrink. Cards must not scale on press; swapping which side is lit is the
+  /// quieter, more legible signal at card size.
+  static List<BoxShadow> pressed(BuildContext context) {
+    final dark = _isDark(context);
+    final d = NeuTokens.shadowPressedDistance;
+    final b = NeuTokens.shadowPressedBlur;
+    final lightOpacity = dark
+        ? NeuTokens.shadowPressedDarkOpacityDark
+        : NeuTokens.shadowPressedLightOpacity;
+    final depthOpacity = dark
+        ? NeuTokens.shadowPressedDarkOpacityDark
+        : NeuTokens.shadowPressedDarkOpacity;
+
     return [
       BoxShadow(
-        color: _dark(context).withValues(alpha: 0.18),
-        offset: Offset(distance, distance),
-        blurRadius: blur,
+        color: _depth(context, lightOpacity),
+        offset: Offset(-d, -d),
+        blurRadius: b,
       ),
       BoxShadow(
-        color: _light(context).withValues(alpha: 0.65),
-        offset: Offset(-distance * 0.9, -distance * 0.9),
-        blurRadius: blur * 0.8,
+        color: _light(context, depthOpacity),
+        offset: Offset(d, d),
+        blurRadius: b,
       ),
     ];
   }
 
-  /// Flat — minimal shadow, for secondary/muted elements.
-  static List<BoxShadow> flat(
-    BuildContext context, {
-    double distance = 4,
-    double blur = 10,
-  }) {
+  /// Inset — a recessed well for input fields and progress tracks.
+  ///
+  /// Shares the pressed logic but runs a longer radius, so the inner falloff
+  /// reads as a cavity rather than as a button being held down. A well is
+  /// always filled and never outlined: an edge around a recessed field reads as
+  /// an error state rather than as somewhere to type.
+  static List<BoxShadow> inset(BuildContext context) {
+    final dark = _isDark(context);
+    final d = NeuTokens.shadowInsetDistance;
+    final b = NeuTokens.shadowInsetBlur;
+    final lightOpacity = dark
+        ? NeuTokens.shadowInsetLightOpacityDark
+        : NeuTokens.shadowInsetLightOpacity;
+    final depthOpacity = dark
+        ? NeuTokens.shadowInsetDarkOpacityDark
+        : NeuTokens.shadowInsetDarkOpacity;
+
     return [
       BoxShadow(
-        color: _dark(context).withValues(alpha: 0.12),
-        offset: Offset(distance, distance),
-        blurRadius: blur,
+        color: _depth(context, lightOpacity),
+        offset: Offset(-d, -d),
+        blurRadius: b,
       ),
       BoxShadow(
-        color: _light(context).withValues(alpha: 0.42),
-        offset: Offset(-distance * 0.8, -distance * 0.8),
-        blurRadius: blur * 0.75,
+        color: _light(context, depthOpacity),
+        offset: Offset(d, d),
+        blurRadius: b,
       ),
     ];
   }
+
+  /// Flat — no extrusion. Quiet groupings, table headers, section backgrounds.
+  ///
+  /// This is a deliberate plane in the system, not a stripped-back raised: a
+  /// surface with no shadow is meant to sit flush with its parent.
+  static List<BoxShadow> flat(BuildContext context) => none;
 
   /// No shadow — for transparent / ghost elements.
   static const List<BoxShadow> none = [];
 
-  /// A single colored glow — for status accents (selected chips, badges).
+  /// Floating — bottom nav, FAB, dialog, bottom sheet.
+  ///
+  /// One offset shadow, cast straight down. These sit above other surfaces
+  /// rather than beside them, so a corner light source would be a lie about
+  /// where they are.
+  static List<BoxShadow> floating(
+    BuildContext context, {
+    double distance = NeuTokens.shadowFloatingDistance,
+    double blur = NeuTokens.shadowFloatingBlur,
+    double? opacity,
+  }) {
+    final resolvedOpacity =
+        opacity ??
+        (_isDark(context)
+            ? NeuTokens.shadowFloatingDarkOpacityDark
+            : NeuTokens.shadowFloatingDarkOpacity);
+    return [
+      BoxShadow(
+        color: _floatingColorOf(context).withValues(alpha: resolvedOpacity),
+        offset: Offset(0, distance),
+        blurRadius: blur,
+      ),
+    ];
+  }
+
+  /// Accent shadow — an anchored glow for a selected or active element.
+  ///
+  /// The offset is what makes this read as depth rather than as a halo; a chip
+  /// that lights up without an anchor floats ambiguously. Rationed: the accent
+  /// may glow, the canvas may not.
   static List<BoxShadow> color(
     BuildContext context,
     Color color, {
-    double blur = 18,
-    double opacity = 0.35,
+    double blur = NeuTokens.shadowAccentBlur,
+    double opacity = NeuTokens.shadowAccentOpacity,
   }) {
     return [
       BoxShadow(
         color: color.withValues(alpha: opacity),
+        offset: Offset(0, (blur * 0.25).roundToDouble()),
         blurRadius: blur,
-        spreadRadius: 1,
       ),
     ];
   }
-
-  /// Sunken (inset) shadow spec — dark edge upper-left, light edge lower-right.
-  static List<NeuInsetShadow> inset(
-    BuildContext context, {
-    double distance = 5,
-    double blur = 12,
-    double spread = -1,
-  }) {
-    return [
-      NeuInsetShadow(
-        color: _dark(context).withValues(alpha: 0.24),
-        offset: Offset(distance, distance),
-        blurRadius: blur,
-        spread: spread,
-      ),
-      NeuInsetShadow(
-        color: _light(context).withValues(alpha: 0.7),
-        offset: Offset(-distance * 0.9, -distance * 0.9),
-        blurRadius: blur,
-        spread: spread,
-      ),
-    ];
-  }
-}
-
-/// One edge-shadow of a sunken surface. Rendered by [`NeuInsetPainter`].
-@immutable
-class NeuInsetShadow {
-  final Color color;
-  final Offset offset;
-  final double blurRadius;
-  final double spread;
-
-  const NeuInsetShadow({
-    required this.color,
-    required this.offset,
-    required this.blurRadius,
-    this.spread = -1,
-  });
-
-  @override
-  bool operator ==(Object other) =>
-      other is NeuInsetShadow &&
-      other.color == color &&
-      other.offset == offset &&
-      other.blurRadius == blurRadius &&
-      other.spread == spread;
-
-  @override
-  int get hashCode => Object.hash(color, offset, blurRadius, spread);
-}
-
-/// Paints sunken (inset) edge shadows clipped to a rounded rectangle.
-///
-/// `BoxShadow` in this Flutter build cannot render true inset shadows, so this
-/// painter draws translated, blurred copies of the rounded-rect path clipped to
-/// its own bounds — producing the classic neumorphic recessed edge.
-class NeuInsetPainter extends CustomPainter {
-  final List<NeuInsetShadow> shadows;
-  final double borderRadius;
-
-  const NeuInsetPainter({required this.shadows, required this.borderRadius});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (shadows.isEmpty) return;
-    final rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(borderRadius),
-    );
-    final clipPath = Path()..addRRect(rrect);
-
-    canvas.save();
-    canvas.clipPath(clipPath);
-    for (final shadow in shadows) {
-      final path = Path()
-        ..addRRect(rrect.shift(shadow.offset).inflate(shadow.spread));
-      final paint = Paint()
-        ..color = shadow.color
-        ..maskFilter = ui.MaskFilter.blur(
-          ui.BlurStyle.normal,
-          shadow.blurRadius * 0.5,
-        );
-      canvas.drawPath(path, paint);
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(NeuInsetPainter oldDelegate) =>
-      oldDelegate.borderRadius != borderRadius ||
-      !listEquals(oldDelegate.shadows, shadows);
 }

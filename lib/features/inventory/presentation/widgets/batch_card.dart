@@ -53,8 +53,8 @@ class BatchCard extends StatelessWidget {
       borderColor: isExpired
           ? ThemeColors.error(context).withValues(alpha: 0.3)
           : isExpiringSoon || highlightExpiry
-              ? ThemeColors.warning(context).withValues(alpha: 0.3)
-              : categoryColor.withValues(alpha: 0.1),
+          ? ThemeColors.warning(context).withValues(alpha: 0.3)
+          : categoryColor.withValues(alpha: 0.1),
       borderWidth: 1,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -101,23 +101,28 @@ class BatchCard extends StatelessWidget {
                   children: [
                     if (isExpired)
                       _buildStatusBadge(
-                          'Expired',
-                          Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.errorOnDark
-                              : AppColors.error)
+                        'Expired',
+                        Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.errorOnDark
+                            : AppColors.error,
+                      )
                     else if (isExpiringSoon || highlightExpiry)
                       _buildStatusBadge(
-                          isExpiringSoon ? 'Expiring Soon' : 'Track Expiry',
-                          Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.warningOnDark
-                              : AppColors.warning),
+                        isExpiringSoon ? 'Expiring Soon' : 'Track Expiry',
+                        Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.warningOnDark
+                            : AppColors.warning,
+                      ),
                     const SizedBox(width: 8),
                     if (onEdit != null || onTransaction != null)
                       PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert_rounded,
-                            color: ThemeColors.textTertiary(context)),
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          color: ThemeColors.textTertiary(context),
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         onSelected: (value) {
                           if (value == 'edit') onEdit?.call();
                           if (value == 'transaction') onTransaction?.call();
@@ -127,12 +132,15 @@ class BatchCard extends StatelessWidget {
                             value: 'transaction',
                             child: Row(
                               children: [
-                                Icon(Icons.add_circle_rounded,
-                                    size: 20,
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? AppColors.successOnDark
-                                        : AppColors.success),
+                                Icon(
+                                  Icons.add_circle_rounded,
+                                  size: 20,
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? AppColors.successOnDark
+                                      : AppColors.success,
+                                ),
                                 SizedBox(width: 8),
                                 Text('Add Transaction'),
                               ],
@@ -142,9 +150,11 @@ class BatchCard extends StatelessWidget {
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(Icons.edit_rounded,
-                                    size: 20,
-                                    color: ThemeColors.primary(context)),
+                                Icon(
+                                  Icons.edit_rounded,
+                                  size: 20,
+                                  color: ThemeColors.primary(context),
+                                ),
                                 SizedBox(width: 8),
                                 Text('Edit Batch'),
                               ],
@@ -190,15 +200,15 @@ class BatchCard extends StatelessWidget {
                       Icons.event_rounded,
                       isExpired
                           ? (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.errorOnDark
-                              : AppColors.error)
+                                ? AppColors.errorOnDark
+                                : AppColors.error)
                           : isExpiringSoon
-                              ? (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.warningOnDark
-                                  : AppColors.warning)
-                              : (Theme.of(context).brightness == Brightness.dark
-                                  ? AppColors.successOnDark
-                                  : AppColors.success),
+                          ? (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.warningOnDark
+                                : AppColors.warning)
+                          : (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.successOnDark
+                                : AppColors.success),
                     ),
                   )
                 else
@@ -218,7 +228,9 @@ class BatchCard extends StatelessWidget {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 8),
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
                       ? AppColors.surfaceContainerDark
@@ -228,8 +240,11 @@ class BatchCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.attach_money_rounded,
-                        size: 18, color: ThemeColors.textSecondary(context)),
+                    Icon(
+                      Icons.attach_money_rounded,
+                      size: 18,
+                      color: ThemeColors.textSecondary(context),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Cost/Unit: ${formatCurrency(batch.costPerUnit!)}',
@@ -240,8 +255,11 @@ class BatchCard extends StatelessWidget {
                     ),
                     if (batch.supplier != null) ...[
                       const SizedBox(width: 16),
-                      Icon(Icons.local_shipping_rounded,
-                          size: 18, color: ThemeColors.textSecondary(context)),
+                      Icon(
+                        Icons.local_shipping_rounded,
+                        size: 18,
+                        color: ThemeColors.textSecondary(context),
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         batch.supplier!,

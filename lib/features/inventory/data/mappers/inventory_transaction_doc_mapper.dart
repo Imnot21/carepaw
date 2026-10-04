@@ -14,16 +14,23 @@ class InventoryTransactionDocMapper {
     return InventoryTransaction(
       id: data[FirestoreSchema.id] as int?,
       batchId: (data[FirestoreSchema.batchId] as num?)?.toInt() ?? 0,
-      type: TransactionType.fromString((data[FirestoreSchema.type] as String?) ?? ''),
-      quantityChange: (data[FirestoreSchema.quantityChange] as num?)?.toDouble() ?? 0,
-      quantityBefore: (data[FirestoreSchema.quantityBefore] as num?)?.toDouble() ?? 0,
-      quantityAfter: (data[FirestoreSchema.quantityAfter] as num?)?.toDouble() ?? 0,
+      type: TransactionType.fromString(
+        (data[FirestoreSchema.type] as String?) ?? '',
+      ),
+      quantityChange:
+          (data[FirestoreSchema.quantityChange] as num?)?.toDouble() ?? 0,
+      quantityBefore:
+          (data[FirestoreSchema.quantityBefore] as num?)?.toDouble() ?? 0,
+      quantityAfter:
+          (data[FirestoreSchema.quantityAfter] as num?)?.toDouble() ?? 0,
       reason: (data[FirestoreSchema.reasonInv] as String?) ?? '',
       referenceType: data[FirestoreSchema.referenceType] as String?,
       referenceId: (data[FirestoreSchema.referenceId] as num?)?.toInt(),
       performedBy: (data[FirestoreSchema.performedBy] as num?)?.toInt() ?? 0,
       notes: data[FirestoreSchema.notesInv] as String?,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -41,7 +48,9 @@ class InventoryTransactionDocMapper {
       FirestoreSchema.referenceId: transaction.referenceId,
       FirestoreSchema.performedBy: transaction.performedBy,
       FirestoreSchema.notesInv: transaction.notes,
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(transaction.createdAt),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        transaction.createdAt,
+      ),
     };
   }
 }

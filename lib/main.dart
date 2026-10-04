@@ -81,7 +81,9 @@ class _CarePawAppState extends State<CarePawApp> {
 
     try {
       debugPrint('🔄 Initializing LocalNotificationService...');
-      await LocalNotificationService.initialize().timeout(const Duration(seconds: 10));
+      await LocalNotificationService.initialize().timeout(
+        const Duration(seconds: 10),
+      );
       debugPrint('✅ LocalNotificationService initialized');
     } catch (e) {
       debugPrint('⚠️ LocalNotificationService init failed: $e');
@@ -172,9 +174,9 @@ class _CarePawAppState extends State<CarePawApp> {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>(
-            create: (context) => AuthBloc(
-              authRepository: getIt<AuthRepository>(),
-            )..add(const AuthCheckRequested()),
+            create: (context) =>
+                AuthBloc(authRepository: getIt<AuthRepository>())
+                  ..add(const AuthCheckRequested()),
           ),
         ],
         child: _CarePawAppRouter(),
@@ -287,7 +289,9 @@ class _InitializationErrorScreen extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               Theme.of(context).colorScheme.surface,
-              Theme.of(context).colorScheme.primaryContainer.withAlpha((255 * 0.45).round()),
+              Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withAlpha((255 * 0.45).round()),
             ],
           ),
         ),
@@ -322,7 +326,8 @@ class _InitializationErrorScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       Text(
                         'Initialization Failed',
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(
                               fontWeight: FontWeight.w800,
                               color: Theme.of(context).colorScheme.error,
                             ),
@@ -332,16 +337,16 @@ class _InitializationErrorScreen extends StatelessWidget {
                       Text(
                         'CarePaw could not start properly.',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 10),
                       Text(
                         error.toString(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 28),
@@ -378,7 +383,9 @@ class _InitializingScreen extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               Theme.of(context).colorScheme.surface,
-              Theme.of(context).colorScheme.primaryContainer.withAlpha((255 * 0.5).round()),
+              Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withAlpha((255 * 0.5).round()),
             ],
           ),
         ),
@@ -401,7 +408,9 @@ class _InitializingScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withAlpha((255 * 0.22).round()),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withAlpha((255 * 0.22).round()),
                       blurRadius: 28,
                       offset: const Offset(0, 14),
                     ),
@@ -417,16 +426,16 @@ class _InitializingScreen extends StatelessWidget {
               Text(
                 'CarePaw',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Smart Veterinary Care',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 30),
               const NeuCircularProgress(),
@@ -434,8 +443,8 @@ class _InitializingScreen extends StatelessWidget {
               Text(
                 'Initializing...',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

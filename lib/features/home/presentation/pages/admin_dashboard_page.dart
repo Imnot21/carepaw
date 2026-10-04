@@ -5,20 +5,14 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/app/router/routes.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 
-/// Admin Dashboard — Firestore-backed clinic administration.
-///
-/// Only accessible by the ADMIN role. Surface is intentionally lean:
-/// the three live admin destinations (users, audit, settings). No fabricated
-/// stats and no placeholder "coming soon" tiles — nothing is shown that
-/// isn't either a real route or backed by real data.
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
 
@@ -45,9 +39,9 @@ class _LoadingView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const NeuCircularProgress(),
-          const SizedBox(height: 16),
+          const SizedBox(height: NeuTokens.spaceMd),
           Text(
-            'Loading...',
+            'Loading\u2026',
             style: AppTextStyles.bodyMedium.subtleOf(
               Theme.of(context).brightness,
             ),
@@ -65,50 +59,54 @@ class _AccessDeniedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(NeuTokens.pagePadding),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NeuContainer(
-              borderRadius: 80,
-              padding: const EdgeInsets.all(28),
-              color: AppColors.error,
-              boxShadow: NeuShadow.color(
-                context,
-                AppColors.error,
-                blur: 24,
-                opacity: 0.32,
-              ),
-              child: const Icon(
+              variant: NeuVariant.inset,
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(NeuTokens.spaceLg),
+              child: Icon(
                 Icons.block_rounded,
-                size: 72,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Access Denied',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w600,
+                size: 48,
                 color: ThemeColors.error(context),
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: NeuTokens.spaceLg),
             Text(
-              'This area is for administrators only.',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: ThemeColors.textSecondary(context),
+              'Access denied',
+              style: AppTextStyles.headlineSmall.copyWith(
+                fontWeight: FontWeight.w700,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            NeuButton(
-              text: 'Go Back',
-              onPressed: () => context.pop(),
-              icon: Icons.arrow_back_rounded,
-              variant: NeuButtonVariant.secondary,
-              expanded: true,
+            const SizedBox(height: NeuTokens.spaceXs),
+            Text(
+              'This area is for administrators only.',
+              style: AppTextStyles.bodyMedium.subtleOf(
+                Theme.of(context).brightness,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: NeuTokens.spaceLg),
+            NeuContainer(
+              variant: NeuVariant.pressed,
+              shape: StadiumBorder(),
+              padding: EdgeInsets.symmetric(
+                horizontal: NeuTokens.spaceLg,
+                vertical: NeuTokens.spaceSm,
+              ),
+              child: GestureDetector(
+                onTap: () => context.pop(),
+                child: Text(
+                  'Go back',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: ThemeColors.textPrimary(context),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -138,14 +136,14 @@ class _AdminDashboardContent extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
+          titleSpacing: NeuTokens.pagePadding,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Good ${_getGreeting()}, $userName!',
+                'Good ${_getGreeting()}, $userName',
                 style: AppTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               Text(
@@ -157,33 +155,25 @@ class _AdminDashboardContent extends StatelessWidget {
             ],
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              onPressed: () => context.push(Routes.notifications),
+            NeuIconButton(
+              icon: Icons.notifications_none_rounded,
               tooltip: 'Notifications',
+              onPressed: () => context.push(Routes.notifications),
             ),
+            const SizedBox(width: NeuTokens.spaceXs),
           ],
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.surfaceDarkMode.withAlpha(200)
-                    : AppColors.surface.withAlpha(200),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.borderDark.withAlpha(100)
-                      : AppColors.border.withAlpha(100),
-                ),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [_AdminQuickActionsSection(), SizedBox(height: 8)],
-              ),
+            padding: const EdgeInsets.fromLTRB(
+              NeuTokens.pagePadding,
+              NeuTokens.spaceMd,
+              NeuTokens.pagePadding,
+              NeuTokens.spaceXl,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [_AdminQuickActionsSection()],
             ),
           ),
         ),
@@ -200,8 +190,6 @@ class _AdminDashboardContent extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick actions — only the three destinations that actually route somewhere.
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _AdminQuickActionsSection extends StatelessWidget {
   const _AdminQuickActionsSection();
@@ -213,12 +201,12 @@ class _AdminQuickActionsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Admin Actions',
+          'Admin actions',
           style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: NeuTokens.tightGap),
         Row(
           children: [
             Expanded(
@@ -229,11 +217,11 @@ class _AdminQuickActionsSection extends StatelessWidget {
                 onTap: () => context.push(Routes.adminUsers),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: NeuTokens.tightGap),
             Expanded(
               child: _AdminActionCard(
                 icon: Icons.receipt_long_outlined,
-                label: 'Audit Logs',
+                label: 'Audit logs',
                 color: accent,
                 onTap: () => context.push(Routes.adminAudit),
               ),
@@ -262,21 +250,16 @@ class _AdminActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuCard(
       onTap: onTap,
-      borderRadius: 16,
-      padding: const EdgeInsets.all(14),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 28),
+          NeuContainer(
+            variant: NeuVariant.pressed,
+            borderRadius: NeuTokens.radiusSm,
+            padding: const EdgeInsets.all(NeuTokens.spaceXs),
+            child: Icon(icon, color: color, size: NeuTokens.iconLg - 4),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: NeuTokens.spaceXs),
           Text(
             label,
             textAlign: TextAlign.center,

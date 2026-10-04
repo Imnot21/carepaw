@@ -5,13 +5,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carepaw/core/errors/error_handler.dart';
 import 'package:carepaw/core/errors/failures.dart';
 import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
+import 'package:carepaw/core/firebase/firebase_firestore_error_mapper.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/firebase/user_doc_mapper.dart';
 import 'package:carepaw/core/firebase/user_id_sequence.dart';
 import 'package:carepaw/core/security/secure_storage.dart';
 import 'package:carepaw/core/storage/local_storage.dart';
 import 'package:carepaw/core/utils/validators.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart' as auth_entities;
+import 'package:carepaw/features/authentication/domain/entities/user.dart'
+    as auth_entities;
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 
 typedef AuthResult = auth_entities.AuthResult;
@@ -36,15 +38,16 @@ class AuthRepositoryImpl implements AuthRepository {
   final UserIdSequence _userIdSequence;
 
   // Stream controller for auth state changes (mirrors Firebase sign-in state)
-  final _authStateController = StreamController<auth_entities.AuthResult?>.broadcast();
+  final _authStateController =
+      StreamController<auth_entities.AuthResult?>.broadcast();
 
   AuthRepositoryImpl({
     required FirebaseAuth firebaseAuth,
     required FirebaseFirestore firestore,
     required UserIdSequence userIdSequence,
-  })  : _firebaseAuth = firebaseAuth,
-        _firestore = firestore,
-        _userIdSequence = userIdSequence;
+  }) : _firebaseAuth = firebaseAuth,
+       _firestore = firestore,
+       _userIdSequence = userIdSequence;
 
   @override
   Future<AuthResult> login({
@@ -83,7 +86,10 @@ class AuthRepositoryImpl implements AuthRepository {
         throw const AccountLockedFailure();
       }
 
-      final authResult = _buildAuthResult(domainUser, await fireUser.getIdToken());
+      final authResult = _buildAuthResult(
+        domainUser,
+        await fireUser.getIdToken(),
+      );
       await _setLocalSession(domainUser);
       _authStateController.add(authResult);
       return authResult;
@@ -115,13 +121,11 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
-      print('Firebase Auth user created: ${credentials.user?.uid}');
-      if (credentials.user == null) {
-        throw const UnexpectedFailure(message: 'Failed to create Firebase Auth user');
-      }
       final fireUser = credentials.user;
       if (fireUser == null) {
-        throw const UnexpectedFailure(message: 'Failed to create account.');
+        throw const UnexpectedFailure(
+          message: 'Failed to create Firebase Auth user',
+        );
       }
 
       // Assign a globally-unique app-facing int id and persist the cloud profile.
@@ -138,67 +142,30 @@ class AuthRepositoryImpl implements AuthRepository {
         createdAt: now,
         updatedAt: now,
       );
-      print('Creating domain user with data: $domainUser');
-      print('Firebase UID: ${fireUser.uid}');
-      print('Document ID: ${fireUser.uid}');
+
       try {
-        try {
-        print('Attempting to write user document to Firestore');
-        print('Document data: ${UserDocMapper.toData(domainUser)}');
         final docRef = _firestore
             .collection(FirestoreSchema.users)
             .doc(fireUser.uid);
         await docRef.set(UserDocMapper.toData(domainUser));
-        print('Successfully wrote user document to Firestore');
-        // Verify the document was created
-        final docSnapshot = await docRef.get();
-        if (!docSnapshot.exists) {
-          throw const UnexpectedFailure(message: 'Failed to verify Firestore document creation');
-        }
-        print('Verified document exists in Firestore');
-        // Verify the document data matches what we wrote
-        final writtenData = docSnapshot.data();
-        final expectedData = UserDocMapper.toData(domainUser);
-        if (writtenData != expectedData) {
-          print('Warning: Written data does not match expected data');
-          print('Expected: $expectedData');
-          print('Actual: $writtenData');
-        }
-      } catch (e) {
-        print('Error writing to Firestore: $e');
-        if (e is FirebaseException) {
-          print('Firebase error code: ${e.code}');
-          print('Firebase error message: ${e.message}');
-          // Provide more specific error messages based on Firebase error codes
-          if (e.code == 'permission-denied') {
-            print('Permission denied: Check Firestore rules and ensure the user is properly authenticated');
-          } else if (e.code == 'invalid-argument') {
-            print('Invalid argument: Check the document data and structure');
-          } else if (e.code == 'not-found') {
-            print('Not found: The document path may be incorrect');
-          }
-        }
-        rethrow;
-      }
+      } on FirebaseException catch (e) {
+        // Firestore write failed (e.g. rules deny it). Roll back the Auth user
+        // that was already created, otherwise the email stays reserved and the
+        // next attempt fails with "email already in use" while no profile exists.
+        await _rollbackAuthUser(fireUser);
+        throw mapFirestoreException(e);
       } catch (_) {
-        // Firestore write failed (e.g. rules deny it). Roll back the just-created
-        // Auth user so we don't leave an orphaned account that can never sign in.
-        // Re-authenticate before deleting to ensure we have fresh credentials.
-        try {
-          final cred = EmailAuthProvider.credential(
-            email: email,
-            password: password,
-          );
-          await fireUser.reauthenticateWithCredential(cred);
-          await fireUser.delete();
-        } catch (_) {
-          // Best-effort cleanup; if this also fails the orphan is handled by
-          // the auto-provision path on next login.
-        }
-        rethrow;
+        await _rollbackAuthUser(fireUser);
+        throw const UnexpectedFailure(
+          message:
+              'Could not save your profile. The account was not created — please try again.',
+        );
       }
 
-      final authResult = _buildAuthResult(domainUser, await fireUser.getIdToken());
+      final authResult = _buildAuthResult(
+        domainUser,
+        await fireUser.getIdToken(),
+      );
       await _setLocalSession(domainUser);
       _authStateController.add(authResult);
       return authResult;
@@ -208,6 +175,21 @@ class AuthRepositoryImpl implements AuthRepository {
       throw mapFirebaseAuthException(e);
     } catch (e) {
       throw ErrorHandler.handleException(e);
+    }
+  }
+
+  /// Delete a just-created Auth user after its Firestore write failed.
+  ///
+  /// The session established moments earlier by
+  /// `createUserWithEmailAndPassword` is still inside Firebase's recent-login
+  /// window, so `delete()` succeeds without re-authenticating. If it fails the
+  /// account is orphaned; the login path's auto-provisioning heals that on the
+  /// next sign-in attempt.
+  Future<void> _rollbackAuthUser(User fireUser) async {
+    try {
+      await fireUser.delete();
+    } catch (_) {
+      // Best-effort cleanup.
     }
   }
 
@@ -236,7 +218,10 @@ class AuthRepositoryImpl implements AuthRepository {
         return null;
       }
 
-      final authResult = _buildAuthResult(domainUser, await current.getIdToken());
+      final authResult = _buildAuthResult(
+        domainUser,
+        await current.getIdToken(),
+      );
       await _setLocalSession(domainUser);
       _authStateController.add(authResult);
       return authResult;
@@ -261,7 +246,10 @@ class AuthRepositoryImpl implements AuthRepository {
         throw const SessionExpiredFailure();
       }
 
-      final authResult = _buildAuthResult(domainUser, await current.getIdToken(true));
+      final authResult = _buildAuthResult(
+        domainUser,
+        await current.getIdToken(true),
+      );
       _authStateController.add(authResult);
       return authResult;
     } on AuthFailure {
@@ -326,7 +314,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
     try {
       // `token` is the Firebase password-reset oobCode from the email link.
-      await _firebaseAuth.confirmPasswordReset(code: token, newPassword: newPassword);
+      await _firebaseAuth.confirmPasswordReset(
+        code: token,
+        newPassword: newPassword,
+      );
     } on FirebaseAuthException catch (e) {
       throw mapFirebaseAuthException(e);
     }
@@ -373,7 +364,9 @@ class AuthRepositoryImpl implements AuthRepository {
         effectiveRole = UserRole.admin;
       } else {
         // Not first user - check if email domain matches the first user's domain
-        final bool shouldBeAdmin = await _shouldBeAdminBasedOnEmailDomain(fireUser.email ?? '');
+        final bool shouldBeAdmin = await _shouldBeAdminBasedOnEmailDomain(
+          fireUser.email ?? '',
+        );
         effectiveRole = shouldBeAdmin ? UserRole.admin : UserRole.petOwner;
       }
 
@@ -405,7 +398,10 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Check if this is the first user being created in the system.
   /// Returns true if no users exist yet in the Firestore users collection.
   Future<bool> _isFirstUser() async {
-    final snapshot = await _firestore.collection(FirestoreSchema.users).limit(1).get();
+    final snapshot = await _firestore
+        .collection(FirestoreSchema.users)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty;
   }
 
@@ -434,7 +430,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final firstUserData = firstUserSnapshot.docs.first.data();
     final firstUserEmail = firstUserData[FirestoreSchema.email] as String?;
 
-    if (firstUserEmail == null || firstUserEmail.isEmpty || !firstUserEmail.contains('@')) {
+    if (firstUserEmail == null ||
+        firstUserEmail.isEmpty ||
+        !firstUserEmail.contains('@')) {
       // First user has no valid email
       return false;
     }

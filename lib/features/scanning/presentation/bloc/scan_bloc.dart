@@ -1,8 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
-import 'package:carepaw/features/scanning/domain/entities/scan_record.dart' as domain;
-import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart' as events;
-import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart' as states;
+import 'package:carepaw/features/scanning/domain/entities/scan_record.dart'
+    as domain;
+import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart'
+    as events;
+import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart'
+    as states;
 import 'package:carepaw/core/errors/failures.dart';
 
 /// Scan BLoC for managing scan records and OCR processing.
@@ -10,8 +13,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
   final ScanRecordRepository _scanRepository;
 
   ScanBloc({required ScanRecordRepository scanRepository})
-      : _scanRepository = scanRepository,
-        super(const states.ScanInitial()) {
+    : _scanRepository = scanRepository,
+      super(const states.ScanInitial()) {
     on<events.LoadScanRecords>(_onLoadScanRecords);
     on<events.LoadScanRecordsByType>(_onLoadScanRecordsByType);
     on<events.LoadPendingScans>(_onLoadPendingScans);
@@ -63,7 +66,9 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
   ) async {
     emit(const states.ScanLoading());
     try {
-      final records = await _scanRepository.findByStatus(domain.ScanStatus.pending);
+      final records = await _scanRepository.findByStatus(
+        domain.ScanStatus.pending,
+      );
       emit(states.PendingScansLoaded(records));
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
@@ -83,9 +88,11 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
       if (record != null) {
         emit(states.ScanRecordDetailLoaded(record));
       } else {
-        emit(const states.ScanError(NotFoundFailure(
-          message: 'Scan record not found',
-        )));
+        emit(
+          const states.ScanError(
+            NotFoundFailure(message: 'Scan record not found'),
+          ),
+        );
       }
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
@@ -109,7 +116,9 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
         createdAt: DateTime.now(),
       );
       await _scanRepository.save(record);
-      emit(const states.ScanOperationSuccess('Scan record created successfully'));
+      emit(
+        const states.ScanOperationSuccess('Scan record created successfully'),
+      );
       final records = await _scanRepository.findAll();
       emit(states.ScanRecordsLoaded(records));
     } on Failure catch (failure) {
@@ -133,15 +142,19 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
       // trusted blindly".)
       final record = await _scanRepository.findById(event.recordId);
       if (record == null) {
-        emit(const states.ScanError(NotFoundFailure(
-          message: 'Scan record not found',
-        )));
+        emit(
+          const states.ScanError(
+            NotFoundFailure(message: 'Scan record not found'),
+          ),
+        );
         return;
       }
 
-      emit(const states.ScanError(UnexpectedFailure(
-        message: 'OCR service is not configured yet',
-      )));
+      emit(
+        const states.ScanError(
+          UnexpectedFailure(message: 'OCR service is not configured yet'),
+        ),
+      );
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
@@ -158,9 +171,11 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     try {
       final record = await _scanRepository.findById(event.recordId);
       if (record == null) {
-        emit(const states.ScanError(NotFoundFailure(
-          message: 'Scan record not found',
-        )));
+        emit(
+          const states.ScanError(
+            NotFoundFailure(message: 'Scan record not found'),
+          ),
+        );
         return;
       }
 
@@ -190,9 +205,11 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     try {
       final record = await _scanRepository.findById(event.recordId);
       if (record == null) {
-        emit(const states.ScanError(NotFoundFailure(
-          message: 'Scan record not found',
-        )));
+        emit(
+          const states.ScanError(
+            NotFoundFailure(message: 'Scan record not found'),
+          ),
+        );
         return;
       }
 
@@ -236,5 +253,4 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
       emit(states.ScanError(UnexpectedFailure(message: e.toString())));
     }
   }
-
-  }
+}

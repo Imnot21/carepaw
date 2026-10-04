@@ -10,7 +10,10 @@ import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart'
 import 'package:carepaw/features/inventory/presentation/widgets/transaction_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
@@ -19,7 +22,7 @@ import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
-/// Inventory detail page with neumorphic design.
+/// Inventory detail page with the CarePaw surface system.
 class InventoryDetailPage extends StatefulWidget {
   final InventoryItem item;
 
@@ -61,7 +64,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     final isOutOfStock = item.isOutOfStock;
 
     return Scaffold(
-      backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: _isDark
+          ? AppColors.backgroundDark
+          : AppColors.background,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(item, isLowStock, isOutOfStock),
@@ -70,20 +75,16 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           _buildTabContent(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _navigateToForm(),
-        icon: const Icon(Icons.edit_rounded),
-        label: const Text('Edit'),
-        backgroundColor: _getCategoryColor(item.category),
-        foregroundColor: AppColors.textOnPrimary,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      floatingActionButton: NeuFAB.extended(
+        onPressed: _navigateToForm,
+        icon: Icons.edit_rounded,
+        extendedText: 'Edit',
+        variant: NeuButtonVariant.primary,
       ),
     );
   }
 
-  Widget _buildAppBar(
-      InventoryItem item, bool isLowStock, bool isOutOfStock) {
+  Widget _buildAppBar(InventoryItem item, bool isLowStock, bool isOutOfStock) {
     return SliverAppBar(
       expandedHeight: 200,
       floating: false,
@@ -121,8 +122,11 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                     variant: NeuVariant.raised,
                     color: _getCategoryColor(item.category),
                     boxShadow: NeuShadow.color(
-                        context, _getCategoryColor(item.category),
-                        blur: 18, opacity: 0.32),
+                      context,
+                      _getCategoryColor(item.category),
+                      blur: 18,
+                      opacity: 0.32,
+                    ),
                     child: Icon(
                       _getCategoryIcon(item.category),
                       size: 36,
@@ -152,12 +156,16 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).brightness ==
+                              color:
+                                  Theme.of(context).brightness ==
                                       Brightness.dark
-                                  ? AppColors.surfaceDarkMode
-                                      .withValues(alpha: 0.9)
+                                  ? AppColors.surfaceDarkMode.withValues(
+                                      alpha: 0.9,
+                                    )
                                   : AppColors.surface.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -172,16 +180,23 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                           const SizedBox(width: 8),
                           if (isOutOfStock)
                             _buildStatusChip(
-                                'Out of Stock',
-                                _isDark ? AppColors.errorOnDark : AppColors.error)
+                              'Out of Stock',
+                              _isDark ? AppColors.errorOnDark : AppColors.error,
+                            )
                           else if (isLowStock)
                             _buildStatusChip(
-                                'Low Stock',
-                                _isDark ? AppColors.warningOnDark : AppColors.warning)
+                              'Low Stock',
+                              _isDark
+                                  ? AppColors.warningOnDark
+                                  : AppColors.warning,
+                            )
                           else
                             _buildStatusChip(
-                                'In Stock',
-                                _isDark ? AppColors.successOnDark : AppColors.success),
+                              'In Stock',
+                              _isDark
+                                  ? AppColors.successOnDark
+                                  : AppColors.success,
+                            ),
                         ],
                       ),
                     ],
@@ -242,9 +257,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             Expanded(
               child: _buildStatCard(
                 item.maxStock != null ? 'Maximum' : 'No Max',
-                item.maxStock != null
-                    ? formatNumber(item.maxStock!)
-                    : '-',
+                item.maxStock != null ? formatNumber(item.maxStock!) : '-',
                 item.unit,
                 Theme.of(context).brightness == Brightness.dark
                     ? AppColors.infoDark
@@ -274,12 +287,11 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         children: [
           Row(
             children: [
-              Container(
+              NeuContainer(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                borderRadius: 10,
+                variant: NeuVariant.raised,
+                color: color.withValues(alpha: 0.1),
                 child: Icon(icon, size: 20, color: color),
               ),
               const Spacer(),
@@ -298,7 +310,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
             value,
             style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w800,
-              color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+              color: _isDark
+                  ? AppColors.textPrimaryOnDark
+                  : AppColors.textPrimary,
             ),
           ),
           Text(
@@ -317,13 +331,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   Widget _buildTabBar() {
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _TabBarDelegate(
+      delegate: _NeuTabBarDelegate(
         tabController: _tabController,
-        tabs: const [
-          Tab(text: 'Batches'),
-          Tab(text: 'Expiring'),
-          Tab(text: 'Transactions'),
-        ],
+        tabs: const ['Batches', 'Expiring', 'Transactions'],
         color: _getCategoryColor(widget.item.category),
       ),
     );
@@ -345,8 +355,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   Widget _buildBatchesTab() {
     return BlocBuilder<InventoryBloc, InventoryState>(
       builder: (context, state) {
-        if (state is ItemBatchesLoaded &&
-            state.itemId == widget.item.id) {
+        if (state is ItemBatchesLoaded && state.itemId == widget.item.id) {
           final batches = state.batches;
           if (batches.isEmpty) {
             return _EmptyState(
@@ -423,14 +432,11 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   Widget _buildTransactionsTab() {
     return BlocBuilder<InventoryBloc, InventoryState>(
       builder: (context, state) {
-        if (state is ItemBatchesLoaded &&
-            state.itemId == widget.item.id) {
+        if (state is ItemBatchesLoaded && state.itemId == widget.item.id) {
           // Get all transactions for all batches
           final allTransactions = <InventoryTransaction>[];
           for (final batch in state.batches) {
-            context
-                .read<InventoryBloc>()
-                .add(LoadBatchTransactions(batch.id!));
+            context.read<InventoryBloc>().add(LoadBatchTransactions(batch.id!));
           }
           if (allTransactions.isEmpty) {
             return _EmptyState(
@@ -480,10 +486,16 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                     variant: NeuVariant.raised,
                     color: _getCategoryColor(widget.item.category),
                     boxShadow: NeuShadow.color(
-                        context, _getCategoryColor(widget.item.category),
-                        blur: 14, opacity: 0.3),
-                    child: Icon(_getCategoryIcon(widget.item.category),
-                        size: 28, color: AppColors.textOnPrimary),
+                      context,
+                      _getCategoryColor(widget.item.category),
+                      blur: 14,
+                      opacity: 0.3,
+                    ),
+                    child: Icon(
+                      _getCategoryIcon(widget.item.category),
+                      size: 28,
+                      color: AppColors.textOnPrimary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -513,24 +525,26 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 ),
                 if (batch.isExpired)
                   _buildStatusChip(
-                      'Expired', _isDark ? AppColors.errorOnDark : AppColors.error)
+                    'Expired',
+                    _isDark ? AppColors.errorOnDark : AppColors.error,
+                  )
                 else if (batch.isExpiringSoon)
                   _buildStatusChip(
-                      'Expiring Soon',
-                      _isDark ? AppColors.warningOnDark : AppColors.warning),
+                    'Expiring Soon',
+                    _isDark ? AppColors.warningOnDark : AppColors.warning,
+                  ),
               ],
             ),
             const SizedBox(height: 24),
-            _buildDetailRow('Quantity',
-                '${formatNumber(batch.quantity)} ${widget.item.unit}'),
-            _buildDetailRow('Received',
-                formatDate(batch.receivedAt)),
+            _buildDetailRow(
+              'Quantity',
+              '${formatNumber(batch.quantity)} ${widget.item.unit}',
+            ),
+            _buildDetailRow('Received', formatDate(batch.receivedAt)),
             if (batch.expiresAt != null)
-              _buildDetailRow('Expires',
-                  formatDate(batch.expiresAt!)),
+              _buildDetailRow('Expires', formatDate(batch.expiresAt!)),
             if (batch.costPerUnit != null)
-              _buildDetailRow('Cost/Unit',
-                  formatCurrency(batch.costPerUnit!)),
+              _buildDetailRow('Cost/Unit', formatCurrency(batch.costPerUnit!)),
             if (batch.supplier != null)
               _buildDetailRow('Supplier', batch.supplier!),
             const SizedBox(height: 24),
@@ -641,31 +655,19 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 ),
               ),
               const SizedBox(height: 24),
-              SegmentedButton<TransactionType>(
-                segments: TransactionType.values
-                    .map((t) => ButtonSegment(
-                          value: t,
-                          label: Text(t.displayName),
-                          icon: Icon(_getTransactionIcon(t)),
-                        ))
-                    .toList(),
-                selected: {selectedType},
-                onSelectionChanged: (selection) {
-                  setState(() => selectedType = selection.first);
-                },
-                style: SegmentedButton.styleFrom(
-                  backgroundColor: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.surfaceContainerDark
-                      : AppColors.surfaceContainerHighest,
-                  selectedBackgroundColor:
-                      _getCategoryColor(widget.item.category)
-                          .withValues(alpha: 0.2),
-                  selectedForegroundColor:
-                      _getCategoryColor(widget.item.category),
-                  side: BorderSide(
-                    color: ThemeColors.border(context).withValues(alpha: 0.3),
-                  ),
-                ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: TransactionType.values.map((type) {
+                  final isSelected = selectedType == type;
+                  return NeuChip(
+                    label: type.displayName,
+                    icon: _getTransactionIcon(type),
+                    selected: isSelected,
+                    selectedColor: _getCategoryColor(widget.item.category),
+                    onTap: () => setState(() => selectedType = type),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 16),
               NeuTextField(
@@ -706,13 +708,15 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                       variant: NeuButtonVariant.primary,
                       icon: Icons.save_rounded,
                       onPressed: () {
-                        final quantity =
-                            double.tryParse(quantityController.text);
+                        final quantity = double.tryParse(
+                          quantityController.text,
+                        );
                         if (quantity == null || quantity <= 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text(
-                                  'Please enter a valid quantity'),
+                                'Please enter a valid quantity',
+                              ),
                               backgroundColor: ThemeColors.error(context),
                             ),
                           );
@@ -751,31 +755,37 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     final userId = 1; // TODO: Get from auth state
     switch (type) {
       case TransactionType.in_:
-        context.read<InventoryBloc>().add(CreateStockInTransaction(
-              batchId: batch.id!,
-              quantity: quantity,
-              reason: reason,
-              performedBy: userId,
-              notes: notes,
-            ));
+        context.read<InventoryBloc>().add(
+          CreateStockInTransaction(
+            batchId: batch.id!,
+            quantity: quantity,
+            reason: reason,
+            performedBy: userId,
+            notes: notes,
+          ),
+        );
         break;
       case TransactionType.out:
-        context.read<InventoryBloc>().add(CreateStockOutTransaction(
-              batchId: batch.id!,
-              quantity: quantity,
-              reason: reason,
-              performedBy: userId,
-              notes: notes,
-            ));
+        context.read<InventoryBloc>().add(
+          CreateStockOutTransaction(
+            batchId: batch.id!,
+            quantity: quantity,
+            reason: reason,
+            performedBy: userId,
+            notes: notes,
+          ),
+        );
         break;
       case TransactionType.adjustment:
-        context.read<InventoryBloc>().add(CreateAdjustmentTransaction(
-              batchId: batch.id!,
-              quantityChange: quantity,
-              reason: reason,
-              performedBy: userId,
-              notes: notes,
-            ));
+        context.read<InventoryBloc>().add(
+          CreateAdjustmentTransaction(
+            batchId: batch.id!,
+            quantityChange: quantity,
+            reason: reason,
+            performedBy: userId,
+            notes: notes,
+          ),
+        );
         break;
     }
   }
@@ -846,50 +856,43 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 prefixIcon: const Icon(Icons.local_shipping_rounded),
               ),
               const SizedBox(height: 12),
-              InkWell(
+              NeuTextField(
+                readOnly: true,
                 onTap: () async {
-                  final date = await showDatePicker(
+                  final date = await NeuDialog.show<DateTime?>(
                     context: context,
-                    initialDate: DateTime.now().add(const Duration(days: 365)),
-                    firstDate: DateTime.now(),
-                    lastDate:
-                        DateTime.now().add(const Duration(days: 3650)),
+                    title: 'Select Expiry Date',
+                    content: SizedBox(
+                      height: 300,
+                      child: CalendarDatePicker(
+                        initialDate: DateTime.now().add(
+                          const Duration(days: 365),
+                        ),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(
+                          const Duration(days: 3650),
+                        ),
+                        onDateChanged: (date) => Navigator.pop(context, date),
+                      ),
+                    ),
+                    actions: [
+                      NeuButton(
+                        text: 'Cancel',
+                        variant: NeuButtonVariant.ghost,
+                        onPressed: () => Navigator.pop(context),
+                        expanded: true,
+                      ),
+                    ],
                   );
                   if (date != null) {
                     setState(() => expiryDate = date);
                   }
                 },
-                child: NeuContainer(
-                  padding: const EdgeInsets.all(16),
-                  borderRadius: 14,
-                  variant: NeuVariant.inset,
-                  borderColor: ThemeColors.border(context).withValues(alpha: 0.3),
-                  borderWidth: 1,
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today_rounded,
-                          color: _isDark
-                              ? AppColors.textSecondaryOnDark
-                              : AppColors.textSecondary,
-                          size: 20),
-                      const SizedBox(width: 12),
-                      Text(
-                        expiryDate != null
-                            ? 'Expiry: ${formatDate(expiryDate!)}'
-                            : 'Set Expiry Date (optional)',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: expiryDate != null
-                              ? (_isDark
-                                  ? AppColors.textPrimaryOnDark
-                                  : AppColors.textPrimary)
-                              : (_isDark
-                                  ? AppColors.textSecondaryOnDark
-                                  : AppColors.textSecondary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                hint: expiryDate != null
+                    ? 'Expiry: ${formatDate(expiryDate!)}'
+                    : 'Set Expiry Date (optional)',
+                prefixIcon: const Icon(Icons.calendar_today_rounded),
+                suffixIcon: const Icon(Icons.arrow_drop_down_rounded),
               ),
               const SizedBox(height: 24),
               Row(
@@ -909,10 +912,10 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                       variant: NeuButtonVariant.primary,
                       icon: Icons.add_rounded,
                       onPressed: () {
-                        final batchNumber =
-                            batchNumberController.text.trim();
-                        final quantity =
-                            double.tryParse(quantityController.text);
+                        final batchNumber = batchNumberController.text.trim();
+                        final quantity = double.tryParse(
+                          quantityController.text,
+                        );
                         final cost = costController.text.isEmpty
                             ? null
                             : double.tryParse(costController.text);
@@ -920,25 +923,27 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text(
-                                  'Please fill required fields'),
+                                'Please fill required fields',
+                              ),
                               backgroundColor: ThemeColors.error(context),
                             ),
                           );
                           return;
                         }
                         Navigator.pop(context);
-                        context.read<InventoryBloc>().add(CreateBatch(
-                              inventoryId: widget.item.id!,
-                              batchNumber: batchNumber,
-                              quantity: quantity,
-                              receivedAt: DateTime.now(),
-                              expiresAt: expiryDate,
-                              costPerUnit: cost,
-                              supplier: supplierController.text.trim()
-                                  .isEmpty
-                                  ? null
-                                  : supplierController.text.trim(),
-                            ));
+                        context.read<InventoryBloc>().add(
+                          CreateBatch(
+                            inventoryId: widget.item.id!,
+                            batchNumber: batchNumber,
+                            quantity: quantity,
+                            receivedAt: DateTime.now(),
+                            expiresAt: expiryDate,
+                            costPerUnit: cost,
+                            supplier: supplierController.text.trim().isEmpty
+                                ? null
+                                : supplierController.text.trim(),
+                          ),
+                        );
                       },
                       expanded: true,
                     ),
@@ -958,48 +963,34 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   }
 
   void _navigateToForm() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => InventoryFormPage(item: widget.item),
-      ),
-    ).then((_) {
-      // Refresh on return
-      setState(() {});
-      _loadData();
-    });
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => InventoryFormPage(item: widget.item),
+          ),
+        )
+        .then((_) {
+          // Refresh on return
+          setState(() {});
+          _loadData();
+        });
   }
 
   void _showDeleteDialog() {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Item',
-            style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.w700)),
-        content: Text(
-            'Are you sure you want to delete "${widget.item.name}"? This action cannot be undone.',
-            style: AppTextStyles.bodyMedium),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel',
-                style: AppTextStyles.labelLarge.copyWith(
-                    color: ThemeColors.textSecondary(context))),
-          ),
-          NeuButton(
-            text: 'Delete',
-            variant: NeuButtonVariant.destructive,
-            size: NeuButtonSize.medium,
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-              // TODO: Implement delete
-            },
-          ),
-        ],
-      ),
-    );
+      title: 'Delete Item',
+      message:
+          'Are you sure you want to delete "${widget.item.name}"? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: NeuButtonVariant.destructive,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        Navigator.pop(context);
+        // TODO: Implement delete
+      }
+    });
   }
 
   Color _getCategoryColor(InventoryCategory category) {
@@ -1044,12 +1035,12 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   }
 }
 
-class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+class _NeuTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabController tabController;
-  final List<Tab> tabs;
+  final List<String> tabs;
   final Color color;
 
-  _TabBarDelegate({
+  _NeuTabBarDelegate({
     required this.tabController,
     required this.tabs,
     required this.color,
@@ -1057,39 +1048,44 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      color: _isDarkOf(context)
+      color: isDark
           ? AppColors.surfaceDarkMode.withValues(alpha: 0.95)
           : AppColors.surface.withValues(alpha: 0.95),
-      child: TabBar(
-        controller: tabController,
-        tabs: tabs,
-        indicatorColor: color,
-        indicatorWeight: 3,
-        labelColor: color,
-        unselectedLabelColor: _isDarkOf(context)
-            ? AppColors.textSecondaryOnDark
-            : AppColors.textSecondary,
-        labelStyle: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w600,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Row(
+          children: tabs.asMap().entries.map((entry) {
+            final index = entry.key;
+            final label = entry.value;
+            final isSelected = tabController.index == index;
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: NeuChip(
+                  label: label,
+                  selected: isSelected,
+                  selectedColor: color,
+                  onTap: () => tabController.animateTo(index),
+                ),
+              ),
+            );
+          }).toList(),
         ),
-        unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-        dividerColor: Colors.transparent,
       ),
     );
   }
 
-  bool _isDarkOf(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
+  @override
+  double get maxExtent => 64;
 
   @override
-  double get maxExtent => 56;
-
-  @override
-  double get minExtent => 56;
+  double get minExtent => 64;
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
@@ -1142,7 +1138,9 @@ class _EmptyState extends StatelessWidget {
                 title,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1150,7 +1148,9 @@ class _EmptyState extends StatelessWidget {
               Text(
                 message,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),

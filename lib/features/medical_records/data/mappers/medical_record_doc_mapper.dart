@@ -14,17 +14,24 @@ class MedicalRecordDocMapper {
     return MedicalRecord(
       id: data[FirestoreSchema.id] as int?,
       petId: (data[FirestoreSchema.petId] as num?)?.toInt() ?? 0,
-      veterinarianId: (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
+      veterinarianId:
+          (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
       appointmentId: (data[FirestoreSchema.appointmentId] as num?)?.toInt(),
-      recordType: MedicalRecordType.fromString((data[FirestoreSchema.recordType] as String?) ?? ''),
+      recordType: MedicalRecordType.fromString(
+        (data[FirestoreSchema.recordType] as String?) ?? '',
+      ),
       title: (data[FirestoreSchema.title] as String?) ?? '',
       description: data[FirestoreSchema.description] as String?,
       diagnosis: data[FirestoreSchema.diagnosis] as String?,
       treatment: data[FirestoreSchema.treatment] as String?,
       medications: data[FirestoreSchema.medications] as String?,
       attachments: data[FirestoreSchema.attachments] as String?,
-      recordedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.recordedAt]) ?? DateTime.now(),
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
+      recordedAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.recordedAt]) ??
+          DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -42,8 +49,12 @@ class MedicalRecordDocMapper {
       FirestoreSchema.treatment: record.treatment,
       FirestoreSchema.medications: record.medications,
       FirestoreSchema.attachments: record.attachments,
-      FirestoreSchema.recordedAt: DateFieldCodec.toFirestoreDate(record.recordedAt),
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(record.createdAt),
+      FirestoreSchema.recordedAt: DateFieldCodec.toFirestoreDate(
+        record.recordedAt,
+      ),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        record.createdAt,
+      ),
     };
   }
 }

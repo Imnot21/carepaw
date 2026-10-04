@@ -192,12 +192,17 @@ class FirestoreSchema {
   // ============ Helper Methods ============
 
   /// Get collection reference for a table name.
-  static CollectionReference<Map<String, dynamic>> collection(String tableName) {
+  static CollectionReference<Map<String, dynamic>> collection(
+    String tableName,
+  ) {
     return FirebaseFirestore.instance.collection(tableName);
   }
 
   /// Get document reference for a table and ID.
-  static DocumentReference<Map<String, dynamic>> doc(String tableName, String docId) {
+  static DocumentReference<Map<String, dynamic>> doc(
+    String tableName,
+    String docId,
+  ) {
     return FirebaseFirestore.instance.collection(tableName).doc(docId);
   }
 
@@ -272,25 +277,25 @@ class FirestoreSchema {
 
   /// Get all collections that should be synced.
   static List<String> get syncableCollections => [
-        users,
-        pets,
-        appointments,
-        medicalRecords,
-        vaccinations,
-        inventoryItems,
-        inventoryBatches,
-        inventoryTransactions,
-        prescriptions,
-        queueEntries,
-        notifications,
-        scanRecords,
-        auditLogs,
-      ];
+    users,
+    pets,
+    appointments,
+    medicalRecords,
+    vaccinations,
+    inventoryItems,
+    inventoryBatches,
+    inventoryTransactions,
+    prescriptions,
+    queueEntries,
+    notifications,
+    scanRecords,
+    auditLogs,
+  ];
 
   /// Get collections that require manual conflict resolution.
   static List<String> get manualConflictCollections => [
-        users,
-        medicalRecords,
-        scanRecords,
-      ];
+    users,
+    medicalRecords,
+    scanRecords,
+  ];
 }

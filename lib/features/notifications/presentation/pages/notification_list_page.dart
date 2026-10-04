@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carepaw/features/notifications/domain/entities/notification.dart' as domain;
+import 'package:carepaw/features/notifications/domain/entities/notification.dart'
+    as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
@@ -11,17 +12,22 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
-/// Notification list page with neumorphic design
+/// Notification list page with the CarePaw surface system
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
 
@@ -73,21 +79,22 @@ class _NotificationListPageState extends State<NotificationListPage>
         }
 
         final user = authState.user;
-        final isVetOrStaff = user.role == UserRole.veterinarian ||
-                            user.role == UserRole.staff ||
-                            user.role == UserRole.admin;
+        final isVetOrStaff =
+            user.role == UserRole.veterinarian ||
+            user.role == UserRole.staff ||
+            user.role == UserRole.admin;
 
         return Scaffold(
-          backgroundColor: _isDark ? AppColors.backgroundDark : AppColors.background,
+          backgroundColor: _isDark
+              ? AppColors.backgroundDark
+              : AppColors.background,
           body: CustomScrollView(
             controller: _scrollController,
-            slivers: [
-              _buildAppBar(),
-              _buildTabBar(),
-              _buildTabContent(),
-            ],
+            slivers: [_buildAppBar(), _buildTabBar(), _buildTabContent()],
           ),
-          floatingActionButton: isVetOrStaff ? _buildFloatingActionButton() : null,
+          floatingActionButton: isVetOrStaff
+              ? _buildFloatingActionButton()
+              : null,
         );
       },
     );
@@ -114,7 +121,9 @@ class _NotificationListPageState extends State<NotificationListPage>
                   'Notifications',
                   style: AppTextStyles.headlineMedium.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                    color: _isDark
+                        ? AppColors.textPrimaryOnDark
+                        : AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -148,7 +157,9 @@ class _NotificationListPageState extends State<NotificationListPage>
             Text(
               'Stay updated with your clinic',
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: _isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -184,9 +195,7 @@ class _NotificationListPageState extends State<NotificationListPage>
   Widget _buildTabBar() {
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _NotificationTabBarDelegate(
-        tabController: _tabController,
-      ),
+      delegate: _NotificationTabBarDelegate(tabController: _tabController),
     );
   }
 
@@ -197,7 +206,9 @@ class _NotificationListPageState extends State<NotificationListPage>
         children: [
           _buildNotificationList(null),
           _buildUnreadList(),
-          _buildNotificationsByType(domain.NotificationType.appointmentReminder),
+          _buildNotificationsByType(
+            domain.NotificationType.appointmentReminder,
+          ),
           _buildNotificationsByType(domain.NotificationType.queueUpdate),
         ],
       ),
@@ -238,9 +249,7 @@ class _NotificationListPageState extends State<NotificationListPage>
         }
 
         if (type != null) {
-          notifications = notifications
-              .where((n) => n.type == type)
-              .toList();
+          notifications = notifications.where((n) => n.type == type).toList();
         }
 
         if (notifications.isEmpty) {
@@ -254,7 +263,9 @@ class _NotificationListPageState extends State<NotificationListPage>
                 : 'Notifications will appear here when you receive them',
             actionLabel: type == null ? 'Refresh' : null,
             onAction: type == null
-                ? () => context.read<NotificationBloc>().add(const RefreshNotifications())
+                ? () => context.read<NotificationBloc>().add(
+                    const RefreshNotifications(),
+                  )
                 : null,
           );
         }
@@ -300,7 +311,10 @@ class _NotificationListPageState extends State<NotificationListPage>
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
             itemCount: unread.length,
             itemBuilder: (context, index) {
-              return _buildNotificationCard(unread[index], highlightUnread: true);
+              return _buildNotificationCard(
+                unread[index],
+                highlightUnread: true,
+              );
             },
           );
         }
@@ -389,8 +403,12 @@ class _NotificationListPageState extends State<NotificationListPage>
                           child: Text(
                             notification.title,
                             style: AppTextStyles.titleMedium.copyWith(
-                              fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
-                              color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                              fontWeight: isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              color: _isDark
+                                  ? AppColors.textPrimaryOnDark
+                                  : AppColors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -402,7 +420,9 @@ class _NotificationListPageState extends State<NotificationListPage>
                     Text(
                       formatRelativeTime(notification.createdAt),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        color: _isDark
+                            ? AppColors.textSecondaryOnDark
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -428,8 +448,12 @@ class _NotificationListPageState extends State<NotificationListPage>
             notification.message,
             style: AppTextStyles.bodyMedium.copyWith(
               color: isUnread
-                  ? (_isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary)
-                  : (_isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary),
+                  ? (_isDark
+                        ? AppColors.textPrimaryOnDark
+                        : AppColors.textPrimary)
+                  : (_isDark
+                        ? AppColors.textSecondaryOnDark
+                        : AppColors.textSecondary),
               height: 1.4,
             ),
             maxLines: 2,
@@ -448,14 +472,18 @@ class _NotificationListPageState extends State<NotificationListPage>
                   Icon(
                     Icons.info_outline_rounded,
                     size: 16,
-                    color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                    color: _isDark
+                        ? AppColors.textSecondaryOnDark
+                        : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${notification.referenceType}: ${notification.referenceId}',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                        color: _isDark
+                            ? AppColors.textSecondaryOnDark
+                            : AppColors.textSecondary,
                         fontFamily: 'monospace',
                       ),
                       maxLines: 1,
@@ -502,8 +530,12 @@ class _NotificationListPageState extends State<NotificationListPage>
               Expanded(
                 child: NeuButton(
                   text: isUnread ? 'Dismiss' : 'Delete',
-                  variant: isUnread ? NeuButtonVariant.outline : NeuButtonVariant.outline,
-                  icon: isUnread ? Icons.close_rounded : Icons.delete_outline_rounded,
+                  variant: isUnread
+                      ? NeuButtonVariant.outline
+                      : NeuButtonVariant.outline,
+                  icon: isUnread
+                      ? Icons.close_rounded
+                      : Icons.delete_outline_rounded,
                   size: NeuButtonSize.medium,
                   onPressed: () {
                     if (isUnread) {
@@ -525,14 +557,11 @@ class _NotificationListPageState extends State<NotificationListPage>
   }
 
   Widget _buildFloatingActionButton() {
-    return FloatingActionButton.extended(
+    return NeuFAB.extended(
       onPressed: () => _showCreateNotificationDialog(),
-      backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.textOnPrimary,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      icon: const Icon(Icons.add_rounded),
-      label: const Text('Test Notification'),
+      icon: Icons.add_rounded,
+      extendedText: 'Test Notification',
+      variant: NeuButtonVariant.primary,
     );
   }
 
@@ -547,7 +576,9 @@ class _NotificationListPageState extends State<NotificationListPage>
       case domain.NotificationType.inventoryLow:
         return _isDark ? AppColors.successOnDark : AppColors.success;
       case domain.NotificationType.system:
-        return _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary;
+        return _isDark
+            ? AppColors.textSecondaryOnDark
+            : AppColors.textSecondary;
     }
   }
 
@@ -575,34 +606,25 @@ class _NotificationListPageState extends State<NotificationListPage>
   }
 
   void _navigateToSettings() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const NotificationSettingsPage(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NotificationSettingsPage()));
   }
 
   void _showDeleteConfirmation(int notificationId) {
-    showDialog(
+    NeuConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Notification'),
-        content: const Text('Are you sure you want to delete this notification?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<NotificationBloc>().add(DeleteNotification(notificationId));
-            },
-            child: Text('Delete', style: TextStyle(color: ThemeColors.error(context))),
-          ),
-        ],
-      ),
-    );
+      title: 'Delete Notification',
+      message: 'Are you sure you want to delete this notification?',
+      confirmText: 'Delete',
+      confirmVariant: NeuButtonVariant.destructive,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        context.read<NotificationBloc>().add(
+          DeleteNotification(notificationId),
+        );
+      }
+    });
   }
 
   void _showCreateNotificationDialog() {
@@ -615,7 +637,8 @@ class _NotificationListPageState extends State<NotificationListPage>
 
 class _CreateNotificationDialog extends StatefulWidget {
   @override
-  State<_CreateNotificationDialog> createState() => _CreateNotificationDialogState();
+  State<_CreateNotificationDialog> createState() =>
+      _CreateNotificationDialogState();
 }
 
 class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
@@ -632,54 +655,42 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Create Test Notification'),
+    return NeuDialog(
+      title: 'Create Test Notification',
       content: SizedBox(
         width: 320,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  hintText: 'Notification title',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _bodyController,
-                decoration: const InputDecoration(
-                  labelText: 'Body',
-                  hintText: 'Notification message',
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<domain.NotificationType>(
-                initialValue: _selectedType,
-                decoration: const InputDecoration(labelText: 'Type'),
-                items: domain.NotificationType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type.displayName),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => _selectedType = value!),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NeuTextField(
+              controller: _titleController,
+              label: 'Title',
+              hint: 'Notification title',
+            ),
+            const SizedBox(height: 16),
+            NeuTextField(
+              controller: _bodyController,
+              label: 'Body',
+              hint: 'Notification message',
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            _buildTypeSelector(),
+          ],
         ),
       ),
       actions: [
-        TextButton(
+        NeuButton(
+          text: 'Cancel',
+          variant: NeuButtonVariant.ghost,
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        NeuButton(
+          text: 'Create',
+          variant: NeuButtonVariant.primary,
           onPressed: () {
-            if (_titleController.text.isNotEmpty && _bodyController.text.isNotEmpty) {
+            if (_titleController.text.isNotEmpty &&
+                _bodyController.text.isNotEmpty) {
               Navigator.pop(context);
               context.read<NotificationBloc>().add(
                 CreateNotification(
@@ -690,7 +701,30 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
               );
             }
           },
-          child: const Text('Create'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeSelector() {
+    final types = domain.NotificationType.values;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Type', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: types.map((type) {
+            final isSelected = _selectedType == type;
+            return NeuChip(
+              label: type.displayName,
+              selected: isSelected,
+              onTap: () => setState(() => _selectedType = type),
+              selectedColor: AppColors.primary,
+            );
+          }).toList(),
         ),
       ],
     );
@@ -700,45 +734,52 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
 class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabController tabController;
 
-  _NotificationTabBarDelegate({
-    required this.tabController,
-  });
+  _NotificationTabBarDelegate({required this.tabController});
 
   @override
   Widget build(
-    BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tabs = [
+      {'label': 'All', 'icon': Icons.notifications_rounded},
+      {'label': 'Unread', 'icon': Icons.mark_email_unread_rounded},
+      {'label': 'Appointments', 'icon': Icons.calendar_today_rounded},
+      {'label': 'Queue', 'icon': Icons.queue_rounded},
+    ];
+
     return Container(
       color: isDark ? AppColors.surfaceContainerDark : AppColors.surface,
-      child: TabBar(
-        controller: tabController,
-        tabs: const [
-          Tab(text: 'All'),
-          Tab(text: 'Unread'),
-          Tab(text: 'Appointments'),
-          Tab(text: 'Queue'),
-        ],
-        indicatorColor: AppColors.primary,
-        indicatorWeight: 3,
-        labelColor: isDark ? AppColors.primaryOnDark : AppColors.primary,
-        unselectedLabelColor: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
-        labelStyle: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w600,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(tabs.length, (index) {
+            final tab = tabs[index];
+            final isSelected = tabController.index == index;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: NeuChip(
+                label: tab['label'] as String,
+                icon: tab['icon'] as IconData,
+                selected: isSelected,
+                onTap: () => tabController.animateTo(index),
+                selectedColor: AppColors.primary,
+              ),
+            );
+          }),
         ),
-        unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-        dividerColor: Colors.transparent,
-        isScrollable: true,
       ),
     );
   }
 
   @override
-  double get maxExtent => 56;
+  double get maxExtent => 60;
 
   @override
-  double get minExtent => 56;
+  double get minExtent => 60;
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
@@ -791,7 +832,9 @@ class _EmptyState extends StatelessWidget {
                 title,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -799,7 +842,9 @@ class _EmptyState extends StatelessWidget {
               Text(
                 message,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -825,12 +870,15 @@ class _EmptyState extends StatelessWidget {
 class _NotLoggedInView extends StatelessWidget {
   const _NotLoggedInView();
 
-  bool _isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDark(context) ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: _isDark(context)
+          ? AppColors.backgroundDark
+          : AppColors.background,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -856,7 +904,9 @@ class _NotLoggedInView extends StatelessWidget {
                 'Please log in to view notifications',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: _isDark(context) ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: _isDark(context)
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -864,7 +914,9 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to stay updated with your clinic',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: _isDark(context) ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: _isDark(context)
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),

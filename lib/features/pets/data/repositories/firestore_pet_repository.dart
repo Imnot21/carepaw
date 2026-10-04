@@ -18,8 +18,8 @@ class FirestorePetRepository implements PetRepository {
   FirestorePetRepository({
     required FirebaseFirestore firestore,
     required FirestoreIdSequence petIdSequence,
-  })  : _firestore = firestore,
-        _idSequence = petIdSequence;
+  }) : _firestore = firestore,
+       _idSequence = petIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -28,7 +28,8 @@ class FirestorePetRepository implements PetRepository {
   /// (Pets do carry `isActive`, so it is preferred when present.)
   static const String _deletedField = 'deleted';
 
-  CollectionReference<Map<String, dynamic>> get _pets => _firestore.collection(FirestoreSchema.pets);
+  CollectionReference<Map<String, dynamic>> get _pets =>
+      _firestore.collection(FirestoreSchema.pets);
 
   // ============ BaseRepository<Pet, int> ============
 
@@ -89,7 +90,9 @@ class FirestorePetRepository implements PetRepository {
   @override
   Future<List<Pet>> findAllIncludingDeleted() async {
     final snapshot = await _pets.get();
-    return snapshot.docs.map((doc) => PetDocMapper.fromData(doc.data())).toList();
+    return snapshot.docs
+        .map((doc) => PetDocMapper.fromData(doc.data()))
+        .toList();
   }
 
   // ============ StreamRepository<Pet, int> ============
@@ -101,17 +104,20 @@ class FirestorePetRepository implements PetRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first)) return null;
-      return PetDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first))
+            return null;
+          return PetDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<Pet>> watchAll() {
-    return _pets.snapshots().map((snapshot) => snapshot.docs
-        .where((doc) => !_isDeleted(doc))
-        .map((doc) => PetDocMapper.fromData(doc.data()))
-        .toList());
+    return _pets.snapshots().map(
+      (snapshot) => snapshot.docs
+          .where((doc) => !_isDeleted(doc))
+          .map((doc) => PetDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<Pet, int> ============
@@ -126,12 +132,16 @@ class FirestorePetRepository implements PetRepository {
 
   @override
   Future<List<Pet>> findByOwner(int ownerId) async {
-    final snapshot = await _pets.where(FirestoreSchema.ownerId, isEqualTo: ownerId).get();
+    final snapshot = await _pets
+        .where(FirestoreSchema.ownerId, isEqualTo: ownerId)
+        .get();
     final results = snapshot.docs
         .where((doc) => !_isDeleted(doc))
         .map((doc) => PetDocMapper.fromData(doc.data()))
         .toList();
-    results.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    results.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
     return results;
   }
 
@@ -140,10 +150,12 @@ class FirestorePetRepository implements PetRepository {
     return _pets
         .where(FirestoreSchema.ownerId, isEqualTo: ownerId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .where((doc) => !_isDeleted(doc))
-            .map((doc) => PetDocMapper.fromData(doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .where((doc) => !_isDeleted(doc))
+              .map((doc) => PetDocMapper.fromData(doc.data()))
+              .toList(),
+        );
   }
 
   @override
@@ -165,7 +177,9 @@ class FirestorePetRepository implements PetRepository {
     if (existing == null) {
       throw Exception('Pet not found');
     }
-    return save(existing.copyWith(weightKg: weightKg, updatedAt: DateTime.now()));
+    return save(
+      existing.copyWith(weightKg: weightKg, updatedAt: DateTime.now()),
+    );
   }
 
   @override
@@ -185,16 +199,20 @@ class FirestorePetRepository implements PetRepository {
     final normalized = query.trim().toLowerCase();
     final all = await findAll();
     if (normalized.isEmpty) return all;
-    return all.where((pet) => pet.name.toLowerCase().contains(normalized)).toList();
+    return all
+        .where((pet) => pet.name.toLowerCase().contains(normalized))
+        .toList();
   }
 
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<Pet> createWithSync(Pet entity, String tableName) async => save(entity);
+  Future<Pet> createWithSync(Pet entity, String tableName) async =>
+      save(entity);
 
   @override
-  Future<Pet> updateWithSync(Pet entity, String tableName) async => save(entity);
+  Future<Pet> updateWithSync(Pet entity, String tableName) async =>
+      save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => softDelete(id);
@@ -204,8 +222,13 @@ class FirestorePetRepository implements PetRepository {
   bool _isDeleted(DocumentSnapshot<Map<String, dynamic>> doc) =>
       (doc.data() ?? const {})[_deletedField] == true;
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _pets.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _pets
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     if (snapshot.docs.isEmpty) return null;
     return snapshot.docs.first;
   }

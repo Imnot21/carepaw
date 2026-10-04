@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
+import 'neu_style.dart';
 
-/// Neumorphic text input: a sunken (inset) field with focus/error states.
+/// Text input: a recessed well with focus and error states.
 ///
-/// Replaces the legacy Material-era text field. The field sits recessed in the
-/// canvas: its inset edge shadows communicate affordance, and a primary border
-/// snaps in when focused. Supports the full surface area - label, hint,
-/// validation, prefix/suffix icons, obscure toggle, formatters.
+/// The field sits in a tinted well below the canvas, edged with a hairline that
+/// turns accent-colored on focus and error-colored on validation failure.
+/// Supports the full surface area — label, hint, validation, prefix/suffix
+/// icons, obscure toggle, formatters.
 class NeuTextField extends StatefulWidget {
   final String? label;
   final String? hint;
@@ -34,6 +35,13 @@ class NeuTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final bool autofocus;
   final EdgeInsetsGeometry? contentPadding;
+
+  /// Optional style override.
+  ///
+  /// When provided, its [NeumorphicStyle.borderRadius] and
+  /// [NeumorphicStyle.padding] take precedence over [contentPadding] and the
+  /// hardcoded radius.
+  final NeumorphicStyle? style;
 
   const NeuTextField({
     super.key,
@@ -60,6 +68,7 @@ class NeuTextField extends StatefulWidget {
     this.suffixIcon,
     this.autofocus = false,
     this.contentPadding,
+    this.style,
   });
 
   @override
@@ -117,10 +126,24 @@ class _NeuTextFieldState extends State<NeuTextField> {
     final accent = ThemeColors.primary(context);
     final errorColor = ThemeColors.error(context);
     // Textfield foreground: stark max-contrast. Uses theme-aware colors for proper light/dark mode handling.
-    final inputColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+    final inputColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
     final labelColor = inputColor;
-    final hintColor = Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54;
+    final hintColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white70
+        : Colors.black54;
     final disabledLabelColor = ThemeColors.textTertiary(context);
+
+    // Resolve radius and padding from style, falling back to token defaults.
+    final resolvedRadius = widget.style?.borderRadius ?? NeuTokens.radiusMd;
+    final resolvedContentPadding =
+        widget.contentPadding ??
+        (widget.style?.padding as EdgeInsets?) ??
+        const EdgeInsets.symmetric(
+          horizontal: NeuTokens.spaceMd,
+          vertical: NeuTokens.spaceMd,
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,9 +162,22 @@ class _NeuTextFieldState extends State<NeuTextField> {
           onTap: widget.onTap,
           child: NeuContainer(
             variant: NeuVariant.inset,
-            borderRadius: 14,
-            borderColor: _borderColor(accent, errorColor),
-            borderWidth: (_isFocused || hasError) ? 1.6 : 1,
+            borderRadius: resolvedRadius,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(resolvedRadius),
+              // A well is defined by its cavity, so it carries no edge at rest.
+              // Focus and error are the two states that earn a ring — WCAG
+              // requires a visible focus indicator, and an error the user cannot
+              // see is an error they will submit anyway. Anything less than
+              // 2dp of accent is not a focus ring, it is decoration.
+              side: (_isFocused || hasError)
+                  ? BorderSide(
+                      color: _borderColor(accent, errorColor),
+                      width: 2,
+                    )
+                  : BorderSide.none,
+            ),
+            borderWidth: (_isFocused || hasError) ? 2 : 0,
             padding: EdgeInsets.zero,
             child: TextFormField(
               controller: widget.controller,
@@ -168,9 +204,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
                 helperText: widget.helper,
                 helperMaxLines: 2,
                 counterText: '',
-                contentPadding:
-                    widget.contentPadding ??
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                contentPadding: resolvedContentPadding,
                 prefixIcon: widget.prefixIcon != null
                     ? Padding(
                         padding: const EdgeInsets.all(14),
@@ -230,7 +264,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
   Color _borderColor(Color accent, Color errorColor) {
     if (_isFocused) return accent;
     if (_errorText != null || widget.error != null) return errorColor;
-    return Colors.transparent;
+    return ThemeColors.border(context);
   }
 
   Widget? _buildSuffixIcon(bool isDark, Color accent) {

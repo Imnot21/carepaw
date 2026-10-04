@@ -53,7 +53,8 @@ class FirebaseInit {
       // Handle case where Firebase auto-initializes during check
       // or already initialized via google-services.json
       final errorString = e.toString();
-      if (errorString.contains('core/duplicate-app') || errorString.contains('duplicate-app')) {
+      if (errorString.contains('core/duplicate-app') ||
+          errorString.contains('duplicate-app')) {
         // Firebase already initialized by google-services.json, configure App Check anyway
         await _configureAppCheck();
         _configureFirestore();

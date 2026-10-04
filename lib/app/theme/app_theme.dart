@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
+import 'design_tokens.dart';
 
-/// Soft Clinic theme — warm bone canvas, terracotta primary, warm charcoal
-/// dark mode.
+/// CarePaw theme — warm bone canvas, terracotta primary, warm charcoal dark
+/// mode.
 ///
-/// The Material theme is a safe fallback for standard widgets; the visual
-/// identity is carried by the custom `Neu*` widget set, which reads
-/// `Theme.of(context).brightness` and [`AppColors`] to resolve its dual
-/// shadow system.
+/// The Material theme is the base for standard widgets; the visual identity is
+/// carried by the `Neu*` widget set, which reads
+/// `Theme.of(context).brightness` and [`AppColors`] to resolve its hairline
+/// border and surface tint system. Every Material component here is themed to
+/// match that system, so a stray `TextField` or `Switch` on a feature page
+/// still looks like it belongs.
 class AppTheme {
   AppTheme._();
 
   static ThemeData get lightTheme {
+    const brightness = Brightness.light;
     const scheme = ColorScheme.light(
       primary: AppColors.primary,
       onPrimary: AppColors.textOnPrimary,
@@ -36,7 +40,7 @@ class AppTheme {
       surfaceContainerHighest: AppColors.surfaceContainerHighest,
       outline: AppColors.border,
       outlineVariant: AppColors.divider,
-      shadow: AppColors.shadowDark,
+      shadow: const Color(0xFF7A6E5E),
       inverseSurface: AppColors.textPrimary,
       onInverseSurface: AppColors.background,
       inversePrimary: AppColors.primaryLight,
@@ -68,7 +72,10 @@ class AppTheme {
         elevation: 0,
         color: AppColors.surface,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+          side: const BorderSide(color: AppColors.border),
+        ),
         clipBehavior: Clip.antiAlias,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -76,10 +83,10 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
           elevation: 0,
-          shadowColor: AppColors.primary.withAlpha((255 * 0.18).round()),
+          shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -89,9 +96,9 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           ),
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          side: const BorderSide(color: AppColors.primary, width: 1),
           textStyle: AppTextStyles.button,
         ),
       ),
@@ -103,27 +110,46 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        fillColor: AppColors.surfaceInset,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
-        labelStyle: const TextStyle(color: AppColors.textPrimary),
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        errorStyle: const TextStyle(color: AppColors.error),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+        ),
+        labelStyle: TextStyle(
+          color: brightness == Brightness.light
+              ? AppColors.textPrimary
+              : AppColors.textPrimaryOnDark,
+        ),
+        hintStyle: TextStyle(
+          color: brightness == Brightness.light
+              ? AppColors.textSecondary
+              : AppColors.textSecondaryOnDark,
+        ),
+        errorStyle: TextStyle(
+          color: brightness == Brightness.light
+              ? AppColors.error
+              : AppColors.errorOnDark,
+        ),
         prefixIconColor: AppColors.textSecondary,
         suffixIconColor: AppColors.textSecondary,
       ),
@@ -172,12 +198,16 @@ class AppTheme {
           color: AppColors.background,
         ),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+        ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusLg),
+        ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surface,
@@ -191,6 +221,7 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
+    const brightness = Brightness.dark;
     const scheme = ColorScheme.dark(
       primary: AppColors.primaryOnDark,
       onPrimary: Color(0xFF1C1917),
@@ -211,10 +242,10 @@ class AppTheme {
       surfaceContainerLowest: AppColors.backgroundDark,
       surfaceContainer: AppColors.surfaceContainerDark,
       surfaceContainerHigh: Color(0xFF3A3532),
-      surfaceContainerHighest: Color(0xFF413C38),
+      surfaceContainerHighest: Color(0xFF3D3937),
       outline: AppColors.borderDark,
       outlineVariant: AppColors.dividerDark,
-      shadow: AppColors.shadowDarkOnDark,
+      shadow: const Color(0xFF000000),
       inverseSurface: AppColors.textPrimaryOnDark,
       onInverseSurface: AppColors.backgroundDark,
       inversePrimary: AppColors.primaryLight,
@@ -249,7 +280,10 @@ class AppTheme {
         elevation: 0,
         color: AppColors.surfaceDarkMode,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+          side: const BorderSide(color: AppColors.borderDark),
+        ),
         clipBehavior: Clip.antiAlias,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -257,10 +291,10 @@ class AppTheme {
           backgroundColor: AppColors.primaryOnDark,
           foregroundColor: const Color(0xFF1C1917),
           elevation: 0,
-          shadowColor: AppColors.primaryOnDark.withAlpha((255 * 0.22).round()),
+          shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -270,9 +304,9 @@ class AppTheme {
           foregroundColor: AppColors.primaryOnDark,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           ),
-          side: const BorderSide(color: AppColors.primaryOnDark, width: 1.5),
+          side: const BorderSide(color: AppColors.primaryOnDark, width: 1),
           textStyle: AppTextStyles.button,
         ),
       ),
@@ -284,33 +318,55 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceContainerDark,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: AppColors.surfaceInsetDark,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(color: AppColors.borderDark),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(color: AppColors.borderDark),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(
             color: AppColors.primaryOnDark,
-            width: 2,
+            width: 1.5,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           borderSide: const BorderSide(
             color: AppColors.errorOnDark,
             width: 1.5,
           ),
         ),
-        labelStyle: const TextStyle(color: AppColors.textPrimaryOnDark),
-        hintStyle: const TextStyle(color: AppColors.textSecondaryOnDark),
-        errorStyle: const TextStyle(color: AppColors.errorOnDark),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+          borderSide: const BorderSide(
+            color: AppColors.errorOnDark,
+            width: 1.5,
+          ),
+        ),
+        labelStyle: TextStyle(
+          color: brightness == Brightness.light
+              ? AppColors.textPrimary
+              : AppColors.textPrimaryOnDark,
+        ),
+        hintStyle: TextStyle(
+          color: brightness == Brightness.light
+              ? AppColors.textSecondary
+              : AppColors.textSecondaryOnDark,
+        ),
+        errorStyle: TextStyle(
+          color: brightness == Brightness.light
+              ? AppColors.error
+              : AppColors.errorOnDark,
+        ),
         prefixIconColor: AppColors.textSecondaryOnDark,
         suffixIconColor: AppColors.textSecondaryOnDark,
       ),
@@ -359,12 +415,16 @@ class AppTheme {
           color: AppColors.backgroundDark,
         ),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+        ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceDarkMode,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeuTokens.radiusLg),
+        ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surfaceDarkMode,

@@ -16,11 +16,17 @@ class InventoryBatchDocMapper {
       inventoryId: (data[FirestoreSchema.inventoryId] as num?)?.toInt() ?? 0,
       batchNumber: (data[FirestoreSchema.batchNumberInv] as String?) ?? '',
       quantity: (data[FirestoreSchema.quantity] as num?)?.toDouble() ?? 0,
-      receivedAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.receivedAt]) ?? DateTime.now(),
-      expiresAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.expiresAt]),
+      receivedAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.receivedAt]) ??
+          DateTime.now(),
+      expiresAt: DateFieldCodec.fromFirestoreDate(
+        data[FirestoreSchema.expiresAt],
+      ),
       costPerUnit: (data[FirestoreSchema.costPerUnit] as num?)?.toDouble(),
       supplier: data[FirestoreSchema.supplier] as String?,
-      createdAt: DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ?? DateTime.now(),
+      createdAt:
+          DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
+          DateTime.now(),
     );
   }
 
@@ -31,11 +37,17 @@ class InventoryBatchDocMapper {
       FirestoreSchema.inventoryId: batch.inventoryId,
       FirestoreSchema.batchNumberInv: batch.batchNumber,
       FirestoreSchema.quantity: batch.quantity,
-      FirestoreSchema.receivedAt: DateFieldCodec.toFirestoreDate(batch.receivedAt),
-      FirestoreSchema.expiresAt: DateFieldCodec.toFirestoreDate(batch.expiresAt),
+      FirestoreSchema.receivedAt: DateFieldCodec.toFirestoreDate(
+        batch.receivedAt,
+      ),
+      FirestoreSchema.expiresAt: DateFieldCodec.toFirestoreDate(
+        batch.expiresAt,
+      ),
       FirestoreSchema.costPerUnit: batch.costPerUnit,
       FirestoreSchema.supplier: batch.supplier,
-      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(batch.createdAt),
+      FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
+        batch.createdAt,
+      ),
     };
   }
 }

@@ -21,10 +21,10 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
     required FirestoreIdSequence vaccinationIdSequence,
     required PetRepository petRepository,
     required UserRepository userRepository,
-  })  : _firestore = firestore,
-        _idSequence = vaccinationIdSequence,
-        _petRepository = petRepository,
-        _userRepository = userRepository;
+  }) : _firestore = firestore,
+       _idSequence = vaccinationIdSequence,
+       _petRepository = petRepository,
+       _userRepository = userRepository;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -39,7 +39,9 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
   @override
   Future<Vaccination?> findById(int id) async {
     final doc = await _findDocByIntId(id);
-    return doc == null ? null : VaccinationDocMapper.fromData(doc.data() ?? const {});
+    return doc == null
+        ? null
+        : VaccinationDocMapper.fromData(doc.data() ?? const {});
   }
 
   @override
@@ -56,7 +58,9 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _vaccinations.doc('${toWrite.id}').set(VaccinationDocMapper.toData(toWrite));
+    await _vaccinations
+        .doc('${toWrite.id}')
+        .set(VaccinationDocMapper.toData(toWrite));
     return toWrite;
   }
 
@@ -78,22 +82,26 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return VaccinationDocMapper.fromData(snapshot.docs.first.data());
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return VaccinationDocMapper.fromData(snapshot.docs.first.data());
+        });
   }
 
   @override
   Stream<List<Vaccination>> watchAll() {
-    return _vaccinations.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => VaccinationDocMapper.fromData(doc.data()))
-        .toList());
+    return _vaccinations.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => VaccinationDocMapper.fromData(doc.data()))
+          .toList(),
+    );
   }
 
   // ============ PaginatedRepository<Vaccination, int> ============
 
   @override
-  Future<PaginatedResult<Vaccination>> findPaginated(PaginationParams params) async {
+  Future<PaginatedResult<Vaccination>> findPaginated(
+    PaginationParams params,
+  ) async {
     final all = await findAll();
     return _paginate(all, params);
   }
@@ -102,11 +110,14 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
 
   @override
   Future<List<Vaccination>> findByPet(int petId) async {
-    final snapshot = await _vaccinations.where(FirestoreSchema.petId, isEqualTo: petId).get();
-    final vaccinations = snapshot.docs
-        .map((doc) => VaccinationDocMapper.fromData(doc.data()))
-        .toList()
-      ..sort((a, b) => b.administeredAt.compareTo(a.administeredAt));
+    final snapshot = await _vaccinations
+        .where(FirestoreSchema.petId, isEqualTo: petId)
+        .get();
+    final vaccinations =
+        snapshot.docs
+            .map((doc) => VaccinationDocMapper.fromData(doc.data()))
+            .toList()
+          ..sort((a, b) => b.administeredAt.compareTo(a.administeredAt));
     return vaccinations;
   }
 
@@ -115,8 +126,11 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
     return _vaccinations
         .where(FirestoreSchema.petId, isEqualTo: petId)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => VaccinationDocMapper.fromData(doc.data())).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => VaccinationDocMapper.fromData(doc.data()))
+              .toList(),
+        );
   }
 
   @override
@@ -134,7 +148,9 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
   Future<List<Vaccination>> findOverdue() async {
     final now = DateTime.now();
     final all = await findAll();
-    return all.where((v) => v.nextDueAt != null && v.nextDueAt!.isBefore(now)).toList();
+    return all
+        .where((v) => v.nextDueAt != null && v.nextDueAt!.isBefore(now))
+        .toList();
   }
 
   @override
@@ -164,39 +180,58 @@ class FirestoreVaccinationRepository implements VaccinationRepository {
   Future<int> countOverdue(int petId) async {
     final petVaccinations = await findByPet(petId);
     final now = DateTime.now();
-    return petVaccinations.where((v) => v.nextDueAt != null && v.nextDueAt!.isBefore(now)).length;
+    return petVaccinations
+        .where((v) => v.nextDueAt != null && v.nextDueAt!.isBefore(now))
+        .length;
   }
 
   // ============ Sync-aware operations (Firestore is the store) ============
 
   @override
-  Future<Vaccination> createWithSync(Vaccination entity, String tableName) async => save(entity);
+  Future<Vaccination> createWithSync(
+    Vaccination entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
-  Future<Vaccination> updateWithSync(Vaccination entity, String tableName) async => save(entity);
+  Future<Vaccination> updateWithSync(
+    Vaccination entity,
+    String tableName,
+  ) async => save(entity);
 
   @override
   Future<void> deleteWithSync(int id, String tableName) async => delete(id);
 
   // ============ Private helpers ============
 
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(int id) async {
-    final snapshot = await _vaccinations.where(FirestoreSchema.id, isEqualTo: id).limit(1).get();
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
+    int id,
+  ) async {
+    final snapshot = await _vaccinations
+        .where(FirestoreSchema.id, isEqualTo: id)
+        .limit(1)
+        .get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 
-  Future<List<VaccinationWithDetails>> _enrich(List<Vaccination> vaccinations) async {
+  Future<List<VaccinationWithDetails>> _enrich(
+    List<Vaccination> vaccinations,
+  ) async {
     final result = <VaccinationWithDetails>[];
     for (final vaccination in vaccinations) {
       final pet = await _petRepository.findById(vaccination.petId);
       if (pet == null) continue;
-      final veterinarian = await _userRepository.findById(vaccination.veterinarianId);
+      final veterinarian = await _userRepository.findById(
+        vaccination.veterinarianId,
+      );
       if (veterinarian == null) continue;
-      result.add(VaccinationWithDetails(
-        vaccination: vaccination,
-        pet: pet,
-        veterinarian: veterinarian,
-      ));
+      result.add(
+        VaccinationWithDetails(
+          vaccination: vaccination,
+          pet: pet,
+          veterinarian: veterinarian,
+        ),
+      );
     }
     return result;
   }

@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
+import 'neu_shadows.dart';
 import 'neu_shapes.dart';
+import 'neu_style.dart';
 
-/// Neumorphic card — a raised surface with organic flowing contours and press
-/// feedback.
+/// An extruded surface — the workhorse of the app.
 ///
-/// The workhorse of the Soft Clinic UI: list tiles, stat tiles, detail panels
-/// all render as [NeuCard]s. Cards sit raised on the warm bone canvas with a
-/// flowing asymmetric contour; a tappable card springs gently into
-/// [NeuVariant.pressed] while being pressed, then returns to raised on
-/// release.
+/// List tiles, stat tiles, and detail panels are all [NeuCard]. A card is a
+/// plane standing proud of the warm canvas, lit from the top-left, with no
+/// hairline: in an extruded system the shadow pair already describes the edge,
+/// and a border on top of it would describe it twice.
+///
+/// Pressing swaps the lighting — the light and depth swap sides and the plane
+/// sinks into the canvas. Cards deliberately **do not scale**: at card size a
+/// lighting change is the quieter, more legible signal, and a scaling card
+/// reads as a button.
 class NeuCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -24,6 +30,8 @@ class NeuCard extends StatefulWidget {
   final double borderWidth;
   final NeuVariant variant;
   final ShapeBorder? shape;
+  final NeumorphicStyle? style;
+  final bool showBorder;
 
   const NeuCard({
     super.key,
@@ -32,14 +40,16 @@ class NeuCard extends StatefulWidget {
     this.onTapDown,
     this.onTapUp,
     this.onTapCancel,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(NeuTokens.cardPadding),
     this.margin = EdgeInsets.zero,
-    this.borderRadius = 20,
+    this.borderRadius = NeuTokens.radiusMd,
     this.color,
     this.borderColor,
     this.borderWidth = 0,
     this.variant = NeuVariant.raised,
     this.shape,
+    this.style,
+    this.showBorder = false,
   });
 
   @override
@@ -66,33 +76,107 @@ class _NeuCardState extends State<NeuCard> {
 
   @override
   Widget build(BuildContext context) {
-    final visualVariant =
-        _pressed && widget.onTap != null ? NeuVariant.pressed : widget.variant;
-    final effectiveShape = widget.shape ?? RoundedRectangleBorder(
-      borderRadius: NeuShape.cardFlow,
-    );
+    final visualVariant = _pressed && widget.onTap != null
+        ? NeuVariant.pressed
+        : widget.variant;
+    final effectiveShape =
+        widget.shape ?? RoundedRectangleBorder(borderRadius: NeuShape.card);
 
-    return AnimatedScale(
-      scale: _pressed ? 0.985 : 1,
-      duration: const Duration(milliseconds: 100),
-      curve: Curves.easeOut,
+    return Semantics(
+      button: widget.onTap != null,
       child: GestureDetector(
         onTap: widget.onTap,
         onTapDown: _handleTapDown,
         onTapUp: _handleTapUp,
         onTapCancel: _handleTapCancel,
-        child: NeuContainer(
-          variant: visualVariant,
-          padding: widget.padding,
+        child: AnimatedContainer(
+          duration: NeuTokens.durationCard,
+          curve: NeuTokens.curveDefault,
           margin: widget.margin,
-          borderRadius: widget.borderRadius,
-          color: widget.color,
-          borderColor: widget.borderColor,
-          borderWidth: widget.borderWidth,
-          shape: effectiveShape,
+          padding: widget.padding,
+          decoration: ShapeDecoration(
+            color: _fill(context, visualVariant),
+            shape: _shape(context, effectiveShape, visualVariant),
+            shadows: _shadow(context, visualVariant),
+          ),
           child: widget.child,
         ),
       ),
     );
+  }
+
+  List<BoxShadow> _shadow(BuildContext context, NeuVariant visualVariant) {
+    final style = widget.style;
+    if (style != null && style.shadow != null) {
+      return _shadowForPreset(context, style.shadow!);
+    }
+    return switch (visualVariant) {
+      NeuVariant.raised => NeuShadow.raised(context),
+      NeuVariant.pressed => NeuShadow.pressed(context),
+      NeuVariant.inset => NeuShadow.inset(context),
+      NeuVariant.flat || NeuVariant.transparent => NeuShadow.flat(context),
+    };
+  }
+
+  List<BoxShadow> _shadowForPreset(BuildContext context, ShadowPreset preset) {
+    return switch (preset) {
+      ShadowPreset.raised => NeuShadow.raised(context),
+      ShadowPreset.pressed => NeuShadow.pressed(context),
+      ShadowPreset.inset => NeuShadow.inset(context),
+      ShadowPreset.flat => NeuShadow.flat(context),
+    };
+  }
+
+  Color _fill(BuildContext context, NeuVariant visualVariant) {
+    if (widget.color != null) return widget.color!;
+    final style = widget.style;
+    if (style != null && style.color != null) return style.color!;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (visualVariant == NeuVariant.inset) {
+      return isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset;
+    }
+    if (visualVariant == NeuVariant.pressed ||
+        visualVariant == NeuVariant.flat) {
+      return isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted;
+    }
+    if (visualVariant == NeuVariant.transparent) return Colors.transparent;
+    return isDark ? AppColors.surfaceDarkMode : AppColors.surface;
+  }
+
+  ShapeBorder _shape(
+    BuildContext context,
+    ShapeBorder effectiveShape,
+    NeuVariant visualVariant,
+  ) {
+    if (widget.style != null && widget.style!.shape != null) {
+      return effectiveShape;
+    }
+
+    // A well is defined by its cavity. Drawing an edge around it would fight
+    // the fill and read as an error state.
+    if (!widget.showBorder ||
+        widget.borderWidth <= 0 ||
+        visualVariant == NeuVariant.inset ||
+        visualVariant == NeuVariant.transparent) {
+      return effectiveShape;
+    }
+
+    final borderColor = widget.borderColor ?? ThemeColors.border(context);
+    final width = widget.borderWidth > 0
+        ? widget.borderWidth
+        : NeuTokens.borderWidthThin;
+
+    if (effectiveShape is RoundedRectangleBorder) {
+      return effectiveShape.copyWith(
+        side: BorderSide(color: borderColor, width: width),
+      );
+    }
+    if (effectiveShape is CircleBorder) {
+      return effectiveShape.copyWith(
+        side: BorderSide(color: borderColor, width: width),
+      );
+    }
+    return effectiveShape;
   }
 }

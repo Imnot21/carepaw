@@ -143,7 +143,8 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       // Add bottom padding to prevent content from being hidden by navigation bar
       extendBody: true,
-      bottomNavigationBar: const SizedBox.shrink(), // This ensures the scaffold has a bottom navigation bar space
+      bottomNavigationBar:
+          const SizedBox.shrink(), // This ensures the scaffold has a bottom navigation bar space
     );
   }
 
@@ -153,11 +154,13 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Avatar — organic blob contour
+          // Avatar — circular contour
           NeuAvatar(
             radius: 44,
             icon: Icons.person_outlined,
-            backgroundColor: ThemeColors.primary(context).withValues(alpha: 0.14),
+            backgroundColor: ThemeColors.primary(
+              context,
+            ).withValues(alpha: 0.14),
             foregroundColor: ThemeColors.primary(context),
           ),
           const SizedBox(height: 20),
@@ -471,7 +474,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       size: NeuButtonSize.medium,
                       onPressed: () {
                         Navigator.pop(dialogContext);
-                        context.read<AuthBloc>().add(const AuthLogoutRequested());
+                        context.read<AuthBloc>().add(
+                          const AuthLogoutRequested(),
+                        );
                       },
                     ),
                   ),
@@ -540,15 +545,14 @@ class _SettingTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: AppTextStyles.bodySmall.subtleOf(Theme.of(context).brightness),
+                    style: AppTextStyles.bodySmall.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: ThemeColors.textTertiary(context),
-            ),
+            Icon(Icons.chevron_right, color: ThemeColors.textTertiary(context)),
           ],
         ),
       ),

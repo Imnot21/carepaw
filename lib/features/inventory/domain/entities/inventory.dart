@@ -47,19 +47,19 @@ class InventoryItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        category,
-        unit,
-        currentStock,
-        minStock,
-        maxStock,
-        unitCost,
-        supplier,
-        location,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    category,
+    unit,
+    currentStock,
+    minStock,
+    maxStock,
+    unitCost,
+    supplier,
+    location,
+    createdAt,
+    updatedAt,
+  ];
 
   InventoryItem copyWith({
     int? id,
@@ -169,16 +169,16 @@ class InventoryBatch extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        inventoryId,
-        batchNumber,
-        quantity,
-        receivedAt,
-        expiresAt,
-        costPerUnit,
-        supplier,
-        createdAt,
-      ];
+    id,
+    inventoryId,
+    batchNumber,
+    quantity,
+    receivedAt,
+    expiresAt,
+    costPerUnit,
+    supplier,
+    createdAt,
+  ];
 
   InventoryBatch copyWith({
     int? id,
@@ -237,19 +237,19 @@ class InventoryTransaction extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        batchId,
-        type,
-        quantityChange,
-        quantityBefore,
-        quantityAfter,
-        reason,
-        referenceType,
-        referenceId,
-        performedBy,
-        notes,
-        createdAt,
-      ];
+    id,
+    batchId,
+    type,
+    quantityChange,
+    quantityBefore,
+    quantityAfter,
+    reason,
+    referenceType,
+    referenceId,
+    performedBy,
+    notes,
+    createdAt,
+  ];
 
   InventoryTransaction copyWith({
     int? id,
@@ -315,10 +315,7 @@ class InventoryBatchWithItem extends Equatable {
   final InventoryBatch batch;
   final InventoryItem item;
 
-  const InventoryBatchWithItem({
-    required this.batch,
-    required this.item,
-  });
+  const InventoryBatchWithItem({required this.batch, required this.item});
 
   @override
   List<Object?> get props => [batch, item];

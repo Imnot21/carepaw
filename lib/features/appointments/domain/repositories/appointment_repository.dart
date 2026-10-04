@@ -2,8 +2,11 @@ import 'package:carepaw/core/repositories/base_repository.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 
 /// Appointment repository interface - domain layer contract
-abstract class AppointmentRepository extends SoftDeleteRepository<Appointment, int>
-    implements StreamRepository<Appointment, int>, PaginatedRepository<Appointment, int> {
+abstract class AppointmentRepository
+    extends SoftDeleteRepository<Appointment, int>
+    implements
+        StreamRepository<Appointment, int>,
+        PaginatedRepository<Appointment, int> {
   /// Sync-aware operations
   @override
   Future<Appointment> createWithSync(Appointment entity, String tableName);
@@ -13,6 +16,7 @@ abstract class AppointmentRepository extends SoftDeleteRepository<Appointment, i
 
   @override
   Future<void> deleteWithSync(int id, String tableName);
+
   /// Find appointments for a pet
   Future<List<Appointment>> findByPet(int petId);
 
@@ -35,10 +39,14 @@ abstract class AppointmentRepository extends SoftDeleteRepository<Appointment, i
   Future<List<Appointment>> findUpcomingForOwner(int ownerId);
 
   /// Find appointments with pet details for an owner
-  Future<List<AppointmentWithPetDetails>> findWithPetDetailsByOwner(int ownerId);
+  Future<List<AppointmentWithPetDetails>> findWithPetDetailsByOwner(
+    int ownerId,
+  );
 
   /// Find upcoming appointments with pet details for an owner
-  Future<List<AppointmentWithPetDetails>> findUpcomingWithPetDetailsForOwner(int ownerId);
+  Future<List<AppointmentWithPetDetails>> findUpcomingWithPetDetailsForOwner(
+    int ownerId,
+  );
 
   /// Find today's appointments for a veterinarian
   Future<List<Appointment>> findTodaysForVeterinarian(int veterinarianId);
@@ -47,7 +55,9 @@ abstract class AppointmentRepository extends SoftDeleteRepository<Appointment, i
   Future<AppointmentWithDetails?> findWithDetails(int appointmentId);
 
   /// Update appointment status
-  Future<Appointment> updateStatus(int id, AppointmentStatus status, {
+  Future<Appointment> updateStatus(
+    int id,
+    AppointmentStatus status, {
     DateTime? checkInAt,
     DateTime? startedAt,
     DateTime? completedAt,

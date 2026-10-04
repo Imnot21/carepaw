@@ -105,9 +105,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         _buildTypeSelector(),
 
         // Camera View
-        Expanded(
-          child: _buildCameraView(),
-        ),
+        Expanded(child: _buildCameraView()),
 
         // Bottom Controls
         _buildBottomControls(),
@@ -176,8 +174,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 child: NeuContainer(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   borderRadius: 14,
-                  variant: isSelected ? NeuVariant.pressed : NeuVariant.transparent,
-                  color: isSelected ? _getTypeColor(_selectedType).withValues(alpha: 0.18) : null,
+                  variant: isSelected
+                      ? NeuVariant.pressed
+                      : NeuVariant.transparent,
+                  color: isSelected
+                      ? _getTypeColor(_selectedType).withValues(alpha: 0.18)
+                      : null,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -258,15 +260,17 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                             Icon(
                               Icons.camera_alt_rounded,
                               size: 48,
-                              color: _getTypeColor(_selectedType)
-                                  .withValues(alpha: 0.5),
+                              color: _getTypeColor(
+                                _selectedType,
+                              ).withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Position ${_selectedType.displayName} in frame',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: _getTypeColor(_selectedType)
-                                    .withValues(alpha: 0.7),
+                                color: _getTypeColor(
+                                  _selectedType,
+                                ).withValues(alpha: 0.7),
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -489,7 +493,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             child: NeuCard(
               padding: EdgeInsets.zero,
               child: ClipRRect(
-                borderRadius: NeuShape.cardFlow,
+                borderRadius: NeuShape.card,
                 child: _capturedImagePath != null
                     ? Image.asset(
                         _capturedImagePath!,

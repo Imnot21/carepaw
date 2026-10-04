@@ -57,12 +57,16 @@ class _NotLoggedInView extends StatelessWidget {
     return Scaffold(
       backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
-        title: const Text('Medical Records'),
+        title: Text(
+          'Medical records',
+          style: AppTextStyles.headlineSmall.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: ThemeColors.surface(context),
         elevation: 0,
         scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
       ),
       body: Center(
         child: Padding(
@@ -71,40 +75,34 @@ class _NotLoggedInView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               NeuContainer(
-                borderRadius: 80,
-                variant: NeuVariant.raised,
-                color: ThemeColors.primary(context),
-                boxShadow: NeuShadow.color(context, ThemeColors.primary(context), blur: 18, opacity: 0.32),
-                child: const SizedBox(
-                  width: 160,
-                  height: 160,
-                  child: Icon(
-                    Icons.medical_information_outlined,
-                    size: 80,
-                    color: AppColors.textOnPrimary,
-                  ),
+                variant: NeuVariant.inset,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(20),
+                child: Icon(
+                  Icons.medical_information_outlined,
+                  size: 48,
+                  color: ThemeColors.primary(context),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               Text(
-                'Please log in to view medical records',
+                'Please sign in to view medical records',
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: ThemeColors.textPrimary(context),
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
-                'Sign in to access your pet\'s health history',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: ThemeColors.textTertiary(context),
+                'Sign in to access your pet\u2019s health history',
+                style: AppTextStyles.bodyLarge.subtleOf(
+                  Theme.of(context).brightness,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 24),
               NeuButton(
-                text: 'Log In',
+                text: 'Sign in',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
                 variant: NeuButtonVariant.primary,

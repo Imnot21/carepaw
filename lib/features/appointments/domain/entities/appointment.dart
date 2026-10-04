@@ -39,7 +39,8 @@ class Appointment extends Equatable {
   });
 
   /// Check if appointment is in a terminal state
-  bool get isTerminal => status == AppointmentStatus.completed ||
+  bool get isTerminal =>
+      status == AppointmentStatus.completed ||
       status == AppointmentStatus.cancelled ||
       status == AppointmentStatus.noShow;
 
@@ -70,27 +71,29 @@ class Appointment extends Equatable {
   bool get isUpcoming => scheduledAt.isAfter(DateTime.now()) && !isTerminal;
 
   /// Check if appointment is overdue
-  bool get isOverdue => scheduledAt.isBefore(DateTime.now()) &&
-      (status == AppointmentStatus.requested || status == AppointmentStatus.confirmed);
+  bool get isOverdue =>
+      scheduledAt.isBefore(DateTime.now()) &&
+      (status == AppointmentStatus.requested ||
+          status == AppointmentStatus.confirmed);
 
   @override
   List<Object?> get props => [
-        id,
-        petId,
-        veterinarianId,
-        scheduledAt,
-        durationMinutes,
-        status,
-        reason,
-        notes,
-        checkInAt,
-        startedAt,
-        completedAt,
-        cancelledAt,
-        cancellationReason,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    petId,
+    veterinarianId,
+    scheduledAt,
+    durationMinutes,
+    status,
+    reason,
+    notes,
+    checkInAt,
+    startedAt,
+    completedAt,
+    cancelledAt,
+    cancellationReason,
+    createdAt,
+    updatedAt,
+  ];
 
   Appointment copyWith({
     int? id,
