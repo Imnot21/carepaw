@@ -34,13 +34,14 @@ later, but version 1 fits Pila Vet Hub exactly.
 
 ## About the users and roles
 
-### 4. "Your paper says Pet Owner and Owner/Admin. Your app has Staff, Vet, and Admin. Which is it?"
-Both, on purpose. Chapter 1 defines the 2 active sides — that's what we
-demo: one owner login, one Owner/Admin login running the whole clinic. The
-Staff, Vet, and Admin roles stay in the code as a labeled reserve for when
-the clinic grows (see `docs/ROLE_ALIGNMENT_PLAN.md`). The paper's own org
-chart shows one owner/boss above front desk, vet staff, and clinic staff —
-our Owner/Admin covers all three duties today.
+### 4. "Your paper says Pet Owner and Owner/Admin. Does the app match?"
+Yes — exactly. The app has the same 2 sides: one owner login, one
+Owner/Admin login running the whole clinic (bookings, line, records,
+vaccines, deworming, medicine instructions, stock, scanning). Earlier builds
+had extra Staff/Vet/Admin roles; those were removed to match Chapter 1 (a
+backup copy is kept). The paper's own org chart shows one owner/boss above
+front desk, vet staff, and clinic staff — our Owner/Admin covers all three
+duties.
 
 ### 5. "If one Owner/Admin does everything, where is your security?"
 Doing everything is not seeing everything blindly. Owners only see their own

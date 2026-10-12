@@ -30,26 +30,19 @@ internet, and the rule that **the machine's scan is never trusted alone**.
 
 ---
 
-## Mismatch 1 (big): the paper has 2 kinds of users, the app has 4
+## Mismatch 1 WAS big, now FIXED: 2 sides in paper AND app
 
 The paper only talks about **two sides**: the pet owners, and one
 clinic-side account (called the Owner/Admin) that does everything — bookings,
 records, line, and stock.
 
-The app has **four** account types: owner, front desk worker, animal doctor,
-and manager.
+The app previously had **four** account types. It now has exactly the same
+two: Pet Owner + Owner/Admin. Old roles deleted (backup copy kept).
+Demo = 2 logins, paper = 2 sides. Status: **done**.
 
-**Why this matters:** a panelist reading the paper then watching the demo
-will ask, "Where did the worker and doctor accounts come from? They're not
-in Chapter 1."
-
-**What to do:** don't change the app. Just run the demo with **2 logins** —
-one owner and one Owner/Admin (manager) account that runs the whole clinic.
-In the paper, describe the worker, doctor, and manager screens as *parts of
-the Owner/Admin side*, the same way the paper's own clinic chart shows one
-owner/boss above the front desk, the vet staff, and the clinic staff. One
-small fix is still needed so the manager account can also write medicine
-instructions (today only the doctor account can).
+Also fixed since this check: pet sex field, service picker, Rescheduled
+booking status, Cancelled line status, and deworming records — all paper
+requirements that were missing. Status: **done**.
 
 ---
 
@@ -73,9 +66,9 @@ done / cancelled* and the line is *waiting / being served / done /
 cancelled*. The app uses slightly different words (*confirmed, checked-in,
 called, in room…*). Same meanings, different labels.
 
-**What to do:** either rename the labels in the app to match the paper
-word for word, or add one sentence in the paper showing which word means
-which.
+**Update:** *Rescheduled* and *Cancelled* now exist in the app exactly as
+named. For the rest, add one sentence in the paper showing which word
+means which.
 
 ---
 
@@ -95,12 +88,12 @@ honest and private (the paper asks for exactly that).
 
 ## To-do list before the defense
 
-1. Demo with 2 logins only: one owner + one Owner/Admin. Matches the paper.
-2. Ask the developer for the one-step fix so the Owner/Admin account can
-   also write medicine instructions.
+1. ~~Demo with 2 logins only~~ — **done**, the app now has only 2 logins.
+2. ~~Owner/Admin writes medicine instructions~~ — **done**.
 3. Add one paragraph to the paper: record "changes" are correction notes on
    top of history.
-4. Match the status words between paper and app (or write the mapping down).
+4. Match the status words between paper and app (Rescheduled + Cancelled now
+   exist; map the rest in one sentence).
 5. Put the client's real name — DocMyk's PILA VET HUB, Pila, Laguna — in the
    app's own documents, so paper and project name the same client.
 

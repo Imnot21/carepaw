@@ -1,8 +1,13 @@
-# Role Alignment Plan — Match Chapter 1 (Owner + Owner/Admin), Keep Big-Clinic Roles in Reserve
+# Role Alignment Plan — Match Chapter 1 (Owner + Owner/Admin) — EXECUTED
 
-> Goal: the app's roles match the thesis paper (Pet Owner + Owner/Admin),
-> while the existing big-clinic roles (Staff, Veterinarian, Admin) stay in
-> the code as a labeled reserve for when the clinic grows. No code deleted.
+> Goal: the app's roles match the thesis paper (Pet Owner + Owner/Admin).
+> **Status: done.** Final decision went further than this plan's draft: the
+> old Staff/Veterinarian/Admin roles were **deleted** (not kept as reserve),
+> because the paper's scope is one clinic. The full big-clinic version is
+> preserved as a separate backup copy / repository (`carepaw`), while this
+> copy (`carepawdemo`) is the paper build. Non-paper screens (audit, users,
+> settings) were hidden from tabs, not deleted. The phase table below is
+> kept as the execution record.
 
 ---
 
