@@ -65,7 +65,8 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   bool get _isVetOrStaff =>
       widget.userRole == UserRole.veterinarian ||
       widget.userRole == UserRole.staff ||
-      widget.userRole == UserRole.admin;
+      widget.userRole == UserRole.admin ||
+      widget.userRole == UserRole.ownerAdmin;
 
   @override
   void initState() {

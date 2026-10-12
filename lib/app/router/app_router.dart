@@ -27,6 +27,7 @@ import 'package:carepaw/features/queue/presentation/pages/queue_page.dart';
 import 'package:carepaw/features/queue/presentation/pages/staff_queue_page.dart';
 import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart';
 import 'package:carepaw/features/home/presentation/pages/home_page.dart';
+import 'package:carepaw/features/home/presentation/pages/clinic_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/staff_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/vet_dashboard_page.dart';
 import 'package:carepaw/features/home/presentation/pages/admin_dashboard_page.dart';
@@ -335,6 +336,13 @@ class AppRouter {
             },
           ),
 
+          // Owner/Admin clinic home (paper-aligned single operator)
+          GoRoute(
+            path: Routes.clinicDashboard,
+            name: RouteNames.clinicDashboard,
+            builder: (context, state) => const ClinicDashboardPage(),
+          ),
+
           // Staff routes
           GoRoute(
             path: Routes.staffDashboard,
@@ -542,23 +550,33 @@ class AppRouter {
 
       // Role-based route protection
       if (isAuthenticated) {
-        // Staff routes require STAFF or ADMIN
+        // Staff routes require STAFF, ADMIN, or Owner/Admin
         if (location.startsWith(Routes.staffDashboard) &&
             userRole != UserRole.staff &&
-            userRole != UserRole.admin) {
+            userRole != UserRole.admin &&
+            userRole != UserRole.ownerAdmin) {
           return _getHomeRouteForRole(userRole);
         }
 
-        // Vet routes require VETERINARIAN or ADMIN
+        // Vet routes require VETERINARIAN, ADMIN, or Owner/Admin
         if (location.startsWith(Routes.vetDashboard) &&
             userRole != UserRole.veterinarian &&
+            userRole != UserRole.admin &&
+            userRole != UserRole.ownerAdmin) {
+          return _getHomeRouteForRole(userRole);
+        }
+
+        // Clinic home requires Owner/Admin (or ADMIN as fallback)
+        if (location.startsWith(Routes.clinicDashboard) &&
+            userRole != UserRole.ownerAdmin &&
             userRole != UserRole.admin) {
           return _getHomeRouteForRole(userRole);
         }
 
-        // Admin routes require ADMIN
+        // Admin routes require ADMIN or Owner/Admin
         if (location.startsWith(Routes.adminDashboard) &&
-            userRole != UserRole.admin) {
+            userRole != UserRole.admin &&
+            userRole != UserRole.ownerAdmin) {
           return _getHomeRouteForRole(userRole);
         }
       }
@@ -573,6 +591,7 @@ class AppRouter {
       UserRole.admin => Routes.adminDashboard,
       UserRole.veterinarian => Routes.vetDashboard,
       UserRole.staff => Routes.staffDashboard,
+      UserRole.ownerAdmin => Routes.clinicDashboard,
       UserRole.petOwner => Routes.home,
     };
   }

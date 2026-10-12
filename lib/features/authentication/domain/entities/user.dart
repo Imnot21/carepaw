@@ -40,6 +40,9 @@ class User extends Equatable {
   /// Check if user is a pet owner
   bool get isPetOwner => role == UserRole.petOwner;
 
+  /// Check if user is the Owner/Admin (paper-aligned single clinic operator)
+  bool get isOwnerAdmin => role == UserRole.ownerAdmin;
+
   @override
   List<Object?> get props => [
     id,
@@ -82,11 +85,17 @@ class User extends Equatable {
 }
 
 /// User roles enum
+///
+/// Active paper-aligned roles: [petOwner] and [ownerAdmin].
+/// [staff], [veterinarian], [admin] are RESERVE roles for a bigger future
+/// clinic — still valid, still enforced, just not provisioned for the
+/// single-operator (DocMyk's PILA VET HUB) deployment.
 enum UserRole {
   petOwner('PET_OWNER'),
   veterinarian('VETERINARIAN'),
   staff('STAFF'),
-  admin('ADMIN');
+  admin('ADMIN'),
+  ownerAdmin('OWNER_ADMIN');
 
   final String value;
   const UserRole(this.value);
@@ -108,6 +117,8 @@ enum UserRole {
         return 'Staff';
       case UserRole.admin:
         return 'Admin';
+      case UserRole.ownerAdmin:
+        return 'Owner/Admin';
     }
   }
 }

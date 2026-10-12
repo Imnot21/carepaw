@@ -54,6 +54,12 @@ service cloud.firestore {
       return currentRole() == 'ADMIN';
     }
 
+    // Paper-aligned single clinic operator (Owner/Admin). Covers counter,
+    // clinical, and management duties for the single-clinic deployment.
+    function isOwnerAdmin() {
+      return currentRole() == 'OWNER_ADMIN';
+    }
+
     function isVeterinarian() {
       return currentRole() == 'VETERINARIAN';
     }
@@ -63,7 +69,7 @@ service cloud.firestore {
     }
 
     function isClinicStaff() {
-      return isStaff() || isVeterinarian() || isAdmin();
+      return isStaff() || isVeterinarian() || isAdmin() || isOwnerAdmin();
     }
 
     // The app-facing surrogate int id. Returns -1 when no profile exists yet so
@@ -88,7 +94,7 @@ service cloud.firestore {
       // session, not the new user's).
       allow create: if isAuthenticated()
                     && request.resource.data.firebaseUid == uid
-                    && request.resource.data.role in ['ADMIN', 'VETERINARIAN', 'STAFF', 'PET_OWNER']
+                     && request.resource.data.role in ['ADMIN', 'VETERINARIAN', 'STAFF', 'PET_OWNER', 'OWNER_ADMIN']
                     && (request.auth.uid == uid || isAdmin());
       // Read is open to signed-in users: appointment forms need the
       // veterinarian directory, and detail views resolve clinician names by
@@ -121,17 +127,17 @@ service cloud.firestore {
       allow create: if isAuthenticated() &&
         request.resource.data.ownerId == getCurrentUserId();
       allow read: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian() ||
+        (isClinicStaff() ||
          resource.data.ownerId == getCurrentUserId() ||
          resource.data.veterinarianId == getCurrentUserId());
 
       // Veterinarian and staff can update appointment status and related fields.
       allow update: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian() ||
+        (isClinicStaff() ||
          resource.data.ownerId == getCurrentUserId());
 
       // Admin: full
-      allow write: if isAdmin();
+      allow write: if isAdmin() || isOwnerAdmin();
     }
 
     // ---- Medical Records collection ----
@@ -141,9 +147,9 @@ service cloud.firestore {
       // field, which the repository stamps on every write and filters on for
       // pet-owner callers.
       allow create: if isAuthenticated() &&
-        (isVeterinarian() || isStaff() || isAdmin());
+        (isClinicStaff());
       allow read: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian() ||
+        (isClinicStaff() ||
          resource.data.petOwnerId == getCurrentUserId());
       // No update, no delete — medical records are immutable
       allow update, delete: if false;
@@ -152,9 +158,9 @@ service cloud.firestore {
     // ---- Vaccinations subcollection ----
     match /medicalRecords/{recordId}/vaccinations/{vaccinationId} {
       allow create: if isAuthenticated() &&
-        (isVeterinarian() || isStaff() || isAdmin());
+        (isClinicStaff());
       allow read: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian() ||
+        (isClinicStaff() ||
          resource.data.petOwnerId == getCurrentUserId());
       allow update, delete: if false;
     }
@@ -162,20 +168,20 @@ service cloud.firestore {
     // ---- Inventory collection ----
     match /inventoryItems/{itemId} {
       // Staff/vets: read; Staff: write (stock changes)
-      allow read: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
-      allow write: if isAuthenticated() && (isStaff() || isAdmin());
+      allow read: if isAuthenticated() && (isClinicStaff());
+      allow write: if isAuthenticated() && (isStaff() || isAdmin() || isOwnerAdmin());
     }
 
     // ---- Inventory Batches ----
     match /inventoryBatches/{batchId} {
-      allow read: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
-      allow write: if isAuthenticated() && (isStaff() || isAdmin());
+      allow read: if isAuthenticated() && (isClinicStaff());
+      allow write: if isAuthenticated() && (isStaff() || isAdmin() || isOwnerAdmin());
     }
 
     // ---- Inventory Transactions ----
     match /inventoryTransactions/{transactionId} {
-      allow read: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
-      allow create: if isAuthenticated() && (isStaff() || isAdmin());
+      allow read: if isAuthenticated() && (isClinicStaff());
+      allow create: if isAuthenticated() && (isStaff() || isAdmin() || isOwnerAdmin());
       allow update, delete: if false;
     }
 
@@ -184,9 +190,9 @@ service cloud.firestore {
       allow read: if isAuthenticated() &&
         (resource.data.petOwnerId == getCurrentUserId() ||
          resource.data.veterinarianId == getCurrentUserId() ||
-         isAdmin());
-      allow create: if isAuthenticated() && isVeterinarian();
-      allow update: if isAuthenticated() && isVeterinarian() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+         isAdmin() || isOwnerAdmin());
+      allow create: if isAuthenticated() && (isVeterinarian() || isOwnerAdmin());
+      allow update: if isAuthenticated() && (isVeterinarian() || isOwnerAdmin()) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
       allow delete: if false;
     }
 
@@ -199,8 +205,8 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       // Staff and admins manage queue state; veterinarians can also update status.
       allow create, update: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian());
-      allow delete: if isAdmin();
+        (isClinicStaff());
+      allow delete: if isAdmin() || isOwnerAdmin();
     }
 
     // ---- Notifications ----

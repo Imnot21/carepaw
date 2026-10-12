@@ -92,7 +92,8 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         final isVetOrStaff =
             user.role == UserRole.veterinarian ||
             user.role == UserRole.staff ||
-            user.role == UserRole.admin;
+            user.role == UserRole.admin ||
+            user.isOwnerAdmin;
 
         if (!isVetOrStaff) {
           return _AccessDeniedView(petName: widget.pet.name);

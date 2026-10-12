@@ -581,6 +581,7 @@ class _RoleChip extends StatelessWidget {
       UserRole.veterinarian => AppColors.tertiary,
       UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
       UserRole.admin => ThemeColors.primary(context),
+      UserRole.ownerAdmin => ThemeColors.primary(context),
     };
   }
 
@@ -741,5 +742,6 @@ Color roleColor(BuildContext context, UserRole role) {
     UserRole.veterinarian => AppColors.tertiary,
     UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
     UserRole.admin => ThemeColors.primary(context),
+    UserRole.ownerAdmin => ThemeColors.primary(context),
   };
 }

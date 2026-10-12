@@ -36,7 +36,10 @@ abstract class Routes {
   static const String medicalRecordDetail = '/medical-records/:id';
   static const String medicalRecordsRoute = 'medical-records';
 
-  // ============ Staff Routes ============
+  // ============ Owner/Admin Route (paper-aligned single operator) ============
+  static const String clinicDashboard = '/clinic';
+
+  // ============ Staff Routes (RESERVE: big-clinic role) ============
   static const String staffDashboard = '/staff';
   static const String staffAppointments = '/staff/appointments';
   static const String staffQueue = '/staff/queue';
@@ -96,6 +99,7 @@ abstract class RouteNames {
   static const String medicalRecordsRoute = 'medical-records';
 
   static const String staffDashboard = 'staff-dashboard';
+  static const String clinicDashboard = 'clinic-dashboard';
   static const String staffAppointments = 'staff-appointments';
   static const String staffQueue = 'staff-queue';
   static const String staffInventory = 'staff-inventory';

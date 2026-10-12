@@ -57,7 +57,8 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       _isVetOrStaff =
           authState.user.role == UserRole.veterinarian ||
           authState.user.role == UserRole.staff ||
-          authState.user.role == UserRole.admin;
+          authState.user.role == UserRole.admin ||
+          authState.user.isOwnerAdmin;
     }
 
     // Load appointments when page initializes

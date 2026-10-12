@@ -80,7 +80,8 @@ class _InventoryListPageState extends State<InventoryListPage> {
         final user = authState.user;
         final isVetOrStaff = user.role == UserRole.veterinarian ||
                             user.role == UserRole.staff ||
-                            user.role == UserRole.admin;
+                            user.role == UserRole.admin ||
+                            user.isOwnerAdmin;
 
         if (!isVetOrStaff) {
           return const _AccessDeniedView();

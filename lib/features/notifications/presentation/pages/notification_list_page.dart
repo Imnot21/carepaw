@@ -82,7 +82,8 @@ class _NotificationListPageState extends State<NotificationListPage>
         final isVetOrStaff =
             user.role == UserRole.veterinarian ||
             user.role == UserRole.staff ||
-            user.role == UserRole.admin;
+            user.role == UserRole.admin ||
+            user.isOwnerAdmin;
 
         return Scaffold(
           backgroundColor: _isDark

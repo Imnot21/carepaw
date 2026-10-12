@@ -131,7 +131,7 @@ class _MedicalRecordListView extends StatefulWidget {
 
 class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   MedicalRecordType? _selectedFilter;
-  bool get _isVetOrStaff => widget.currentUser.role == UserRole.veterinarian || widget.currentUser.role == UserRole.staff || widget.currentUser.role == UserRole.admin;
+  bool get _isVetOrStaff => widget.currentUser.role == UserRole.veterinarian || widget.currentUser.role == UserRole.staff || widget.currentUser.role == UserRole.admin || widget.currentUser.isOwnerAdmin;
 
   @override
   Widget build(BuildContext context) {

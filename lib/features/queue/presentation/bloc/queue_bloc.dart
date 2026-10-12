@@ -105,7 +105,8 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
           authState is AuthAuthenticated &&
           (authState.user.role == UserRole.staff ||
               authState.user.role == UserRole.veterinarian ||
-              authState.user.role == UserRole.admin);
+              authState.user.role == UserRole.admin ||
+              authState.user.isOwnerAdmin);
 
       _queueStream = _repository.watchCurrentQueue();
       await for (final queueEntries in _queueStream!) {
