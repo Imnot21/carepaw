@@ -493,7 +493,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                   const SizedBox(height: 12),
                   NeuButton(
                     text: 'Clear filters',
-                    variant: NeuButtonVariant.outline,
+                variant: NeuButtonVariant.text,
                     size: NeuButtonSize.small,
                     onPressed: () {
                       _searchDebounce?.cancel();

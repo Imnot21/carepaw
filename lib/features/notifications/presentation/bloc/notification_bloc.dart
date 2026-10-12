@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/core/storage/local_storage.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart'
@@ -28,6 +29,16 @@ class NotificationBloc
     on<events.RefreshNotifications>(_onRefreshNotifications);
   }
 
+  /// Signed-in user id (LocalStorage is set at login). `1` is only a legacy
+  /// fallback so behavior matches the old data if the session is missing.
+  int get _currentUserId {
+    try {
+      return LocalStorage.getUserId() ?? 1;
+    } catch (_) {
+      return 1;
+    }
+  }
+
   /// Load all notifications with pagination
   Future<void> _onLoadNotifications(
     events.LoadNotifications event,
@@ -36,7 +47,7 @@ class NotificationBloc
     emit(const states.NotificationLoading());
     try {
       final notifications = await _notificationRepository.findByUser(
-        event.userId ?? 1,
+        event.userId ?? _currentUserId,
         limit: event.limit ?? 20,
       );
       emit(
@@ -59,7 +70,7 @@ class NotificationBloc
   ) async {
     try {
       final count = await _notificationRepository.getUnreadCount(
-        event.userId ?? 1,
+        event.userId ?? _currentUserId,
       );
       emit(states.UnreadCountLoaded(count));
     } on Failure catch (failure) {
@@ -77,7 +88,7 @@ class NotificationBloc
     emit(const states.NotificationLoading());
     try {
       final notifications = await _notificationRepository.findByType(
-        event.userId ?? 1,
+        event.userId ?? _currentUserId,
         event.type,
       );
       emit(states.NotificationsByTypeLoaded(notifications, event.type));
@@ -111,7 +122,7 @@ class NotificationBloc
     Emitter<states.NotificationState> emit,
   ) async {
     try {
-      await _notificationRepository.markAllAsRead(event.userId ?? 1);
+      await _notificationRepository.markAllAsRead(event.userId ?? _currentUserId);
       emit(const states.AllNotificationsMarkedAsRead());
       add(const events.LoadUnreadCount());
       add(const events.LoadNotifications());
@@ -166,7 +177,7 @@ class NotificationBloc
     try {
       final notification = Notification(
         id: null,
-        userId: event.targetUserId ?? 1, // TODO: Get from auth state
+        userId: event.targetUserId ?? _currentUserId,
         title: event.title,
         message: event.body,
         type: event.type,
@@ -175,7 +186,7 @@ class NotificationBloc
       );
       await _notificationRepository.save(notification);
       emit(states.NotificationCreated(notification));
-      add(events.LoadNotifications(userId: event.targetUserId ?? 1));
+      add(events.LoadNotifications(userId: event.targetUserId ?? _currentUserId));
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
@@ -204,14 +215,20 @@ class NotificationBloc
     Emitter<states.NotificationState> emit,
   ) async {
     try {
-      final preferences = await _notificationRepository.findPreferences(1);
+      // Preferences live in notificationPreferences/{userId}; the rules only
+      // let a caller read their own document, so the id must be the signed-in
+      // user's (previously hardcoded to 1, which denied everyone else).
+      final userId = LocalStorage.getUserId() ?? 1;
+      final preferences = await _notificationRepository.findPreferences(
+        userId,
+      );
       if (preferences != null) {
         emit(states.NotificationPreferencesLoaded(preferences));
       } else {
         // Create default preferences if none exist
         final defaultPrefs = NotificationPreferences(
           id: null,
-          userId: 1,
+          userId: userId,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );

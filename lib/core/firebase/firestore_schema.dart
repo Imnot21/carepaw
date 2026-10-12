@@ -47,6 +47,9 @@ class FirestoreSchema {
 
   // Pets fields
   static const String ownerId = 'ownerId';
+  // Denormalized pet owner id on records (e.g. medicalRecords) so security
+  // rules can authorize owner reads without a second document lookup.
+  static const String petOwnerId = 'petOwnerId';
   static const String name = 'name';
   static const String species = 'species';
   static const String breed = 'breed';

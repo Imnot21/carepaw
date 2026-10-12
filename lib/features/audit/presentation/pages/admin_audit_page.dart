@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/features/audit/domain/entities/audit_log.dart';
@@ -37,6 +36,7 @@ class AdminAuditPage extends StatelessWidget {
           NeuIconButton(
             icon: Icons.refresh_rounded,
             tooltip: 'Refresh',
+            plain: true,
             onPressed: () {
               final state = context.read<AuditLogBloc>().state;
               context.read<AuditLogBloc>().add(
@@ -164,10 +164,18 @@ class _AuditContent extends StatelessWidget {
         ),
         Expanded(
           child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+            padding: const EdgeInsets.fromLTRB(
+              NeuTokens.pagePadding,
+              NeuTokens.spaceXxs,
+              NeuTokens.pagePadding,
+              NeuTokens.spaceLg,
+            ),
             physics: const BouncingScrollPhysics(),
             itemCount: entries.length,
-            separatorBuilder: (_, _) => const NeuDivider(thickness: 1),
+            // Cards already carry their own border and depth, so a rule between
+            // them just adds noise. A single even gap reads cleaner.
+            separatorBuilder: (_, _) =>
+                const SizedBox(height: NeuTokens.spaceSm),
             itemBuilder: (context, index) =>
                 _AuditLogCard(entry: entries[index]),
           ),
@@ -237,13 +245,18 @@ class _AuditFilterBar extends StatelessWidget {
       ..sort();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+      padding: const EdgeInsets.fromLTRB(
+        NeuTokens.pagePadding,
+        NeuTokens.spaceXs,
+        NeuTokens.pagePadding,
+        NeuTokens.spaceSm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (actions.isNotEmpty) ...[
             Text('Action', style: AppTextStyles.labelLarge),
-            const SizedBox(height: 8),
+            const SizedBox(height: NeuTokens.spaceXs),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -268,11 +281,11 @@ class _AuditFilterBar extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: NeuTokens.spaceSm),
           ],
           if (entityTypes.isNotEmpty) ...[
             Text('Entity', style: AppTextStyles.labelLarge),
-            const SizedBox(height: 8),
+            const SizedBox(height: NeuTokens.spaceXs),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(

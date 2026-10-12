@@ -174,6 +174,7 @@ class _PetListViewState extends State<_PetListView> {
               onPressed: () => _navigateToAddPet(context),
               tooltip: 'Add Pet',
               size: 22,
+              plain: true,
             ),
           ),
         ],

@@ -158,6 +158,7 @@ class _AdminDashboardContent extends StatelessWidget {
             NeuIconButton(
               icon: Icons.notifications_none_rounded,
               tooltip: 'Notifications',
+              plain: true,
               onPressed: () => context.push(Routes.notifications),
             ),
             const SizedBox(width: NeuTokens.spaceXs),

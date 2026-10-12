@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/firebase/caller_scope.dart';
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/repositories/base_repository.dart';
@@ -106,8 +107,10 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
 
   @override
   Stream<Appointment?> watchById(int id) {
-    return _appointments
-        .where(FirestoreSchema.id, isEqualTo: id)
+    return CallerScope.forOwner(
+          _appointments.where(FirestoreSchema.id, isEqualTo: id),
+          ownerField: FirestoreSchema.ownerId,
+        )
         .limit(1)
         .snapshots()
         .map((snapshot) {
@@ -139,9 +142,10 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
 
   @override
   Future<List<Appointment>> findByPet(int petId) async {
-    final snapshot = await _appointments
-        .where(FirestoreSchema.petId, isEqualTo: petId)
-        .get();
+    final snapshot = await CallerScope.forOwner(
+      _appointments.where(FirestoreSchema.petId, isEqualTo: petId),
+      ownerField: FirestoreSchema.ownerId,
+    ).get();
     return snapshot.docs
         .map((doc) => AppointmentDocMapper.fromData(doc.data()))
         .toList();
@@ -149,8 +153,10 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
 
   @override
   Stream<List<Appointment>> watchByPet(int petId) {
-    return _appointments
-        .where(FirestoreSchema.petId, isEqualTo: petId)
+    return CallerScope.forOwner(
+          _appointments.where(FirestoreSchema.petId, isEqualTo: petId),
+          ownerField: FirestoreSchema.ownerId,
+        )
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
@@ -386,10 +392,10 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
   Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
     int id,
   ) async {
-    final snapshot = await _appointments
-        .where(FirestoreSchema.id, isEqualTo: id)
-        .limit(1)
-        .get();
+    final snapshot = await CallerScope.forOwner(
+      _appointments.where(FirestoreSchema.id, isEqualTo: id),
+      ownerField: FirestoreSchema.ownerId,
+    ).limit(1).get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

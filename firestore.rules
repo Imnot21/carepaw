@@ -5,15 +5,24 @@ service cloud.firestore {
     // CarePaw — PRODUCTION Firestore Rules
     // ----------------------------------------------------------
     // These rules enforce:
-    //   • Users can read/write their own profile (users/{uid})
-    //   • Admins can manage all users
-    //   • Pet owners can read/write their own pets
-    //   • Veterinarians can read/write pets of their assigned appointments
-    //   • Staff can read/write queue entries for check-in flow
-    //   • Medical records: append-only, owners/vets can read, vets create
+    //   • Users can read profiles (directory needed for vet names/lists)
+    //     but only create/update their own; admins manage all users
+    //   • Pet owners can read pets and create/update their own pets
+    //   • Appointments: owners CRUD their own, clinic staff manage all
+    //   • Medical records: append-only, clinic creates, owners/vets read
+    //   • Queue entries: readable by any signed-in user (the owner screen
+    //     needs the whole queue to compute line position; entries carry no
+    //     owner PII), clinic staff manage state
     //   • Inventory: staff/vets read, staff write
-    //   • Audit logs: admins write, admins read
-    //   • Counters: admin-only (for int-id sequences)
+    //   • Notifications: recipients and clinic staff manage them
+    //   • Audit logs: admins only
+    //   • Counters: any signed-in user (ID sequences for their own writes)
+    //
+    // Query provability: Firestore denies a LIST query unless its filters
+    // prove the rule for every document it could return. Doc-id lookups
+    // (where('id', isEqualTo: x)) prove nothing about ownership, so pet-owner
+    // callers add an owner-id filter in the repository layer (CallerScope)
+    // and rules compare it with getCurrentUserId().
     // ----------------------------------------------------------
 
     // ---- Helpers ----
@@ -53,10 +62,6 @@ service cloud.firestore {
       return currentRole() == 'STAFF';
     }
 
-    function isPetOwner() {
-      return currentRole() == 'PET_OWNER';
-    }
-
     function isClinicStaff() {
       return isStaff() || isVeterinarian() || isAdmin();
     }
@@ -73,44 +78,41 @@ service cloud.firestore {
       return request.auth.uid;
     }
 
-    function isPetOwnerOf(petOwnerId) {
-      return getCurrentUserId() == petOwnerId;
-    }
-
-    function isVeterinarianOf(petId) {
-      // The application stores veterinarian access at the role level; this
-      // helper is kept for compatibility with older rules while the app uses
-      // the broader authenticated-clinic-role checks below.
-      return isVeterinarian();
-    }
-
-    function isOwnerOrVetOfPet(petOwnerId, petId) {
-      return isPetOwnerOf(petOwnerId) || isVeterinarianOf(petId);
-    }
-
     // ---- Users collection ----
     match /users/{uid} {
-      // Self-service: a user creates and maintains only their own profile.
+      // Self-service registration: a user creates only their own profile.
       // This is the path registration takes, so it must not depend on a role
       // check — the profile being created is what supplies the role.
+      // Admins may also provision a profile for an account they just created
+      // (the admin panel's "create account" flow runs under the admin's
+      // session, not the new user's).
       allow create: if isAuthenticated()
-                    && request.auth.uid == uid
-                    && request.resource.data.firebaseUid == request.auth.uid
-                    && request.resource.data.role in ['ADMIN', 'VETERINARIAN', 'STAFF', 'PET_OWNER'];
-      allow read, update: if isAuthenticated() && request.auth.uid == uid;
-
-      // Admin: full access to every other user's document.
-      allow read, write: if isAdmin();
-
-      // Deletion only via Cloud Function (admin) — not directly here.
+                    && request.resource.data.firebaseUid == uid
+                    && request.resource.data.role in ['ADMIN', 'VETERINARIAN', 'STAFF', 'PET_OWNER']
+                    && (request.auth.uid == uid || isAdmin());
+      // Read is open to signed-in users: appointment forms need the
+      // veterinarian directory, and detail views resolve clinician names by
+      // int id (a query that cannot prove ownership). Writes stay locked.
+      allow read: if isAuthenticated();
+      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == uid);
+      // Hard deletion happens only via the deleteUser Cloud Function
+      // (Admin SDK bypasses these rules).
       allow delete: if false;
     }
 
     // ---- Pets collection ----
     match /pets/{petId} {
-      // Owner: full CRUD on their pets
-      allow read, write: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian() || resource.data.ownerId == getCurrentUserId());
+      // Readable by any signed-in user: pet detail screens look pets up by
+      // their integer id, which a query cannot prove ownership from, and pet
+      // documents carry no owner PII beyond the owner's int id.
+      allow read: if isAuthenticated();
+      // Create: `resource` is null for creates, so ownership must be checked
+      // against `request.resource` instead — using `resource.data` here
+      // would deny every owner-side pet creation.
+      allow create: if isAuthenticated() &&
+        (isClinicStaff() || request.resource.data.ownerId == getCurrentUserId());
+      allow update, delete: if isAuthenticated() &&
+        (isClinicStaff() || resource.data.ownerId == getCurrentUserId());
     }
 
     // ---- Appointments collection ----
@@ -134,7 +136,10 @@ service cloud.firestore {
 
     // ---- Medical Records collection ----
     match /medicalRecords/{recordId} {
-      // Append-only: create allowed, update/delete denied
+      // Append-only: create allowed, update/delete denied.
+      // Owners reach their records through the denormalized `petOwnerId`
+      // field, which the repository stamps on every write and filters on for
+      // pet-owner callers.
       allow create: if isAuthenticated() &&
         (isVeterinarian() || isStaff() || isAdmin());
       allow read: if isAuthenticated() &&
@@ -187,10 +192,11 @@ service cloud.firestore {
 
     // ---- Queue Entries ----
     match /queueEntries/{queueId} {
-      // Owner: read own queue entries
-      allow read: if isAuthenticated() &&
-        (isAdmin() || isStaff() || isVeterinarian() ||
-         resource.data.petOwnerId == getCurrentUserId());
+      // Readable by any signed-in user: the owner queue screen fetches the
+      // active queue to compute the caller's line position and filters to
+      // their own entries client-side. Entries hold operational data only
+      // (position/status/room/notes) — no owner or pet PII.
+      allow read: if isAuthenticated();
       // Staff and admins manage queue state; veterinarians can also update status.
       allow create, update: if isAuthenticated() &&
         (isAdmin() || isStaff() || isVeterinarian());
@@ -199,17 +205,36 @@ service cloud.firestore {
 
     // ---- Notifications ----
     match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && resource.data.userId == getCurrentUserId();
-      allow create: if isAuthenticated() && (isStaff() || isVeterinarian() || isAdmin());
-      allow update: if isAuthenticated() && resource.data.userId == getCurrentUserId();
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == getCurrentUserId() || isClinicStaff());
+      // Clinic staff target any user; users may send one only to themselves
+      // (the in-app "Test Notification" action).
+      allow create: if isAuthenticated() &&
+        (isClinicStaff() || request.resource.data.userId == getCurrentUserId());
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.userId == getCurrentUserId() || isClinicStaff());
+    }
+
+    // ---- Notification Preferences ----
+    // Doc IDs are the app-facing int user id as a string (e.g. "1").
+    match /notificationPreferences/{userKey} {
+      allow read: if isAuthenticated() &&
+        (resource == null ||
+         (string(resource.data.userId) == userKey &&
+          resource.data.userId == getCurrentUserId()));
+      allow write: if isAuthenticated() &&
+        string(request.resource.data.userId) == userKey &&
+        request.resource.data.userId == getCurrentUserId();
     }
 
     // ---- Scan Records ----
     match /scanRecords/{scanId} {
+      // Staff/vets manage scanning; scan pages are clinic-facing.
       allow read: if isAuthenticated() &&
-        (resource.data.userId == getCurrentUserId() || isAdmin());
+        (resource.data.userId == getCurrentUserId() || isClinicStaff());
       allow create: if isAuthenticated();
-      allow update, delete: if false;
+      allow update, delete: if isAuthenticated() &&
+        (resource.data.userId == getCurrentUserId() || isClinicStaff());
     }
 
     // ---- Audit Logs ----
@@ -239,11 +264,11 @@ service cloud.firestore {
 
     // ---- Counters (int-id sequences) ----
     match /counters/{counterId} {
-      // userIds counter: any authenticated user may increment it so that
-      // registration can allocate a unique id. Every other counter is
-      // provisioned and advanced by clinic roles.
-      allow read: if isAuthenticated() && (counterId == 'userIds' || isClinicStaff());
-      allow write: if isAuthenticated() && (counterId == 'userIds' || isClinicStaff());
+      // ID sequences hold no data — only an incrementing integer. Every
+      // signed-in user must be able to allocate ids for the records they
+      // create (registration, pets, appointments, scans, notifications...),
+      // so this is intentionally open to authenticated callers.
+      allow read, write: if isAuthenticated();
     }
 
     // ---- Deny all other ----

@@ -17,6 +17,10 @@ class NeuIconButton extends StatefulWidget {
   final bool isLoading;
   final bool isDisabled;
 
+  /// Bare icon with no plate, border, or shadow — the glyph sits directly on
+  /// the canvas. Touch target and press feedback are unchanged.
+  final bool plain;
+
   const NeuIconButton({
     super.key,
     required this.icon,
@@ -27,6 +31,7 @@ class NeuIconButton extends StatefulWidget {
     this.backgroundColor,
     this.isLoading = false,
     this.isDisabled = false,
+    this.plain = false,
   });
 
   @override
@@ -54,22 +59,9 @@ class _NeuIconButtonState extends State<NeuIconButton> {
           onTapUp: (_) => _enabled ? setState(() => _pressed = false) : null,
           onTapCancel: () => _enabled ? setState(() => _pressed = false) : null,
           behavior: HitTestBehavior.opaque,
-          child: NeuContainer(
-            borderRadius: widget.size * 1.2,
-            variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
-            color:
-                widget.backgroundColor ??
-                (_pressed
-                    ? ThemeColors.primary(context).withValues(alpha: 0.12)
-                    : null),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(widget.size * 1.2),
-            ),
-            borderColor: _pressed
-                ? ThemeColors.primary(context).withValues(alpha: 0.45)
-                : null,
-            borderWidth: _pressed ? NeuTokens.borderWidthFocus : 0,
-            child: SizedBox(
+          child: _wrap(
+            context,
+            SizedBox(
               // Minimum 48×48 touch target per WCAG 2.5.8
               width: widget.size * 2 < 48 ? 48 : widget.size * 2,
               height: widget.size * 2 < 48 ? 48 : widget.size * 2,
@@ -100,5 +92,28 @@ class _NeuIconButtonState extends State<NeuIconButton> {
     return _enabled && widget.tooltip != null
         ? Tooltip(message: widget.tooltip!, child: button)
         : button;
+  }
+
+  /// [plain] drops the plate entirely; every other variant keeps the raised
+  /// (or pressed) container around the glyph.
+  Widget _wrap(BuildContext context, Widget child) {
+    if (widget.plain) return child;
+    return NeuContainer(
+      borderRadius: widget.size * 1.2,
+      variant: _pressed ? NeuVariant.pressed : NeuVariant.raised,
+      color:
+          widget.backgroundColor ??
+          (_pressed
+              ? ThemeColors.primary(context).withValues(alpha: 0.12)
+              : null),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(widget.size * 1.2),
+      ),
+      borderColor: _pressed
+          ? ThemeColors.primary(context).withValues(alpha: 0.45)
+          : null,
+      borderWidth: _pressed ? NeuTokens.borderWidthFocus : 0,
+      child: child,
+    );
   }
 }

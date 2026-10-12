@@ -120,6 +120,7 @@ class _HomeContent extends StatelessWidget {
                         icon: Icons.notifications_none_rounded,
                         tooltip: 'Notifications',
                         onPressed: () => context.push(Routes.notifications),
+                        plain: true,
                       ),
                       const SizedBox(width: NeuTokens.spaceXs),
                     ],

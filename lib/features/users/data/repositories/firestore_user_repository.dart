@@ -11,6 +11,7 @@ import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/firebase/user_doc_mapper.dart';
 import 'package:carepaw/core/firebase/user_id_sequence.dart';
+import 'package:carepaw/firebase_options.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/features/audit/domain/entities/audit_log.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
@@ -416,53 +417,50 @@ class FirestoreUserRepository implements UserRepository {
     required domain.UserRole role,
   }) async {
     try {
-      final credentials = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final fireUser = credentials.user;
-      if (fireUser == null) {
-        throw const UnexpectedFailure(message: 'Failed to create account.');
-      }
-
-      // Check if this user should be an admin (first user or email domain match with first user)
-      final bool shouldBeAdmin = await _shouldBeAdmin(email);
-      final domain.UserRole effectiveRole = shouldBeAdmin
-          ? domain.UserRole.admin
-          : role;
-
-      final newId = await _userIdSequence.next();
-      final now = DateTime.now();
-      final created = domain.User(
-        id: newId,
-        firebaseUid: fireUser.uid,
-        email: email,
-        fullName: fullName.trim(),
-        phone: phone,
-        role: effectiveRole,
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      );
+      // Create the Auth account over the Identity Toolkit REST API instead of
+      // FirebaseAuth.createUserWithEmailAndPassword. The SDK call silently
+      // swaps this client's session to the newly created account, which left
+      // the admin signed in as a non-admin — every role-gated security rule
+      // (audit logs, inventory, user management, ...) then denied with
+      // "missing or insufficient permissions". REST signUp does not touch the
+      // admin's session.
+      final createdAuth = await _createAuthUserViaRest(email, password);
       try {
-        await _users.doc(fireUser.uid).set(UserDocMapper.toData(created));
+        // Check if this user should be an admin (first user or email domain match with first user)
+        final bool shouldBeAdmin = await _shouldBeAdmin(email);
+        final domain.UserRole effectiveRole = shouldBeAdmin
+            ? domain.UserRole.admin
+            : role;
+
+        final newId = await _userIdSequence.next();
+        final now = DateTime.now();
+        final created = domain.User(
+          id: newId,
+          firebaseUid: createdAuth.uid,
+          email: email,
+          fullName: fullName.trim(),
+          phone: phone,
+          role: effectiveRole,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        );
+        await _users.doc(createdAuth.uid).set(UserDocMapper.toData(created));
+        await _writeAudit(
+          action: 'USER_CREATE',
+          targetUser: created,
+          newValues: <String, dynamic>{
+            'role': effectiveRole.value,
+            'email': email,
+          },
+        );
+        return created;
       } catch (_) {
-        // Firestore write failed (e.g. rules deny it). Roll back the Auth user
+        // Firestore write failed (e.g. rules deny it). Remove the Auth user
         // so we don't leave an orphaned account, and keep the admin signed in.
-        try {
-          await fireUser.delete();
-        } catch (_) {}
+        await _deleteAuthUserViaRest(createdAuth.idToken);
         rethrow;
       }
-      await _writeAudit(
-        action: 'USER_CREATE',
-        targetUser: created,
-        newValues: <String, dynamic>{
-          'role': effectiveRole.value,
-          'email': email,
-        },
-      );
-      return created;
     } on Failure {
       rethrow;
     } on FirebaseAuthException catch (e) {
@@ -490,6 +488,68 @@ class FirestoreUserRepository implements UserRepository {
   Future<void> deleteWithSync(int id, String tableName) async => softDelete(id);
 
   // ============ Private helpers ============
+
+  /// Creates an Auth account via the Identity Toolkit REST API without
+  /// changing this client's current session (unlike
+  /// `createUserWithEmailAndPassword`, which signs the client in as the new
+  /// user). Returns the new user's uid and id token.
+  Future<({String uid, String idToken})> _createAuthUserViaRest(
+    String email,
+    String password,
+  ) async {
+    final uri = Uri.parse(
+      'https://identitytoolkit.googleapis.com/v1/accounts:signUp'
+      '?key=${DefaultFirebaseOptions.currentPlatform.apiKey}',
+    );
+    final response = await http.post(
+      uri,
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+        'returnSecureToken': true,
+      }),
+    );
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) {
+      final message = (body['error']?['message'] as String?) ?? '';
+      if (message.startsWith('EMAIL_EXISTS')) {
+        throw const EmailAlreadyInUseFailure();
+      }
+      if (message.startsWith('WEAK_PASSWORD')) {
+        throw const WeakPasswordFailure();
+      }
+      if (message.startsWith('INVALID_EMAIL')) {
+        throw const InvalidEmailFailure();
+      }
+      throw UnexpectedFailure(
+        message: message.isEmpty ? 'Could not create the account.' : message,
+      );
+    }
+    return (
+      uid: body['localId'] as String,
+      idToken: body['idToken'] as String,
+    );
+  }
+
+  /// Best-effort removal of a just-created Auth account after a failed
+  /// provisioning attempt. The id token from signUp is still fresh, so the
+  /// recent-login requirement is satisfied.
+  Future<void> _deleteAuthUserViaRest(String idToken) async {
+    try {
+      final uri = Uri.parse(
+        'https://identitytoolkit.googleapis.com/v1/accounts:delete'
+        '?key=${DefaultFirebaseOptions.currentPlatform.apiKey}',
+      );
+      await http.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({'idToken': idToken}),
+      );
+    } catch (_) {
+      // Best-effort cleanup.
+    }
+  }
 
   domain.User _docToUser(DocumentSnapshot<Map<String, dynamic>> doc) {
     return UserDocMapper.fromData(doc.data() ?? const {}, doc.id);

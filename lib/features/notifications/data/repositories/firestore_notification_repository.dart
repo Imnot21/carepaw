@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/firebase/caller_scope.dart';
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/repositories/base_repository.dart';
@@ -198,8 +199,14 @@ class FirestoreNotificationRepository implements NotificationRepository {
 
   @override
   Future<int> deleteOlderThan(DateTime cutoff) async {
-    final all = await findAll();
-    final stale = all.where((n) => n.createdAt.isBefore(cutoff)).toList();
+    final snapshot = await CallerScope.forOwner(
+      _notifications,
+      ownerField: FirestoreSchema.userId,
+    ).get();
+    final stale = snapshot.docs
+        .map((doc) => NotificationDocMapper.fromData(doc.data()))
+        .where((n) => n.createdAt.isBefore(cutoff))
+        .toList();
     if (stale.isEmpty) return 0;
     final batch = _firestore.batch();
     for (final notification in stale) {
@@ -257,10 +264,10 @@ class FirestoreNotificationRepository implements NotificationRepository {
   Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
     int id,
   ) async {
-    final snapshot = await _notifications
-        .where(FirestoreSchema.id, isEqualTo: id)
-        .limit(1)
-        .get();
+    final snapshot = await CallerScope.forOwner(
+      _notifications.where(FirestoreSchema.id, isEqualTo: id),
+      ownerField: FirestoreSchema.userId,
+    ).limit(1).get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

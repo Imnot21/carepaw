@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/firebase/caller_scope.dart';
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/repositories/base_repository.dart';
@@ -84,8 +85,10 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
 
   @override
   Stream<MedicalRecord?> watchById(int id) {
-    return _records
-        .where(FirestoreSchema.id, isEqualTo: id)
+    return CallerScope.forOwner(
+          _records.where(FirestoreSchema.id, isEqualTo: id),
+          ownerField: FirestoreSchema.petOwnerId,
+        )
         .limit(1)
         .snapshots()
         .map((snapshot) {
@@ -117,9 +120,10 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
 
   @override
   Future<List<MedicalRecord>> findByPet(int petId) async {
-    final snapshot = await _records
-        .where(FirestoreSchema.petId, isEqualTo: petId)
-        .get();
+    final snapshot = await CallerScope.forOwner(
+      _records.where(FirestoreSchema.petId, isEqualTo: petId),
+      ownerField: FirestoreSchema.petOwnerId,
+    ).get();
     final records =
         snapshot.docs
             .map((doc) => MedicalRecordDocMapper.fromData(doc.data()))
@@ -130,8 +134,10 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
 
   @override
   Stream<List<MedicalRecord>> watchByPet(int petId) {
-    return _records
-        .where(FirestoreSchema.petId, isEqualTo: petId)
+    return CallerScope.forOwner(
+          _records.where(FirestoreSchema.petId, isEqualTo: petId),
+          ownerField: FirestoreSchema.petOwnerId,
+        )
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
@@ -184,10 +190,29 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
-    await _records
-        .doc('${toWrite.id}')
-        .set(MedicalRecordDocMapper.toData(toWrite));
+    final data = MedicalRecordDocMapper.toData(toWrite);
+    // Stamp the pet's owner so security rules can authorize owner reads
+    // without a second document lookup.
+    final petOwnerId = await _resolvePetOwnerId(toWrite.petId);
+    if (petOwnerId != null) {
+      data[FirestoreSchema.petOwnerId] = petOwnerId;
+    }
+    await _records.doc('${toWrite.id}').set(data);
     return toWrite;
+  }
+
+  /// Look up the app-facing owner id of [petId], or null when the pet is
+  /// unknown. Best-effort: a missing owner only means the record stays
+  /// invisible to pet-owner queries (clinic roles still see it).
+  Future<int?> _resolvePetOwnerId(int petId) async {
+    final snapshot = await _firestore
+        .collection(FirestoreSchema.pets)
+        .where(FirestoreSchema.id, isEqualTo: petId)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isEmpty) return null;
+    return (snapshot.docs.first.data()[FirestoreSchema.ownerId] as num?)
+        ?.toInt();
   }
 
   @override
@@ -317,10 +342,10 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
   Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
     int id,
   ) async {
-    final snapshot = await _records
-        .where(FirestoreSchema.id, isEqualTo: id)
-        .limit(1)
-        .get();
+    final snapshot = await CallerScope.forOwner(
+      _records.where(FirestoreSchema.id, isEqualTo: id),
+      ownerField: FirestoreSchema.petOwnerId,
+    ).limit(1).get();
     return snapshot.docs.isEmpty ? null : snapshot.docs.first;
   }
 

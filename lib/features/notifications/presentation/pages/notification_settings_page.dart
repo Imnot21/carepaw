@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/core/storage/local_storage.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
@@ -571,7 +572,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     final updated =
         (current ??
                 NotificationPreferences(
-                  userId: 0,
+                  userId: LocalStorage.getUserId() ?? 0,
                   createdAt: DateTime.now(),
                   updatedAt: DateTime.now(),
                 ))
