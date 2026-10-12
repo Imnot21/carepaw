@@ -19,7 +19,6 @@ import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
 /// Scan list page with the CarePaw surface system
 class ScanListPage extends StatefulWidget {

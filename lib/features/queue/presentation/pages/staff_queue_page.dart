@@ -22,7 +22,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
 /// Staff queue page - full management view with action buttons
 class StaffQueuePage extends StatefulWidget {

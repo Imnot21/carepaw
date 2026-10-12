@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';

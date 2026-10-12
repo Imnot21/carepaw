@@ -9,7 +9,6 @@ import 'package:carepaw/features/notifications/presentation/pages/notification_d
 import 'package:carepaw/features/notifications/presentation/pages/notification_settings_page.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';

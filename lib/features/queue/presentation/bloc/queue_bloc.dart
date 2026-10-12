@@ -5,7 +5,6 @@ import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
 /// Queue BLoC for managing queue state
 class QueueBloc extends Bloc<QueueEvent, QueueState> {

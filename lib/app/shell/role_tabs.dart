@@ -117,82 +117,9 @@ class RoleTabs {
     ),
   ];
 
-  // ---- Staff clinic operations (RESERVE: big-clinic role) ----
-  static const _staff = [
-    RoleTab(
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
-      label: 'Dashboard',
-      location: '/staff',
-    ),
-    RoleTab(
-      icon: Icons.event_outlined,
-      activeIcon: Icons.event_rounded,
-      label: 'Appointments',
-      location: '/staff/appointments',
-    ),
-    RoleTab(
-      icon: Icons.format_list_numbered_outlined,
-      activeIcon: Icons.format_list_numbered_rounded,
-      label: 'Queue',
-      location: '/staff/queue',
-    ),
-    RoleTab(
-      icon: Icons.inventory_2_outlined,
-      activeIcon: Icons.inventory_2_rounded,
-      label: 'Inventory',
-      location: '/staff/inventory',
-    ),
-    RoleTab(
-      icon: Icons.document_scanner_outlined,
-      activeIcon: Icons.document_scanner_rounded,
-      label: 'Scanning',
-      location: '/staff/scanning',
-    ),
-    RoleTab(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-      location: '/profile',
-    ),
-  ];
-
-  // ---- Veterinarian patient care (RESERVE: big-clinic role) ----
-  static const _vet = [
-    RoleTab(
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
-      label: 'Dashboard',
-      location: '/vet',
-    ),
-    RoleTab(
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
-      label: 'Patients',
-      location: '/vet/patients',
-    ),
-    RoleTab(
-      icon: Icons.description_outlined,
-      activeIcon: Icons.description_rounded,
-      label: 'Records',
-      location: '/vet/records',
-    ),
-    RoleTab(
-      icon: Icons.format_list_numbered_outlined,
-      activeIcon: Icons.format_list_numbered_rounded,
-      label: 'Queue',
-      location: '/queue',
-    ),
-    RoleTab(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-      location: '/profile',
-    ),
-  ];
-
   // ---- Owner/Admin: single clinic operator (paper-aligned) ----
   // Combines bookings, line, patients, records, stock, and scan in one set.
+  // (Old staff/vet/admin tab sets removed with the old roles — backup kept.)
   static const _clinic = [
     RoleTab(
       icon: Icons.dashboard_outlined,
@@ -229,34 +156,6 @@ class RoleTabs {
       activeIcon: Icons.document_scanner_rounded,
       label: 'Scan',
       location: '/staff/scanning',
-    ),
-    RoleTab(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-      location: '/profile',
-    ),
-  ];
-
-  // ---- Admin system management (RESERVE: big-clinic role) ----
-  static const _admin = [
-    RoleTab(
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
-      label: 'Dashboard',
-      location: '/admin',
-    ),
-    RoleTab(
-      icon: Icons.group_outlined,
-      activeIcon: Icons.group_rounded,
-      label: 'Users',
-      location: '/admin/users',
-    ),
-    RoleTab(
-      icon: Icons.fact_check_outlined,
-      activeIcon: Icons.fact_check_rounded,
-      label: 'Audit',
-      location: '/admin/audit',
     ),
     RoleTab(
       icon: Icons.person_outline_rounded,

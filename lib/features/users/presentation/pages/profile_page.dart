@@ -399,19 +399,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  /// Merged settings section — admin-only clinic configuration entry.
-  Widget _buildAdministrationCard(BuildContext context) {
-    return NeuCard(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: _SettingTile(
-        icon: Icons.tune_outlined,
-        title: 'System Configuration',
-        subtitle: 'Audit, queue, inventory, OCR & auth settings',
-        onTap: () => context.push(Routes.adminSettings),
-      ),
-    );
-  }
-
   /// Logout entry, confirming before dispatching the sign-out event.
   Widget _buildLogoutButton(BuildContext context) {
     return NeuButton(
