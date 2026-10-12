@@ -27,8 +27,7 @@ class ClinicDashboardPage extends StatelessWidget {
           return const Center(child: NeuCircularProgress());
         }
         final user = authState.user;
-        if (user.role != UserRole.ownerAdmin &&
-            user.role != UserRole.admin) {
+        if (!user.isOwnerAdmin) {
           return const _AccessDeniedView();
         }
         return _ClinicDashboardContent(user: user);

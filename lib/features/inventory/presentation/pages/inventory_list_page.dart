@@ -78,10 +78,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
 
         // Check if user is vet, staff, or admin - only these roles can manage inventory
         final user = authState.user;
-        final isVetOrStaff = user.role == UserRole.veterinarian ||
-                            user.role == UserRole.staff ||
-                            user.role == UserRole.admin ||
-                            user.isOwnerAdmin;
+        final isVetOrStaff = user.isOwnerAdmin;
 
         if (!isVetOrStaff) {
           return const _AccessDeniedView();

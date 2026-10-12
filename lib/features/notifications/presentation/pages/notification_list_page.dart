@@ -79,11 +79,7 @@ class _NotificationListPageState extends State<NotificationListPage>
         }
 
         final user = authState.user;
-        final isVetOrStaff =
-            user.role == UserRole.veterinarian ||
-            user.role == UserRole.staff ||
-            user.role == UserRole.admin ||
-            user.isOwnerAdmin;
+        final isVetOrStaff = user.isOwnerAdmin;
 
         return Scaffold(
           backgroundColor: _isDark

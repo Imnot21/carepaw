@@ -62,11 +62,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   bool _isLoading = false;
   late Future<List<User>> _veterinariansFuture;
 
-  bool get _isVetOrStaff =>
-      widget.userRole == UserRole.veterinarian ||
-      widget.userRole == UserRole.staff ||
-      widget.userRole == UserRole.admin ||
-      widget.userRole == UserRole.ownerAdmin;
+  bool get _isVetOrStaff => widget.userRole == UserRole.ownerAdmin;
 
   @override
   void initState() {

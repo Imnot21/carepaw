@@ -42,7 +42,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   final _confirmPasswordController = TextEditingController();
   final _searchController = TextEditingController();
 
-  UserRole _selectedRole = UserRole.staff;
+  UserRole _selectedRole = UserRole.petOwner;
   String _searchQuery = '';
   UserRole? _roleFilter;
   int _visibleCount = AppConstants.defaultPageSize;
@@ -326,8 +326,10 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: UserRole.values
-                        .where((r) => r != UserRole.admin)
+                    children: const [
+                      UserRole.petOwner,
+                      UserRole.ownerAdmin,
+                    ]
                         .map(
                           (role) => _RoleChip(
                             role: role,
@@ -367,7 +369,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Staff & Veterinarians',
+                'Accounts',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -429,8 +431,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                 ),
                 const SizedBox(width: 8),
                 for (final role in const [
-                  UserRole.staff,
-                  UserRole.veterinarian,
+                  UserRole.ownerAdmin,
                   UserRole.petOwner,
                 ])
                   Padding(
@@ -577,10 +578,7 @@ class _RoleChip extends StatelessWidget {
   Color _color(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (role) {
-      UserRole.staff => ThemeColors.textSecondary(context),
-      UserRole.veterinarian => AppColors.tertiary,
       UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
-      UserRole.admin => ThemeColors.primary(context),
       UserRole.ownerAdmin => ThemeColors.primary(context),
     };
   }
@@ -637,7 +635,7 @@ class _UserManagementCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              role == UserRole.veterinarian
+              role == UserRole.ownerAdmin
                   ? Icons.medical_services_outlined
                   : Icons.person_outline,
               color: roleColor(context, role),
@@ -701,8 +699,7 @@ class _UserManagementCard extends StatelessWidget {
                     spacing: 6,
                     children:
                         [
-                              UserRole.staff,
-                              UserRole.veterinarian,
+                              UserRole.ownerAdmin,
                               UserRole.petOwner,
                             ]
                             .map(
@@ -738,10 +735,7 @@ class _UserManagementCard extends StatelessWidget {
 Color roleColor(BuildContext context, UserRole role) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   return switch (role) {
-    UserRole.staff => ThemeColors.textSecondary(context),
-    UserRole.veterinarian => AppColors.tertiary,
     UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
-    UserRole.admin => ThemeColors.primary(context),
     UserRole.ownerAdmin => ThemeColors.primary(context),
   };
 }

@@ -28,20 +28,14 @@ class User extends Equatable {
     required this.updatedAt,
   });
 
-  /// Check if user is a veterinarian
-  bool get isVeterinarian => role == UserRole.veterinarian;
-
-  /// Check if user is staff
-  bool get isStaff => role == UserRole.staff;
-
-  /// Check if user is admin
-  bool get isAdmin => role == UserRole.admin;
-
   /// Check if user is a pet owner
   bool get isPetOwner => role == UserRole.petOwner;
 
   /// Check if user is the Owner/Admin (paper-aligned single clinic operator)
   bool get isOwnerAdmin => role == UserRole.ownerAdmin;
+
+  /// Clinic-side access: only the Owner/Admin operates the clinic side.
+  bool get isClinicSide => role == UserRole.ownerAdmin;
 
   @override
   List<Object?> get props => [
@@ -86,15 +80,10 @@ class User extends Equatable {
 
 /// User roles enum
 ///
-/// Active paper-aligned roles: [petOwner] and [ownerAdmin].
-/// [staff], [veterinarian], [admin] are RESERVE roles for a bigger future
-/// clinic — still valid, still enforced, just not provisioned for the
-/// single-operator (DocMyk's PILA VET HUB) deployment.
+/// Paper-aligned: only [petOwner] (customers) and [ownerAdmin] (the single
+/// clinic operator, DocMyk's PILA VET HUB) are active.
 enum UserRole {
   petOwner('PET_OWNER'),
-  veterinarian('VETERINARIAN'),
-  staff('STAFF'),
-  admin('ADMIN'),
   ownerAdmin('OWNER_ADMIN');
 
   final String value;
@@ -111,12 +100,6 @@ enum UserRole {
     switch (this) {
       case UserRole.petOwner:
         return 'Pet Owner';
-      case UserRole.veterinarian:
-        return 'Veterinarian';
-      case UserRole.staff:
-        return 'Staff';
-      case UserRole.admin:
-        return 'Admin';
       case UserRole.ownerAdmin:
         return 'Owner/Admin';
     }

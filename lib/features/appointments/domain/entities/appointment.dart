@@ -10,6 +10,10 @@ class Appointment extends Equatable {
   final DateTime scheduledAt;
   final int durationMinutes;
   final AppointmentStatus status;
+
+  /// Clinic service for this visit (thesis: owner selects the service).
+  /// Examples: Consultation, Vaccination, Deworming — see [clinicServices].
+  final String? service;
   final String? reason;
   final String? notes;
   final DateTime? checkInAt;
@@ -27,6 +31,7 @@ class Appointment extends Equatable {
     required this.scheduledAt,
     this.durationMinutes = 30,
     this.status = AppointmentStatus.requested,
+    this.service,
     this.reason,
     this.notes,
     this.checkInAt,
@@ -84,6 +89,7 @@ class Appointment extends Equatable {
     scheduledAt,
     durationMinutes,
     status,
+    service,
     reason,
     notes,
     checkInAt,
@@ -102,6 +108,7 @@ class Appointment extends Equatable {
     DateTime? scheduledAt,
     int? durationMinutes,
     AppointmentStatus? status,
+    String? service,
     String? reason,
     String? notes,
     DateTime? checkInAt,
@@ -119,6 +126,7 @@ class Appointment extends Equatable {
       scheduledAt: scheduledAt ?? this.scheduledAt,
       durationMinutes: durationMinutes ?? this.durationMinutes,
       status: status ?? this.status,
+      service: service ?? this.service,
       reason: reason ?? this.reason,
       notes: notes ?? this.notes,
       checkInAt: checkInAt ?? this.checkInAt,
@@ -133,9 +141,13 @@ class Appointment extends Equatable {
 }
 
 /// Appointment status enum
+///
+/// [rescheduled] is set when the date/time of a booked appointment is
+/// changed afterwards (thesis paper status: rescheduled).
 enum AppointmentStatus {
   requested('REQUESTED'),
   confirmed('CONFIRMED'),
+  rescheduled('RESCHEDULED'),
   checkedIn('CHECKED_IN'),
   inProgress('IN_PROGRESS'),
   completed('COMPLETED'),
@@ -158,6 +170,8 @@ enum AppointmentStatus {
         return 'Requested';
       case AppointmentStatus.confirmed:
         return 'Confirmed';
+      case AppointmentStatus.rescheduled:
+        return 'Rescheduled';
       case AppointmentStatus.checkedIn:
         return 'Checked In';
       case AppointmentStatus.inProgress:

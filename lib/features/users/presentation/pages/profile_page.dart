@@ -207,12 +207,8 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildSectionLabel(context, 'Preferences'),
           const SizedBox(height: 14),
           _buildPreferencesCard(context),
-          if (user.isAdmin) ...[
-            const SizedBox(height: 24),
-            _buildSectionLabel(context, 'Administration'),
-            const SizedBox(height: 14),
-            _buildAdministrationCard(context),
-          ],
+          // Administration card HIDDEN in the paper build (settings/audit
+          // stay in code, reachable only by direct route, not from tabs).
           const SizedBox(height: 32),
           _buildLogoutButton(context),
           // Add padding at the bottom to prevent logout button from being hidden by navigation

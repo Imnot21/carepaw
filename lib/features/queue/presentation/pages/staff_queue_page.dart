@@ -49,11 +49,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
         }
 
         final user = authState.user;
-        final isVetOrStaff =
-            user.role == UserRole.veterinarian ||
-            user.role == UserRole.staff ||
-            user.role == UserRole.admin ||
-            user.isOwnerAdmin;
+        final isVetOrStaff = user.isOwnerAdmin;
 
         if (!isVetOrStaff) {
           return const _AccessDeniedView();

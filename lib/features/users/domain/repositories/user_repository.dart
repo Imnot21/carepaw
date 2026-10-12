@@ -19,7 +19,7 @@ abstract class UserRepository extends SoftDeleteRepository<User, int>
   /// Update user activity timestamp
   Future<void> updateActivity(int userId);
 
-  /// Create a new account (admin only) backed by Firebase Auth + Firestore.
+  /// Create a new account (Owner/Admin only) backed by Firebase Auth + Firestore.
   ///
   /// Creates the Firebase Authentication credential and the Firestore
   /// `users/{uid}` document with the given role.
@@ -39,13 +39,13 @@ abstract class UserRepository extends SoftDeleteRepository<User, int>
     String? avatarUrl,
   });
 
-  /// Change user role (admin only)
+  /// Change user role (Owner/Admin only)
   Future<User> changeRole(int userId, UserRole newRole);
 
-  /// Activate/Deactivate user (admin only)
+  /// Activate/Deactivate user (Owner/Admin only)
   Future<User> setActive(int userId, bool isActive);
 
-  /// Permanently delete a user account (admin only).
+  /// Permanently delete a user account (Owner/Admin only).
   ///
   /// Revokes the target's Firebase Auth credential via a backend Cloud
   /// Function — this frees the account's email so it can be re-created — and

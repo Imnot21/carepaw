@@ -42,10 +42,7 @@ class _StaffDashboardPageState extends State<StaffDashboardPage> {
           }
 
           final user = authState.user;
-          final isStaffOrAdmin =
-              user.role == UserRole.staff ||
-              user.role == UserRole.admin ||
-              user.isOwnerAdmin;
+          final isStaffOrAdmin = user.isOwnerAdmin;
 
           if (!isStaffOrAdmin) {
             return const _AccessDeniedView();

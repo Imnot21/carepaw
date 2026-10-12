@@ -50,26 +50,15 @@ service cloud.firestore {
         : '';
     }
 
-    function isAdmin() {
-      return currentRole() == 'ADMIN';
-    }
-
-    // Paper-aligned single clinic operator (Owner/Admin). Covers counter,
-    // clinical, and management duties for the single-clinic deployment.
+    // Paper-aligned: only two sides — pet owners and the Owner/Admin
+    // (single clinic operator). Old STAFF/VETERINARIAN/ADMIN values are
+    // not provisioned in this build.
     function isOwnerAdmin() {
       return currentRole() == 'OWNER_ADMIN';
     }
 
-    function isVeterinarian() {
-      return currentRole() == 'VETERINARIAN';
-    }
-
-    function isStaff() {
-      return currentRole() == 'STAFF';
-    }
-
     function isClinicStaff() {
-      return isStaff() || isVeterinarian() || isAdmin() || isOwnerAdmin();
+      return isOwnerAdmin();
     }
 
     // The app-facing surrogate int id. Returns -1 when no profile exists yet so
@@ -89,18 +78,18 @@ service cloud.firestore {
       // Self-service registration: a user creates only their own profile.
       // This is the path registration takes, so it must not depend on a role
       // check — the profile being created is what supplies the role.
-      // Admins may also provision a profile for an account they just created
-      // (the admin panel's "create account" flow runs under the admin's
-      // session, not the new user's).
+      // Owner/Admin may also provision a profile for an account just created
+      // (the "create account" flow runs under the operator's session,
+      // not the new user's).
       allow create: if isAuthenticated()
                     && request.resource.data.firebaseUid == uid
-                     && request.resource.data.role in ['ADMIN', 'VETERINARIAN', 'STAFF', 'PET_OWNER', 'OWNER_ADMIN']
-                    && (request.auth.uid == uid || isAdmin());
+                     && request.resource.data.role in ['PET_OWNER', 'OWNER_ADMIN']
+                    && (request.auth.uid == uid || isOwnerAdmin());
       // Read is open to signed-in users: appointment forms need the
       // veterinarian directory, and detail views resolve clinician names by
       // int id (a query that cannot prove ownership). Writes stay locked.
       allow read: if isAuthenticated();
-      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == uid);
+      allow update: if isOwnerAdmin() || (isAuthenticated() && request.auth.uid == uid);
       // Hard deletion happens only via the deleteUser Cloud Function
       // (Admin SDK bypasses these rules).
       allow delete: if false;
@@ -136,8 +125,8 @@ service cloud.firestore {
         (isClinicStaff() ||
          resource.data.ownerId == getCurrentUserId());
 
-      // Admin: full
-      allow write: if isAdmin() || isOwnerAdmin();
+      // Owner/Admin: full
+      allow write: if isOwnerAdmin();
     }
 
     // ---- Medical Records collection ----
@@ -167,21 +156,21 @@ service cloud.firestore {
 
     // ---- Inventory collection ----
     match /inventoryItems/{itemId} {
-      // Staff/vets: read; Staff: write (stock changes)
+      // Owner/Admin: read + write (stock changes)
       allow read: if isAuthenticated() && (isClinicStaff());
-      allow write: if isAuthenticated() && (isStaff() || isAdmin() || isOwnerAdmin());
+      allow write: if isAuthenticated() && (isOwnerAdmin());
     }
 
     // ---- Inventory Batches ----
     match /inventoryBatches/{batchId} {
       allow read: if isAuthenticated() && (isClinicStaff());
-      allow write: if isAuthenticated() && (isStaff() || isAdmin() || isOwnerAdmin());
+      allow write: if isAuthenticated() && (isOwnerAdmin());
     }
 
     // ---- Inventory Transactions ----
     match /inventoryTransactions/{transactionId} {
       allow read: if isAuthenticated() && (isClinicStaff());
-      allow create: if isAuthenticated() && (isStaff() || isAdmin() || isOwnerAdmin());
+      allow create: if isAuthenticated() && (isOwnerAdmin());
       allow update, delete: if false;
     }
 
@@ -190,9 +179,9 @@ service cloud.firestore {
       allow read: if isAuthenticated() &&
         (resource.data.petOwnerId == getCurrentUserId() ||
          resource.data.veterinarianId == getCurrentUserId() ||
-         isAdmin() || isOwnerAdmin());
-      allow create: if isAuthenticated() && (isVeterinarian() || isOwnerAdmin());
-      allow update: if isAuthenticated() && (isVeterinarian() || isOwnerAdmin()) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+         isOwnerAdmin());
+      allow create: if isAuthenticated() && (isOwnerAdmin());
+      allow update: if isAuthenticated() && (isOwnerAdmin()) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
       allow delete: if false;
     }
 
@@ -203,10 +192,10 @@ service cloud.firestore {
       // their own entries client-side. Entries hold operational data only
       // (position/status/room/notes) — no owner or pet PII.
       allow read: if isAuthenticated();
-      // Staff and admins manage queue state; veterinarians can also update status.
+      // The Owner/Admin manages queue state.
       allow create, update: if isAuthenticated() &&
         (isClinicStaff());
-      allow delete: if isAdmin() || isOwnerAdmin();
+      allow delete: if isOwnerAdmin();
     }
 
     // ---- Notifications ----
@@ -245,14 +234,15 @@ service cloud.firestore {
 
     // ---- Audit Logs ----
     match /auditLogs/{logId} {
-      // Admins only — write-only in practice, but allow read for admin UI
-      allow read, write: if isAdmin();
+      // Owner/Admin only — write-only in practice, but allow read for the
+      // (hidden) audit UI
+      allow read, write: if isOwnerAdmin();
     }
 
     // ---- Sync Metadata ----
     match /syncMetadata/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isOwnerAdmin();
     }
 
     // ---- Device Info ----
@@ -264,8 +254,8 @@ service cloud.firestore {
     // ---- Sync Conflicts ----
     match /syncConflicts/{conflictId} {
       allow read: if isAuthenticated() &&
-        (resource.data.userId == getCurrentUserId() || isAdmin());
-      allow write: if isAdmin();
+        (resource.data.userId == getCurrentUserId() || isOwnerAdmin());
+      allow write: if isOwnerAdmin();
     }
 
     // ---- Counters (int-id sequences) ----

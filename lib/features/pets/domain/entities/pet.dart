@@ -9,6 +9,7 @@ class Pet extends Equatable {
   final String name;
   final PetSpecies species;
   final String? breed;
+  final PetSex? sex;
   final DateTime? birthDate;
   final double? weightKg;
   final String? color;
@@ -24,6 +25,7 @@ class Pet extends Equatable {
     required this.name,
     required this.species,
     this.breed,
+    this.sex,
     this.birthDate,
     this.weightKg,
     this.color,
@@ -63,6 +65,7 @@ class Pet extends Equatable {
     name,
     species,
     breed,
+    sex,
     birthDate,
     weightKg,
     color,
@@ -79,6 +82,7 @@ class Pet extends Equatable {
     String? name,
     PetSpecies? species,
     String? breed,
+    PetSex? sex,
     DateTime? birthDate,
     double? weightKg,
     String? color,
@@ -94,6 +98,7 @@ class Pet extends Equatable {
       name: name ?? this.name,
       species: species ?? this.species,
       breed: breed ?? this.breed,
+      sex: sex ?? this.sex,
       birthDate: birthDate ?? this.birthDate,
       weightKg: weightKg ?? this.weightKg,
       color: color ?? this.color,
@@ -103,6 +108,32 @@ class Pet extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+}
+
+/// Pet sex enum (thesis paper lists sex as a required pet profile field)
+enum PetSex {
+  male('MALE'),
+  female('FEMALE');
+
+  final String value;
+  const PetSex(this.value);
+
+  static PetSex? fromString(String? value) {
+    if (value == null || value.isEmpty) return null;
+    for (final sex in PetSex.values) {
+      if (sex.value == value) return sex;
+    }
+    return null;
+  }
+
+  String get displayName {
+    switch (this) {
+      case PetSex.male:
+        return 'Male';
+      case PetSex.female:
+        return 'Female';
+    }
   }
 }
 

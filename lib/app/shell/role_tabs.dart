@@ -31,12 +31,11 @@ class RoleTabs {
   const RoleTabs._(this.tabs);
 
   /// The tab set for [role]. Falls back to the pet owner set for unknown roles.
+  /// The tab set for [role]. Only Pet Owner and Owner/Admin are active;
+  /// the staff/vet/admin sets below are hidden (kept, not deleted).
   static RoleTabs forRole(UserRole role) {
     return switch (role) {
       UserRole.petOwner => const RoleTabs._(_owner),
-      UserRole.staff => const RoleTabs._(_staff),
-      UserRole.veterinarian => const RoleTabs._(_vet),
-      UserRole.admin => const RoleTabs._(_admin),
       // Paper-aligned single clinic operator: one tab set for everything.
       UserRole.ownerAdmin => const RoleTabs._(_clinic),
     };

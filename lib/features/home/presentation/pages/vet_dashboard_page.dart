@@ -39,10 +39,7 @@ class _VetDashboardPageState extends State<VetDashboardPage> {
           }
 
           final user = authState.user;
-          final isVetOrAdmin =
-              user.role == UserRole.veterinarian ||
-              user.role == UserRole.admin ||
-              user.isOwnerAdmin;
+          final isVetOrAdmin = user.isOwnerAdmin;
 
           if (!isVetOrAdmin) {
             return const _AccessDeniedView();

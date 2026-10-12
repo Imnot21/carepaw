@@ -8,9 +8,9 @@ import 'package:carepaw/features/users/presentation/bloc/user_management_state.d
     as states;
 import 'package:carepaw/core/errors/failures.dart';
 
-/// User management BLoC for the admin's Users page.
+/// User management BLoC for the Users page.
 ///
-/// Handles loading the staff/veterinarian list, creating new accounts
+/// Handles loading the account list, creating new accounts
 /// (via the Firestore-backed [UserRepository.createAccount]), changing roles,
 /// and toggling active status. Keeps business logic out of the widgets.
 class UserManagementBloc
@@ -27,16 +27,18 @@ class UserManagementBloc
     on<events.UserManagementDeleteRequested>(_onDeleteRequested);
   }
 
-  /// Load staff + veterinarian accounts for management.
+  /// Load Owner/Admin + pet-owner accounts for management.
   Future<void> _onLoadRequested(
     events.UserManagementLoadRequested event,
     Emitter<states.UserManagementState> emit,
   ) async {
     emit(const states.UserManagementLoading());
     try {
-      final staff = await _userRepository.findByRole(UserRole.staff);
-      final vets = await _userRepository.findByRole(UserRole.veterinarian);
-      emit(states.UserManagementLoaded([...staff, ...vets]));
+      final operators = await _userRepository.findByRole(
+        UserRole.ownerAdmin,
+      );
+      final owners = await _userRepository.findByRole(UserRole.petOwner);
+      emit(states.UserManagementLoaded([...operators, ...owners]));
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure));
     } catch (e) {
@@ -53,7 +55,7 @@ class UserManagementBloc
     return const [];
   }
 
-  /// Create a new staff / veterinarian / pet-owner account.
+  /// Create a new Owner/Admin / pet-owner account.
   Future<void> _onCreateRequested(
     events.UserManagementCreateRequested event,
     Emitter<states.UserManagementState> emit,

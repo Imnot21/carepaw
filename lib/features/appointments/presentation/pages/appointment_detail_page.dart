@@ -206,6 +206,14 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           color: color,
           isActive: true,
         );
+      case AppointmentStatus.rescheduled:
+        final reschedColor = isDark ? AppColors.infoDark : AppColors.info;
+        return _StatusInfo(
+          label: 'Rescheduled',
+          icon: Icons.event_repeat_outlined,
+          color: reschedColor,
+          isActive: true,
+        );
       case AppointmentStatus.checkedIn:
         final color = ThemeColors.primary(context);
         return _StatusInfo(

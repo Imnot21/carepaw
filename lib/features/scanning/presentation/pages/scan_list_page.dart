@@ -56,11 +56,7 @@ class _ScanListPageState extends State<ScanListPage>
 
         // Check if user is vet, staff, or admin - only these roles can scan/process OCR
         final user = authState.user;
-        final isVetOrStaff =
-            user.role == UserRole.veterinarian ||
-            user.role == UserRole.staff ||
-            user.role == UserRole.admin ||
-            user.isOwnerAdmin;
+        final isVetOrStaff = user.isOwnerAdmin;
 
         if (!isVetOrStaff) {
           return const _AccessDeniedView();

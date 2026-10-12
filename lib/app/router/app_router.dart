@@ -548,34 +548,14 @@ class AppRouter {
         return _getHomeRouteForRole(userRole);
       }
 
-      // Role-based route protection
+      // Role-based route protection: only Owner/Admin works the clinic side.
       if (isAuthenticated) {
-        // Staff routes require STAFF, ADMIN, or Owner/Admin
-        if (location.startsWith(Routes.staffDashboard) &&
-            userRole != UserRole.staff &&
-            userRole != UserRole.admin &&
-            userRole != UserRole.ownerAdmin) {
-          return _getHomeRouteForRole(userRole);
-        }
-
-        // Vet routes require VETERINARIAN, ADMIN, or Owner/Admin
-        if (location.startsWith(Routes.vetDashboard) &&
-            userRole != UserRole.veterinarian &&
-            userRole != UserRole.admin &&
-            userRole != UserRole.ownerAdmin) {
-          return _getHomeRouteForRole(userRole);
-        }
-
-        // Clinic home requires Owner/Admin (or ADMIN as fallback)
-        if (location.startsWith(Routes.clinicDashboard) &&
-            userRole != UserRole.ownerAdmin &&
-            userRole != UserRole.admin) {
-          return _getHomeRouteForRole(userRole);
-        }
-
-        // Admin routes require ADMIN or Owner/Admin
-        if (location.startsWith(Routes.adminDashboard) &&
-            userRole != UserRole.admin &&
+        // Clinic routes (staff/vet/clinic/admin areas) require Owner/Admin.
+        // The staff/vet/admin areas are hidden from tabs (kept, not deleted).
+        if ((location.startsWith(Routes.staffDashboard) ||
+                location.startsWith(Routes.vetDashboard) ||
+                location.startsWith(Routes.clinicDashboard) ||
+                location.startsWith(Routes.adminDashboard)) &&
             userRole != UserRole.ownerAdmin) {
           return _getHomeRouteForRole(userRole);
         }
@@ -588,9 +568,6 @@ class AppRouter {
   /// Get the appropriate home route for a user role
   static String _getHomeRouteForRole(UserRole role) {
     return switch (role) {
-      UserRole.admin => Routes.adminDashboard,
-      UserRole.veterinarian => Routes.vetDashboard,
-      UserRole.staff => Routes.staffDashboard,
       UserRole.ownerAdmin => Routes.clinicDashboard,
       UserRole.petOwner => Routes.home,
     };

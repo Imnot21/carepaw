@@ -204,7 +204,7 @@ class FirestoreUserRepository implements UserRepository {
 
   @override
   Future<List<domain.User>> findVeterinarians() =>
-      findByRole(domain.UserRole.veterinarian);
+      findByRole(domain.UserRole.ownerAdmin);
 
   @override
   Future<List<domain.User>> search(String query) async {
@@ -426,10 +426,11 @@ class FirestoreUserRepository implements UserRepository {
       // admin's session.
       final createdAuth = await _createAuthUserViaRest(email, password);
       try {
-        // Check if this user should be an admin (first user or email domain match with first user)
+        // Check if this user should be an Owner/Admin (first user or email
+        // domain match with first user)
         final bool shouldBeAdmin = await _shouldBeAdmin(email);
         final domain.UserRole effectiveRole = shouldBeAdmin
-            ? domain.UserRole.admin
+            ? domain.UserRole.ownerAdmin
             : role;
 
         final newId = await _userIdSequence.next();

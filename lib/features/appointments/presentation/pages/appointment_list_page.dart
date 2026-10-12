@@ -54,11 +54,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     // Determine user role from auth state
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      _isVetOrStaff =
-          authState.user.role == UserRole.veterinarian ||
-          authState.user.role == UserRole.staff ||
-          authState.user.role == UserRole.admin ||
-          authState.user.isOwnerAdmin;
+      _isVetOrStaff = authState.user.isOwnerAdmin;
     }
 
     // Load appointments when page initializes
@@ -807,6 +803,8 @@ class _AppointmentCard extends StatelessWidget {
         return ThemeColors.warning(context);
       case AppointmentStatus.confirmed:
         return ThemeColors.primaryLight(context);
+      case AppointmentStatus.rescheduled:
+        return AppColors.info;
       case AppointmentStatus.checkedIn:
         return ThemeColors.primary(context);
       case AppointmentStatus.inProgress:

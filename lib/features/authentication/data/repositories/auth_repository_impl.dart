@@ -348,9 +348,9 @@ class AuthRepositoryImpl implements AuthRepository {
   ///
   /// Used on first sign-in for accounts provisioned outside the app (Firebase
   /// Console, seed scripts) or left orphaned when a registration's Firestore
-  /// write was blocked. Assigns [UserRole.admin] if this user should be
-  /// considered an administrator based on email domain matching with the first
-  /// user in the system, otherwise defaults to [UserRole.petOwner]. Returns
+  /// write was blocked. Assigns [UserRole.ownerAdmin] if this user should be
+  /// considered the clinic operator based on email domain matching with the
+  /// first user in the system, otherwise defaults to [UserRole.petOwner]. Returns
   /// `null` if the profile cannot be written (e.g. Firestore rules still deny
   /// it), so the caller can fail with an actionable message.
   Future<DomainUser?> _autoProvisionFromAuthUser(User fireUser) async {
@@ -360,14 +360,16 @@ class AuthRepositoryImpl implements AuthRepository {
 
       UserRole effectiveRole;
       if (isFirstUser) {
-        // First user gets ADMIN role
-        effectiveRole = UserRole.admin;
+        // First user becomes the Owner/Admin (clinic operator)
+        effectiveRole = UserRole.ownerAdmin;
       } else {
         // Not first user - check if email domain matches the first user's domain
         final bool shouldBeAdmin = await _shouldBeAdminBasedOnEmailDomain(
           fireUser.email ?? '',
         );
-        effectiveRole = shouldBeAdmin ? UserRole.admin : UserRole.petOwner;
+        effectiveRole = shouldBeAdmin
+            ? UserRole.ownerAdmin
+            : UserRole.petOwner;
       }
 
       final newId = await _userIdSequence.next();

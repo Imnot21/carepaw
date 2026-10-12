@@ -22,7 +22,7 @@ class AdminDashboardPage extends StatelessWidget {
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) return const _LoadingView();
         final user = authState.user;
-        if (user.role != UserRole.admin && !user.isOwnerAdmin) {
+        if (!user.isOwnerAdmin) {
           return const _AccessDeniedView();
         }
         return _AdminDashboardContent(user: user);
