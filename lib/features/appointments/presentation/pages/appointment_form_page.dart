@@ -59,6 +59,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   int _durationMinutes = 30;
   int? _selectedPetId;
   int? _selectedVeterinarianId;
+  String? _selectedService;
   bool _isLoading = false;
   late Future<List<User>> _veterinariansFuture;
 
@@ -186,7 +187,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
                   sliver: SliverList.separated(
-                    itemCount: _isVetOrStaff ? 6 : 4,
+                    itemCount: _isVetOrStaff ? 7 : 5,
                     separatorBuilder: (_, _) => const SizedBox(height: 20),
                     itemBuilder: (context, index) =>
                         _buildFormSection(context, index, isEditing),
@@ -239,10 +240,12 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         case 2:
           return _buildDateTimeSection(context);
         case 3:
-          return _buildDurationSection(context);
+          return _buildServiceSection(context);
         case 4:
-          return _buildReasonSection(context);
+          return _buildDurationSection(context);
         case 5:
+          return _buildReasonSection(context);
+        case 6:
           return _buildNotesSection(context);
         default:
           return const SizedBox.shrink();
@@ -254,8 +257,10 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         case 1:
           return _buildDateTimeSection(context);
         case 2:
-          return _buildReasonSection(context);
+          return _buildServiceSection(context);
         case 3:
+          return _buildReasonSection(context);
+        case 4:
           return _buildNotesSection(context);
         default:
           return const SizedBox.shrink();
@@ -635,6 +640,30 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     );
   }
 
+  Widget _buildServiceSection(BuildContext context) {
+    return _buildSectionCard(
+      context,
+      title: 'Service',
+      subtitle: 'Which clinic service is this visit for?',
+      icon: Icons.medical_services_rounded,
+      iconColor: ThemeColors.primary(context),
+      required: true,
+      child: DropdownButtonFormField<String>(
+        initialValue: _selectedService,
+        isExpanded: true,
+        decoration: const InputDecoration(border: InputBorder.none),
+        hint: const Text('Select a service'),
+        items: [
+          for (final service in clinicServices)
+            DropdownMenuItem(value: service, child: Text(service)),
+        ],
+        onChanged: (value) => setState(() => _selectedService = value),
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Please select a service' : null,
+      ),
+    );
+  }
+
   Widget _buildReasonSection(BuildContext context) {
     return _buildSectionCard(
       context,
@@ -859,6 +888,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     _formKey.currentState!.save();
 
     final duration = _isVetOrStaff ? _durationMinutes : 30;
+    final isEditing = widget.appointmentId != null;
 
     final appointment = Appointment(
       id: widget.appointmentId,
@@ -866,7 +896,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       veterinarianId: _selectedVeterinarianId!,
       scheduledAt: _selectedDateTime!,
       durationMinutes: duration,
-      status: AppointmentStatus.requested,
+      // Editing date/time after booking = rescheduled (thesis status).
+      status: isEditing
+          ? AppointmentStatus.rescheduled
+          : AppointmentStatus.requested,
+      service: _selectedService,
       reason: _reasonController.text.trim(),
       notes: _notesController.text.trim().isEmpty
           ? null

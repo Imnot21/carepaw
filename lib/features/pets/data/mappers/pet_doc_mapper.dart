@@ -19,6 +19,7 @@ class PetDocMapper {
         (data[FirestoreSchema.species] as String?) ?? '',
       ),
       breed: data[FirestoreSchema.breed] as String?,
+      sex: PetSex.fromString(data[FirestoreSchema.sex] as String?),
       birthDate: DateFieldCodec.fromFirestoreDate(
         data[FirestoreSchema.birthDate],
       ),
@@ -44,6 +45,7 @@ class PetDocMapper {
       FirestoreSchema.name: pet.name,
       FirestoreSchema.species: pet.species.value,
       FirestoreSchema.breed: pet.breed,
+      FirestoreSchema.sex: pet.sex?.value,
       FirestoreSchema.birthDate: DateFieldCodec.toFirestoreDate(pet.birthDate),
       FirestoreSchema.weightKg: pet.weightKg,
       FirestoreSchema.color: pet.color,

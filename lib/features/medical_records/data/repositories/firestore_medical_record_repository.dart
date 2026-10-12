@@ -272,6 +272,31 @@ class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
   }
 
   @override
+  Future<MedicalRecord> createDewormingRecord({
+    required int petId,
+    required int veterinarianId,
+    int? appointmentId,
+    required String title,
+    String? description,
+    String? medications,
+  }) async {
+    final now = DateTime.now();
+    return create(
+      MedicalRecord(
+        petId: petId,
+        veterinarianId: veterinarianId,
+        appointmentId: appointmentId,
+        recordType: MedicalRecordType.deworming,
+        title: title,
+        description: description,
+        medications: medications,
+        recordedAt: now,
+        createdAt: now,
+      ),
+    );
+  }
+
+  @override
   Future<MedicalRecord> createAllergyRecord({
     required int petId,
     required int veterinarianId,

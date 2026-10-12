@@ -21,6 +21,7 @@ class MedicalRecordBloc
     on<events.LoadMedicalRecordDetails>(_onLoadMedicalRecordDetails);
     on<events.CreateVisitRecord>(_onCreateVisitRecord);
     on<events.CreateVaccinationRecord>(_onCreateVaccinationRecord);
+    on<events.CreateDewormingRecord>(_onCreateDewormingRecord);
     on<events.CreateAllergyRecord>(_onCreateAllergyRecord);
     on<events.CreateLabResultRecord>(_onCreateLabResultRecord);
     on<events.LoadRecentRecords>(_onLoadRecentRecords);
@@ -138,6 +139,35 @@ class MedicalRecordBloc
       emit(
         const states.MedicalRecordOperationSuccess(
           'Vaccination record created successfully',
+        ),
+      );
+      final records = await _medicalRecordRepository.findByPet(event.petId);
+      emit(states.MedicalRecordsLoaded(records));
+    } on Failure catch (failure) {
+      emit(states.MedicalRecordError(failure));
+    } catch (e) {
+      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+    }
+  }
+
+  /// Create deworming record
+  Future<void> _onCreateDewormingRecord(
+    events.CreateDewormingRecord event,
+    Emitter<states.MedicalRecordState> emit,
+  ) async {
+    emit(const states.MedicalRecordLoading());
+    try {
+      await _medicalRecordRepository.createDewormingRecord(
+        petId: event.petId,
+        veterinarianId: event.veterinarianId,
+        appointmentId: event.appointmentId,
+        title: event.title,
+        description: event.description,
+        medications: event.medications,
+      );
+      emit(
+        const states.MedicalRecordOperationSuccess(
+          'Deworming record created successfully',
         ),
       );
       final records = await _medicalRecordRepository.findByPet(event.petId);

@@ -25,6 +25,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     on<QueueMoveToRoomRequested>(_onMoveToRoomRequested);
     on<QueueCompleteRequested>(_onCompleteRequested);
     on<QueueSkipRequested>(_onSkipRequested);
+    on<QueueCancelRequested>(_onCancelRequested);
     on<QueueRepositionRequested>(_onRepositionRequested);
     on<QueueSetPriorityRequested>(_onSetPriorityRequested);
     on<QueueErrorCleared>(_onErrorCleared);
@@ -219,6 +220,20 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     }
   }
 
+  /// Cancel queue entry (thesis paper status)
+  Future<void> _onCancelRequested(
+    QueueCancelRequested event,
+    Emitter<QueueState> emit,
+  ) async {
+    try {
+      await _repository.cancel(event.queueId);
+      emit(QueueOperationSuccess('Queue entry cancelled'));
+      add(QueueStaffLoadRequested());
+    } catch (e) {
+      emit(QueueError('Failed to cancel: $e'));
+    }
+  }
+
   /// Reposition queue (staff)
   Future<void> _onRepositionRequested(
     QueueRepositionRequested event,
@@ -307,6 +322,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
           break;
         case QueueStatus.completed:
         case QueueStatus.skipped:
+        case QueueStatus.cancelled:
           break;
       }
     }

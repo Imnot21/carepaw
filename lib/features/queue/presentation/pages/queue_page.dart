@@ -898,6 +898,8 @@ class _QueueEntryCard extends StatelessWidget {
         return ThemeColors.primary(context);
       case QueueStatus.completed:
         return ThemeColors.success(context);
+      case QueueStatus.cancelled:
+        return ThemeColors.error(context);
       case QueueStatus.skipped:
         return ThemeColors.textSecondary(context);
     }

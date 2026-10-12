@@ -59,6 +59,16 @@ abstract class MedicalRecordRepository
     String? medications,
   });
 
+  /// Create deworming record
+  Future<MedicalRecord> createDewormingRecord({
+    required int petId,
+    required int veterinarianId,
+    int? appointmentId,
+    required String title,
+    String? description,
+    String? medications,
+  });
+
   /// Create allergy record (append-only, never deleted)
   Future<MedicalRecord> createAllergyRecord({
     required int petId,

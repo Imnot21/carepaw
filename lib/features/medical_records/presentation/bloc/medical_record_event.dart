@@ -107,6 +107,35 @@ class CreateVaccinationRecord extends MedicalRecordEvent {
   ];
 }
 
+/// Create a new deworming record.
+class CreateDewormingRecord extends MedicalRecordEvent {
+  final int petId;
+  final int veterinarianId;
+  final int? appointmentId;
+  final String title;
+  final String? description;
+  final String? medications;
+
+  const CreateDewormingRecord({
+    required this.petId,
+    required this.veterinarianId,
+    this.appointmentId,
+    required this.title,
+    this.description,
+    this.medications,
+  });
+
+  @override
+  List<Object?> get props => [
+    petId,
+    veterinarianId,
+    appointmentId,
+    title,
+    description,
+    medications,
+  ];
+}
+
 /// Create a new allergy record.
 class CreateAllergyRecord extends MedicalRecordEvent {
   final int petId;

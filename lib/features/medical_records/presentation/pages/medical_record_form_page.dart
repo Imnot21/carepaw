@@ -372,6 +372,25 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         ]);
         break;
 
+      case MedicalRecordType.deworming:
+        fields.addAll([
+          _buildField(
+            context: context,
+            controller: _medicationsController,
+            label: 'Deworming Product *',
+            hint: 'e.g., Pyrantel, Fenbendazole',
+            icon: Icons.medication_outlined,
+            maxLines: 3,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter the deworming product used';
+              }
+              return null;
+            },
+          ),
+        ]);
+        break;
+
       case MedicalRecordType.surgery:
         fields.addAll([
           _buildField(
@@ -642,6 +661,18 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.vaccination:
         return CreateVaccinationRecord(
+          petId: widget.pet.id!,
+          veterinarianId: userId,
+          appointmentId: null,
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          medications: _medicationsController.text.trim(),
+        );
+
+      case MedicalRecordType.deworming:
+        return CreateDewormingRecord(
           petId: widget.pet.id!,
           veterinarianId: userId,
           appointmentId: null,

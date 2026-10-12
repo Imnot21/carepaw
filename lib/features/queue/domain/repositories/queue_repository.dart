@@ -48,6 +48,9 @@ abstract class QueueRepository extends SoftDeleteRepository<QueueEntry, int>
   /// Skip patient
   Future<QueueEntry> skip(int queueId);
 
+  /// Cancel queue entry (terminal — visit will not happen)
+  Future<QueueEntry> cancel(int queueId);
+
   /// Set (or change) a queue entry's clinical priority, then re-order the queue
   /// so the entry lands in its tier's position. Returns the updated entry.
   Future<QueueEntry> setPriority(int queueId, QueuePriority priority);

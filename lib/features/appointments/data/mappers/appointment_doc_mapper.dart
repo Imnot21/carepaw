@@ -24,6 +24,7 @@ class AppointmentDocMapper {
       status: AppointmentStatus.fromString(
         (data[FirestoreSchema.status] as String?) ?? '',
       ),
+      service: data[FirestoreSchema.service] as String?,
       reason: data[FirestoreSchema.reason] as String?,
       notes: data[FirestoreSchema.notes] as String?,
       checkInAt: DateFieldCodec.fromFirestoreDate(
@@ -59,6 +60,7 @@ class AppointmentDocMapper {
       ),
       FirestoreSchema.durationMinutes: appointment.durationMinutes,
       FirestoreSchema.status: appointment.status.value,
+      FirestoreSchema.service: appointment.service,
       FirestoreSchema.reason: appointment.reason,
       FirestoreSchema.notes: appointment.notes,
       FirestoreSchema.checkInAt: DateFieldCodec.toFirestoreDate(

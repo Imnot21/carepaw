@@ -17,6 +17,11 @@ class MedicalRecordUtils {
           icon: Icons.vaccines_outlined,
           color: ThemeColors.success(context),
         );
+      case MedicalRecordType.deworming:
+        return TypeInfo(
+          icon: Icons.medication_outlined,
+          color: ThemeColors.success(context),
+        );
       case MedicalRecordType.surgery:
         return TypeInfo(
           icon: Icons.healing_outlined,
@@ -52,6 +57,8 @@ class MedicalRecordUtils {
         return 'General visit or consultation';
       case MedicalRecordType.vaccination:
         return 'Vaccination or immunization';
+      case MedicalRecordType.deworming:
+        return 'Deworming treatment';
       case MedicalRecordType.surgery:
         return 'Surgical procedure';
       case MedicalRecordType.labResult:

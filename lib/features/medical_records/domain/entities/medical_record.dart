@@ -98,9 +98,13 @@ class MedicalRecord extends Equatable {
 }
 
 /// Medical record type enum
+///
+/// [deworming] covers deworming treatments (thesis paper lists deworming in
+/// the required medical history).
 enum MedicalRecordType {
   visit('VISIT'),
   vaccination('VACCINATION'),
+  deworming('DEWORMING'),
   surgery('SURGERY'),
   labResult('LAB_RESULT'),
   prescription('PRESCRIPTION'),
@@ -123,6 +127,8 @@ enum MedicalRecordType {
         return 'Visit';
       case MedicalRecordType.vaccination:
         return 'Vaccination';
+      case MedicalRecordType.deworming:
+        return 'Deworming';
       case MedicalRecordType.surgery:
         return 'Surgery';
       case MedicalRecordType.labResult:

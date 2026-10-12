@@ -318,6 +318,18 @@ class FirestoreQueueRepository implements QueueRepository {
   }
 
   @override
+  Future<QueueEntry> cancel(int queueId) async {
+    final existing = await findById(queueId);
+    if (existing == null) throw Exception('Queue entry not found');
+    if (!existing.canCancel) {
+      throw Exception('Queue entry cannot be cancelled');
+    }
+    final cancelled = await save(existing.cancel());
+    await repositionQueue();
+    return cancelled;
+  }
+
+  @override
   Future<QueueEntry> setPriority(int queueId, QueuePriority priority) async {
     final existing = await findById(queueId);
     if (existing == null) throw Exception('Queue entry not found');

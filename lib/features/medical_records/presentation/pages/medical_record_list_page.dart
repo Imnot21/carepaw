@@ -293,6 +293,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     final filters = [
       (MedicalRecordType.visit, 'Visits'),
       (MedicalRecordType.vaccination, 'Vaccinations'),
+      (MedicalRecordType.deworming, 'Deworming'),
       (MedicalRecordType.surgery, 'Surgeries'),
       (MedicalRecordType.labResult, 'Lab Results'),
       (MedicalRecordType.prescription, 'Prescriptions'),

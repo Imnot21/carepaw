@@ -124,6 +124,7 @@ class _PetFormPageState extends State<PetFormPage> {
   final _weightController = TextEditingController();
 
   PetSpecies _selectedSpecies = PetSpecies.dog;
+  PetSex? _selectedSex;
   DateTime? _selectedBirthDate;
   bool _isActive = true;
 
@@ -148,6 +149,7 @@ class _PetFormPageState extends State<PetFormPage> {
   void _populateForm(Pet pet) {
     _nameController.text = pet.name;
     _selectedSpecies = pet.species;
+    _selectedSex = pet.sex;
     _breedController.text = pet.breed ?? '';
     _colorController.text = pet.color ?? '';
     _microchipController.text = pet.microchipId ?? '';
@@ -305,6 +307,7 @@ class _PetFormPageState extends State<PetFormPage> {
         ownerId: widget.ownerId,
         name: _nameController.text.trim(),
         species: _selectedSpecies,
+        sex: _selectedSex,
         breed: _breedController.text.trim().isEmpty
             ? null
             : _breedController.text.trim(),
@@ -355,6 +358,12 @@ class _PetFormPageState extends State<PetFormPage> {
           _PetSpeciesSelector(
             selectedSpecies: _selectedSpecies,
             onChanged: (value) => setState(() => _selectedSpecies = value),
+          ),
+          const SizedBox(height: 16),
+          // Sex selector (thesis paper lists sex as a required field)
+          _PetSexSelector(
+            selectedSex: _selectedSex,
+            onChanged: (value) => setState(() => _selectedSex = value),
           ),
           const SizedBox(height: 16),
           // Breed selector with common breeds (depends on species)
@@ -473,6 +482,46 @@ class _PetSpeciesSelector extends StatelessWidget {
               selected: isSelected,
               selectedColor: color,
               onTap: () => onChanged(species),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+/// Sex selector with filter chips
+class _PetSexSelector extends StatelessWidget {
+  final PetSex? selectedSex;
+  final ValueChanged<PetSex?> onChanged;
+
+  const _PetSexSelector({required this.selectedSex, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sex',
+          style: AppTextStyles.labelLarge.copyWith(
+            color: ThemeColors.textPrimary(context),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: PetSex.values.map((sex) {
+            final isSelected = sex == selectedSex;
+            return NeuChip(
+              label: sex.displayName,
+              icon: sex == PetSex.male
+                  ? Icons.male_outlined
+                  : Icons.female_outlined,
+              selected: isSelected,
+              selectedColor: ThemeColors.primary(context),
+              onTap: () => onChanged(isSelected ? null : sex),
             );
           }).toList(),
         ),

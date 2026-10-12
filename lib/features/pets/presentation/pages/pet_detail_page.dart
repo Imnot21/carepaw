@@ -509,6 +509,14 @@ class _BasicInfoCard extends StatelessWidget {
             label: 'Breed',
             value: pet.breed!,
           ),
+        if (pet.sex != null)
+          _InfoRow(
+            icon: pet.sex == PetSex.male
+                ? Icons.male_outlined
+                : Icons.female_outlined,
+            label: 'Sex',
+            value: pet.sex!.displayName,
+          ),
         if (pet.color != null)
           _InfoRow(
             icon: Icons.palette_outlined,

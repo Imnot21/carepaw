@@ -52,6 +52,9 @@ class QueueEntry extends Equatable {
   /// Check if queue entry is skipped
   bool get isSkipped => status == QueueStatus.skipped;
 
+  /// Check if queue entry is cancelled (terminal)
+  bool get isCancelled => status == QueueStatus.cancelled;
+
   /// Check if can check in (must be waiting)
   bool get canCheckIn => status == QueueStatus.waiting;
 
@@ -125,6 +128,21 @@ class QueueEntry extends Equatable {
     return copyWith(status: QueueStatus.skipped, updatedAt: DateTime.now());
   }
 
+  /// Check if can cancel (must be waiting or called)
+  bool get canCancel =>
+      status == QueueStatus.waiting || status == QueueStatus.called;
+
+  /// Cancel the queue entry (terminal — visit will not happen)
+  QueueEntry cancel() {
+    if (!canCancel) {
+      throw Exception('Cannot cancel: invalid status');
+    }
+    return copyWith(
+      status: QueueStatus.cancelled,
+      updatedAt: DateTime.now(),
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,
@@ -195,12 +213,15 @@ class QueueEntry extends Equatable {
 }
 
 /// Queue status enum
+///
+/// [cancelled] is terminal (thesis paper status): the visit will not happen.
 enum QueueStatus {
   waiting('WAITING'),
   called('CALLED'),
   inRoom('IN_ROOM'),
   completed('COMPLETED'),
-  skipped('SKIPPED');
+  skipped('SKIPPED'),
+  cancelled('CANCELLED');
 
   final String value;
   const QueueStatus(this.value);
@@ -222,6 +243,8 @@ enum QueueStatus {
         return 'In Room';
       case QueueStatus.completed:
         return 'Completed';
+      case QueueStatus.cancelled:
+        return 'Cancelled';
       case QueueStatus.skipped:
         return 'Skipped';
     }

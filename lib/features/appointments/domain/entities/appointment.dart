@@ -186,6 +186,19 @@ enum AppointmentStatus {
   }
 }
 
+/// Clinic services offered (DocMyk's PILA VET HUB service list).
+/// Used as the service picker when requesting an appointment.
+const List<String> clinicServices = [
+  'Consultation',
+  'Vaccination',
+  'Deworming',
+  'Dental Care',
+  'Minor Surgery',
+  'Diagnostic Test',
+  'Medicine Dispensing',
+  'Follow-up Checkup',
+];
+
 /// Appointment with related details
 class AppointmentWithDetails extends Equatable {
   final Appointment appointment;

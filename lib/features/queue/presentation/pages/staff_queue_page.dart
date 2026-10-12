@@ -287,6 +287,11 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                                 entry.queueEntry.status == QueueStatus.called
                             ? () => _showSkipDialog(entry)
                             : null,
+                        onCancel:
+                            entry.queueEntry.status == QueueStatus.waiting ||
+                                entry.queueEntry.status == QueueStatus.called
+                            ? () => _showCancelDialog(entry)
+                            : null,
                       );
                     },
                   ),
@@ -423,6 +428,21 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
       ),
     );
   }
+
+  void _showCancelDialog(QueueEntryWithDetails entry) {
+    NeuConfirmDialog.show(
+      context: context,
+      title: 'Cancel Queue Entry',
+      message:
+          'Cancel ${entry.pet.name}\'s queue entry? This visit will not happen.',
+      confirmText: 'Cancel Entry',
+      cancelText: 'Keep',
+      confirmVariant: NeuButtonVariant.destructive,
+      onConfirm: () => context.read<QueueBloc>().add(
+        QueueCancelRequested(entry.queueEntry.id!),
+      ),
+    );
+  }
 }
 
 /// Stats bar showing queue overview
@@ -528,6 +548,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
   final VoidCallback? onMoveToRoom;
   final VoidCallback? onComplete;
   final VoidCallback? onSkip;
+  final VoidCallback? onCancel;
   final ValueChanged<QueuePriority>? onPriorityChanged;
 
   const _StaffQueueEntryCard({
@@ -536,6 +557,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
     this.onMoveToRoom,
     this.onComplete,
     this.onSkip,
+    this.onCancel,
     this.onPriorityChanged,
   });
 
@@ -888,6 +910,22 @@ class _StaffQueueEntryCard extends StatelessWidget {
       );
     }
 
+    if (onCancel != null) {
+      if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
+      actions.add(
+        Expanded(
+          child: NeuButton(
+            text: 'Cancel',
+            onPressed: onCancel!,
+            icon: Icons.cancel_outlined,
+            variant: NeuButtonVariant.destructive,
+            size: NeuButtonSize.medium,
+            expanded: true,
+          ),
+        ),
+      );
+    }
+
     return Row(children: actions);
   }
 
@@ -901,6 +939,8 @@ class _StaffQueueEntryCard extends StatelessWidget {
         return ThemeColors.primary(context);
       case QueueStatus.completed:
         return ThemeColors.success(context);
+      case QueueStatus.cancelled:
+        return ThemeColors.error(context);
       case QueueStatus.skipped:
         return ThemeColors.textSecondary(context);
     }

@@ -53,6 +53,7 @@ class FirestoreSchema {
   static const String name = 'name';
   static const String species = 'species';
   static const String breed = 'breed';
+  static const String sex = 'sex';
   static const String birthDate = 'birthDate';
   static const String weightKg = 'weightKg';
   static const String color = 'color';
@@ -64,6 +65,7 @@ class FirestoreSchema {
   static const String scheduledAt = 'scheduledAt';
   static const String durationMinutes = 'durationMinutes';
   static const String status = 'status';
+  static const String service = 'service';
   static const String reason = 'reason';
   static const String notes = 'notes';
   static const String checkInAt = 'checkInAt';

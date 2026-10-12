@@ -148,7 +148,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           sliver: SliverList.separated(
-            itemCount: 4,
+            itemCount: 5,
             separatorBuilder: (_, _) => const SizedBox(height: 16),
             itemBuilder: (context, index) =>
                 _buildSectionCard(context, index, appointment, speciesColor),
@@ -272,6 +272,17 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       case 1:
         return _buildDetailCard(context, appointment.appointment, speciesColor);
       case 2:
+        if ((appointment.appointment.service?.isNotEmpty ?? false)) {
+          return _buildInfoCard(
+            context,
+            'Service',
+            appointment.appointment.service!,
+            Icons.medical_services_rounded,
+            ThemeColors.primary(context),
+          );
+        }
+        return const SizedBox.shrink();
+      case 3:
         if ((appointment.appointment.reason?.isNotEmpty ?? false)) {
           return _buildInfoCard(
             context,
@@ -282,7 +293,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           );
         }
         return const SizedBox.shrink();
-      case 3:
+      case 4:
         if ((appointment.appointment.notes?.isNotEmpty ?? false)) {
           return _buildInfoCard(
             context,

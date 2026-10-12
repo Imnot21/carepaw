@@ -60,6 +60,16 @@ class QueueSkipRequested extends QueueEvent {
   List<Object?> get props => [queueId];
 }
 
+/// Cancel a queue entry (thesis paper status — visit will not happen)
+class QueueCancelRequested extends QueueEvent {
+  final int queueId;
+
+  const QueueCancelRequested(this.queueId);
+
+  @override
+  List<Object?> get props => [queueId];
+}
+
 /// Check in an appointment into the queue (pet owner).
 class QueueCheckInRequested extends QueueEvent {
   final int appointmentId;
