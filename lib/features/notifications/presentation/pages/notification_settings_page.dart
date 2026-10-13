@@ -194,30 +194,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         color: AppColors.warning,
         enabled: preferences?.queueUpdates ?? true,
       ),
-      _CategorySetting(
-        type: NotificationType.inventoryLow,
-        title: 'Inventory Alerts',
-        subtitle: 'Low stock, expiring medicines, restocks',
-        icon: Icons.inventory_rounded,
-        color: AppColors.success,
-        enabled: preferences?.inventoryAlerts ?? true,
-      ),
-      _CategorySetting(
-        type: NotificationType.prescriptionReady,
-        title: 'Prescriptions',
-        subtitle: 'New prescriptions, refill reminders',
-        icon: Icons.medication_rounded,
-        color: AppColors.categorySupply,
-        enabled: preferences?.prescriptionReady ?? true,
-      ),
-      _CategorySetting(
-        type: NotificationType.system,
-        title: 'System',
-        subtitle: 'App updates, maintenance, announcements',
-        icon: Icons.settings_rounded,
-        color: ThemeColors.textSecondary(context),
-        enabled: preferences?.systemAnnouncements ?? true,
-      ),
+      // PAPER-ONLY: inventory, prescription, and system categories stay in
+      // code/back-end but are hidden from the thesis demo UI.
     ];
 
     return Column(

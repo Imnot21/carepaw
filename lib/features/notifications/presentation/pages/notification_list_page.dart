@@ -246,6 +246,16 @@ class _NotificationListPageState extends State<NotificationListPage>
 
         if (type != null) {
           notifications = notifications.where((n) => n.type == type).toList();
+        } else {
+          // PAPER-ONLY: All tab shows appointment + queue notifications.
+          // prescription/inventory/system stay stored but hidden in demo UI.
+          notifications = notifications
+              .where(
+                (n) =>
+                    n.type == domain.NotificationType.appointmentReminder ||
+                    n.type == domain.NotificationType.queueUpdate,
+              )
+              .toList();
         }
 
         if (notifications.isEmpty) {
@@ -293,7 +303,15 @@ class _NotificationListPageState extends State<NotificationListPage>
     return BlocBuilder<NotificationBloc, NotificationState>(
       builder: (context, state) {
         if (state is NotificationsLoaded) {
-          final unread = state.notifications.where((n) => !n.isRead).toList();
+          // PAPER-ONLY: unread tab shows appointment + queue only.
+          final unread = state.notifications
+              .where(
+                (n) =>
+                    !n.isRead &&
+                    (n.type == domain.NotificationType.appointmentReminder ||
+                        n.type == domain.NotificationType.queueUpdate),
+              )
+              .toList();
           if (unread.isEmpty) {
             return _EmptyState(
               icon: Icons.mark_email_read_rounded,
@@ -640,7 +658,8 @@ class _CreateNotificationDialog extends StatefulWidget {
 class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
-  domain.NotificationType _selectedType = domain.NotificationType.system;
+  domain.NotificationType _selectedType =
+      domain.NotificationType.appointmentReminder;
 
   @override
   void dispose() {
@@ -703,7 +722,11 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
   }
 
   Widget _buildTypeSelector() {
-    final types = domain.NotificationType.values;
+    // PAPER-ONLY: test-create offers appointment + queue types only.
+    const types = [
+      domain.NotificationType.appointmentReminder,
+      domain.NotificationType.queueUpdate,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
