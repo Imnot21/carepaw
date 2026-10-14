@@ -74,7 +74,7 @@ class NeuFilterBar extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: chips.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(width: NeuTokens.spaceXs),
                 itemBuilder: (_, index) => chips[index],
               ),
@@ -112,7 +112,7 @@ class NeuChipRow extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         padding: padding,
         itemCount: chips.length,
-        separatorBuilder: (_, __) => const SizedBox(width: NeuTokens.spaceXs),
+        separatorBuilder: (_, _) => const SizedBox(width: NeuTokens.spaceXs),
         itemBuilder: (_, index) => chips[index],
       ),
     );

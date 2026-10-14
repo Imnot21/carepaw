@@ -120,7 +120,6 @@ class _CarePawAppState extends State<CarePawApp> {
       return MaterialApp(
         title: 'CarePaw',
         debugShowCheckedModeBanner: false,
-        useInheritedMediaQuery: true,
         locale: DevicePreview.locale(context),
         builder: DevicePreview.appBuilder,
         theme: AppTheme.lightTheme,
@@ -243,7 +242,6 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
       return MaterialApp(
         title: 'CarePaw',
         debugShowCheckedModeBanner: false,
-        useInheritedMediaQuery: true,
         locale: DevicePreview.locale(context),
         builder: DevicePreview.appBuilder,
         theme: AppTheme.lightTheme,
@@ -258,7 +256,6 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
     return MaterialApp.router(
       title: 'CarePaw',
       debugShowCheckedModeBanner: false,
-      useInheritedMediaQuery: true,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
 

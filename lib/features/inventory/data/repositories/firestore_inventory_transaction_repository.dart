@@ -18,10 +18,9 @@ import 'package:carepaw/features/inventory/domain/repositories/inventory_reposit
 class FirestoreInventoryTransactionRepository
     implements InventoryTransactionRepository {
   FirestoreInventoryTransactionRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence inventoryTransactionIdSequence,
-  }) : _firestore = firestore,
-       _idSequence = inventoryTransactionIdSequence;
+  }) : _idSequence = inventoryTransactionIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

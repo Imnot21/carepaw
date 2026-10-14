@@ -18,12 +18,10 @@ import 'package:carepaw/features/inventory/domain/repositories/inventory_reposit
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreInventoryBatchRepository implements InventoryBatchRepository {
   FirestoreInventoryBatchRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence inventoryBatchIdSequence,
-    required InventoryItemRepository itemRepository,
-  }) : _firestore = firestore,
-       _idSequence = inventoryBatchIdSequence,
-       _itemRepository = itemRepository;
+    required this._itemRepository,
+  }) : _idSequence = inventoryBatchIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

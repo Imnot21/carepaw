@@ -13,9 +13,8 @@ import 'package:carepaw/core/errors/failures.dart';
 class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
   final AuthRepository _authRepository;
 
-  AuthBloc({required AuthRepository authRepository})
-    : _authRepository = authRepository,
-      super(const states.AuthInitial()) {
+  AuthBloc({required this._authRepository})
+    : super(const states.AuthInitial()) {
     on<events.AuthLoginRequested>(_onLoginRequested);
     on<events.AuthRegisterRequested>(_onRegisterRequested);
     on<events.AuthLogoutRequested>(_onLogoutRequested);

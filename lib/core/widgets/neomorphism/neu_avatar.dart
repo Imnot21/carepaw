@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
-import '../../../app/theme/design_tokens.dart';
 import 'neu_shadows.dart';
 
 /// Circular avatar — an extruded disc.

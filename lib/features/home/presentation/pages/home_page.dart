@@ -11,7 +11,6 @@ import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
-import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -233,7 +232,7 @@ class _PetSummarySection extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: pets.length > 5 ? 5 : pets.length,
-          separatorBuilder: (_, __) =>
+          separatorBuilder: (_, _) =>
               const SizedBox(width: NeuTokens.tightGap),
           itemBuilder: (context, index) {
             final pet = pets[index];

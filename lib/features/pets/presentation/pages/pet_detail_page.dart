@@ -20,7 +20,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
@@ -938,11 +937,13 @@ class _PetDetailLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PetBloc, PetState>(
       builder: (context, state) {
-        if (state is PetLoading)
+        if (state is PetLoading) {
           return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
+        }
         if (state is PetDetailLoaded) return PetDetailPage(pet: state.pet);
-        if (state is PetError)
+        if (state is PetError) {
           return _buildError(context, state.failure.message);
+        }
         return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
       },
     );
@@ -1017,8 +1018,9 @@ class _PetFormLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PetBloc, PetState>(
       builder: (context, state) {
-        if (state is PetLoading)
+        if (state is PetLoading) {
           return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
+        }
         if (state is PetDetailLoaded) {
           final authState = context.read<AuthBloc>().state;
           final ownerId = authState is AuthAuthenticated
@@ -1026,8 +1028,9 @@ class _PetFormLoader extends StatelessWidget {
               : 0;
           return PetFormPage(ownerId: ownerId, pet: state.pet);
         }
-        if (state is PetError)
+        if (state is PetError) {
           return _buildError(context, state.failure.message);
+        }
         return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
       },
     );

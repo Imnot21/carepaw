@@ -16,10 +16,9 @@ import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestorePetRepository implements PetRepository {
   FirestorePetRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence petIdSequence,
-  }) : _firestore = firestore,
-       _idSequence = petIdSequence;
+  }) : _idSequence = petIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -104,8 +103,9 @@ class FirestorePetRepository implements PetRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-          if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first))
+          if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first)) {
             return null;
+          }
           return PetDocMapper.fromData(snapshot.docs.first.data());
         });
   }

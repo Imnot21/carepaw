@@ -17,10 +17,9 @@ import 'package:carepaw/features/notifications/domain/repositories/notification_
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreNotificationRepository implements NotificationRepository {
   FirestoreNotificationRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence notificationIdSequence,
-  }) : _firestore = firestore,
-       _idSequence = notificationIdSequence;
+  }) : _idSequence = notificationIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

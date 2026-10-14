@@ -34,12 +34,10 @@ class FirestoreUserRepository implements UserRepository {
   final UserIdSequence _userIdSequence;
 
   FirestoreUserRepository({
-    required FirebaseFirestore firestore,
-    required FirebaseAuth firebaseAuth,
-    required UserIdSequence userIdSequence,
-  }) : _firestore = firestore,
-       _firebaseAuth = firebaseAuth,
-       _userIdSequence = userIdSequence;
+    required this._firestore,
+    required this._firebaseAuth,
+    required this._userIdSequence,
+  });
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _firestore.collection(FirestoreSchema.users);

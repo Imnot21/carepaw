@@ -74,7 +74,7 @@ class _NeuChipState extends State<NeuChip> {
                     accent.withValues(alpha: 0.16),
                     ThemeColors.surfaceMuted(context),
                   )
-                : (widget.style?.color ?? null),
+                : (widget.style?.color),
             borderColor: null,
             borderWidth: 0,
             child: Row(

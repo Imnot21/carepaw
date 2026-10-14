@@ -23,7 +23,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
-import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
 /// Notification list page with the CarePaw surface system
@@ -633,6 +632,7 @@ class _NotificationListPageState extends State<NotificationListPage>
       confirmText: 'Delete',
       confirmVariant: NeuButtonVariant.destructive,
     ).then((confirmed) {
+      if (!mounted) return;
       if (confirmed == true) {
         context.read<NotificationBloc>().add(
           DeleteNotification(notificationId),

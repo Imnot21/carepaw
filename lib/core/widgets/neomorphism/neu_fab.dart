@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/design_tokens.dart';
-import '../../../app/theme/theme_colors.dart';
 import 'neu_button.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';

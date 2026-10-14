@@ -18,10 +18,9 @@ import 'package:carepaw/features/scanning/domain/repositories/scan_repository.da
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreScanRecordRepository implements ScanRecordRepository {
   FirestoreScanRecordRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence scanRecordIdSequence,
-  }) : _firestore = firestore,
-       _idSequence = scanRecordIdSequence;
+  }) : _idSequence = scanRecordIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

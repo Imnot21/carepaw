@@ -22,16 +22,12 @@ import 'package:carepaw/features/users/domain/repositories/user_repository.dart'
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreQueueRepository implements QueueRepository {
   FirestoreQueueRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence queueIdSequence,
-    required AppointmentRepository appointmentRepository,
-    required PetRepository petRepository,
-    required UserRepository userRepository,
-  }) : _firestore = firestore,
-       _idSequence = queueIdSequence,
-       _appointmentRepository = appointmentRepository,
-       _petRepository = petRepository,
-       _userRepository = userRepository;
+    required this._appointmentRepository,
+    required this._petRepository,
+    required this._userRepository,
+  }) : _idSequence = queueIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -288,8 +284,9 @@ class FirestoreQueueRepository implements QueueRepository {
   Future<QueueEntry> moveToRoom(int queueId, String room) async {
     final existing = await findById(queueId);
     if (existing == null) throw Exception('Queue entry not found');
-    if (!existing.canMoveToRoom)
+    if (!existing.canMoveToRoom) {
       throw Exception('Queue entry cannot be moved to a room');
+    }
     final targetRoom = room.trim().isEmpty
         ? (existing.room ?? _defaultRoom)
         : room.trim();
@@ -300,8 +297,9 @@ class FirestoreQueueRepository implements QueueRepository {
   Future<QueueEntry> complete(int queueId) async {
     final existing = await findById(queueId);
     if (existing == null) throw Exception('Queue entry not found');
-    if (!existing.canComplete)
+    if (!existing.canComplete) {
       throw Exception('Queue entry cannot be completed');
+    }
     final completed = await save(existing.complete());
     await repositionQueue();
     return completed;

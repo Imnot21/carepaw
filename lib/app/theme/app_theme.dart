@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 import 'app_text_styles.dart';
 import 'design_tokens.dart';
 
@@ -40,7 +39,7 @@ class AppTheme {
       surfaceContainerHighest: AppColors.surfaceContainerHighest,
       outline: AppColors.border,
       outlineVariant: AppColors.divider,
-      shadow: const Color(0xFF7A6E5E),
+      shadow: Color(0xFF7A6E5E),
       inverseSurface: AppColors.textPrimary,
       onInverseSurface: AppColors.background,
       inversePrimary: AppColors.primaryLight,
@@ -245,7 +244,7 @@ class AppTheme {
       surfaceContainerHighest: Color(0xFF3D3937),
       outline: AppColors.borderDark,
       outlineVariant: AppColors.dividerDark,
-      shadow: const Color(0xFF000000),
+      shadow: Color(0xFF000000),
       inverseSurface: AppColors.textPrimaryOnDark,
       onInverseSurface: AppColors.backgroundDark,
       inversePrimary: AppColors.primaryLight,

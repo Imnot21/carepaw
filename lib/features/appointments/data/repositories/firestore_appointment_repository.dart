@@ -19,14 +19,11 @@ import 'package:carepaw/features/users/domain/repositories/user_repository.dart'
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreAppointmentRepository implements AppointmentRepository {
   FirestoreAppointmentRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence appointmentIdSequence,
-    required PetRepository petRepository,
-    required UserRepository userRepository,
-  }) : _firestore = firestore,
-       _idSequence = appointmentIdSequence,
-       _petRepository = petRepository,
-       _userRepository = userRepository;
+    required this._petRepository,
+    required this._userRepository,
+  }) : _idSequence = appointmentIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -290,8 +287,9 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
   Future<Appointment> checkIn(int id) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Appointment not found');
-    if (!existing.canCheckIn)
+    if (!existing.canCheckIn) {
       throw Exception('Appointment cannot be checked in');
+    }
     return save(
       existing.copyWith(
         status: AppointmentStatus.checkedIn,
@@ -319,8 +317,9 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
   Future<Appointment> complete(int id) async {
     final existing = await findById(id);
     if (existing == null) throw Exception('Appointment not found');
-    if (!existing.canComplete)
+    if (!existing.canComplete) {
       throw Exception('Appointment cannot be completed');
+    }
     return save(
       existing.copyWith(
         status: AppointmentStatus.completed,

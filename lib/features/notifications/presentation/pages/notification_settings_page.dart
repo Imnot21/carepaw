@@ -583,6 +583,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       confirmText: 'Clear',
       confirmVariant: NeuButtonVariant.destructive,
     ).then((confirmed) {
+      if (!mounted) return;
       if (confirmed == true) {
         context.read<NotificationBloc>().add(
           const DeleteAllReadNotifications(),
@@ -610,6 +611,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       confirmText: 'Delete All',
       confirmVariant: NeuButtonVariant.destructive,
     ).then((confirmed) {
+      if (!mounted) return;
       if (confirmed == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

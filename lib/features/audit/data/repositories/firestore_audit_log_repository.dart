@@ -17,11 +17,10 @@ import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.
 /// the clinic operates.
 class FirestoreAuditLogRepository implements AuditLogRepository {
   FirestoreAuditLogRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence auditLogIdSequence,
     this._maxQuery = 1000,
-  }) : _firestore = firestore,
-       _idSequence = auditLogIdSequence;
+  }) : _idSequence = auditLogIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

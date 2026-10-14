@@ -17,14 +17,11 @@ import 'package:carepaw/features/users/domain/repositories/user_repository.dart'
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreVaccinationRepository implements VaccinationRepository {
   FirestoreVaccinationRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence vaccinationIdSequence,
-    required PetRepository petRepository,
-    required UserRepository userRepository,
-  }) : _firestore = firestore,
-       _idSequence = vaccinationIdSequence,
-       _petRepository = petRepository,
-       _userRepository = userRepository;
+    required this._petRepository,
+    required this._userRepository,
+  }) : _idSequence = vaccinationIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

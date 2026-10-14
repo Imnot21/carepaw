@@ -23,7 +23,6 @@ import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
-import 'package:carepaw/app/theme/theme_colors.dart';
 
 /// Appointment list page showing upcoming and past appointments with
 /// the CarePaw surface system.

@@ -23,16 +23,12 @@ import 'package:carepaw/features/users/domain/repositories/user_repository.dart'
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreMedicalRecordRepository implements MedicalRecordRepository {
   FirestoreMedicalRecordRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence medicalRecordIdSequence,
-    required PetRepository petRepository,
-    required UserRepository userRepository,
-    required AppointmentRepository appointmentRepository,
-  }) : _firestore = firestore,
-       _idSequence = medicalRecordIdSequence,
-       _petRepository = petRepository,
-       _userRepository = userRepository,
-       _appointmentRepository = appointmentRepository;
+    required this._petRepository,
+    required this._userRepository,
+    required this._appointmentRepository,
+  }) : _idSequence = medicalRecordIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;

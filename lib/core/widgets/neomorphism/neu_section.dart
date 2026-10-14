@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
-import '../../../app/theme/theme_colors.dart';
 import 'neu_container.dart';
 
 /// A titled block of content.
@@ -105,7 +104,7 @@ class NeuSectionHeader extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (trailing != null) trailing!,
+        ?trailing,
         if (actionLabel != null && onAction != null)
           _HeaderAction(label: actionLabel!, onTap: onAction!),
       ],

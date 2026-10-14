@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
-import '../../../app/theme/theme_colors.dart';
 import 'neu_shadows.dart';
 
 /// The page shell every screen in CarePaw builds on.

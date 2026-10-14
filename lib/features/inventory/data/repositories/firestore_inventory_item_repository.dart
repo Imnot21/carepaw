@@ -17,10 +17,9 @@ import 'package:carepaw/features/inventory/domain/repositories/inventory_reposit
 /// The former Drift repository is intentionally set aside and no longer wired.
 class FirestoreInventoryItemRepository implements InventoryItemRepository {
   FirestoreInventoryItemRepository({
-    required FirebaseFirestore firestore,
+    required this._firestore,
     required FirestoreIdSequence inventoryItemIdSequence,
-  }) : _firestore = firestore,
-       _idSequence = inventoryItemIdSequence;
+  }) : _idSequence = inventoryItemIdSequence;
 
   final FirebaseFirestore _firestore;
   final FirestoreIdSequence _idSequence;
@@ -105,8 +104,9 @@ class FirestoreInventoryItemRepository implements InventoryItemRepository {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-          if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first))
+          if (snapshot.docs.isEmpty || _isDeleted(snapshot.docs.first)) {
             return null;
+          }
           return InventoryItemDocMapper.fromData(snapshot.docs.first.data());
         });
   }

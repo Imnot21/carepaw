@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
-import '../../../app/theme/theme_colors.dart';
 import 'neu_button.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
@@ -221,8 +220,8 @@ class NeuLoadingList extends StatelessWidget {
       padding: const EdgeInsets.all(NeuTokens.pagePadding),
       physics: const NeverScrollableScrollPhysics(),
       itemCount: itemCount,
-      separatorBuilder: (_, __) => const SizedBox(height: NeuTokens.tightGap),
-      itemBuilder: (_, __) => const NeuLoadingRow(),
+      separatorBuilder: (_, _) => const SizedBox(height: NeuTokens.tightGap),
+      itemBuilder: (_, _) => const NeuLoadingRow(),
     );
   }
 }

@@ -10,9 +10,8 @@ import 'package:carepaw/core/errors/failures.dart';
 class PetBloc extends Bloc<PetEvent, PetState> {
   final PetRepository _petRepository;
 
-  PetBloc({required PetRepository petRepository})
-    : _petRepository = petRepository,
-      super(const PetInitial()) {
+  PetBloc({required this._petRepository})
+    : super(const PetInitial()) {
     on<LoadPets>(_onLoadPets);
     on<CreatePet>(_onCreatePet);
     on<UpdatePet>(_onUpdatePet);

@@ -18,7 +18,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
-import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -327,8 +326,9 @@ class _UpcomingCheckInSection extends StatelessWidget {
 
     return BlocBuilder<AppointmentBloc, AppointmentState>(
       builder: (context, appointmentState) {
-        if (appointmentState is! AppointmentLoaded)
+        if (appointmentState is! AppointmentLoaded) {
           return const SizedBox.shrink();
+        }
 
         final upcoming = appointmentState.upcomingWithPetDetails
             .where(

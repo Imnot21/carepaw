@@ -986,6 +986,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       cancelText: 'Cancel',
       confirmVariant: NeuButtonVariant.destructive,
     ).then((confirmed) {
+      if (!mounted) return;
       if (confirmed == true) {
         Navigator.pop(context);
         // TODO: Implement delete

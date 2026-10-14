@@ -42,12 +42,10 @@ class AuthRepositoryImpl implements AuthRepository {
       StreamController<auth_entities.AuthResult?>.broadcast();
 
   AuthRepositoryImpl({
-    required FirebaseAuth firebaseAuth,
-    required FirebaseFirestore firestore,
-    required UserIdSequence userIdSequence,
-  }) : _firebaseAuth = firebaseAuth,
-       _firestore = firestore,
-       _userIdSequence = userIdSequence;
+    required this._firebaseAuth,
+    required this._firestore,
+    required this._userIdSequence,
+  });
 
   @override
   Future<AuthResult> login({
