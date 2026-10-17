@@ -4,6 +4,7 @@ import 'neu_button.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
 import 'neu_svg_icon.dart';
+import 'neu_motion.dart';
 
 /// A floating action button.
 ///
@@ -184,6 +185,16 @@ class _NeuFABSpeedDialState extends State<NeuFABSpeedDial>
       parent: _controller,
       curve: Curves.easeOutCubic,
       reverseCurve: Curves.easeInCubic,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduced motion: the speed dial snaps open and closed.
+    _controller.duration = NeuMotion.duration(
+      context,
+      const Duration(milliseconds: 200),
     );
   }
 

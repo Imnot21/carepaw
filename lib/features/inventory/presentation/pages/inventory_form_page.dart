@@ -128,6 +128,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
           plain: true,
           icon: Icons.arrow_back_ios_new_rounded,
           svgAsset: SvgIcons.back,
+          tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
       ),

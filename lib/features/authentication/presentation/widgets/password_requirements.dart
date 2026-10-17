@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_motion.dart';
 
 /// Live password requirement checklist.
 ///
@@ -59,7 +60,7 @@ class _RuleRow extends StatelessWidget {
     final success = ThemeColors.success(context);
     final muted = ThemeColors.textSecondary(context);
     return AnimatedDefaultTextStyle(
-      duration: NeuTokens.durationMedium,
+      duration: NeuMotion.duration(context, NeuTokens.durationMedium),
       style: AppTextStyles.bodySmall.copyWith(
         color: met ? success : muted,
         fontWeight: met ? FontWeight.w600 : FontWeight.w400,
@@ -68,7 +69,7 @@ class _RuleRow extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedSwitcher(
-            duration: NeuTokens.durationMedium,
+            duration: NeuMotion.duration(context, NeuTokens.durationMedium),
             child: met
                 ? NeuSvgIcon(
                     SvgIcons.check,

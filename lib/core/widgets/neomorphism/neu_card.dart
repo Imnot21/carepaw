@@ -4,6 +4,7 @@ import 'neu_container.dart';
 import 'neu_shadows.dart';
 import 'neu_shapes.dart';
 import 'neu_style.dart';
+import 'neu_motion.dart';
 
 /// An extruded surface — the workhorse of the app.
 ///
@@ -90,7 +91,7 @@ class _NeuCardState extends State<NeuCard> {
         onTapUp: _handleTapUp,
         onTapCancel: _handleTapCancel,
         child: AnimatedContainer(
-          duration: NeuTokens.durationCard,
+          duration: NeuMotion.duration(context, NeuTokens.durationCard),
           curve: NeuTokens.curveDefault,
           margin: widget.margin,
           padding: widget.padding,

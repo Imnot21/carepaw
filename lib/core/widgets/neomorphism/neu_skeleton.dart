@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import 'neu_motion.dart';
 
 /// A moving sheen that makes skeleton placeholders feel alive.
 ///
@@ -38,6 +39,18 @@ class _NeuShimmerState extends State<NeuShimmer>
       begin: -1.5,
       end: 2.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduced motion: hold the sheen still instead of sweeping it.
+    if (NeuMotion.isReduced(context)) {
+      _controller.stop();
+      _controller.value = 0;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
   }
 
   @override

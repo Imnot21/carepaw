@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_svg_icon.dart';
+import 'neu_motion.dart';
 
 /// Toggle switch.
 ///
@@ -40,7 +41,7 @@ class NeuSwitch extends StatelessWidget {
 
     final control = RepaintBoundary(
       child: AnimatedContainer(
-        duration: NeuTokens.durationMedium,
+        duration: NeuMotion.duration(context, NeuTokens.durationMedium),
         curve: NeuTokens.curveDefault,
         width: trackWidth,
         height: trackHeight,
@@ -54,7 +55,7 @@ class NeuSwitch extends StatelessWidget {
           ),
         ),
         child: AnimatedAlign(
-          duration: NeuTokens.durationMedium,
+          duration: NeuMotion.duration(context, NeuTokens.durationMedium),
           curve: NeuTokens.curveDefault,
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(

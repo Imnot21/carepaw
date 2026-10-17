@@ -3,6 +3,7 @@ import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
 import 'neu_icon_system.dart';
+import 'neu_motion.dart';
 
 /// A neumorphic icon widget using custom handcrafted paths.
 ///
@@ -56,7 +57,7 @@ class NeuIcon extends StatelessWidget {
       button: onTap != null,
       child: AnimatedScale(
         scale: variant == NeuVariant.pressed ? NeuTokens.scalePressedSmall : 1,
-        duration: NeuTokens.durationFast,
+        duration: NeuMotion.duration(context, NeuTokens.durationFast),
         curve: NeuTokens.curveDefault,
         child: GestureDetector(
           onTap: onTap,

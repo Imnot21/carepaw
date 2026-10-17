@@ -603,6 +603,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
                 NeuIconButton(
                   icon: Icons.clear,
                   size: 18,
+                  tooltip: 'Clear date',
                   onPressed: () {
                     setState(() => _selectedDate = null);
                     widget.onDateSelected(null);

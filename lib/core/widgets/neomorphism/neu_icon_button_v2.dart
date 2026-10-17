@@ -4,6 +4,7 @@ import 'neu_container.dart';
 import 'neu_icon.dart';
 import 'neu_icon_system.dart';
 import 'neu_progress.dart';
+import 'neu_motion.dart';
 
 /// Icon button using custom neumorphic icons.
 ///
@@ -62,7 +63,7 @@ class _NeuIconButtonV2State extends State<NeuIconButtonV2> {
       label: widget.tooltip,
       child: AnimatedScale(
         scale: _pressed ? NeuTokens.scalePressedSmall : 1,
-        duration: NeuTokens.durationFast,
+        duration: NeuMotion.duration(context, NeuTokens.durationFast),
         curve: NeuTokens.curveDefault,
         child: GestureDetector(
           onTap: _enabled ? widget.onPressed : null,

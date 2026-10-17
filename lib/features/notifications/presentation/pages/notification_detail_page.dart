@@ -70,6 +70,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
         plain: true,
         icon: Icons.arrow_back_rounded,
         svgAsset: SvgIcons.back,
+        tooltip: 'Back',
         onPressed: () => Navigator.pop(context),
       ),
       flexibleSpace: FlexibleSpaceBar(

@@ -5,6 +5,7 @@ import 'neu_button.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
 import 'neu_svg_icon.dart';
+import 'neu_motion.dart';
 
 /// The three states every data screen has to answer for.
 ///
@@ -303,6 +304,18 @@ class _NeuLoadingBlockState extends State<NeuLoadingBlock>
     vsync: this,
     duration: NeuTokens.durationShimmer,
   )..repeat(reverse: true);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduced motion: settle on the mid-tone instead of pulsing.
+    if (NeuMotion.isReduced(context)) {
+      _controller.stop();
+      _controller.value = 0.5;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
+  }
 
   @override
   void dispose() {

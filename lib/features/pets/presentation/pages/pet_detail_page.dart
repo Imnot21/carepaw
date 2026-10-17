@@ -973,6 +973,7 @@ class _PetDetailLoader extends StatelessWidget {
         leading: NeuIconButton(
           plain: true,
           icon: Icons.arrow_back_rounded,
+          tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -1061,6 +1062,7 @@ class _PetFormLoader extends StatelessWidget {
         leading: NeuIconButton(
           plain: true,
           icon: Icons.arrow_back_rounded,
+          tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
       ),

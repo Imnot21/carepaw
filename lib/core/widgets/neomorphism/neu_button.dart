@@ -5,6 +5,7 @@ import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
 import 'neu_style.dart';
 import 'neu_svg_icon.dart';
+import 'neu_motion.dart';
 
 enum NeuButtonVariant { primary, secondary, outline, destructive, ghost, text }
 
@@ -72,7 +73,7 @@ class _NeuButtonState extends State<NeuButton> {
       label: widget.text,
       child: AnimatedScale(
         scale: _pressed ? NeuTokens.scalePressed : 1,
-        duration: NeuTokens.durationFast,
+        duration: NeuMotion.duration(context, NeuTokens.durationFast),
         curve: NeuTokens.curveDefault,
         child: GestureDetector(
           onTap: _enabled ? widget.onPressed : null,
