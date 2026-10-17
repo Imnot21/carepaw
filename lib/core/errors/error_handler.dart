@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carepaw/core/firebase/firebase_firestore_error_mapper.dart';
 import 'failures.dart';
@@ -140,8 +141,9 @@ class ErrorHandler {
       return const UnexpectedFailure(message: 'Type error occurred.');
     }
 
-    // Default to unexpected failure
-    return UnexpectedFailure(message: exception.toString());
+    // Default to unexpected failure — friendly copy; detail stays in logs.
+    debugPrint('[error_handler] unexpected: $exception');
+    return const UnexpectedFailure();
   }
 
   /// Get user-friendly error message from any error

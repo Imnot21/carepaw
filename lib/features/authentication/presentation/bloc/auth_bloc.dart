@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart'
@@ -52,7 +53,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     } on Failure catch (failure) {
       emit(states.AuthError(failure));
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -74,7 +76,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     } on Failure catch (failure) {
       emit(states.AuthError(failure));
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -90,7 +93,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     } on Failure catch (failure) {
       emit(states.AuthError(failure));
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -108,7 +112,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
         emit(const states.AuthUnauthenticated());
       }
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -126,7 +131,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
       emit(states.AuthError(failure));
     } catch (e) {
       await _authRepository.logout();
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -145,7 +151,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     } on Failure catch (failure) {
       emit(states.AuthError(failure));
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -161,7 +168,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     } on Failure catch (failure) {
       emit(states.AuthError(failure));
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 
@@ -180,7 +188,8 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     } on Failure catch (failure) {
       emit(states.AuthError(failure));
     } catch (e) {
-      emit(states.AuthError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[auth_bloc] unexpected: $e');
+      emit(states.AuthError(const UnexpectedFailure()));
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
@@ -51,7 +52,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -67,7 +69,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -83,7 +86,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -99,7 +103,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -123,7 +128,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -139,7 +145,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -155,7 +162,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -171,7 +179,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -208,7 +217,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -250,7 +260,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -270,7 +281,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -290,7 +302,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -321,7 +334,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -372,7 +386,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -433,7 +448,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -492,7 +508,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 
@@ -510,7 +527,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
-      emit(states.InventoryError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
     }
   }
 }

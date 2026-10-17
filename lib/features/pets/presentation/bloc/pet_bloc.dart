@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
@@ -32,7 +33,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -48,7 +50,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -64,7 +67,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -79,7 +83,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -101,7 +106,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -117,7 +123,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -137,7 +144,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -150,7 +158,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -166,7 +175,8 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     } on Failure catch (failure) {
       emit(PetError(failure));
     } catch (e) {
-      emit(PetError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[pet_bloc] unexpected: $e');
+      emit(PetError(const UnexpectedFailure()));
     }
   }
 }

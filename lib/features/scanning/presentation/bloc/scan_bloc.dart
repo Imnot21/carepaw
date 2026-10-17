@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart'
@@ -38,7 +39,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -54,7 +56,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -72,7 +75,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -96,7 +100,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -123,7 +128,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -157,7 +163,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -191,7 +198,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -223,7 +231,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 
@@ -249,7 +258,8 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     } on Failure catch (failure) {
       emit(states.ScanError(failure));
     } catch (e) {
-      emit(states.ScanError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
     }
   }
 }

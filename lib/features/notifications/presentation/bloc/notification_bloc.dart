@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/core/storage/local_storage.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
@@ -58,7 +59,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -75,7 +77,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -94,7 +97,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -111,7 +115,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -128,7 +133,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -144,7 +150,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -163,7 +170,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -189,7 +197,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -204,7 +213,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 
@@ -236,7 +246,8 @@ class NotificationBloc
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {
-      emit(states.NotificationError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[notification_bloc] unexpected: $e');
+      emit(states.NotificationError(const UnexpectedFailure()));
     }
   }
 

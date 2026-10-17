@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/medical_records/domain/repositories/medical_record_repository.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart'
@@ -38,7 +39,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -57,7 +59,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -83,7 +86,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -116,7 +120,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -145,7 +150,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -174,7 +180,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -201,7 +208,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -229,7 +237,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 
@@ -247,7 +256,8 @@ class MedicalRecordBloc
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
-      emit(states.MedicalRecordError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:carepaw/features/audit/presentation/bloc/audit_log_event.dart'
@@ -52,7 +53,8 @@ class AuditLogBloc extends Bloc<events.AuditLogEvent, states.AuditLogState> {
     } on Failure catch (failure) {
       emit(states.AuditLogError(failure));
     } catch (e) {
-      emit(states.AuditLogError(UnexpectedFailure(message: e.toString())));
+      debugPrint('[audit_log_bloc] unexpected: $e');
+      emit(states.AuditLogError(const UnexpectedFailure()));
     }
   }
 

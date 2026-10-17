@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -42,9 +43,8 @@ class UserManagementBloc
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure));
     } catch (e) {
-      emit(
-        states.UserManagementError(UnexpectedFailure(message: e.toString())),
-      );
+      debugPrint('[user_management_bloc] unexpected: $e');
+      emit(states.UserManagementError(const UnexpectedFailure()));
     }
   }
 
@@ -84,9 +84,10 @@ class UserManagementBloc
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, _currentUsers()));
     } catch (e) {
+      debugPrint('[user_management_bloc] unexpected: $e');
       emit(
         states.UserManagementError(
-          UnexpectedFailure(message: e.toString()),
+          const UnexpectedFailure(),
           _currentUsers(),
         ),
       );
@@ -113,9 +114,10 @@ class UserManagementBloc
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
+      debugPrint('[user_management_bloc] unexpected: $e');
       emit(
         states.UserManagementError(
-          UnexpectedFailure(message: e.toString()),
+          const UnexpectedFailure(),
           prev,
         ),
       );
@@ -142,9 +144,10 @@ class UserManagementBloc
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
+      debugPrint('[user_management_bloc] unexpected: $e');
       emit(
         states.UserManagementError(
-          UnexpectedFailure(message: e.toString()),
+          const UnexpectedFailure(),
           prev,
         ),
       );
@@ -171,9 +174,10 @@ class UserManagementBloc
     } on Failure catch (failure) {
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
+      debugPrint('[user_management_bloc] unexpected: $e');
       emit(
         states.UserManagementError(
-          UnexpectedFailure(message: e.toString()),
+          const UnexpectedFailure(),
           prev,
         ),
       );
