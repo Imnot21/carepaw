@@ -8,6 +8,7 @@ import 'package:carepaw/features/authentication/presentation/pages/register_page
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -87,7 +88,11 @@ class _LoginPageState extends State<LoginPage> {
                       label: 'Email',
                       hint: 'you@example.com',
                       keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.alternate_email_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'alternate_email_rounded',
+                        fallback: Icons.alternate_email_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.next,
                       validator: Validators.requiredWith([
                         Validators.email,
@@ -99,7 +104,11 @@ class _LoginPageState extends State<LoginPage> {
                       label: 'Password',
                       hint: 'Enter your password',
                       obscureText: true,
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'lock_outline_rounded',
+                        fallback: Icons.lock_outline_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _onLoginPressed(),
                       validator: Validators.requiredWith([

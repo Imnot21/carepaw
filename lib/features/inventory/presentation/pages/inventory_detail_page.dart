@@ -9,6 +9,7 @@ import 'package:carepaw/features/inventory/presentation/pages/inventory_form_pag
 import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/transaction_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -78,6 +79,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       floatingActionButton: NeuFAB.extended(
         onPressed: _navigateToForm,
         icon: Icons.edit_rounded,
+        svgAsset: SvgIcons.edit,
         extendedText: 'Edit',
         variant: NeuButtonVariant.primary,
       ),
@@ -96,13 +98,17 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       leading: Padding(
         padding: const EdgeInsets.only(left: 8),
         child: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_ios_new_rounded,
+          svgAsset: SvgIcons.back,
           onPressed: () => Navigator.pop(context),
         ),
       ),
       actions: [
         NeuIconButton(
+          plain: true,
           icon: Icons.delete_outline_rounded,
+          svgAsset: SvgIcons.delete,
           onPressed: _showDeleteDialog,
         ),
         const SizedBox(width: 8),
@@ -127,10 +133,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                       blur: 18,
                       opacity: 0.32,
                     ),
-                    child: Icon(
-                      _getCategoryIcon(item.category),
+                    child: NeuSvgIcon(
+                      _getCategorySvg(item.category),
                       size: 36,
-                      color: AppColors.textOnPrimary,
                     ),
                   ),
                 ),
@@ -241,6 +246,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 item.unit,
                 _getCategoryColor(item.category),
                 Icons.inventory_2_rounded,
+                SvgIcons.inventory,
               ),
             ),
             const SizedBox(width: 12),
@@ -251,6 +257,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 item.unit,
                 _isDark ? AppColors.warningOnDark : AppColors.warning,
                 Icons.warning_amber_rounded,
+                SvgIcons.alert,
               ),
             ),
             const SizedBox(width: 12),
@@ -263,6 +270,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                     ? AppColors.infoDark
                     : AppColors.info,
                 Icons.flag_rounded,
+                SvgIcons.flag,
               ),
             ),
           ],
@@ -277,6 +285,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     String unit,
     Color color,
     IconData icon,
+    String? svgAsset,
   ) {
     return NeuContainer(
       padding: const EdgeInsets.all(16),
@@ -292,7 +301,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 borderRadius: 10,
                 variant: NeuVariant.raised,
                 color: color.withValues(alpha: 0.1),
-                child: Icon(icon, size: 20, color: color),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset, size: 20)
+                    : Icon(icon, size: 20, color: color),
               ),
               const Spacer(),
               Text(
@@ -359,7 +370,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           final batches = state.batches;
           if (batches.isEmpty) {
             return _EmptyState(
-              icon: Icons.batch_prediction_outlined,
+              svgAsset: SvgIcons.barcode,
               title: 'No Batches',
               message:
                   'Add batches to track inventory lots and expiration dates',
@@ -402,7 +413,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               .toList();
           if (batches.isEmpty) {
             return _EmptyState(
-              icon: Icons.event_available_rounded,
+              svgAsset: SvgIcons.eventAvailable,
               title: 'No Expiring Batches',
               message: 'All batches have sufficient shelf life',
             );
@@ -440,7 +451,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           }
           if (allTransactions.isEmpty) {
             return _EmptyState(
-              icon: Icons.receipt_long_outlined,
+              svgAsset: SvgIcons.receipt,
               title: 'No Transactions',
               message: 'Transaction history will appear here',
             );
@@ -491,10 +502,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                       blur: 14,
                       opacity: 0.3,
                     ),
-                    child: Icon(
-                      _getCategoryIcon(widget.item.category),
+                    child: NeuSvgIcon(
+                      _getCategorySvg(widget.item.category),
                       size: 28,
-                      color: AppColors.textOnPrimary,
                     ),
                   ),
                 ),
@@ -564,6 +574,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                     text: 'Add Transaction',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.add_rounded,
+                    svgAsset: SvgIcons.add,
                     onPressed: () {
                       Navigator.pop(context);
                       _showTransactionDialog(batch);
@@ -662,7 +673,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                   final isSelected = selectedType == type;
                   return NeuChip(
                     label: type.displayName,
-                    icon: _getTransactionIcon(type),
+                    svgAsset: _getTransactionSvg(type),
                     selected: isSelected,
                     selectedColor: _getCategoryColor(widget.item.category),
                     onTap: () => setState(() => selectedType = type),
@@ -674,20 +685,20 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 controller: quantityController,
                 hint: 'Quantity',
                 keyboardType: TextInputType.number,
-                prefixIcon: const Icon(Icons.numbers_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.numbers, size: 20),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 12),
               NeuTextField(
                 controller: reasonController,
                 hint: 'Reason (e.g., Restock, Sale, Adjustment)',
-                prefixIcon: const Icon(Icons.description_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.note, size: 20),
               ),
               const SizedBox(height: 12),
               NeuTextField(
                 controller: notesController,
                 hint: 'Notes (optional)',
-                prefixIcon: const Icon(Icons.notes_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.note, size: 20),
                 maxLines: 2,
               ),
               const SizedBox(height: 24),
@@ -707,6 +718,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                       text: 'Record',
                       variant: NeuButtonVariant.primary,
                       icon: Icons.save_rounded,
+                      svgAsset: SvgIcons.save,
                       onPressed: () {
                         final quantity = double.tryParse(
                           quantityController.text,
@@ -829,14 +841,14 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               NeuTextField(
                 controller: batchNumberController,
                 hint: 'Batch Number',
-                prefixIcon: const Icon(Icons.confirmation_number_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.ticket, size: 20),
               ),
               const SizedBox(height: 12),
               NeuTextField(
                 controller: quantityController,
                 hint: 'Quantity',
                 keyboardType: TextInputType.number,
-                prefixIcon: const Icon(Icons.numbers_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.numbers, size: 20),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 12),
@@ -844,7 +856,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 controller: costController,
                 hint: 'Cost per Unit (optional)',
                 keyboardType: TextInputType.number,
-                prefixIcon: const Icon(Icons.attach_money_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.money, size: 20),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                 ],
@@ -853,7 +865,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               NeuTextField(
                 controller: supplierController,
                 hint: 'Supplier (optional)',
-                prefixIcon: const Icon(Icons.local_shipping_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.truck, size: 20),
               ),
               const SizedBox(height: 12),
               NeuTextField(
@@ -891,8 +903,8 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                 hint: expiryDate != null
                     ? 'Expiry: ${formatDate(expiryDate!)}'
                     : 'Set Expiry Date (optional)',
-                prefixIcon: const Icon(Icons.calendar_today_rounded),
-                suffixIcon: const Icon(Icons.arrow_drop_down_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.calendar, size: 20),
+                suffixIcon: NeuSvgIcon(SvgIcons.chevronDown, size: 24),
               ),
               const SizedBox(height: 24),
               Row(
@@ -911,6 +923,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
                       text: 'Add Batch',
                       variant: NeuButtonVariant.primary,
                       icon: Icons.add_rounded,
+                      svgAsset: SvgIcons.add,
                       onPressed: () {
                         final batchNumber = batchNumberController.text.trim();
                         final quantity = double.tryParse(
@@ -1009,29 +1022,29 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     }
   }
 
-  IconData _getCategoryIcon(InventoryCategory category) {
+  String _getCategorySvg(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case InventoryCategory.vaccine:
-        return Icons.vaccines_rounded;
+        return SvgIcons.vaccination;
       case InventoryCategory.supply:
-        return Icons.inventory_rounded;
+        return SvgIcons.inventory;
       case InventoryCategory.equipment:
-        return Icons.precision_manufacturing_rounded;
+        return SvgIcons.microscope;
       case InventoryCategory.food:
-        return Icons.restaurant_rounded;
+        return SvgIcons.foodBowl;
     }
   }
 
-  IconData _getTransactionIcon(TransactionType type) {
+  String _getTransactionSvg(TransactionType type) {
     switch (type) {
       case TransactionType.in_:
-        return Icons.add_circle_rounded;
+        return SvgIcons.add;
       case TransactionType.out:
-        return Icons.remove_circle_rounded;
+        return SvgIcons.remove;
       case TransactionType.adjustment:
-        return Icons.tune_rounded;
+        return SvgIcons.filter;
     }
   }
 }
@@ -1096,14 +1109,14 @@ class _NeuTabBarDelegate extends SliverPersistentHeaderDelegate {
 
 /// Empty state shown when an inventory tab has no content.
 class _EmptyState extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
 
   const _EmptyState({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.message,
     this.actionLabel,
@@ -1132,7 +1145,9 @@ class _EmptyState extends StatelessWidget {
                   blur: 24,
                   opacity: 0.32,
                 ),
-                child: Icon(icon, size: 48, color: AppColors.textOnPrimary),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: 48)
+                    : const SizedBox(width: 48, height: 48),
               ),
               const SizedBox(height: 20),
               Text(
@@ -1163,6 +1178,7 @@ class _EmptyState extends StatelessWidget {
                   variant: NeuButtonVariant.primary,
                   size: NeuButtonSize.medium,
                   icon: Icons.add_rounded,
+                  svgAsset: SvgIcons.add,
                 ),
               ],
             ],

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
+import 'neu_icon.dart';
+import 'neu_icon_system.dart';
+import 'neu_svg_icon.dart';
 import 'neu_style.dart';
 
 /// Filter / choice chip — an extruded pill.
@@ -13,6 +16,8 @@ import 'neu_style.dart';
 class NeuChip extends StatefulWidget {
   final String label;
   final IconData? icon;
+  final NeuIconType? customIcon;
+  final String? svgAsset;
   final bool selected;
   final VoidCallback? onTap;
   final bool enabled;
@@ -27,6 +32,8 @@ class NeuChip extends StatefulWidget {
     super.key,
     required this.label,
     this.icon,
+    this.customIcon,
+    this.svgAsset,
     this.selected = false,
     this.onTap,
     this.enabled = true,
@@ -80,9 +87,21 @@ class _NeuChipState extends State<NeuChip> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (widget.icon != null) ...[
+                if (widget.svgAsset != null) ...[
+                  NeuSvgIcon(widget.svgAsset!, size: NeuTokens.iconXs),
+                  const SizedBox(width: NeuTokens.spaceXxs + 2),
+                ] else if (widget.customIcon != null) ...[
+                  NeuIcon(
+                    type: widget.customIcon!,
+                    size: NeuTokens.iconXs,
+                    color: widget.selected
+                        ? accent
+                        : ThemeColors.textSecondary(context),
+                  ),
+                  const SizedBox(width: NeuTokens.spaceXxs + 2),
+                ] else if (widget.icon != null) ...[
                   Icon(
-                    widget.icon,
+                    widget.icon!,
                     size: NeuTokens.iconXs,
                     color: widget.selected
                         ? accent

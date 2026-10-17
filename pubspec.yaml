@@ -53,6 +53,9 @@ dependencies:
   # Warm humanist display face (Soft Clinic organic type)
   google_fonts: ^6.2.1
 
+  # SVG icons (SVGRepo, CC0 — see docs/SVG_CATALOG.md)
+  flutter_svg: ^2.0.10
+
   # HTTP client (used to call the backend deleteUser Cloud Function)
   http: ^1.2.0
 dev_dependencies:
@@ -66,3 +69,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/

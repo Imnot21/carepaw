@@ -3,6 +3,7 @@ import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 
@@ -43,7 +44,7 @@ class AdminSettingsPage extends StatelessWidget {
               _buildSection(
                 context,
                 title: 'Audit log',
-                icon: Icons.receipt_long_outlined,
+                svgAsset: SvgIcons.receipt,
                 items: [
                   _SettingItem(
                     'Retention',
@@ -55,7 +56,7 @@ class AdminSettingsPage extends StatelessWidget {
               _buildSection(
                 context,
                 title: 'Queue',
-                icon: Icons.queue_outlined,
+                svgAsset: SvgIcons.queue,
                 items: [
                   _SettingItem(
                     'Slot duration',
@@ -75,7 +76,7 @@ class AdminSettingsPage extends StatelessWidget {
               _buildSection(
                 context,
                 title: 'Inventory',
-                icon: Icons.inventory_2_outlined,
+                svgAsset: SvgIcons.inventory,
                 items: [
                   _SettingItem(
                     'Low stock alert',
@@ -95,7 +96,7 @@ class AdminSettingsPage extends StatelessWidget {
               _buildSection(
                 context,
                 title: 'OCR',
-                icon: Icons.document_scanner_outlined,
+                svgAsset: SvgIcons.scan,
                 items: [
                   _SettingItem(
                     'Min confidence',
@@ -115,7 +116,7 @@ class AdminSettingsPage extends StatelessWidget {
               _buildSection(
                 context,
                 title: 'Pagination',
-                icon: Icons.format_list_numbered_outlined,
+                svgAsset: SvgIcons.listNumbered,
                 items: [
                   _SettingItem(
                     'Default page size',
@@ -128,7 +129,7 @@ class AdminSettingsPage extends StatelessWidget {
               _buildSection(
                 context,
                 title: 'Authentication',
-                icon: Icons.lock_outline,
+                svgAsset: SvgIcons.lock,
                 items: [
                   _SettingItem(
                     'Max login attempts',
@@ -158,7 +159,8 @@ class AdminSettingsPage extends StatelessWidget {
   Widget _buildSection(
     BuildContext context, {
     required String title,
-    required IconData icon,
+    IconData? icon,
+    String? svgAsset,
     required List<_SettingItem> items,
   }) {
     final accent = ThemeColors.primary(context);
@@ -172,7 +174,9 @@ class AdminSettingsPage extends StatelessWidget {
                 variant: NeuVariant.pressed,
                 borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                child: Icon(icon, color: accent, size: NeuTokens.iconSm),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset, size: NeuTokens.iconSm)
+                    : Icon(icon!, color: accent, size: NeuTokens.iconSm),
               ),
               const SizedBox(width: NeuTokens.spaceXs),
               Text(

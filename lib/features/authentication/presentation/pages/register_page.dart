@@ -7,8 +7,10 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
+import 'package:carepaw/features/authentication/presentation/widgets/password_requirements.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -95,7 +97,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       label: 'Full name',
                       hint: 'Alex Rivera',
                       keyboardType: TextInputType.name,
-                      prefixIcon: const Icon(Icons.person_outline_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'person_outline_rounded',
+                        fallback: Icons.person_outline_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.next,
                       validator: Validators.requiredWith([
                         Validators.name,
@@ -107,7 +113,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       label: 'Email',
                       hint: 'you@example.com',
                       keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.alternate_email_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'alternate_email_rounded',
+                        fallback: Icons.alternate_email_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.next,
                       validator: Validators.requiredWith([
                         Validators.email,
@@ -119,7 +129,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       label: 'Phone',
                       hint: '09XX XXX XXXX (optional)',
                       keyboardType: TextInputType.phone,
-                      prefixIcon: const Icon(Icons.phone_android_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'phone_android_rounded',
+                        fallback: Icons.phone_android_rounded,
+                        size: 20,
+                      ),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(11),
@@ -130,13 +144,24 @@ class _RegisterPageState extends State<RegisterPage> {
                     NeuTextField(
                       controller: _passwordController,
                       label: 'Password',
-                      hint: 'Min 8 chars, 1 uppercase, 1 lowercase, 1 number',
+                      hint: 'Create a password',
                       obscureText: true,
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'lock_outline_rounded',
+                        fallback: Icons.lock_outline_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.next,
                       validator: Validators.requiredWith([
                         Validators.password,
                       ], 'Password'),
+                    ),
+                    const SizedBox(height: NeuTokens.spaceXs),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _passwordController,
+                      builder: (context, value, _) {
+                        return PasswordRequirements(password: value.text);
+                      },
                     ),
                     const SizedBox(height: NeuTokens.spaceMd),
                     NeuAgedConfirmPasswordField(
@@ -186,7 +211,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
 /// Confirm password with live mismatch feedback.
 ///
-/// The primary field already has a helper ("min 8 characters..."), so the
+/// The primary field shows a live [PasswordRequirements] checklist, so the
 /// confirm field needs one thing only: tell the user when they don't match,
 /// ideally before they hit the button.
 class NeuAgedConfirmPasswordField extends StatefulWidget {
@@ -259,7 +284,11 @@ class _NeuAgedConfirmPasswordFieldState
       label: widget.label,
       hint: widget.hint,
       obscureText: true,
-      prefixIcon: const Icon(Icons.lock_reset_rounded),
+      prefixIcon: ClayIconOrMaterial(
+        'lock_reset_rounded',
+        fallback: Icons.lock_reset_rounded,
+        size: 20,
+      ),
       textInputAction: widget.textInputAction,
       error: _mismatch,
       onSubmitted: widget.onSubmitted,

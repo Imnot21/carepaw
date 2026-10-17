@@ -7,6 +7,7 @@ import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
@@ -88,11 +89,7 @@ class _AccessDeniedView extends StatelessWidget {
               variant: NeuVariant.inset,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(NeuTokens.spaceLg),
-              child: Icon(
-                Icons.block_rounded,
-                size: 48,
-                color: ThemeColors.error(context),
-              ),
+              child: NeuSvgIcon(SvgIcons.block, size: 48),
             ),
             const SizedBox(height: NeuTokens.spaceLg),
             Text(
@@ -114,6 +111,7 @@ class _AccessDeniedView extends StatelessWidget {
             NeuButton(
               text: 'Go back',
               icon: Icons.arrow_back_rounded,
+              svgAsset: SvgIcons.back,
               variant: NeuButtonVariant.secondary,
               onPressed: () => context.pop(),
               expanded: true,
@@ -166,7 +164,9 @@ class _VetDashboardContent extends StatelessWidget {
               ),
               actions: [
                 NeuIconButton(
+                  plain: true,
                   icon: Icons.notifications_none_rounded,
+                  svgAsset: SvgIcons.notifications,
                   tooltip: 'Notifications',
                   onPressed: () => context.push(Routes.notifications),
                 ),
@@ -231,42 +231,42 @@ class _VetQuickActionsSection extends StatelessWidget {
           childAspectRatio: 0.9,
           children: [
             _VetActionCard(
-              icon: Icons.note_add_outlined,
+              svgAsset: SvgIcons.note,
               label: 'New\nvisit record',
               onTap: () => _showComingSoon(context, 'New visit record'),
             ),
             _VetActionCard(
-              icon: Icons.medication_outlined,
+              svgAsset: SvgIcons.medication,
               label: 'Prescribe\nmedication',
               onTap: () => _showComingSoon(context, 'Prescribe medication'),
             ),
             _VetActionCard(
-              icon: Icons.vaccines_outlined,
+              svgAsset: SvgIcons.vaccination,
               label: 'Add\nvaccination',
               onTap: () => _showComingSoon(context, 'Add vaccination'),
             ),
             _VetActionCard(
-              icon: Icons.science_outlined,
+              svgAsset: SvgIcons.lab,
               label: 'Order\nlab tests',
               onTap: () => _showComingSoon(context, 'Order lab tests'),
             ),
             _VetActionCard(
-              icon: Icons.note_outlined,
+              svgAsset: SvgIcons.note,
               label: 'Clinical\nnotes',
               onTap: () => _showComingSoon(context, 'Clinical notes'),
             ),
             _VetActionCard(
-              icon: Icons.attach_file_outlined,
+              svgAsset: SvgIcons.attach,
               label: 'Attach\nresults',
               onTap: () => _showComingSoon(context, 'Attach results'),
             ),
             _VetActionCard(
-              icon: Icons.history_outlined,
+              svgAsset: SvgIcons.schedule,
               label: 'Patient\nhistory',
               onTap: () => context.push(Routes.vetPatients),
             ),
             _VetActionCard(
-              icon: Icons.print_outlined,
+              svgAsset: SvgIcons.print,
               label: 'Generate\nsummary',
               onTap: () => _showComingSoon(context, 'Generate summary'),
             ),
@@ -282,12 +282,12 @@ class _VetQuickActionsSection extends StatelessWidget {
 }
 
 class _VetActionCard extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String label;
   final VoidCallback onTap;
 
   const _VetActionCard({
-    required this.icon,
+    this.svgAsset,
     required this.label,
     required this.onTap,
   });
@@ -305,7 +305,12 @@ class _VetActionCard extends StatelessWidget {
             variant: NeuVariant.pressed,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(NeuTokens.spaceXs),
-            child: Icon(icon, color: accent, size: NeuTokens.iconLg - 4),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconLg - 4)
+                : SizedBox(
+                    width: NeuTokens.iconLg - 4,
+                    height: NeuTokens.iconLg - 4,
+                  ),
           ),
           const SizedBox(height: NeuTokens.spaceXs),
           Flexible(
@@ -349,21 +354,21 @@ class _VetQuickLinksSection extends StatelessWidget {
           child: Column(
             children: [
               _LinkTile(
-                icon: Icons.notifications_outlined,
+                svgAsset: SvgIcons.notifications,
                 title: 'Notifications',
                 subtitle: 'Lab results & alerts',
                 onTap: () => context.push(Routes.notifications),
               ),
               NeuDivider(indent: 56),
               _LinkTile(
-                icon: Icons.medical_services_outlined,
+                svgAsset: SvgIcons.visit,
                 title: 'Medical records',
                 subtitle: 'Full patient history access',
                 onTap: () => context.push(Routes.medicalRecords),
               ),
               NeuDivider(indent: 56),
               _LinkTile(
-                icon: Icons.inventory_2_outlined,
+                svgAsset: SvgIcons.inventory,
                 title: 'Medicine catalog',
                 subtitle: 'Available medications & dosages',
                 onTap: () => _showComingSoon(context, 'Medicine catalog'),
@@ -381,13 +386,13 @@ class _VetQuickLinksSection extends StatelessWidget {
 }
 
 class _LinkTile extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   const _LinkTile({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -409,11 +414,12 @@ class _LinkTile extends StatelessWidget {
               variant: NeuVariant.pressed,
               borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(NeuTokens.spaceXs),
-              child: Icon(
-                icon,
-                color: ThemeColors.primary(context),
-                size: NeuTokens.iconSm,
-              ),
+              child: svgAsset != null
+                  ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
+                  : SizedBox(
+                      width: NeuTokens.iconSm,
+                      height: NeuTokens.iconSm,
+                    ),
             ),
             const SizedBox(width: NeuTokens.tightGap),
             Expanded(
@@ -435,7 +441,7 @@ class _LinkTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: ThemeColors.textTertiary(context)),
+            NeuSvgIcon(SvgIcons.chevronRight, size: NeuTokens.iconSm),
           ],
         ),
       ),

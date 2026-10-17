@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -77,7 +78,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       label: 'Email',
                       hint: 'you@example.com',
                       keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.alternate_email_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'alternate_email_rounded',
+                        fallback: Icons.alternate_email_rounded,
+                        size: 20,
+                      ),
                       onSubmitted: (_) => _onSubmitPressed(),
                       validator: Validators.requiredWith([
                         Validators.email,
@@ -93,6 +98,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           isLoading: isLoading,
                           expanded: true,
                           icon: Icons.send_rounded,
+                          svgAsset: SvgIcons.send,
                           variant: NeuButtonVariant.primary,
                           size: NeuButtonSize.large,
                         );

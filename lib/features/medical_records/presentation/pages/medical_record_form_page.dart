@@ -143,6 +143,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               leading: Padding(
                 padding: const EdgeInsets.all(8),
                 child: NeuIconButton(
+                  plain: true,
                   icon: Icons.arrow_back_ios_new_rounded,
                   onPressed: _isLoading ? null : () => context.pop(),
                   tooltip: 'Back',
@@ -282,10 +283,10 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             spacing: 8,
             runSpacing: 8,
             children: types.map((type) {
-              final typeInfo = MedicalRecordUtils.getTypeInfo(context, type);
+              final typeInfo = MedicalRecordUtils.getTypeInfoCustom(context, type);
               return NeuChip(
                 label: type.displayName,
-                icon: typeInfo.icon,
+                svgAsset: typeInfo.svgAsset,
                 selected: _selectedType == type,
                 selectedColor: typeInfo.color,
                 onTap: () => setState(() => _selectedType = type),

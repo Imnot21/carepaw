@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
 import 'neu_progress.dart';
+import 'neu_svg_icon.dart';
 
 /// Circular icon button.
 ///
 /// A bordered circle on the canvas; pressing tints it with the accent. Works
 /// for app-bar actions, list-item actions, and toolbars.
+///
+/// Pass [svgAsset] (a `SvgIcons.*` path) to render the clay icon instead of
+/// the Material [icon]. Clay wins when both are given.
 class NeuIconButton extends StatefulWidget {
   final IconData icon;
+  final String? svgAsset;
   final VoidCallback? onPressed;
   final String? tooltip;
   final double size;
@@ -24,6 +29,7 @@ class NeuIconButton extends StatefulWidget {
   const NeuIconButton({
     super.key,
     required this.icon,
+    this.svgAsset,
     this.onPressed,
     this.tooltip,
     this.size = 24,
@@ -77,11 +83,13 @@ class _NeuIconButtonState extends State<NeuIconButton> {
                           color: widget.color ?? ThemeColors.primary(context),
                         ),
                       )
-                    : Icon(
-                        widget.icon,
-                        size: widget.size,
-                        color: widget.color ?? ThemeColors.primary(context),
-                      ),
+                    : widget.svgAsset != null
+                        ? NeuSvgIcon(widget.svgAsset!, size: widget.size)
+                        : Icon(
+                            widget.icon,
+                            size: widget.size,
+                            color: widget.color ?? ThemeColors.primary(context),
+                          ),
               ),
             ),
           ),

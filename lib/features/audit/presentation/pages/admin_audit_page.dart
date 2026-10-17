@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -35,6 +36,7 @@ class AdminAuditPage extends StatelessWidget {
         actions: [
           NeuIconButton(
             icon: Icons.refresh_rounded,
+            svgAsset: SvgIcons.refresh,
             tooltip: 'Refresh',
             plain: true,
             onPressed: () {
@@ -107,11 +109,7 @@ class _AuditErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 40,
-              color: ThemeColors.error(context),
-            ),
+            NeuSvgIcon(SvgIcons.error, size: 40),
             const SizedBox(height: 12),
             Text('Could not load audit logs', style: AppTextStyles.titleSmall),
             const SizedBox(height: 6),
@@ -128,6 +126,7 @@ class _AuditErrorView extends StatelessWidget {
               variant: NeuButtonVariant.primary,
               size: NeuButtonSize.small,
               icon: Icons.refresh_rounded,
+              svgAsset: SvgIcons.refresh,
               onPressed: () => context.read<AuditLogBloc>().add(
                 const AuditLogLoadRequested(),
               ),
@@ -202,11 +201,7 @@ class _AuditEmptyView extends StatelessWidget {
               NeuContainer(
                 borderRadius: 16,
                 padding: const EdgeInsets.all(16),
-                child: Icon(
-                  Icons.receipt_long_outlined,
-                  color: ThemeColors.primary(context),
-                  size: 40,
-                ),
+                child: NeuSvgIcon(SvgIcons.receipt, size: 40),
               ),
               const SizedBox(height: 16),
               Text('No audit entries yet', style: AppTextStyles.titleSmall),
@@ -357,9 +352,8 @@ class _AuditLogCard extends StatelessWidget {
               color: actionColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              _actionIcon(entry.action),
-              color: actionColor,
+            child: NeuSvgIcon(
+              _actionSvg(entry.action),
               size: 22,
             ),
           ),
@@ -424,12 +418,12 @@ class _AuditLogCard extends StatelessWidget {
     };
   }
 
-  static IconData _actionIcon(String action) {
+  static String _actionSvg(String action) {
     return switch (action) {
-      'USER_CREATE' => Icons.person_add_alt_1_outlined,
-      'USER_ROLE_CHANGE' => Icons.swap_horiz_rounded,
-      'USER_ACTIVE_TOGGLE' => Icons.toggle_on_outlined,
-      _ => Icons.fact_check_outlined,
+      'USER_CREATE' => SvgIcons.personAdd,
+      'USER_ROLE_CHANGE' => SvgIcons.swap,
+      'USER_ACTIVE_TOGGLE' => SvgIcons.toggle,
+      _ => SvgIcons.ticket,
     };
   }
 

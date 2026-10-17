@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import 'neu_shadows.dart';
+import 'neu_icon.dart';
+import 'neu_icon_system.dart';
+import 'neu_svg_icon.dart';
+import 'neu_container.dart';
 
 /// Circular avatar — an extruded disc.
 ///
@@ -19,6 +23,8 @@ class NeuAvatar extends StatelessWidget {
   final String? initials;
   final ImageProvider? image;
   final IconData? icon;
+  final NeuIconType? customIcon;
+  final String? svgAsset;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final VoidCallback? onTap;
@@ -29,6 +35,8 @@ class NeuAvatar extends StatelessWidget {
     this.initials,
     this.image,
     this.icon,
+    this.customIcon,
+    this.svgAsset,
     this.backgroundColor,
     this.foregroundColor,
     this.onTap,
@@ -62,6 +70,15 @@ class NeuAvatar extends StatelessWidget {
           height: radius * 2,
           child: Image(image: image!, fit: BoxFit.cover),
         ),
+      );
+    } else if (svgAsset != null) {
+      content = NeuSvgIcon(svgAsset!, size: radius * 0.9);
+    } else if (customIcon != null) {
+      content = NeuIcon(
+        type: customIcon!,
+        size: radius * 0.9,
+        color: fg,
+        variant: NeuVariant.transparent,
       );
     } else if (icon != null) {
       content = Icon(icon, size: radius * 0.9, color: fg);

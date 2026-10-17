@@ -4,6 +4,7 @@ import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
 import 'neu_style.dart';
+import 'neu_svg_icon.dart';
 
 /// Text input: a recessed well with focus and error states.
 ///
@@ -271,9 +272,9 @@ class _NeuTextFieldState extends State<NeuTextField> {
     final iconColor = isDark ? Colors.white70 : AppColors.textSecondary;
     if (widget.obscureText) {
       return IconButton(
-        icon: Icon(
-          _obscureText ? Icons.visibility_off : Icons.visibility,
-          color: _isFocused ? accent : iconColor,
+        icon: NeuSvgIcon(
+          _obscureText ? SvgIcons.visibilityOff : SvgIcons.visibility,
+          size: 24,
         ),
         onPressed: () => setState(() => _obscureText = !_obscureText),
       );

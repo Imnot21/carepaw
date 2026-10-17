@@ -10,6 +10,7 @@ import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 
 class AdminDashboardPage extends StatelessWidget {
@@ -68,11 +69,7 @@ class _AccessDeniedView extends StatelessWidget {
               variant: NeuVariant.inset,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(NeuTokens.spaceLg),
-              child: Icon(
-                Icons.block_rounded,
-                size: 48,
-                color: ThemeColors.error(context),
-              ),
+              child: NeuSvgIcon(SvgIcons.block, size: 48),
             ),
             const SizedBox(height: NeuTokens.spaceLg),
             Text(
@@ -158,6 +155,7 @@ class _AdminDashboardContent extends StatelessWidget {
           actions: [
             NeuIconButton(
               icon: Icons.notifications_none_rounded,
+              svgAsset: SvgIcons.notifications,
               tooltip: 'Notifications',
               plain: true,
               onPressed: () => context.push(Routes.notifications),
@@ -213,7 +211,7 @@ class _AdminQuickActionsSection extends StatelessWidget {
           children: [
             Expanded(
               child: _AdminActionCard(
-                icon: Icons.manage_accounts_outlined,
+                svgAsset: SvgIcons.personAdd,
                 label: 'Users',
                 color: accent,
                 onTap: () => context.push(Routes.adminUsers),
@@ -222,7 +220,7 @@ class _AdminQuickActionsSection extends StatelessWidget {
             const SizedBox(width: NeuTokens.tightGap),
             Expanded(
               child: _AdminActionCard(
-                icon: Icons.receipt_long_outlined,
+                svgAsset: SvgIcons.receipt,
                 label: 'Audit logs',
                 color: accent,
                 onTap: () => context.push(Routes.adminAudit),
@@ -236,13 +234,13 @@ class _AdminQuickActionsSection extends StatelessWidget {
 }
 
 class _AdminActionCard extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String label;
   final Color color;
   final VoidCallback onTap;
 
   const _AdminActionCard({
-    required this.icon,
+    this.svgAsset,
     required this.label,
     required this.color,
     required this.onTap,
@@ -259,7 +257,12 @@ class _AdminActionCard extends StatelessWidget {
             variant: NeuVariant.pressed,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(NeuTokens.spaceXs),
-            child: Icon(icon, color: color, size: NeuTokens.iconLg - 4),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconLg - 4)
+                : SizedBox(
+                    width: NeuTokens.iconLg - 4,
+                    height: NeuTokens.iconLg - 4,
+                  ),
           ),
           const SizedBox(height: NeuTokens.spaceXs),
           Text(

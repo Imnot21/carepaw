@@ -6,6 +6,7 @@ import 'package:carepaw/features/notifications/presentation/bloc/notification_bl
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
@@ -88,7 +89,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       leading: NeuIconButton(
+        plain: true,
         icon: Icons.arrow_back_rounded,
+        svgAsset: SvgIcons.back,
         onPressed: () => Navigator.pop(context),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -130,7 +133,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         children: [
           NeuAvatar(
             radius: 20,
-            icon: Icons.notifications_active_rounded,
+            svgAsset: SvgIcons.notifications,
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.textOnPrimary,
           ),
@@ -182,7 +185,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         type: NotificationType.appointmentReminder,
         title: 'Appointment Reminders',
         subtitle: 'Booking confirmations, reminders, changes',
-        icon: Icons.calendar_today_rounded,
+        svgAsset: SvgIcons.calendar,
         color: AppColors.primary,
         enabled: preferences?.appointmentReminders ?? true,
       ),
@@ -190,7 +193,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         type: NotificationType.queueUpdate,
         title: 'Queue Updates',
         subtitle: 'Position changes, your turn notifications',
-        icon: Icons.queue_rounded,
+        svgAsset: SvgIcons.queue,
         color: AppColors.warning,
         enabled: preferences?.queueUpdates ?? true,
       ),
@@ -224,7 +227,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 children: [
                   NeuAvatar(
                     radius: 18,
-                    icon: category.icon,
+                    svgAsset: category.svgAsset,
                     backgroundColor: category.color,
                     foregroundColor: AppColors.textOnPrimary,
                   ),
@@ -275,7 +278,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       _DeliverySetting(
         title: 'Push Notifications',
         subtitle: 'Receive push notifications on this device',
-        icon: Icons.phone_android_rounded,
+        svgAsset: SvgIcons.phone,
         value: preferences?.pushEnabled ?? true,
         onChanged: (value) => _updatePreference(
           preferences?.copyWith(pushEnabled: value) ??
@@ -290,7 +293,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       _DeliverySetting(
         title: 'Email Notifications',
         subtitle: 'Receive email copies of important notifications',
-        icon: Icons.email_rounded,
+        svgAsset: SvgIcons.email,
         value: preferences?.emailEnabled ?? false,
         onChanged: (value) => _updatePreference(
           preferences?.copyWith(emailEnabled: value) ??
@@ -305,7 +308,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       _DeliverySetting(
         title: 'In-App Notifications',
         subtitle: 'Show notifications within the app',
-        icon: Icons.badge_rounded,
+        svgAsset: SvgIcons.badge,
         value: preferences?.inAppEnabled ?? true,
         onChanged: (value) => _updatePreference(
           preferences?.copyWith(inAppEnabled: value) ??
@@ -354,7 +357,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 children: [
                   NeuAvatar(
                     radius: 18,
-                    icon: setting.icon,
+                    svgAsset: setting.svgAsset,
                     backgroundColor: ThemeColors.surfaceVariant(context),
                     foregroundColor: ThemeColors.primary(context),
                   ),
@@ -400,7 +403,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         children: [
           NeuAvatar(
             radius: 20,
-            icon: Icons.bedtime_rounded,
+            svgAsset: SvgIcons.moon,
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.textOnPrimary,
           ),
@@ -453,7 +456,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           child: Column(
             children: [
               _buildDataAction(
-                icon: Icons.delete_sweep_rounded,
+                svgAsset: SvgIcons.delete,
                 title: 'Clear All Read Notifications',
                 subtitle: 'Permanently delete all read notifications',
                 color: ThemeColors.warning(context),
@@ -461,7 +464,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ),
               const Divider(height: 24),
               _buildDataAction(
-                icon: Icons.delete_forever_rounded,
+                svgAsset: SvgIcons.delete,
                 title: 'Delete All Notifications',
                 subtitle:
                     'Permanently delete all notifications (cannot be undone)',
@@ -477,7 +480,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   }
 
   Widget _buildDataAction({
-    required IconData icon,
+    String? svgAsset,
     required String title,
     required String subtitle,
     required Color color,
@@ -493,7 +496,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           children: [
             NeuAvatar(
               radius: 16,
-              icon: icon,
+              svgAsset: svgAsset,
               backgroundColor: color.withValues(alpha: 0.12),
               foregroundColor: color,
             ),
@@ -524,12 +527,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: _isDark
-                  ? AppColors.textTertiaryOnDark
-                  : AppColors.textTertiary,
-            ),
+            NeuSvgIcon(SvgIcons.chevronRight, size: 20),
           ],
         ),
       ),
@@ -632,7 +630,7 @@ class _CategorySetting {
   final NotificationType type;
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String svgAsset;
   final Color color;
   final bool enabled;
 
@@ -640,7 +638,7 @@ class _CategorySetting {
     required this.type,
     required this.title,
     required this.subtitle,
-    required this.icon,
+    required this.svgAsset,
     required this.color,
     required this.enabled,
   });
@@ -649,14 +647,14 @@ class _CategorySetting {
 class _DeliverySetting {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String svgAsset;
   final bool value;
   final ValueChanged<bool> onChanged;
 
   _DeliverySetting({
     required this.title,
     required this.subtitle,
-    required this.icon,
+    required this.svgAsset,
     required this.value,
     required this.onChanged,
   });

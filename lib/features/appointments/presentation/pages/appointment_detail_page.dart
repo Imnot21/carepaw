@@ -13,6 +13,7 @@ import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -59,18 +60,24 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_rounded,
+          svgAsset: SvgIcons.back,
           tooltip: 'Back',
           onPressed: () => context.pop(),
         ),
         actions: [
           NeuIconButton(
+            plain: true,
             icon: Icons.edit_outlined,
+            svgAsset: SvgIcons.edit,
             tooltip: 'Edit',
             onPressed: _navigateToEdit,
           ),
           NeuIconButton(
+            plain: true,
             icon: Icons.delete_outline_rounded,
+            svgAsset: SvgIcons.delete,
             color: ThemeColors.error(context),
             tooltip: 'Delete',
             onPressed: _showDeleteConfirmation,
@@ -111,7 +118,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                 const SizedBox(height: 24),
                 NeuAvatar(
                   radius: 50,
-                  icon: PetUtils.getSpeciesIcon(pet.species),
+                  svgAsset: PetUtils.getSpeciesSvg(pet.species),
                   backgroundColor: PetUtils.getSpeciesColor(
                     pet.species,
                   ).withValues(alpha: 0.2),
@@ -172,7 +179,9 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(statusInfo.icon, color: statusInfo.color, size: 20),
+          statusInfo.svgAsset != null
+              ? NeuSvgIcon(statusInfo.svgAsset!, size: 20)
+              : Icon(statusInfo.icon, color: statusInfo.color, size: 20),
           const SizedBox(width: 8),
           Text(
             statusInfo.label,
@@ -194,6 +203,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'Requested',
           icon: Icons.pending_outlined,
+          svgAsset: SvgIcons.pending,
           color: color,
           isActive: false,
         );
@@ -202,6 +212,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'Confirmed',
           icon: Icons.check_circle_outline_rounded,
+          svgAsset: SvgIcons.success,
           color: color,
           isActive: true,
         );
@@ -210,6 +221,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'Rescheduled',
           icon: Icons.event_repeat_outlined,
+          svgAsset: SvgIcons.eventRepeat,
           color: reschedColor,
           isActive: true,
         );
@@ -218,6 +230,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'Checked In',
           icon: Icons.login_outlined,
+          svgAsset: SvgIcons.login,
           color: color,
           isActive: true,
         );
@@ -226,6 +239,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'In Progress',
           icon: Icons.medical_services_outlined,
+          svgAsset: SvgIcons.visit,
           color: color,
           isActive: true,
         );
@@ -234,6 +248,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'Completed',
           icon: Icons.task_alt_outlined,
+          svgAsset: SvgIcons.success,
           color: color,
           isActive: false,
         );
@@ -242,6 +257,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'Cancelled',
           icon: Icons.cancel_outlined,
+          svgAsset: SvgIcons.error,
           color: color,
           isActive: false,
         );
@@ -249,6 +265,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _StatusInfo(
           label: 'No Show',
           icon: Icons.person_off_outlined,
+          svgAsset: SvgIcons.personOff,
           color: ThemeColors.textSecondary(context),
           isActive: false,
         );
@@ -277,6 +294,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             'Service',
             appointment.appointment.service!,
             Icons.medical_services_rounded,
+            SvgIcons.visit,
             ThemeColors.primary(context),
           );
         }
@@ -288,6 +306,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             'Reason for Visit',
             appointment.appointment.reason!,
             Icons.description_rounded,
+            SvgIcons.note,
             ThemeColors.success(context),
           );
         }
@@ -299,6 +318,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             'Notes',
             appointment.appointment.notes!,
             Icons.note_alt_rounded,
+            SvgIcons.prescription,
             ThemeColors.textSecondary(context),
           );
         }
@@ -324,11 +344,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             padding: const EdgeInsets.all(12),
             variant: NeuVariant.flat,
             color: ThemeColors.primary(context).withValues(alpha: 0.15),
-            child: Icon(
-              Icons.medical_services_rounded,
-              size: 28,
-              color: ThemeColors.primary(context),
-            ),
+            child: NeuSvgIcon(SvgIcons.visit, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -354,11 +370,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(
-                        Icons.phone_outlined,
-                        size: 16,
-                        color: ThemeColors.textSecondary(context),
-                      ),
+                      NeuSvgIcon(SvgIcons.phone, size: 16),
                       const SizedBox(width: 6),
                       Text(
                         vet.phone!,
@@ -372,11 +384,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      Icons.email_outlined,
-                      size: 16,
-                      color: ThemeColors.textSecondary(context),
-                    ),
+                    NeuSvgIcon(SvgIcons.email, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       vet.email,
@@ -406,6 +414,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         children: [
           _buildDetailRow(
             icon: Icons.calendar_today_rounded,
+            svgAsset: SvgIcons.calendar,
             label: 'Date',
             value: _formatDate(appointment.scheduledAt),
             iconColor: speciesColor,
@@ -413,6 +422,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           NeuDivider(thickness: 1, indent: 0, endIndent: 0),
           _buildDetailRow(
             icon: Icons.access_time_rounded,
+            svgAsset: SvgIcons.schedule,
             label: 'Time',
             value: _formatTime(appointment.scheduledAt),
             iconColor: speciesColor,
@@ -420,6 +430,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           NeuDivider(thickness: 1, indent: 0, endIndent: 0),
           _buildDetailRow(
             icon: Icons.timer_rounded,
+            svgAsset: SvgIcons.schedule,
             label: 'Duration',
             value: '${appointment.durationMinutes} minutes',
             iconColor: speciesColor,
@@ -427,6 +438,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           NeuDivider(thickness: 1, indent: 0, endIndent: 0),
           _buildDetailRow(
             icon: Icons.event_rounded,
+            svgAsset: SvgIcons.calendar,
             label: 'Created',
             value: _formatDateTime(appointment.createdAt),
             iconColor: speciesColor,
@@ -435,6 +447,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             NeuDivider(thickness: 1, indent: 0, endIndent: 0),
             _buildDetailRow(
               icon: Icons.update_rounded,
+              svgAsset: SvgIcons.refresh,
               label: 'Last Updated',
               value: _formatDateTime(appointment.updatedAt),
               iconColor: speciesColor,
@@ -447,6 +460,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
 
   Widget _buildDetailRow({
     required IconData icon,
+    String? svgAsset,
     required String label,
     required String value,
     required Color iconColor,
@@ -458,7 +472,9 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           borderRadius: 12,
           variant: NeuVariant.flat,
           color: iconColor.withValues(alpha: 0.15),
-          child: Icon(icon, size: 20, color: iconColor),
+          child: svgAsset != null
+              ? NeuSvgIcon(svgAsset, size: 20)
+              : Icon(icon, size: 20, color: iconColor),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -491,6 +507,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
     String title,
     String content,
     IconData icon,
+    String? svgAsset,
     Color iconColor,
   ) {
     return NeuCard(
@@ -507,7 +524,9 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                 borderRadius: 12,
                 variant: NeuVariant.flat,
                 color: iconColor.withValues(alpha: 0.15),
-                child: Icon(icon, size: 22, color: iconColor),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset, size: 22)
+                    : Icon(icon, size: 22, color: iconColor),
               ),
               const SizedBox(width: 12),
               Text(
@@ -542,6 +561,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             onPressed: _navigateToEdit,
             expanded: true,
             icon: Icons.edit_rounded,
+            svgAsset: SvgIcons.edit,
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.medium,
           ),
@@ -553,6 +573,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             onPressed: () => _updateStatus(AppointmentStatus.checkedIn),
             expanded: true,
             icon: Icons.login_rounded,
+            svgAsset: SvgIcons.login,
             variant: NeuButtonVariant.secondary,
             size: NeuButtonSize.medium,
           ),
@@ -564,6 +585,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             onPressed: () => _updateStatus(AppointmentStatus.inProgress),
             expanded: true,
             icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.medium,
           ),
@@ -575,6 +597,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             onPressed: () => _updateStatus(AppointmentStatus.completed),
             expanded: true,
             icon: Icons.task_alt_rounded,
+            svgAsset: SvgIcons.success,
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.medium,
           ),
@@ -586,6 +609,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             onPressed: _showCancelDialog,
             expanded: true,
             icon: Icons.cancel_rounded,
+            svgAsset: SvgIcons.error,
             variant: NeuButtonVariant.destructive,
             size: NeuButtonSize.medium,
           ),
@@ -674,11 +698,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
               variant: NeuVariant.inset,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(NeuTokens.spaceLg),
-              child: Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: ThemeColors.error(context),
-              ),
+              child: NeuSvgIcon(SvgIcons.error, size: 48),
             ),
             const SizedBox(height: 24),
             Text(
@@ -702,6 +722,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                 AppointmentDetailLoadRequested(widget.appointmentId),
               ),
               icon: Icons.refresh_rounded,
+              svgAsset: SvgIcons.refresh,
               variant: NeuButtonVariant.primary,
             ),
             const SizedBox(height: 12),
@@ -709,6 +730,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
               text: 'Back',
               onPressed: () => context.pop(),
               icon: Icons.arrow_back_rounded,
+              svgAsset: SvgIcons.back,
               variant: NeuButtonVariant.secondary,
             ),
           ],
@@ -735,12 +757,14 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
 class _StatusInfo {
   final String label;
   final IconData icon;
+  final String? svgAsset;
   final Color color;
   final bool isActive;
 
   const _StatusInfo({
     required this.label,
     required this.icon,
+    this.svgAsset,
     required this.color,
     required this.isActive,
   });

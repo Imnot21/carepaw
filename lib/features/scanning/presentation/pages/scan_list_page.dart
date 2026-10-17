@@ -8,6 +8,7 @@ import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_detail_page.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_camera_page.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -69,6 +70,7 @@ class _ScanListPageState extends State<ScanListPage>
           floatingActionButton: NeuButton(
             text: 'New Scan',
             icon: Icons.camera_alt_rounded,
+            svgAsset: SvgIcons.camera,
             onPressed: _navigateToCamera,
           ),
         );
@@ -110,7 +112,9 @@ class _ScanListPageState extends State<ScanListPage>
       ),
       actions: [
         NeuIconButton(
+          plain: true,
           icon: Icons.history_rounded,
+          svgAsset: SvgIcons.schedule,
           tooltip: 'History',
           onPressed: () {
             // Show scan history
@@ -155,7 +159,7 @@ class _ScanListPageState extends State<ScanListPage>
 
         if (state is ScanError) {
           return _NeuEmptyState(
-            icon: Icons.error_outline_rounded,
+            svgAsset: SvgIcons.error,
             title: 'Error Loading Scans',
             message: state.failure.message,
             actionLabel: 'Retry',
@@ -182,7 +186,7 @@ class _ScanListPageState extends State<ScanListPage>
 
         if (records.isEmpty) {
           return _NeuEmptyState(
-            icon: _getTypeIcon(type ?? ScanType.other),
+            svgAsset: _getTypeSvg(type ?? ScanType.other),
             title: type != null
                 ? 'No ${type.displayName} Scans'
                 : 'No Scans Yet',
@@ -213,7 +217,7 @@ class _ScanListPageState extends State<ScanListPage>
           final records = state.records;
           if (records.isEmpty) {
             return _NeuEmptyState(
-              icon: Icons.pending_actions_rounded,
+              svgAsset: SvgIcons.pending,
               title: 'No Pending Scans',
               message: 'All scans have been processed',
               actionLabel: 'New Scan',
@@ -243,7 +247,7 @@ class _ScanListPageState extends State<ScanListPage>
               .toList();
           if (records.isEmpty) {
             return _NeuEmptyState(
-              icon: Icons.check_circle_outline_rounded,
+              svgAsset: SvgIcons.success,
               title: 'No Confirmed Scans',
               message: 'Confirmed scans will appear here',
             );
@@ -289,10 +293,9 @@ class _ScanListPageState extends State<ScanListPage>
                 padding: const EdgeInsets.all(12),
                 borderRadius: 14,
                 color: _getTypeColor(record.scanType),
-                child: Icon(
-                  _getTypeIcon(record.scanType),
+                child: NeuSvgIcon(
+                  _getTypeSvg(record.scanType),
                   size: 24,
-                  color: AppColors.textOnPrimary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -335,11 +338,7 @@ class _ScanListPageState extends State<ScanListPage>
               variant: NeuVariant.inset,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.text_fields_rounded,
-                    size: 18,
-                    color: ThemeColors.textSecondary(context),
-                  ),
+                  NeuSvgIcon(SvgIcons.textField, size: 18),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -369,6 +368,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'Process OCR',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.psychology_rounded,
+                    svgAsset: SvgIcons.scan,
                     size: NeuButtonSize.medium,
                     onPressed: () => context.read<ScanBloc>().add(
                       ProcessScanOcr(record.id!),
@@ -382,6 +382,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'Review',
                     variant: NeuButtonVariant.secondary,
                     icon: Icons.visibility_rounded,
+                    svgAsset: SvgIcons.visibility,
                     size: NeuButtonSize.medium,
                     onPressed: () => _navigateToDetail(record),
                     expanded: true,
@@ -397,6 +398,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'View Details',
                     variant: NeuButtonVariant.secondary,
                     icon: Icons.visibility_rounded,
+                    svgAsset: SvgIcons.visibility,
                     size: NeuButtonSize.medium,
                     onPressed: () => _navigateToDetail(record),
                     expanded: true,
@@ -408,6 +410,7 @@ class _ScanListPageState extends State<ScanListPage>
                     text: 'Use Data',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.check_circle_rounded,
+                    svgAsset: SvgIcons.success,
                     size: NeuButtonSize.medium,
                     onPressed: () => _useScanData(record),
                     expanded: true,
@@ -420,6 +423,7 @@ class _ScanListPageState extends State<ScanListPage>
               text: 'Retry Scan',
               variant: NeuButtonVariant.outline,
               icon: Icons.refresh_rounded,
+              svgAsset: SvgIcons.refresh,
               size: NeuButtonSize.medium,
               onPressed: () => _navigateToCamera(),
               expanded: true,
@@ -433,23 +437,23 @@ class _ScanListPageState extends State<ScanListPage>
   Widget _buildStatusBadge(ScanStatus status) {
     Color color;
     String text;
-    IconData icon;
+    String svgAsset;
 
     switch (status) {
       case ScanStatus.pending:
         color = ThemeColors.warning(context);
         text = 'Pending';
-        icon = Icons.pending_rounded;
+        svgAsset = SvgIcons.pending;
         break;
       case ScanStatus.confirmed:
         color = ThemeColors.success(context);
         text = 'Confirmed';
-        icon = Icons.check_circle_rounded;
+        svgAsset = SvgIcons.success;
         break;
       case ScanStatus.rejected:
         color = ThemeColors.error(context);
         text = 'Rejected';
-        icon = Icons.cancel_rounded;
+        svgAsset = SvgIcons.error;
         break;
     }
 
@@ -462,7 +466,7 @@ class _ScanListPageState extends State<ScanListPage>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
+          NeuSvgIcon(svgAsset, size: 12),
           const SizedBox(width: 4),
           Text(
             text,
@@ -495,7 +499,7 @@ class _ScanListPageState extends State<ScanListPage>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bolt_rounded, size: 12, color: color),
+          NeuSvgIcon(SvgIcons.bolt, size: 12),
           const SizedBox(width: 4),
           Text(
             '${(confidence * 100).toInt()}%',
@@ -524,18 +528,18 @@ class _ScanListPageState extends State<ScanListPage>
     }
   }
 
-  IconData _getTypeIcon(ScanType type) {
+  String _getTypeSvg(ScanType type) {
     switch (type) {
       case ScanType.receipt:
-        return Icons.receipt_long_rounded;
+        return SvgIcons.receipt;
       case ScanType.medicineBox:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case ScanType.prescription:
-        return Icons.description_rounded;
+        return SvgIcons.note;
       case ScanType.labReport:
-        return Icons.science_rounded;
+        return SvgIcons.lab;
       default:
-        return Icons.insert_drive_file_rounded;
+        return SvgIcons.note;
     }
   }
 
@@ -621,14 +625,14 @@ class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
 
 /// Empty state used across the scan list tabs.
 class _NeuEmptyState extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
 
   const _NeuEmptyState({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.message,
     this.actionLabel,
@@ -637,7 +641,6 @@ class _NeuEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = ThemeColors.primary(context);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -650,7 +653,9 @@ class _NeuEmptyState extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 borderRadius: 24,
                 variant: NeuVariant.flat,
-                child: Icon(icon, size: 64, color: accent),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: 64)
+                    : const SizedBox(width: 64, height: 64),
               ),
               const SizedBox(height: 24),
               Text(
@@ -676,6 +681,7 @@ class _NeuEmptyState extends StatelessWidget {
                   text: actionLabel!,
                   onPressed: onAction,
                   icon: Icons.add_rounded,
+                  svgAsset: SvgIcons.add,
                 ),
               ],
             ],
@@ -707,11 +713,7 @@ class _NotLoggedInView extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     borderRadius: 80,
                     color: AppColors.primary,
-                    child: Icon(
-                      Icons.camera_alt_rounded,
-                      size: 80,
-                      color: AppColors.textOnPrimary,
-                    ),
+                    child: NeuSvgIcon(SvgIcons.camera, size: 80),
                   ),
                   const SizedBox(height: 28),
                   Text(
@@ -735,6 +737,7 @@ class _NotLoggedInView extends StatelessWidget {
                     text: 'Log In',
                     onPressed: () => context.go(Routes.login),
                     icon: Icons.login_rounded,
+                    svgAsset: SvgIcons.login,
                   ),
                 ],
               ),
@@ -767,11 +770,7 @@ class _AccessDeniedView extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     borderRadius: 80,
                     color: AppColors.error,
-                    child: Icon(
-                      Icons.block_rounded,
-                      size: 80,
-                      color: Colors.white,
-                    ),
+                    child: NeuSvgIcon(SvgIcons.block, size: 80),
                   ),
                   const SizedBox(height: 28),
                   Text(
@@ -795,6 +794,7 @@ class _AccessDeniedView extends StatelessWidget {
                     text: 'Go Back',
                     onPressed: () => context.pop(),
                     icon: Icons.arrow_back_rounded,
+                    svgAsset: SvgIcons.back,
                     variant: NeuButtonVariant.secondary,
                   ),
                 ],

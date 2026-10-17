@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart'
     as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
@@ -10,6 +12,7 @@ import 'package:carepaw/features/notifications/presentation/pages/notification_s
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -162,7 +165,9 @@ class _NotificationListPageState extends State<NotificationListPage>
       ),
       actions: [
         NeuIconButton(
+          plain: true,
           icon: Icons.tune_rounded,
+          svgAsset: SvgIcons.filter,
           onPressed: _navigateToSettings,
           tooltip: 'Notification Settings',
         ),
@@ -172,7 +177,9 @@ class _NotificationListPageState extends State<NotificationListPage>
             if (state is NotificationsLoaded &&
                 state.notifications.any((n) => !n.isRead)) {
               return NeuIconButton(
+                plain: true,
                 icon: Icons.done_all_rounded,
+                svgAsset: SvgIcons.doneAll,
                 onPressed: () {
                   context.read<NotificationBloc>().add(const MarkAllAsRead());
                 },
@@ -219,7 +226,7 @@ class _NotificationListPageState extends State<NotificationListPage>
 
         if (state is NotificationError) {
           return _EmptyState(
-            icon: Icons.error_outline_rounded,
+            svgAsset: SvgIcons.error,
             title: 'Error Loading Notifications',
             message: state.failure.message,
             actionLabel: 'Retry',
@@ -259,7 +266,7 @@ class _NotificationListPageState extends State<NotificationListPage>
 
         if (notifications.isEmpty) {
           return _EmptyState(
-            icon: _getTypeIcon(type ?? domain.NotificationType.system),
+            svgAsset: _getTypeSvg(type ?? domain.NotificationType.system),
             title: type != null
                 ? 'No ${type.displayName} Notifications'
                 : 'No Notifications Yet',
@@ -313,7 +320,7 @@ class _NotificationListPageState extends State<NotificationListPage>
               .toList();
           if (unread.isEmpty) {
             return _EmptyState(
-              icon: Icons.mark_email_read_rounded,
+              svgAsset: SvgIcons.email,
               title: 'All Caught Up!',
               message: 'No unread notifications',
               actionLabel: 'View All',
@@ -343,7 +350,7 @@ class _NotificationListPageState extends State<NotificationListPage>
           final notifications = state.notifications;
           if (notifications.isEmpty) {
             return _EmptyState(
-              icon: _getTypeIcon(type),
+              svgAsset: _getTypeSvg(type),
               title: 'No ${type.displayName} Notifications',
               message: 'Notifications of this type will appear here',
             );
@@ -360,7 +367,7 @@ class _NotificationListPageState extends State<NotificationListPage>
           return const NeuSkeletonList();
         }
         return _EmptyState(
-          icon: _getTypeIcon(type),
+          svgAsset: _getTypeSvg(type),
           title: 'No ${type.displayName} Notifications',
           message: 'Pull to refresh',
           actionLabel: 'Refresh',
@@ -397,7 +404,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                 children: [
                   NeuAvatar(
                     radius: 22,
-                    icon: _getTypeIcon(notification.type),
+                    svgAsset: _getTypeSvg(notification.type),
                     backgroundColor: typeColor,
                     foregroundColor: AppColors.textOnPrimary,
                   ),
@@ -482,13 +489,7 @@ class _NotificationListPageState extends State<NotificationListPage>
               borderRadius: 8,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.info_outline_rounded,
-                    size: 16,
-                    color: _isDark
-                        ? AppColors.textSecondaryOnDark
-                        : AppColors.textSecondary,
-                  ),
+                  NeuSvgIcon(SvgIcons.info, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -519,6 +520,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                     text: 'Mark Read',
                     variant: NeuButtonVariant.primary,
                     icon: Icons.mark_email_read_rounded,
+                    svgAsset: SvgIcons.email,
                     size: NeuButtonSize.medium,
                     onPressed: () {
                       context.read<NotificationBloc>().add(
@@ -528,40 +530,33 @@ class _NotificationListPageState extends State<NotificationListPage>
                     expanded: true,
                   ),
                 )
-              else
+              else ...[
                 Expanded(
                   child: NeuButton(
                     text: 'View Details',
                     variant: NeuButtonVariant.secondary,
                     icon: Icons.visibility_rounded,
+                    svgAsset: SvgIcons.visibility,
                     size: NeuButtonSize.medium,
                     onPressed: () => _navigateToDetail(notification),
                     expanded: true,
                   ),
                 ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: NeuButton(
-                  text: isUnread ? 'Dismiss' : 'Delete',
-                  variant: isUnread
-                      ? NeuButtonVariant.outline
-                      : NeuButtonVariant.outline,
-                  icon: isUnread
-                      ? Icons.close_rounded
-                      : Icons.delete_outline_rounded,
-                  size: NeuButtonSize.medium,
-                  onPressed: () {
-                    if (isUnread) {
-                      context.read<NotificationBloc>().add(
-                        MarkAsRead(notification.id!),
-                      );
-                    } else {
+                const SizedBox(width: 8),
+                Expanded(
+                  child: NeuButton(
+                    text: 'Delete',
+                    variant: NeuButtonVariant.outline,
+                    icon: Icons.delete_outline_rounded,
+                    svgAsset: SvgIcons.delete,
+                    size: NeuButtonSize.medium,
+                    onPressed: () {
                       _showDeleteConfirmation(notification.id!);
-                    }
-                  },
-                  expanded: true,
+                    },
+                    expanded: true,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ],
@@ -573,6 +568,7 @@ class _NotificationListPageState extends State<NotificationListPage>
     return NeuFAB.extended(
       onPressed: () => _showCreateNotificationDialog(),
       icon: Icons.add_rounded,
+      svgAsset: SvgIcons.add,
       extendedText: 'Test Notification',
       variant: NeuButtonVariant.primary,
     );
@@ -595,18 +591,18 @@ class _NotificationListPageState extends State<NotificationListPage>
     }
   }
 
-  IconData _getTypeIcon(domain.NotificationType type) {
+  String _getTypeSvg(domain.NotificationType type) {
     switch (type) {
       case domain.NotificationType.appointmentReminder:
-        return Icons.calendar_today_rounded;
+        return SvgIcons.calendar;
       case domain.NotificationType.queueUpdate:
-        return Icons.queue_rounded;
+        return SvgIcons.queue;
       case domain.NotificationType.prescriptionReady:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case domain.NotificationType.inventoryLow:
-        return Icons.inventory_rounded;
+        return SvgIcons.inventory;
       case domain.NotificationType.system:
-        return Icons.settings_rounded;
+        return SvgIcons.settings;
     }
   }
 
@@ -763,10 +759,10 @@ class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tabs = [
-      {'label': 'All', 'icon': Icons.notifications_rounded},
-      {'label': 'Unread', 'icon': Icons.mark_email_unread_rounded},
-      {'label': 'Appointments', 'icon': Icons.calendar_today_rounded},
-      {'label': 'Queue', 'icon': Icons.queue_rounded},
+      {'label': 'All', 'svg': SvgIcons.notifications},
+      {'label': 'Unread', 'svg': SvgIcons.email},
+      {'label': 'Appointments', 'svg': SvgIcons.calendar},
+      {'label': 'Queue', 'svg': SvgIcons.queue},
     ];
 
     return Container(
@@ -782,7 +778,7 @@ class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
               padding: const EdgeInsets.only(right: 8),
               child: NeuChip(
                 label: tab['label'] as String,
-                icon: tab['icon'] as IconData,
+                svgAsset: tab['svg'] as String,
                 selected: isSelected,
                 onTap: () => tabController.animateTo(index),
                 selectedColor: AppColors.primary,
@@ -808,14 +804,14 @@ class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
 
 /// Empty state shown when a notification tab has no content.
 class _EmptyState extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
 
   const _EmptyState({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.message,
     this.actionLabel,
@@ -844,7 +840,9 @@ class _EmptyState extends StatelessWidget {
                   blur: 24,
                   opacity: 0.32,
                 ),
-                child: Icon(icon, size: 48, color: AppColors.textOnPrimary),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: 48)
+                    : const SizedBox(width: 48, height: 48),
               ),
               const SizedBox(height: 20),
               Text(
@@ -875,6 +873,7 @@ class _EmptyState extends StatelessWidget {
                   variant: NeuButtonVariant.primary,
                   size: NeuButtonSize.medium,
                   icon: Icons.refresh_rounded,
+                  svgAsset: SvgIcons.refresh,
                 ),
               ],
             ],
@@ -911,11 +910,7 @@ class _NotLoggedInView extends StatelessWidget {
                   borderRadius: 80,
                   variant: NeuVariant.raised,
                   color: AppColors.primary,
-                  child: const Icon(
-                    Icons.notifications_rounded,
-                    size: 80,
-                    color: AppColors.textOnPrimary,
-                  ),
+                  child: NeuSvgIcon(SvgIcons.notifications, size: 80),
                 ),
               ),
               const SizedBox(height: 28),
@@ -942,8 +937,9 @@ class _NotLoggedInView extends StatelessWidget {
               const SizedBox(height: 32),
               NeuButton(
                 text: 'Log In',
-                onPressed: () => Navigator.of(context).pushNamed('/login'),
+                onPressed: () => context.go(Routes.login),
                 icon: Icons.login_rounded,
+                svgAsset: SvgIcons.login,
               ),
             ],
           ),

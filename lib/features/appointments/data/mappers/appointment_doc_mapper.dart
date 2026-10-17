@@ -14,6 +14,7 @@ class AppointmentDocMapper {
     return Appointment(
       id: data[FirestoreSchema.id] as int?,
       petId: (data[FirestoreSchema.petId] as num?)?.toInt() ?? 0,
+      ownerId: (data[FirestoreSchema.ownerId] as num?)?.toInt() ?? 0,
       veterinarianId:
           (data[FirestoreSchema.veterinarianId] as num?)?.toInt() ?? 0,
       scheduledAt:
@@ -54,6 +55,7 @@ class AppointmentDocMapper {
     return {
       FirestoreSchema.id: appointment.id,
       FirestoreSchema.petId: appointment.petId,
+      FirestoreSchema.ownerId: appointment.ownerId,
       FirestoreSchema.veterinarianId: appointment.veterinarianId,
       FirestoreSchema.scheduledAt: DateFieldCodec.toFirestoreDate(
         appointment.scheduledAt,

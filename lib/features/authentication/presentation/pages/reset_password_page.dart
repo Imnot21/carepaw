@@ -4,6 +4,7 @@ import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -11,6 +12,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
+import 'package:carepaw/features/authentication/presentation/widgets/password_requirements.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   final String token;
@@ -77,13 +79,24 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     NeuTextField(
                       controller: _passwordController,
                       label: 'New password',
-                      hint: 'Create a strong password',
+                      hint: 'Create a password',
                       obscureText: true,
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'lock_outline_rounded',
+                        fallback: Icons.lock_outline_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.next,
                       validator: Validators.requiredWith([
                         Validators.password,
                       ], 'Password'),
+                    ),
+                    const SizedBox(height: NeuTokens.spaceXs),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _passwordController,
+                      builder: (context, value, _) {
+                        return PasswordRequirements(password: value.text);
+                      },
                     ),
                     const SizedBox(height: NeuTokens.spaceMd),
                     NeuTextField(
@@ -91,7 +104,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       label: 'Confirm new password',
                       hint: 'Confirm your password',
                       obscureText: true,
-                      prefixIcon: const Icon(Icons.lock_reset_rounded),
+                      prefixIcon: ClayIconOrMaterial(
+                        'lock_reset_rounded',
+                        fallback: Icons.lock_reset_rounded,
+                        size: 20,
+                      ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _onSubmitPressed(),
                       validator: (value) {
@@ -116,6 +133,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           isLoading: isLoading,
                           expanded: true,
                           icon: Icons.check_circle_outline_rounded,
+                          svgAsset: SvgIcons.success,
                           variant: NeuButtonVariant.primary,
                           size: NeuButtonSize.large,
                         );

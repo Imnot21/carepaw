@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
+import 'neu_svg_icon.dart';
 
 /// Transient feedback, in one shape.
 ///
@@ -30,6 +31,7 @@ abstract final class NeuToast {
       message,
       tone: NeuToastTone.success,
       icon: Icons.check_circle_rounded,
+      svgAsset: SvgIcons.success,
       actionLabel: actionLabel,
       onAction: onAction,
     );
@@ -48,6 +50,7 @@ abstract final class NeuToast {
       message,
       tone: NeuToastTone.error,
       icon: Icons.error_rounded,
+      svgAsset: SvgIcons.error,
       actionLabel: actionLabel,
       onAction: onAction,
     );
@@ -75,6 +78,7 @@ abstract final class NeuToast {
     String message, {
     required NeuToastTone tone,
     IconData? icon,
+    String? svgAsset,
     String? actionLabel,
     VoidCallback? onAction,
   }) {
@@ -111,7 +115,10 @@ abstract final class NeuToast {
           ),
           content: Row(
             children: [
-              if (icon != null) ...[
+              if (svgAsset != null) ...[
+                NeuSvgIcon(svgAsset, size: NeuTokens.iconSm),
+                const SizedBox(width: NeuTokens.tightGap),
+              ] else if (icon != null) ...[
                 Icon(icon, size: NeuTokens.iconSm, color: accent),
                 const SizedBox(width: NeuTokens.tightGap),
               ],

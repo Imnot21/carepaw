@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/design_tokens.dart';
+import 'neu_svg_icon.dart';
 
 /// Toggle switch.
 ///
@@ -64,7 +65,7 @@ class NeuSwitch extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: value
-                ? Icon(Icons.check, size: NeuTokens.iconXs, color: accent)
+                ? NeuSvgIcon(SvgIcons.check, size: NeuTokens.iconXs)
                 : null,
           ),
         ),

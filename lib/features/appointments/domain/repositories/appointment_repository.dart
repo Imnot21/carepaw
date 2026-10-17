@@ -43,6 +43,11 @@ abstract class AppointmentRepository
     int ownerId,
   );
 
+  /// Find ALL appointments with pet details (clinic side).
+  ///
+  /// Parallel pet enrichment — one batch, not one query chain per booking.
+  Future<List<AppointmentWithPetDetails>> findAllWithPetDetails();
+
   /// Find upcoming appointments with pet details for an owner
   Future<List<AppointmentWithPetDetails>> findUpcomingWithPetDetailsForOwner(
     int ownerId,

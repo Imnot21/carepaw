@@ -3,6 +3,7 @@ import '../../../app/theme/design_tokens.dart';
 import 'neu_button.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
+import 'neu_svg_icon.dart';
 
 /// A floating action button.
 ///
@@ -12,6 +13,7 @@ import 'neu_shadows.dart';
 class NeuFAB extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData icon;
+  final String? svgAsset;
   final String? tooltip;
   final NeuButtonVariant variant;
   final double size;
@@ -23,6 +25,7 @@ class NeuFAB extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.icon,
+    this.svgAsset,
     this.tooltip,
     this.variant = NeuButtonVariant.primary,
     this.size = 56,
@@ -36,6 +39,7 @@ class NeuFAB extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.icon,
+    this.svgAsset,
     this.tooltip,
     this.variant = NeuButtonVariant.secondary,
     this.size = 40,
@@ -49,6 +53,7 @@ class NeuFAB extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.icon,
+    this.svgAsset,
     required this.extendedText,
     this.tooltip,
     this.variant = NeuButtonVariant.primary,
@@ -66,6 +71,7 @@ class NeuFAB extends StatelessWidget {
       isDisabled: onPressed == null,
       variant: variant,
       icon: icon,
+      svgAsset: svgAsset,
       size: NeuButtonSize.medium,
       expanded: extended,
       trailingIcon: null,
@@ -97,11 +103,13 @@ class NeuFAB extends StatelessWidget {
           color: _resolveFill(context),
           showBorder: false,
           child: Center(
-            child: Icon(
-              icon,
-              size: effectiveSize * 0.44,
-              color: _resolveIconColor(context),
-            ),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: effectiveSize * 0.44)
+                : Icon(
+                    icon,
+                    size: effectiveSize * 0.44,
+                    color: _resolveIconColor(context),
+                  ),
           ),
         ),
       ),

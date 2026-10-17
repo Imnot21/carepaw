@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -14,7 +15,7 @@ class TransactionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typeColor = _getTypeColor(context, transaction.type);
-    final typeIcon = _getTypeIcon(transaction.type);
+    final typeSvg = _getTypeSvg(transaction.type);
     final isPositive = transaction.quantityChange > 0;
 
     return NeuCard(
@@ -31,7 +32,7 @@ class TransactionCard extends StatelessWidget {
               color: typeColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(typeIcon, size: 24, color: typeColor),
+            child: NeuSvgIcon(typeSvg, size: 24),
           ),
           const SizedBox(width: 16),
 
@@ -81,11 +82,7 @@ class TransactionCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 12,
-                      color: ThemeColors.textTertiary(context),
-                    ),
+                    NeuSvgIcon(SvgIcons.schedule, size: 12),
                     const SizedBox(width: 4),
                     Text(
                       formatDateTime(transaction.createdAt),
@@ -95,11 +92,7 @@ class TransactionCard extends StatelessWidget {
                     ),
                     if (transaction.referenceType != null) ...[
                       const SizedBox(width: 12),
-                      Icon(
-                        Icons.link_rounded,
-                        size: 12,
-                        color: ThemeColors.textTertiary(context),
-                      ),
+                      NeuSvgIcon(SvgIcons.link, size: 12),
                       const SizedBox(width: 4),
                       Text(
                         '${transaction.referenceType}: ${transaction.referenceId}',
@@ -159,14 +152,14 @@ class TransactionCard extends StatelessWidget {
     }
   }
 
-  IconData _getTypeIcon(TransactionType type) {
+  String _getTypeSvg(TransactionType type) {
     switch (type) {
       case TransactionType.in_:
-        return Icons.add_circle_rounded;
+        return SvgIcons.add;
       case TransactionType.out:
-        return Icons.remove_circle_rounded;
+        return SvgIcons.remove;
       case TransactionType.adjustment:
-        return Icons.tune_rounded;
+        return SvgIcons.filter;
     }
   }
 }

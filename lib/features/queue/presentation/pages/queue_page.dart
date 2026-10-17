@@ -14,6 +14,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -127,11 +128,7 @@ class _QueuePageState extends State<QueuePage> {
             variant: NeuVariant.inset,
             shape: const CircleBorder(),
             padding: const EdgeInsets.all(NeuTokens.spaceLg),
-            child: Icon(
-              Icons.queue_rounded,
-              size: 48,
-              color: ThemeColors.primary(context),
-            ),
+            child: NeuSvgIcon(SvgIcons.queue, size: 48),
           ),
           const SizedBox(height: 28),
           Text(
@@ -263,11 +260,7 @@ class _QueuePageState extends State<QueuePage> {
                 blur: 24,
                 opacity: 0.32,
               ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                size: 70,
-                color: AppColors.textOnPrimary,
-              ),
+              child: NeuSvgIcon(SvgIcons.error, size: 70),
             ),
             const SizedBox(height: 28),
             Text(
@@ -292,6 +285,7 @@ class _QueuePageState extends State<QueuePage> {
                 context.read<QueueBloc>().add(QueueLoadRequested());
               },
               icon: Icons.refresh_rounded,
+              svgAsset: SvgIcons.refresh,
               variant: NeuButtonVariant.primary,
             ),
           ],
@@ -335,7 +329,7 @@ class _UpcomingCheckInSection extends StatelessWidget {
               (detail) =>
                   detail.appointment.id != null &&
                   !queuedAppointmentIds.contains(detail.appointment.id) &&
-                  !detail.appointment.isTerminal,
+                  detail.appointment.canCheckIn,
             )
             .toList();
 
@@ -353,11 +347,7 @@ class _UpcomingCheckInSection extends StatelessWidget {
                     padding: const EdgeInsets.all(10),
                     variant: NeuVariant.flat,
                     color: ThemeColors.primary(context).withValues(alpha: 0.12),
-                    child: Icon(
-                      Icons.event_available_rounded,
-                      size: 20,
-                      color: ThemeColors.primary(context),
-                    ),
+                    child: NeuSvgIcon(SvgIcons.eventAvailable, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -458,6 +448,7 @@ class _UpcomingCheckInTile extends StatelessWidget {
           NeuButton(
             text: 'Check In',
             icon: Icons.check_circle_outline_rounded,
+            svgAsset: SvgIcons.success,
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.small,
             onPressed: () {
@@ -539,11 +530,7 @@ class _PositionCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      size: 18,
-                      color: AppColors.textOnPrimary,
-                    ),
+                    NeuSvgIcon(SvgIcons.schedule, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Est. wait: $estimatedWaitMinutes min',
@@ -581,11 +568,7 @@ class _EmptyQueueCard extends StatelessWidget {
               blur: 24,
               opacity: 0.32,
             ),
-            child: const Icon(
-              Icons.queue_outlined,
-              size: 48,
-              color: AppColors.textOnPrimary,
-            ),
+            child: NeuSvgIcon(SvgIcons.queue, size: 48),
           ),
           const SizedBox(height: 20),
           Text(
@@ -747,11 +730,7 @@ class _QueueEntryCard extends StatelessWidget {
             variant: NeuVariant.inset,
             child: Row(
               children: [
-                Icon(
-                  Icons.medical_services_outlined,
-                  size: 18,
-                  color: ThemeColors.textSecondary(context),
-                ),
+                NeuSvgIcon(SvgIcons.visit, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -774,11 +753,7 @@ class _QueueEntryCard extends StatelessWidget {
                   ),
                 ),
                 if (entry.queueEntry.estimatedWaitMinutes != null) ...[
-                  Icon(
-                    Icons.timer_outlined,
-                    size: 18,
-                    color: ThemeColors.textSecondary(context),
-                  ),
+                  NeuSvgIcon(SvgIcons.schedule, size: 18),
                   const SizedBox(width: 6),
                   Text(
                     '${entry.queueEntry.estimatedWaitMinutes} min',
@@ -827,11 +802,7 @@ class _QueueEntryCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.access_time_outlined,
-                    size: 14,
-                    color: ThemeColors.textSecondary(context),
-                  ),
+                  NeuSvgIcon(SvgIcons.schedule, size: 14),
                   const SizedBox(width: 6),
                   Text(
                     'Checked in at ${_formatTime(entry.queueEntry.checkedInAt)}',
@@ -845,11 +816,7 @@ class _QueueEntryCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.volume_up_outlined,
-                      size: 14,
-                      color: ThemeColors.info(context),
-                    ),
+                    NeuSvgIcon(SvgIcons.volume, size: 14),
                     const SizedBox(width: 6),
                     Text(
                       'Called at ${_formatTime(entry.queueEntry.calledAt!)}',
@@ -865,11 +832,7 @@ class _QueueEntryCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.door_front_door_outlined,
-                      size: 14,
-                      color: ThemeColors.success(context),
-                    ),
+                    NeuSvgIcon(SvgIcons.door, size: 14),
                     const SizedBox(width: 6),
                     Text(
                       'Room ${entry.queueEntry.room}',
@@ -882,6 +845,54 @@ class _QueueEntryCard extends StatelessWidget {
                 ),
               ],
             ],
+          ),
+          // Owners can leave the line while still waiting or called.
+          if (entry.queueEntry.canCancel &&
+              entry.queueEntry.id != null) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: NeuButton(
+                text: 'Leave Queue',
+                icon: Icons.exit_to_app_rounded,
+                svgAsset: SvgIcons.logout,
+                variant: NeuButtonVariant.outline,
+                size: NeuButtonSize.small,
+                onPressed: () =>
+                    _confirmLeaveQueue(context, entry.queueEntry.id!),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _confirmLeaveQueue(BuildContext context, int queueId) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Leave the queue?'),
+        content: const Text(
+          'Your pet will be removed from the waiting line. '
+          'You can check in again later if your visit is still upcoming.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Stay'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.read<QueueBloc>().add(
+                QueueCancelRequested(queueId),
+              );
+            },
+            child: Text(
+              'Leave',
+              style: TextStyle(color: ThemeColors.error(context)),
+            ),
           ),
         ],
       ),
@@ -926,11 +937,7 @@ class _QueueInfoCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 20,
-                color: ThemeColors.primary(context),
-              ),
+              NeuSvgIcon(SvgIcons.info, size: 20),
               const SizedBox(width: 10),
               Text(
                 'How It Works',
@@ -943,27 +950,27 @@ class _QueueInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _InfoRow(
-            icon: Icons.check_circle_outline_rounded,
+            svgAsset: SvgIcons.success,
             title: 'Check In',
             description: 'Arrive at the clinic and check in at the front desk',
           ),
           const SizedBox(height: 12),
           _InfoRow(
-            icon: Icons.queue_outlined,
+            svgAsset: SvgIcons.queue,
             title: 'Wait',
             description:
                 'Monitor your position here - you\'ll get a notification when called',
           ),
           const SizedBox(height: 12),
           _InfoRow(
-            icon: Icons.volume_up_outlined,
+            svgAsset: SvgIcons.volume,
             title: 'Called',
             description:
                 'Listen for your name or check the screen for your room number',
           ),
           const SizedBox(height: 12),
           _InfoRow(
-            icon: Icons.door_front_door_outlined,
+            svgAsset: SvgIcons.door,
             title: 'Visit',
             description: 'Proceed to the assigned room for your appointment',
           ),
@@ -974,12 +981,12 @@ class _QueueInfoCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String description;
 
   const _InfoRow({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.description,
   });
@@ -993,7 +1000,9 @@ class _InfoRow extends StatelessWidget {
           variant: NeuVariant.pressed,
           borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.all(NeuTokens.spaceXs),
-          child: Icon(icon, size: 16, color: ThemeColors.primary(context)),
+          child: svgAsset != null
+              ? NeuSvgIcon(svgAsset!, size: 16)
+              : const SizedBox(width: 16, height: 16),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -1039,11 +1048,7 @@ class _NotLoggedInView extends StatelessWidget {
                 variant: NeuVariant.inset,
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(NeuTokens.spaceLg),
-                child: Icon(
-                  Icons.queue_outlined,
-                  size: 48,
-                  color: ThemeColors.primary(context),
-                ),
+                child: NeuSvgIcon(SvgIcons.queue, size: 48),
               ),
               const SizedBox(height: 32),
               Text(
@@ -1066,6 +1071,7 @@ class _NotLoggedInView extends StatelessWidget {
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
+                svgAsset: SvgIcons.login,
               ),
             ],
           ),
@@ -1093,11 +1099,7 @@ class _AccessDeniedView extends StatelessWidget {
                 variant: NeuVariant.inset,
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(NeuTokens.spaceLg),
-                child: Icon(
-                  Icons.block_rounded,
-                  size: 48,
-                  color: ThemeColors.error(context),
-                ),
+                child: NeuSvgIcon(SvgIcons.block, size: 48),
               ),
               const SizedBox(height: 32),
               Text(
@@ -1121,6 +1123,7 @@ class _AccessDeniedView extends StatelessWidget {
                 text: 'Go Back',
                 onPressed: () => context.pop(),
                 icon: Icons.arrow_back_rounded,
+                svgAsset: SvgIcons.back,
                 variant: NeuButtonVariant.secondary,
                 expanded: true,
               ),

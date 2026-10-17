@@ -3,6 +3,7 @@ import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
@@ -69,10 +70,9 @@ class BatchCard extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   borderRadius: 12,
                   color: categoryColor,
-                  child: Icon(
-                    _getCategoryIcon(item.category),
+                  child: NeuSvgIcon(
+                    _getCategorySvg(item.category),
                     size: 22,
-                    color: AppColors.textOnPrimary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -116,10 +116,7 @@ class BatchCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     if (onEdit != null || onTransaction != null)
                       PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_vert_rounded,
-                          color: ThemeColors.textTertiary(context),
-                        ),
+                        icon: NeuSvgIcon(SvgIcons.more, size: 24),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -132,15 +129,7 @@ class BatchCard extends StatelessWidget {
                             value: 'transaction',
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.add_circle_rounded,
-                                  size: 20,
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.successOnDark
-                                      : AppColors.success,
-                                ),
+                                NeuSvgIcon(SvgIcons.add, size: 20),
                                 SizedBox(width: 8),
                                 Text('Add Transaction'),
                               ],
@@ -150,11 +139,7 @@ class BatchCard extends StatelessWidget {
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.edit_rounded,
-                                  size: 20,
-                                  color: ThemeColors.primary(context),
-                                ),
+                                NeuSvgIcon(SvgIcons.edit, size: 20),
                                 SizedBox(width: 8),
                                 Text('Edit Batch'),
                               ],
@@ -176,6 +161,7 @@ class BatchCard extends StatelessWidget {
                     context,
                     'Quantity',
                     formatNumber(batch.quantity),
+                    SvgIcons.inventory,
                     Icons.inventory_2_rounded,
                     categoryColor,
                   ),
@@ -185,6 +171,7 @@ class BatchCard extends StatelessWidget {
                     context,
                     'Received',
                     formatDate(batch.receivedAt),
+                    SvgIcons.calendar,
                     Icons.calendar_today_rounded,
                     Theme.of(context).brightness == Brightness.dark
                         ? AppColors.infoDark
@@ -197,6 +184,7 @@ class BatchCard extends StatelessWidget {
                       context,
                       'Expires',
                       formatDate(batch.expiresAt!),
+                      SvgIcons.calendar,
                       Icons.event_rounded,
                       isExpired
                           ? (Theme.of(context).brightness == Brightness.dark
@@ -217,6 +205,7 @@ class BatchCard extends StatelessWidget {
                       context,
                       'Expires',
                       'No expiry',
+                      SvgIcons.eventBusy,
                       Icons.event_busy_rounded,
                       ThemeColors.textTertiary(context),
                     ),
@@ -240,11 +229,7 @@ class BatchCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.attach_money_rounded,
-                      size: 18,
-                      color: ThemeColors.textSecondary(context),
-                    ),
+                    NeuSvgIcon(SvgIcons.money, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Cost/Unit: ${formatCurrency(batch.costPerUnit!)}',
@@ -255,11 +240,7 @@ class BatchCard extends StatelessWidget {
                     ),
                     if (batch.supplier != null) ...[
                       const SizedBox(width: 16),
-                      Icon(
-                        Icons.local_shipping_rounded,
-                        size: 18,
-                        color: ThemeColors.textSecondary(context),
-                      ),
+                      NeuSvgIcon(SvgIcons.truck, size: 18),
                       const SizedBox(width: 8),
                       Text(
                         batch.supplier!,
@@ -284,6 +265,7 @@ class BatchCard extends StatelessWidget {
                       text: 'Stock In',
                       variant: NeuButtonVariant.primary,
                       icon: Icons.add_circle_outline_rounded,
+                      svgAsset: SvgIcons.add,
                       size: NeuButtonSize.medium,
                       onPressed: onTransaction,
                       expanded: true,
@@ -296,6 +278,7 @@ class BatchCard extends StatelessWidget {
                       text: 'Stock Out',
                       variant: NeuButtonVariant.outline,
                       icon: Icons.remove_circle_outline_rounded,
+                      svgAsset: SvgIcons.remove,
                       size: NeuButtonSize.medium,
                       onPressed: onTransaction,
                       expanded: true,
@@ -313,7 +296,8 @@ class BatchCard extends StatelessWidget {
     BuildContext context,
     String label,
     String value,
-    IconData icon,
+    String? svgAsset,
+    IconData? icon,
     Color color,
   ) {
     return Column(
@@ -321,7 +305,9 @@ class BatchCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, color: color),
+            svgAsset != null
+                ? NeuSvgIcon(svgAsset, size: 14)
+                : Icon(icon, size: 14, color: color),
             const SizedBox(width: 4),
             Text(
               label,
@@ -361,18 +347,19 @@ class BatchCard extends StatelessWidget {
     );
   }
 
-  IconData _getCategoryIcon(InventoryCategory category) {
+  String _getCategorySvg(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case InventoryCategory.vaccine:
-        return Icons.vaccines_rounded;
+        return SvgIcons.vaccination;
       case InventoryCategory.supply:
-        return Icons.inventory_rounded;
+        return SvgIcons.inventory;
       case InventoryCategory.equipment:
-        return Icons.precision_manufacturing_rounded;
+        return SvgIcons.microscope;
       case InventoryCategory.food:
-        return Icons.restaurant_rounded;
+        return SvgIcons.foodBowl;
     }
   }
+
 }

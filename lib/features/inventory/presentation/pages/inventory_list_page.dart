@@ -8,6 +8,7 @@ import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dar
 import 'package:carepaw/features/inventory/presentation/pages/inventory_form_page.dart';
 import 'package:carepaw/features/inventory/presentation/pages/inventory_detail_page.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -96,7 +97,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _navigateToForm(),
-            icon: const Icon(Icons.add_rounded),
+            icon: NeuSvgIcon(SvgIcons.add, size: 24),
             label: const Text('Add Item'),
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.textOnPrimary,
@@ -144,7 +145,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: NeuIconButton(
+            plain: true,
             icon: Icons.filter_list_rounded,
+            svgAsset: SvgIcons.filter,
             onPressed: _showFilterDialog,
             tooltip: 'Filter',
           ),
@@ -166,7 +169,11 @@ class _InventoryListPageState extends State<InventoryListPage> {
               NeuTextField(
                 controller: _searchController,
                 hint: 'Search inventory...',
-                prefixIcon: const Icon(Icons.search_rounded),
+                prefixIcon: ClayIconOrMaterial(
+                  'search_rounded',
+                  fallback: Icons.search_rounded,
+                  size: 24,
+                ),
                 onChanged: _onSearchChanged,
               ),
               const SizedBox(height: 12),
@@ -216,7 +223,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
         if (state is InventoryError) {
           return SliverFillRemaining(
             child: _NeuEmptyState(
-              icon: Icons.error_outline_rounded,
+              svgAsset: SvgIcons.error,
               iconColor: ThemeColors.error(context),
               title: 'Error Loading Inventory',
               message: state.failure.message,
@@ -241,7 +248,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
         if (items.isEmpty) {
           return SliverFillRemaining(
             child: _NeuEmptyState(
-              icon: Icons.inventory_2_outlined,
+              svgAsset: SvgIcons.inventory,
               title: _searchQuery.isNotEmpty
                   ? 'No Results Found'
                   : _selectedCategory != null
@@ -300,10 +307,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
               boxShadow: isLowStock || isOutOfStock
                   ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.35)
                   : NeuShadow.color(context, _getCategoryColor(item.category), blur: 12, opacity: 0.28),
-              child: Icon(
-                _getCategoryIcon(item.category),
+              child: NeuSvgIcon(
+                _getCategorySvg(item.category),
                 size: 28,
-                color: AppColors.textOnPrimary,
               ),
             ),
           ),
@@ -418,11 +424,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
           ),
           const SizedBox(width: 8),
           // Chevron
-          Icon(
-            Icons.chevron_right_rounded,
-            color: _isDark ? AppColors.textTertiaryOnDark : AppColors.textTertiary,
-            size: 24,
-          ),
+          NeuSvgIcon(SvgIcons.chevronRight, size: 24),
         ],
       ),
     );
@@ -461,18 +463,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
     }
   }
 
-  IconData _getCategoryIcon(InventoryCategory category) {
+  String _getCategorySvg(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case InventoryCategory.vaccine:
-        return Icons.vaccines_rounded;
+        return SvgIcons.vaccination;
       case InventoryCategory.supply:
-        return Icons.inventory_rounded;
+        return SvgIcons.inventory;
       case InventoryCategory.equipment:
-        return Icons.precision_manufacturing_rounded;
+        return SvgIcons.microscope;
       case InventoryCategory.food:
-        return Icons.restaurant_rounded;
+        return SvgIcons.foodBowl;
     }
   }
 
@@ -524,8 +526,10 @@ class _InventoryListPageState extends State<InventoryListPage> {
             ),
             const SizedBox(height: 20),
             ...InventoryCategory.values.map((cat) => ListTile(
-                  leading: Icon(_getCategoryIcon(cat),
-                      color: _getCategoryColor(cat)),
+                  leading: NeuSvgIcon(
+                    _getCategorySvg(cat),
+                    size: 24,
+                  ),
                   title: Text(
                     cat.displayName,
                     style: AppTextStyles.bodyLarge.copyWith(
@@ -535,8 +539,10 @@ class _InventoryListPageState extends State<InventoryListPage> {
                     ),
                   ),
                   trailing: _selectedCategory == cat
-                      ? Icon(Icons.check_circle_rounded,
-                          color: _getCategoryColor(cat))
+                      ? NeuSvgIcon(
+                          SvgIcons.check,
+                          size: 24,
+                        )
                       : null,
                   onTap: () {
                     _onCategoryChanged(cat);
@@ -545,10 +551,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
                 )),
             const SizedBox(height: 12),
             ListTile(
-              leading: Icon(Icons.clear_all_rounded,
-                  color: _isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary),
+              leading: NeuSvgIcon(SvgIcons.close, size: 24),
               title: Text(
                 'Clear Filters',
                 style: AppTextStyles.bodyLarge.copyWith(
@@ -594,11 +597,7 @@ class _NotLoggedInView extends StatelessWidget {
                   variant: NeuVariant.raised,
                   color: AppColors.primary,
                   boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.35),
-                  child: const Icon(
-                    Icons.inventory_2_outlined,
-                    size: 80,
-                    color: AppColors.textOnPrimary,
-                  ),
+                  child: NeuSvgIcon(SvgIcons.inventory, size: 80),
                 ),
               ),
               const SizedBox(height: 28),
@@ -623,6 +622,7 @@ class _NotLoggedInView extends StatelessWidget {
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
+                svgAsset: SvgIcons.login,
                 size: NeuButtonSize.medium,
               ),
             ],
@@ -656,11 +656,7 @@ class _AccessDeniedView extends StatelessWidget {
                   variant: NeuVariant.raised,
                   color: AppColors.error,
                   boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.35),
-                  child: const Icon(
-                    Icons.block_rounded,
-                    size: 80,
-                    color: Colors.white,
-                  ),
+                  child: NeuSvgIcon(SvgIcons.block, size: 80),
                 ),
               ),
               const SizedBox(height: 28),
@@ -685,6 +681,7 @@ class _AccessDeniedView extends StatelessWidget {
                 text: 'Go Back',
                 onPressed: () => context.pop(),
                 icon: Icons.arrow_back_rounded,
+                svgAsset: SvgIcons.back,
                 variant: NeuButtonVariant.secondary,
                 size: NeuButtonSize.medium,
               ),
@@ -698,7 +695,7 @@ class _AccessDeniedView extends StatelessWidget {
 
 /// Neumorphic empty state.
 class _NeuEmptyState extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String message;
   final String? actionLabel;
@@ -706,7 +703,7 @@ class _NeuEmptyState extends StatelessWidget {
   final Color? iconColor;
 
   const _NeuEmptyState({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.message,
     this.actionLabel,
@@ -733,7 +730,9 @@ class _NeuEmptyState extends StatelessWidget {
                 variant: NeuVariant.raised,
                 color: color.withValues(alpha: 0.14),
                 boxShadow: NeuShadow.color(context, color, blur: 20, opacity: 0.18),
-                child: Icon(icon, size: 56, color: color),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: 56)
+                    : const SizedBox(width: 56, height: 56),
               ),
             ),
             const SizedBox(height: 28),
@@ -761,6 +760,7 @@ class _NeuEmptyState extends StatelessWidget {
                 onPressed: onAction,
                 variant: NeuButtonVariant.primary,
                 icon: Icons.add_rounded,
+                svgAsset: SvgIcons.add,
                 size: NeuButtonSize.medium,
               ),
             ],

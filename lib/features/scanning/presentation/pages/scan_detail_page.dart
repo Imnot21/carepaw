@@ -5,6 +5,7 @@ import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart'
     as scan_event;
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
@@ -75,7 +76,9 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
       leading: Padding(
         padding: const EdgeInsets.only(left: 8),
         child: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_rounded,
+          svgAsset: SvgIcons.back,
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -112,7 +115,9 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: NeuIconButton(
+            plain: true,
             icon: Icons.delete_outline_rounded,
+            svgAsset: SvgIcons.delete,
             onPressed: _showDeleteConfirmation,
             color: ThemeColors.error(context),
             tooltip: 'Delete',
@@ -137,10 +142,9 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 padding: const EdgeInsets.all(14),
                 borderRadius: 16,
                 color: typeColor,
-                child: Icon(
-                  _getTypeIcon(record.scanType),
+                child: NeuSvgIcon(
+                  _getTypeSvg(record.scanType),
                   size: 28,
-                  color: AppColors.textOnPrimary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -188,11 +192,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
           if (record.confidenceScore != null) ...[
             Row(
               children: [
-                Icon(
-                  Icons.analytics_rounded,
-                  size: 20,
-                  color: ThemeColors.textSecondary(context),
-                ),
+                NeuSvgIcon(SvgIcons.analytics, size: 20),
                 const SizedBox(width: 10),
                 Text(
                   'Confidence: ${(record.confidenceScore! * 100).toStringAsFixed(1)}%',
@@ -220,11 +220,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.image_rounded,
-                size: 20,
-                color: ThemeColors.textSecondary(context),
-              ),
+              NeuSvgIcon(SvgIcons.image, size: 20),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -252,11 +248,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 20,
-                color: ThemeColors.primary(context),
-              ),
+              NeuSvgIcon(SvgIcons.info, size: 20),
               const SizedBox(width: 10),
               Text(
                 'Details',
@@ -287,11 +279,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.text_fields_rounded,
-                size: 20,
-                color: ThemeColors.primary(context),
-              ),
+              NeuSvgIcon(SvgIcons.textField, size: 20),
               const SizedBox(width: 10),
               Text(
                 'Raw OCR Text',
@@ -331,11 +319,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.data_object_rounded,
-                size: 20,
-                color: ThemeColors.primary(context),
-              ),
+              NeuSvgIcon(SvgIcons.textField, size: 20),
               const SizedBox(width: 10),
               Text(
                 'Extracted Data',
@@ -408,6 +392,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               text: 'Confirm',
               variant: NeuButtonVariant.primary,
               icon: Icons.check_circle_rounded,
+              svgAsset: SvgIcons.success,
               onPressed: () {
                 context.read<ScanBloc>().add(
                   scan_event.ConfirmScanRecord(recordId: record.id!),
@@ -423,6 +408,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               text: 'Back to List',
               variant: NeuButtonVariant.secondary,
               icon: Icons.arrow_back_rounded,
+              svgAsset: SvgIcons.back,
               onPressed: () => Navigator.pop(context),
               expanded: true,
             ),
@@ -435,6 +421,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
             icon: isPending
                 ? Icons.close_rounded
                 : Icons.delete_outline_rounded,
+            svgAsset: isPending ? SvgIcons.close : SvgIcons.delete,
             onPressed: () {
               if (isPending) {
                 context.read<ScanBloc>().add(
@@ -499,18 +486,18 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
     }
   }
 
-  IconData _getTypeIcon(ScanType type) {
+  String _getTypeSvg(ScanType type) {
     switch (type) {
       case ScanType.receipt:
-        return Icons.receipt_rounded;
+        return SvgIcons.receipt;
       case ScanType.medicineBox:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case ScanType.prescription:
-        return Icons.description_rounded;
+        return SvgIcons.prescription;
       case ScanType.labReport:
-        return Icons.science_rounded;
+        return SvgIcons.lab;
       case ScanType.other:
-        return Icons.image_rounded;
+        return SvgIcons.image;
     }
   }
 }

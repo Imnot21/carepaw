@@ -8,6 +8,7 @@ import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -351,6 +352,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                     variant: NeuButtonVariant.primary,
                     size: NeuButtonSize.medium,
                     icon: Icons.person_add_outlined,
+                    svgAsset: SvgIcons.personAdd,
                   ),
                 ],
               ),
@@ -362,11 +364,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           // ---------- Existing Staff & Veterinarians ----------
           Row(
             children: [
-              Icon(
-                Icons.badge_outlined,
-                color: ThemeColors.textSecondary(context),
-                size: 20,
-              ),
+              NeuSvgIcon(SvgIcons.badge, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Accounts',
@@ -398,10 +396,10 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           NeuTextField(
             controller: _searchController,
             hint: 'Search by name or email',
-            prefixIcon: const Icon(Icons.search_outlined, size: 18),
+            prefixIcon: NeuSvgIcon(SvgIcons.search, size: 18),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 18),
+                    icon: NeuSvgIcon(SvgIcons.close, size: 18),
                     onPressed: () {
                       _searchDebounce?.cancel();
                       _searchController.clear();
@@ -457,11 +455,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.people_outlined,
-                    color: ThemeColors.textSecondary(context),
-                    size: 40,
-                  ),
+                  NeuSvgIcon(SvgIcons.people, size: 40),
                   const SizedBox(height: 8),
                   Text(
                     'No staff or veterinarian accounts yet.',
@@ -478,11 +472,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.search_off_outlined,
-                    color: ThemeColors.textSecondary(context),
-                    size: 40,
-                  ),
+                  NeuSvgIcon(SvgIcons.searchOff, size: 40),
                   const SizedBox(height: 8),
                   Text(
                     'No matches for "${_searchController.text.trim()}"${_roleFilter == null ? '' : ' in ${_roleFilter!.displayName}'}',
@@ -550,6 +540,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                 variant: NeuButtonVariant.outline,
                 size: NeuButtonSize.small,
                 icon: Icons.expand_more_rounded,
+                svgAsset: SvgIcons.chevronDown,
                 onPressed: () => setState(() {
                   _visibleCount = (_visibleCount + AppConstants.defaultPageSize)
                       .clamp(0, filtered.length);
@@ -587,9 +578,7 @@ class _RoleChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuChip(
       label: role.displayName,
-      icon: role == UserRole.petOwner
-          ? Icons.person_outline
-          : Icons.medical_services_outlined,
+      svgAsset: role == UserRole.petOwner ? SvgIcons.person : SvgIcons.visit,
       selected: selected,
       onTap: onTap,
       selectedColor: _color(context),
@@ -634,11 +623,8 @@ class _UserManagementCard extends StatelessWidget {
               color: roleColor(context, role).withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              role == UserRole.ownerAdmin
-                  ? Icons.medical_services_outlined
-                  : Icons.person_outline,
-              color: roleColor(context, role),
+            child: NeuSvgIcon(
+              role == UserRole.ownerAdmin ? SvgIcons.visit : SvgIcons.person,
               size: 22,
             ),
           ),
@@ -687,6 +673,7 @@ class _UserManagementCard extends StatelessWidget {
                   // dialog wired in the page; disabled while a mutation runs.
                   NeuIconButton(
                     icon: Icons.delete_outline_rounded,
+                    svgAsset: SvgIcons.delete,
                     tooltip: 'Delete account',
                     color: ThemeColors.error(context),
                     size: 20,

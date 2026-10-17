@@ -7,11 +7,13 @@ import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
+import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_medallion.dart';
@@ -117,6 +119,7 @@ class _HomeContent extends StatelessWidget {
                     actions: [
                       NeuIconButton(
                         icon: Icons.notifications_none_rounded,
+                        svgAsset: SvgIcons.notifications,
                         tooltip: 'Notifications',
                         onPressed: () => context.push(Routes.notifications),
                         plain: true,
@@ -174,11 +177,7 @@ class _PrimaryActionCard extends StatelessWidget {
             variant: NeuVariant.pressed,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(NeuTokens.spaceSm),
-            child: Icon(
-              Icons.calendar_month_outlined,
-              color: ThemeColors.primary(context),
-              size: NeuTokens.iconLg - 6,
-            ),
+            child: NeuSvgIcon(SvgIcons.calendar, size: NeuTokens.iconLg - 6),
           ),
           const SizedBox(width: NeuTokens.spaceMd),
           Expanded(
@@ -201,11 +200,7 @@ class _PrimaryActionCard extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 16,
-            color: ThemeColors.textTertiary(context),
-          ),
+          NeuSvgIcon(SvgIcons.forward, size: 16),
         ],
       ),
     );
@@ -252,7 +247,7 @@ class _PetSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final speciesColor = AppColors.accentForSpecies(pet.species.displayName);
-    final speciesIcon = _getSpeciesIcon(pet.species);
+    final speciesSvg = PetUtils.getSpeciesSvg(pet.species);
 
     return SizedBox(
       width: 134,
@@ -263,10 +258,10 @@ class _PetSummaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child:           CircleAvatar(
+              child: CircleAvatar(
                 radius: NeuTokens.spaceXl - 4,
                 backgroundColor: speciesColor.withValues(alpha: 0.12),
-                child: Icon(speciesIcon, color: speciesColor, size: 26),
+                child: NeuSvgIcon(speciesSvg, size: 32),
               ),
             ),
             const SizedBox(height: NeuTokens.spaceXs),
@@ -314,23 +309,6 @@ class _PetSummaryCard extends StatelessWidget {
     return '$months mo';
   }
 
-  IconData _getSpeciesIcon(PetSpecies species) {
-    switch (species) {
-      case PetSpecies.dog:
-        return Icons.pets;
-      case PetSpecies.cat:
-        return Icons.pets_outlined;
-      case PetSpecies.bird:
-        return Icons.flutter_dash;
-      case PetSpecies.rabbit:
-        return Icons.landscape_outlined;
-      case PetSpecies.reptile:
-        return Icons.eco_outlined;
-      case PetSpecies.other:
-        return Icons.help_outline;
-    }
-  }
-
   Color colorMix(Color c, BuildContext context, {required double light}) {
     return c.withValues(alpha: light);
   }
@@ -349,7 +327,7 @@ class _EmptyPetsPrompt extends StatelessWidget {
           NeuMedallion(
             radius: 56,
             color: ThemeColors.primary(context),
-            child: Icon(Icons.pets_outlined, size: 48, color: ThemeColors.primary(context)),
+            child: NeuSvgIcon(SvgIcons.paw, size: 48),
           ),
           const SizedBox(height: NeuTokens.spaceMd),
           Text(
@@ -371,6 +349,7 @@ class _EmptyPetsPrompt extends StatelessWidget {
             onPressed: () => context.push(Routes.petAdd),
             variant: NeuButtonVariant.primary,
             icon: Icons.add,
+            svgAsset: SvgIcons.add,
             expanded: true,
           ),
         ],
@@ -395,11 +374,7 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
                   variant: NeuVariant.pressed,
                   borderRadius: NeuTokens.radiusSm,
                   padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                  child: Icon(
-                    Icons.event_outlined,
-                    color: ThemeColors.primary(context),
-                    size: 22,
-                  ),
+                  child: NeuSvgIcon(SvgIcons.calendar, size: 22),
                 ),
                 const SizedBox(width: NeuTokens.tightGap),
                 Expanded(
@@ -430,6 +405,7 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
               onPressed: () => context.push(Routes.appointmentRequest),
               variant: NeuButtonVariant.secondary,
               icon: Icons.add,
+              svgAsset: SvgIcons.add,
               expanded: true,
             ),
           ],
@@ -455,7 +431,7 @@ class _QuickLinksList extends StatelessWidget {
     return Column(
       children: [
         _LinkTile(
-          icon: Icons.format_list_numbered_outlined,
+          svgAsset: SvgIcons.listNumbered,
           title: 'Queue status',
           subtitle: 'Check your place in line',
           onTap: () => context.push(Routes.queue),
@@ -467,10 +443,12 @@ class _QuickLinksList extends StatelessWidget {
           color: ThemeColors.divider(context),
         ),
         _LinkTile(
-          icon: Icons.medical_services_outlined,
+          svgAsset: SvgIcons.visit,
           title: 'Medical records',
-          subtitle: 'Health history & vaccinations',
-          onTap: () => context.push(Routes.medicalRecords),
+          subtitle: 'Pick a pet to view health history',
+          // Records need a pet (?petId=); send the owner to pick one —
+          // the pet detail screen links straight to its records.
+          onTap: () => context.push(Routes.pets),
         ),
         Divider(
           height: 1,
@@ -479,10 +457,11 @@ class _QuickLinksList extends StatelessWidget {
           color: ThemeColors.divider(context),
         ),
         _LinkTile(
-          icon: Icons.vaccines_outlined,
+          svgAsset: SvgIcons.vaccination,
           title: 'Vaccinations',
-          subtitle: 'Track immunization schedule',
-          onTap: () => context.push(Routes.medicalRecords),
+          subtitle: 'Pick a pet to track immunizations',
+          // No dedicated vaccinations route — same pet-picker path.
+          onTap: () => context.push(Routes.pets),
         ),
       ],
     );
@@ -490,13 +469,13 @@ class _QuickLinksList extends StatelessWidget {
 }
 
 class _LinkTile extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   const _LinkTile({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -518,11 +497,12 @@ class _LinkTile extends StatelessWidget {
               variant: NeuVariant.pressed,
               borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(NeuTokens.spaceXs),
-              child: Icon(
-                icon,
-                color: ThemeColors.primary(context),
-                size: NeuTokens.iconSm,
-              ),
+              child: svgAsset != null
+                  ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
+                  : SizedBox(
+                      width: NeuTokens.iconSm,
+                      height: NeuTokens.iconSm,
+                    ),
             ),
             const SizedBox(width: NeuTokens.tightGap),
             Expanded(
@@ -545,11 +525,7 @@ class _LinkTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              size: NeuTokens.iconSm + 2,
-              color: ThemeColors.textTertiary(context),
-            ),
+            NeuSvgIcon(SvgIcons.chevronRight, size: NeuTokens.iconSm + 2),
           ],
         ),
       ),

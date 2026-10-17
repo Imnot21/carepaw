@@ -55,6 +55,44 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
       if (event.petId != null) {
         // If petId is specified, load appointments for that pet
         appointments = await _repository.findByPet(event.petId!);
+      } else if (authState.user.isOwnerAdmin) {
+        // Clinic side sees every booking (requested included). The old code
+        // ran findByOwner(operator id) here, and the operator owns zero pets,
+        // so the admin list was always empty.
+        appointments = await _repository.findAll();
+        // One parallel batch (pets concurrently), not one query chain per
+        // booking — the sequential loop took minutes on slow networks.
+        // Single collection scan: derive the list from the enriched batch.
+        final details = await _repository.findAllWithPetDetails();
+        appointments = details.map((d) => d.appointment).toList();
+        final now = DateTime.now();
+        upcomingWithPetDetails =
+            details
+                .where(
+                  (a) =>
+                      a.appointment.scheduledAt.isAfter(now) &&
+                      !a.appointment.isTerminal,
+                )
+                .toList()
+              ..sort(
+                (a, b) => a.appointment.scheduledAt.compareTo(
+                  b.appointment.scheduledAt,
+                ),
+              );
+
+        pastWithPetDetails =
+            details
+                .where(
+                  (a) =>
+                      a.appointment.scheduledAt.isBefore(now) ||
+                      a.appointment.isTerminal,
+                )
+                .toList()
+              ..sort(
+                (a, b) => b.appointment.scheduledAt.compareTo(
+                  a.appointment.scheduledAt,
+                ),
+              );
       } else {
         // Load all appointments for all of user's pets via owner filter
         final ownerId = authState.user.id!;

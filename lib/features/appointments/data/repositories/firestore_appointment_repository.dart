@@ -57,6 +57,22 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
     if (toWrite.id == null) {
       toWrite = toWrite.copyWith(id: await _idSequence.next());
     }
+    // Rules require appointments.ownerId == users/{uid}.id. Stamp from the
+    // pet so owner creates pass; fall back to caller id when pet lookup fails.
+    if (toWrite.ownerId == 0) {
+      try {
+        final pet = await _petRepository.findById(toWrite.petId);
+        final ownerId = pet?.ownerId ?? CallerScope.appId;
+        if (ownerId != 0 && ownerId != -1) {
+          toWrite = toWrite.copyWith(ownerId: ownerId);
+        }
+      } catch (_) {
+        final fallbackId = CallerScope.appId;
+        if (fallbackId != 0 && fallbackId != -1) {
+          toWrite = toWrite.copyWith(ownerId: fallbackId);
+        }
+      }
+    }
     await _appointments
         .doc('${toWrite.id}')
         .set(AppointmentDocMapper.toData(toWrite));
@@ -216,6 +232,12 @@ class FirestoreAppointmentRepository implements AppointmentRepository {
     int ownerId,
   ) async {
     final appts = await findByOwner(ownerId);
+    return _enrichWithPets(appts);
+  }
+
+  @override
+  Future<List<AppointmentWithPetDetails>> findAllWithPetDetails() async {
+    final appts = await findAll();
     return _enrichWithPets(appts);
   }
 

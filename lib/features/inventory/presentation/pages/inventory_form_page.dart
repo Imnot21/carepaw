@@ -7,6 +7,7 @@ import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
@@ -86,18 +87,18 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
     }
   }
 
-  IconData _getCategoryIcon(InventoryCategory category) {
+  String _getCategorySvg(InventoryCategory category) {
     switch (category) {
       case InventoryCategory.medicine:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case InventoryCategory.vaccine:
-        return Icons.vaccines_rounded;
+        return SvgIcons.vaccination;
       case InventoryCategory.supply:
-        return Icons.inventory_rounded;
+        return SvgIcons.inventory;
       case InventoryCategory.equipment:
-        return Icons.precision_manufacturing_rounded;
+        return SvgIcons.microscope;
       case InventoryCategory.food:
-        return Icons.restaurant_rounded;
+        return SvgIcons.foodBowl;
     }
   }
 
@@ -124,7 +125,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
       leading: Padding(
         padding: const EdgeInsets.only(left: 8),
         child: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_ios_new_rounded,
+          svgAsset: SvgIcons.back,
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -148,10 +151,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                       blur: 16,
                       opacity: 0.3,
                     ),
-                    child: Icon(
-                      _getCategoryIcon(_selectedCategory),
+                    child: NeuSvgIcon(
+                      _getCategorySvg(_selectedCategory),
                       size: 32,
-                      color: AppColors.textOnPrimary,
                     ),
                   ),
                 ),
@@ -211,7 +213,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               NeuTextField(
                 controller: _nameController,
                 hint: 'Enter item name',
-                prefixIcon: const Icon(Icons.inventory_2_rounded),
+                prefixIcon: NeuSvgIcon(SvgIcons.inventory, size: 20),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Item name is required';
@@ -233,7 +235,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                         NeuTextField(
                           controller: _unitController,
                           hint: 'e.g., tablets, ml, units',
-                          prefixIcon: const Icon(Icons.straighten_rounded),
+                          prefixIcon: NeuSvgIcon(SvgIcons.ruler, size: 20),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Unit is required';
@@ -255,7 +257,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                           controller: _minStockController,
                           hint: '0',
                           keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.warning_amber_rounded),
+                          prefixIcon: NeuSvgIcon(SvgIcons.alert, size: 20),
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
@@ -290,7 +292,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                           controller: _maxStockController,
                           hint: 'e.g., 1000',
                           keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.flag_rounded),
+                          prefixIcon: NeuSvgIcon(SvgIcons.flag, size: 20),
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
@@ -324,7 +326,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                           controller: _unitCostController,
                           hint: 'e.g., 12.50',
                           keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.attach_money_rounded),
+                          prefixIcon: NeuSvgIcon(SvgIcons.money, size: 20),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(r'[0-9.]'),
@@ -359,7 +361,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                         NeuTextField(
                           controller: _supplierController,
                           hint: 'Supplier name',
-                          prefixIcon: const Icon(Icons.local_shipping_rounded),
+                          prefixIcon: NeuSvgIcon(SvgIcons.truck, size: 20),
                         ),
                       ],
                     ),
@@ -374,7 +376,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                         NeuTextField(
                           controller: _locationController,
                           hint: 'Storage location',
-                          prefixIcon: const Icon(Icons.location_on_rounded),
+                          prefixIcon: NeuSvgIcon(SvgIcons.location, size: 20),
                         ),
                       ],
                     ),
@@ -420,10 +422,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                               blur: 12,
                               opacity: 0.28,
                             ),
-                            child: Icon(
-                              _getCategoryIcon(_selectedCategory),
+                            child: NeuSvgIcon(
+                              _getCategorySvg(_selectedCategory),
                               size: 24,
-                              color: AppColors.textOnPrimary,
                             ),
                           ),
                         ),
@@ -514,7 +515,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               final isSelected = _selectedCategory == category;
               return NeuChip(
                 label: category.displayName,
-                icon: _getCategoryIcon(category),
+                svgAsset: _getCategorySvg(category),
                 selected: isSelected,
                 selectedColor: _getCategoryColor(category),
                 onTap: () => setState(() => _selectedCategory = category),
@@ -565,6 +566,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                     : (_isEditing ? 'Update Item' : 'Create Item'),
                 variant: NeuButtonVariant.primary,
                 icon: _isEditing ? Icons.save_rounded : Icons.add_rounded,
+                svgAsset: _isEditing ? SvgIcons.save : SvgIcons.add,
                 isLoading: _isLoading,
                 onPressed: _isLoading ? null : _saveItem,
                 expanded: true,

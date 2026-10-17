@@ -17,6 +17,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_medallion.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
@@ -141,14 +142,16 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       child: NeuTextField(
         controller: _searchController,
         hint: 'Search appointments...',
-        prefixIcon: Icon(
-          Icons.search_rounded,
-          color: ThemeColors.textSecondary(context),
+        prefixIcon: ClayIconOrMaterial(
+          'search_rounded',
+          fallback: Icons.search_rounded,
           size: 24,
+          color: ThemeColors.textSecondary(context),
         ),
         suffixIcon: _searchController.text.isNotEmpty
             ? NeuIconButton(
                 icon: Icons.clear_rounded,
+                svgAsset: SvgIcons.close,
                 size: 22,
                 color: ThemeColors.textSecondary(context),
                 onPressed: () {
@@ -197,6 +200,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       text: 'New Appointment',
       onPressed: _navigateToCreateAppointment,
       icon: Icons.add,
+      svgAsset: SvgIcons.add,
       variant: NeuButtonVariant.primary,
       size: NeuButtonSize.medium,
       expanded: true,
@@ -291,8 +295,11 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             NeuMedallion(
               radius: 70,
               color: accent,
-              child: Icon(
-                isUpcoming ? Icons.calendar_today_outlined : Icons.history_outlined,
+              child: ClayIconOrMaterial(
+                isUpcoming ? 'calendar_today_outlined' : 'history_outlined',
+                fallback: isUpcoming
+                    ? Icons.calendar_today_outlined
+                    : Icons.history_outlined,
                 size: 56,
                 color: accent,
               ),
@@ -343,7 +350,12 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             NeuMedallion(
               radius: 70,
               color: ThemeColors.error(context),
-              child: Icon(Icons.error_outline_rounded, size: 56, color: ThemeColors.error(context)),
+              child: ClayIconOrMaterial(
+                'error_outline_rounded',
+                fallback: Icons.error_outline_rounded,
+                size: 56,
+                color: ThemeColors.error(context),
+              ),
             ),
             const SizedBox(height: 28),
             Text(
@@ -373,6 +385,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
                   );
                 },
                 icon: Icons.refresh_rounded,
+                svgAsset: SvgIcons.refresh,
                 variant: NeuButtonVariant.primary,
                 expanded: true,
               ),
@@ -456,6 +469,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
           text: 'Yes, Cancel',
           variant: NeuButtonVariant.destructive,
           icon: Icons.cancel_rounded,
+          svgAsset: SvgIcons.error,
           onPressed: () {
             context.pop();
             context.read<AppointmentBloc>().add(
@@ -493,8 +507,7 @@ class _AppointmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(context, appointment.status);
     final isUpcoming = appointment.isUpcoming;
-    final speciesColor = _getSpeciesColor(pet?.species);
-    final speciesIcon = _getSpeciesIcon(pet?.species);
+    final speciesSvg = _getSpeciesSvg(pet?.species);
     final textPrimary = ThemeColors.textPrimary(context);
     final textSecondary = ThemeColors.textSecondary(context);
 
@@ -555,7 +568,7 @@ class _AppointmentCard extends StatelessWidget {
                 padding: const EdgeInsets.all(NeuTokens.spaceSm),
                 borderRadius: NeuTokens.radiusMd,
                 variant: NeuVariant.flat,
-                child: Icon(speciesIcon, color: speciesColor, size: 24),
+                child: NeuSvgIcon(speciesSvg, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -604,11 +617,7 @@ class _AppointmentCard extends StatelessWidget {
                     borderRadius: NeuTokens.radiusSm,
                     variant: NeuVariant.flat,
                     color: ThemeColors.primary(context).withValues(alpha: 0.15),
-                    child: Icon(
-                      Icons.medical_services_outlined,
-                      size: 18,
-                      color: ThemeColors.primary(context),
-                    ),
+                    child: NeuSvgIcon(SvgIcons.visit, size: 18),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -635,11 +644,7 @@ class _AppointmentCard extends StatelessWidget {
                   padding: const EdgeInsets.all(NeuTokens.spaceXs - 2),
                   borderRadius: NeuTokens.radiusXs,
                   variant: NeuVariant.flat,
-                  child: Icon(
-                    Icons.timer_outlined,
-                    size: 16,
-                    color: ThemeColors.textSecondary(context),
-                  ),
+                  child: NeuSvgIcon(SvgIcons.schedule, size: 16),
                 ),
                 const SizedBox(width: 10),
                 Text(
@@ -681,6 +686,7 @@ class _AppointmentCard extends StatelessWidget {
                       onPressed: onCheckIn,
                       variant: NeuButtonVariant.outline,
                       icon: Icons.check_circle_outline_rounded,
+                      svgAsset: SvgIcons.success,
                       size: NeuButtonSize.medium,
                       expanded: true,
                     ),
@@ -694,6 +700,7 @@ class _AppointmentCard extends StatelessWidget {
                       },
                       variant: NeuButtonVariant.outline,
                       icon: Icons.play_arrow_outlined,
+                      svgAsset: SvgIcons.play,
                       size: NeuButtonSize.medium,
                       expanded: true,
                     ),
@@ -707,6 +714,7 @@ class _AppointmentCard extends StatelessWidget {
                       },
                       variant: NeuButtonVariant.outline,
                       icon: Icons.check_circle_outlined,
+                      svgAsset: SvgIcons.success,
                       size: NeuButtonSize.medium,
                       expanded: true,
                     ),
@@ -716,6 +724,7 @@ class _AppointmentCard extends StatelessWidget {
                       onPressed: onCancel,
                       variant: NeuButtonVariant.ghost,
                       icon: Icons.cancel_outlined,
+                      svgAsset: SvgIcons.error,
                       size: NeuButtonSize.medium,
                       expanded: true,
                     ),
@@ -724,6 +733,7 @@ class _AppointmentCard extends StatelessWidget {
                     onPressed: onTap,
                     variant: NeuButtonVariant.ghost,
                     icon: Icons.visibility_outlined,
+                    svgAsset: SvgIcons.visibility,
                     size: NeuButtonSize.medium,
                     expanded: true,
                   ),
@@ -742,6 +752,7 @@ class _AppointmentCard extends StatelessWidget {
                           onPressed: onCancel,
                           variant: NeuButtonVariant.outline,
                           icon: Icons.cancel_outlined,
+                          svgAsset: SvgIcons.error,
                           size: NeuButtonSize.medium,
                           expanded: true,
                         ),
@@ -757,6 +768,7 @@ class _AppointmentCard extends StatelessWidget {
                         onPressed: onTap,
                         variant: NeuButtonVariant.primary,
                         icon: Icons.visibility_outlined,
+                        svgAsset: SvgIcons.visibility,
                         size: NeuButtonSize.medium,
                         expanded: true,
                       ),
@@ -785,6 +797,7 @@ class _AppointmentCard extends StatelessWidget {
                 onPressed: onTap,
                 variant: NeuButtonVariant.primary,
                 icon: Icons.visibility_outlined,
+                svgAsset: SvgIcons.visibility,
                 size: NeuButtonSize.medium,
                 expanded: true,
               ),
@@ -839,34 +852,8 @@ class _AppointmentCard extends StatelessWidget {
     return DateFormat('MMM d, y \'at\' jm').format(dateTime);
   }
 
-  Color _getSpeciesColor(PetSpecies? species) {
-    return switch (species) {
-      PetSpecies.dog => PetUtils.getSpeciesColor(PetSpecies.dog),
-      PetSpecies.cat => PetUtils.getSpeciesColor(PetSpecies.cat),
-      PetSpecies.bird => PetUtils.getSpeciesColor(PetSpecies.bird),
-      PetSpecies.rabbit => PetUtils.getSpeciesColor(PetSpecies.rabbit),
-      PetSpecies.reptile => PetUtils.getSpeciesColor(PetSpecies.reptile),
-      PetSpecies.other => const Color(0xFF6B7280),
-      null => const Color(0xFF6B7280),
-    };
-  }
-
-  IconData _getSpeciesIcon(PetSpecies? species) {
-    switch (species) {
-      case PetSpecies.dog:
-        return Icons.pets;
-      case PetSpecies.cat:
-        return Icons.pets_outlined;
-      case PetSpecies.bird:
-        return Icons.flutter_dash;
-      case PetSpecies.rabbit:
-        return Icons.landscape_outlined;
-      case PetSpecies.reptile:
-        return Icons.eco_outlined;
-      case PetSpecies.other:
-        return Icons.help_outline;
-      default:
-        return Icons.pets;
-    }
+  String _getSpeciesSvg(PetSpecies? species) {
+    if (species == null) return SvgIcons.otherPet;
+    return PetUtils.getSpeciesSvg(species);
   }
 }

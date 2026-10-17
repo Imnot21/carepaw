@@ -179,6 +179,7 @@ class _PetFormPageState extends State<PetFormPage> {
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: NeuIconButton(
+            plain: true,
             icon: Icons.arrow_back_rounded,
             tooltip: 'Back',
             onPressed: () => Navigator.of(context).pop(),
@@ -204,7 +205,7 @@ class _PetFormPageState extends State<PetFormPage> {
                     children: [
                       NeuAvatar(
                         radius: 50,
-                        icon: PetUtils.getSpeciesIcon(_selectedSpecies),
+                        customIcon: PetUtils.getSpeciesCustomIcon(_selectedSpecies),
                         backgroundColor: PetUtils.getSpeciesColor(
                           _selectedSpecies,
                         ).withValues(alpha: 0.14),
@@ -477,7 +478,7 @@ class _PetSpeciesSelector extends StatelessWidget {
             final color = PetUtils.getSpeciesColor(species);
             return NeuChip(
               label: PetUtils.formatSpecies(species),
-              icon: PetUtils.getSpeciesIcon(species),
+              svgAsset: PetUtils.getSpeciesSvg(species),
               selected: isSelected,
               selectedColor: color,
               onTap: () => onChanged(species),

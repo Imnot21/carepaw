@@ -6,6 +6,7 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 class Appointment extends Equatable {
   final int? id;
   final int petId;
+  final int ownerId;
   final int veterinarianId;
   final DateTime scheduledAt;
   final int durationMinutes;
@@ -27,6 +28,7 @@ class Appointment extends Equatable {
   const Appointment({
     this.id,
     required this.petId,
+    this.ownerId = 0,
     required this.veterinarianId,
     required this.scheduledAt,
     this.durationMinutes = 30,
@@ -49,8 +51,13 @@ class Appointment extends Equatable {
       status == AppointmentStatus.cancelled ||
       status == AppointmentStatus.noShow;
 
-  /// Check if appointment can be checked in
-  bool get canCheckIn => status == AppointmentStatus.confirmed;
+  /// Check if appointment can be checked in.
+  ///
+  /// Confirmed bookings and rescheduled ones (date changed after booking,
+  /// still a valid upcoming visit) may check in at the clinic.
+  bool get canCheckIn =>
+      status == AppointmentStatus.confirmed ||
+      status == AppointmentStatus.rescheduled;
 
   /// Check if appointment can be started
   bool get canStart => status == AppointmentStatus.checkedIn;
@@ -85,6 +92,7 @@ class Appointment extends Equatable {
   List<Object?> get props => [
     id,
     petId,
+    ownerId,
     veterinarianId,
     scheduledAt,
     durationMinutes,
@@ -104,6 +112,7 @@ class Appointment extends Equatable {
   Appointment copyWith({
     int? id,
     int? petId,
+    int? ownerId,
     int? veterinarianId,
     DateTime? scheduledAt,
     int? durationMinutes,
@@ -122,6 +131,7 @@ class Appointment extends Equatable {
     return Appointment(
       id: id ?? this.id,
       petId: petId ?? this.petId,
+      ownerId: ownerId ?? this.ownerId,
       veterinarianId: veterinarianId ?? this.veterinarianId,
       scheduledAt: scheduledAt ?? this.scheduledAt,
       durationMinutes: durationMinutes ?? this.durationMinutes,

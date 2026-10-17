@@ -4,6 +4,7 @@ import '../../../app/theme/design_tokens.dart';
 import 'neu_button.dart';
 import 'neu_container.dart';
 import 'neu_shadows.dart';
+import 'neu_svg_icon.dart';
 
 /// The three states every data screen has to answer for.
 ///
@@ -18,6 +19,7 @@ import 'neu_shadows.dart';
 /// Nothing to show yet, and here is how to fix that.
 class NeuEmptyState extends StatelessWidget {
   final IconData icon;
+  final String? svgAsset;
   final String title;
   final String message;
 
@@ -36,6 +38,7 @@ class NeuEmptyState extends StatelessWidget {
   const NeuEmptyState({
     super.key,
     required this.icon,
+    this.svgAsset,
     required this.title,
     required this.message,
     this.actionLabel,
@@ -60,7 +63,11 @@ class NeuEmptyState extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _Medallion(icon: icon, color: ThemeColors.primary(context)),
+              _Medallion(
+                icon: icon,
+                svgAsset: svgAsset,
+                color: ThemeColors.primary(context),
+              ),
               const SizedBox(height: NeuTokens.spaceLg),
               Text(
                 title,
@@ -112,9 +119,10 @@ class NeuEmptyState extends StatelessWidget {
 /// should get.
 class _Medallion extends StatelessWidget {
   final IconData icon;
+  final String? svgAsset;
   final Color color;
 
-  const _Medallion({required this.icon, required this.color});
+  const _Medallion({required this.icon, this.svgAsset, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +131,9 @@ class _Medallion extends StatelessWidget {
       shape: const CircleBorder(),
       padding: const EdgeInsets.all(NeuTokens.spaceLg),
       boxShadow: NeuShadow.inset(context),
-      child: Icon(icon, size: 30, color: color),
+      child: svgAsset != null
+          ? NeuSvgIcon(svgAsset!, size: 30)
+          : Icon(icon, size: 30, color: color),
     );
   }
 }
@@ -139,6 +149,7 @@ class NeuErrorState extends StatelessWidget {
   final String? retryLabel;
   final VoidCallback? onRetry;
   final IconData icon;
+  final String? svgAsset;
 
   const NeuErrorState({
     super.key,
@@ -147,6 +158,7 @@ class NeuErrorState extends StatelessWidget {
     this.retryLabel = 'Try again',
     this.onRetry,
     this.icon = Icons.cloud_off_rounded,
+    this.svgAsset,
   });
 
   @override
@@ -168,7 +180,9 @@ class NeuErrorState extends StatelessWidget {
                 variant: NeuVariant.inset,
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(NeuTokens.spaceLg),
-                child: Icon(icon, size: 30, color: ThemeColors.error(context)),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: 30)
+                    : Icon(icon, size: 30, color: ThemeColors.error(context)),
               ),
               const SizedBox(height: NeuTokens.spaceLg),
               Text(
@@ -193,6 +207,7 @@ class NeuErrorState extends StatelessWidget {
                   onPressed: onRetry,
                   variant: NeuButtonVariant.outline,
                   icon: Icons.refresh_rounded,
+                  svgAsset: SvgIcons.refresh,
                   expanded: true,
                 ),
               ],

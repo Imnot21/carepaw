@@ -11,6 +11,7 @@ import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
@@ -91,11 +92,7 @@ class _AccessDeniedView extends StatelessWidget {
               variant: NeuVariant.inset,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(NeuTokens.spaceLg),
-              child: Icon(
-                Icons.block_rounded,
-                size: 48,
-                color: ThemeColors.error(context),
-              ),
+              child: NeuSvgIcon(SvgIcons.block, size: 48),
             ),
             const SizedBox(height: NeuTokens.spaceLg),
             Text(
@@ -185,7 +182,9 @@ class _StaffDashboardContent extends StatelessWidget {
                 ),
                 actions: [
                   NeuIconButton(
+                    plain: true,
                     icon: Icons.notifications_none_rounded,
+                    svgAsset: SvgIcons.notifications,
                     tooltip: 'Notifications',
                     onPressed: () => context.push(Routes.notifications),
                   ),
@@ -264,7 +263,7 @@ class _StaffQuickStatsSection extends StatelessWidget {
                   child: _StatCard(
                     label: 'Waiting',
                     value: '$waiting',
-                    icon: Icons.schedule_outlined,
+                    svgAsset: SvgIcons.schedule,
                     color: ThemeColors.warning(context),
                     trend: 'pets',
                   ),
@@ -274,7 +273,7 @@ class _StaffQuickStatsSection extends StatelessWidget {
                   child: _StatCard(
                     label: 'In room',
                     value: '$inRoom',
-                    icon: Icons.door_front_door_outlined,
+                    svgAsset: SvgIcons.door,
                     color: ThemeColors.primary(context),
                     trend: 'active',
                   ),
@@ -284,7 +283,7 @@ class _StaffQuickStatsSection extends StatelessWidget {
                   child: _StatCard(
                     label: 'Now serving',
                     value: currentServing > 0 ? '#$currentServing' : '\u2014',
-                    icon: Icons.person_outline,
+                    svgAsset: SvgIcons.person,
                     color: ThemeColors.success(context),
                     trend: 'next',
                   ),
@@ -301,14 +300,14 @@ class _StaffQuickStatsSection extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
-  final IconData icon;
+  final String? svgAsset;
   final Color color;
   final String trend;
 
   const _StatCard({
     required this.label,
     required this.value,
-    required this.icon,
+    this.svgAsset,
     required this.color,
     required this.trend,
   });
@@ -325,7 +324,12 @@ class _StatCard extends StatelessWidget {
                 variant: NeuVariant.pressed,
                 borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                child: Icon(icon, color: color, size: NeuTokens.iconSm),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
+                    : SizedBox(
+                        width: NeuTokens.iconSm,
+                        height: NeuTokens.iconSm,
+                      ),
               ),
               const Spacer(),
               Text(
@@ -386,42 +390,42 @@ class _StaffQuickActionsSection extends StatelessWidget {
           childAspectRatio: 0.9,
           children: [
             _StaffActionCard(
-              icon: Icons.queue_outlined,
+              svgAsset: SvgIcons.queue,
               label: 'Manage\nqueue',
               onTap: () => context.push(Routes.staffQueue),
             ),
             _StaffActionCard(
-              icon: Icons.calendar_month_outlined,
+              svgAsset: SvgIcons.calendar,
               label: 'View\nappointments',
               onTap: () => context.push(Routes.staffAppointments),
             ),
             _StaffActionCard(
-              icon: Icons.inventory_2_outlined,
+              svgAsset: SvgIcons.inventory,
               label: 'Check\ninventory',
               onTap: () => context.push(Routes.staffInventory),
             ),
             _StaffActionCard(
-              icon: Icons.scanner_outlined,
+              svgAsset: SvgIcons.scan,
               label: 'Scan\nmedicine',
               onTap: () => context.push(Routes.staffScanning),
             ),
             _StaffActionCard(
-              icon: Icons.add_circle_outline,
+              svgAsset: SvgIcons.add,
               label: 'Add\nappointment',
               onTap: () => context.push(Routes.staffAppointments),
             ),
             _StaffActionCard(
-              icon: Icons.assignment_outlined,
+              svgAsset: SvgIcons.receipt,
               label: 'Daily\nreport',
               onTap: () => _showComingSoon(context, 'Daily report'),
             ),
             _StaffActionCard(
-              icon: Icons.people_outlined,
+              svgAsset: SvgIcons.people,
               label: 'Walk-in\ncheck-in',
               onTap: () => _showComingSoon(context, 'Walk-in check-in'),
             ),
             _StaffActionCard(
-              icon: Icons.print_outlined,
+              svgAsset: SvgIcons.print,
               label: 'Print\nqueue',
               onTap: () => _showComingSoon(context, 'Print queue'),
             ),
@@ -437,12 +441,12 @@ class _StaffQuickActionsSection extends StatelessWidget {
 }
 
 class _StaffActionCard extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String label;
   final VoidCallback onTap;
 
   const _StaffActionCard({
-    required this.icon,
+    this.svgAsset,
     required this.label,
     required this.onTap,
   });
@@ -460,7 +464,12 @@ class _StaffActionCard extends StatelessWidget {
             variant: NeuVariant.pressed,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(NeuTokens.spaceXs),
-            child: Icon(icon, color: accent, size: NeuTokens.iconLg - 4),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconLg - 4)
+                : SizedBox(
+                    width: NeuTokens.iconLg - 4,
+                    height: NeuTokens.iconLg - 4,
+                  ),
           ),
           const SizedBox(height: NeuTokens.spaceXs),
           Flexible(
@@ -683,11 +692,7 @@ class _EmptyQueuePreview extends StatelessWidget {
             variant: NeuVariant.inset,
             shape: const CircleBorder(),
             padding: const EdgeInsets.all(NeuTokens.spaceLg),
-            child: Icon(
-              Icons.queue_outlined,
-              size: 48,
-              color: ThemeColors.primary(context),
-            ),
+            child: NeuSvgIcon(SvgIcons.queue, size: 48),
           ),
           const SizedBox(height: NeuTokens.spaceMd),
           Text(
@@ -733,14 +738,14 @@ class _StaffQuickLinksSection extends StatelessWidget {
           child: Column(
             children: [
               _LinkTile(
-                icon: Icons.notifications_none_rounded,
+                svgAsset: SvgIcons.notifications,
                 title: 'Notifications',
                 subtitle: 'Appointment reminders & updates',
                 onTap: () => context.push(Routes.notifications),
               ),
               NeuDivider(indent: 56),
               _LinkTile(
-                icon: Icons.medical_services_outlined,
+                svgAsset: SvgIcons.visit,
                 title: 'Medical records',
                 subtitle: 'View patient health history',
                 onTap: () =>
@@ -748,7 +753,7 @@ class _StaffQuickLinksSection extends StatelessWidget {
               ),
               NeuDivider(indent: 56),
               _LinkTile(
-                icon: Icons.inventory_2_outlined,
+                svgAsset: SvgIcons.inventory,
                 title: 'Low stock alerts',
                 subtitle: 'Medicines needing restock',
                 onTap: () =>
@@ -763,13 +768,13 @@ class _StaffQuickLinksSection extends StatelessWidget {
 }
 
 class _LinkTile extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   const _LinkTile({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -791,11 +796,12 @@ class _LinkTile extends StatelessWidget {
               variant: NeuVariant.pressed,
               borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(NeuTokens.spaceXs),
-              child: Icon(
-                icon,
-                color: ThemeColors.primary(context),
-                size: NeuTokens.iconSm,
-              ),
+              child: svgAsset != null
+                  ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
+                  : SizedBox(
+                      width: NeuTokens.iconSm,
+                      height: NeuTokens.iconSm,
+                    ),
             ),
             const SizedBox(width: NeuTokens.tightGap),
             Expanded(
@@ -817,7 +823,7 @@ class _LinkTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: ThemeColors.textTertiary(context)),
+            NeuSvgIcon(SvgIcons.chevronRight, size: NeuTokens.iconSm),
           ],
         ),
       ),

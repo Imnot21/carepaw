@@ -5,6 +5,7 @@ import 'package:carepaw/features/notifications/domain/entities/notification.dart
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
@@ -66,7 +67,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       leading: NeuIconButton(
+        plain: true,
         icon: Icons.arrow_back_rounded,
+        svgAsset: SvgIcons.back,
         onPressed: () => Navigator.pop(context),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -105,7 +108,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       actions: [
         if (!notification.isRead)
           NeuIconButton(
+            plain: true,
             icon: Icons.mark_email_read_rounded,
+            svgAsset: SvgIcons.email,
             onPressed: () {
               context.read<NotificationBloc>().add(
                 MarkAsRead(notification.id!),
@@ -117,7 +122,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           ),
         const SizedBox(width: 8),
         NeuIconButton(
+          plain: true,
           icon: Icons.delete_outline_rounded,
+          svgAsset: SvgIcons.delete,
           onPressed: _showDeleteConfirmation,
           tooltip: 'Delete',
           color: ThemeColors.error(context),
@@ -141,7 +148,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             children: [
               NeuAvatar(
                 radius: 22,
-                icon: _getTypeIcon(notification.type),
+                svgAsset: _getTypeSvg(notification.type),
                 backgroundColor: typeColor,
                 foregroundColor: AppColors.textOnPrimary,
               ),
@@ -173,11 +180,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.fiber_new_rounded,
-                              size: 12,
-                              color: AppColors.textOnPrimary,
-                            ),
+                            NeuSvgIcon(SvgIcons.sparkles, size: 12),
                             const SizedBox(width: 4),
                             Text(
                               'Unread',
@@ -227,11 +230,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 20,
-                color: ThemeColors.primary(context),
-              ),
+              NeuSvgIcon(SvgIcons.info, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Details',
@@ -309,6 +308,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               text: 'Mark as Read',
               variant: NeuButtonVariant.primary,
               icon: Icons.mark_email_read_rounded,
+              svgAsset: SvgIcons.email,
               onPressed: () {
                 context.read<NotificationBloc>().add(
                   MarkAsRead(notification.id!),
@@ -324,6 +324,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               text: 'Back to List',
               variant: NeuButtonVariant.secondary,
               icon: Icons.arrow_back_rounded,
+              svgAsset: SvgIcons.back,
               onPressed: () => Navigator.pop(context),
               expanded: true,
             ),
@@ -334,6 +335,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             text: 'Delete',
             variant: NeuButtonVariant.outline,
             icon: Icons.delete_outline_rounded,
+            svgAsset: SvgIcons.delete,
             onPressed: _showDeleteConfirmation,
             expanded: true,
           ),
@@ -390,18 +392,18 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     }
   }
 
-  IconData _getTypeIcon(domain.NotificationType type) {
+  String _getTypeSvg(domain.NotificationType type) {
     switch (type) {
       case domain.NotificationType.appointmentReminder:
-        return Icons.calendar_today_rounded;
+        return SvgIcons.calendar;
       case domain.NotificationType.queueUpdate:
-        return Icons.queue_rounded;
+        return SvgIcons.queue;
       case domain.NotificationType.prescriptionReady:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case domain.NotificationType.inventoryLow:
-        return Icons.inventory_rounded;
+        return SvgIcons.inventory;
       case domain.NotificationType.system:
-        return Icons.settings_rounded;
+        return SvgIcons.settings;
     }
   }
 }

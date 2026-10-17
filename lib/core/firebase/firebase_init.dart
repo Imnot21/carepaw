@@ -1,6 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter/foundation.dart';
 import '../../firebase_options.dart' as firebase_options;
 
 /// Firebase initialization and configuration.
@@ -74,14 +72,12 @@ class FirebaseInit {
   /// - Release Android: Play Integrity
   /// - Release iOS: DeviceCheck
   static Future<void> _configureAppCheck() async {
-    if (!kDebugMode) {
-      // Production providers
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
-        appleProvider: AppleProvider.deviceCheck,
-        webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-      );
-    }
+    // App Check fully disabled until real providers are provisioned.
+    // The placeholder reCAPTCHA key broke web release (recaptcha-error on
+    // every Auth/Firestore call, appointments never save), and the App Check
+    // API is not enabled for this project. Re-enable per-platform with real
+    // keys before prod/defense.
+    return;
   }
 
   /// Configure Firestore settings.

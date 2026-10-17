@@ -10,6 +10,7 @@ import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 
 /// Home screen for the Owner/Admin — the paper-aligned single clinic
@@ -50,11 +51,7 @@ class _AccessDeniedView extends StatelessWidget {
               variant: NeuVariant.inset,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(NeuTokens.spaceLg),
-              child: Icon(
-                Icons.block_rounded,
-                size: 48,
-                color: ThemeColors.error(context),
-              ),
+              child: NeuSvgIcon(SvgIcons.block, size: 48),
             ),
             const SizedBox(height: NeuTokens.spaceLg),
             Text(
@@ -118,7 +115,9 @@ class _ClinicDashboardContent extends StatelessWidget {
           ),
           actions: [
             NeuIconButton(
+              plain: true,
               icon: Icons.notifications_none_rounded,
+              svgAsset: SvgIcons.notifications,
               tooltip: 'Notifications',
               onPressed: () => context.push(Routes.notifications),
             ),
@@ -152,32 +151,32 @@ class _ClinicDashboardContent extends StatelessWidget {
                   childAspectRatio: 0.95,
                   children: [
                     _ClinicActionCard(
-                      icon: Icons.calendar_month_outlined,
+                      svgAsset: SvgIcons.calendar,
                       label: 'Bookings',
                       onTap: () => context.push(Routes.staffAppointments),
                     ),
                     _ClinicActionCard(
-                      icon: Icons.format_list_numbered_outlined,
+                      svgAsset: SvgIcons.listNumbered,
                       label: 'Line',
                       onTap: () => context.push(Routes.staffQueue),
                     ),
                     _ClinicActionCard(
-                      icon: Icons.people_outline_rounded,
+                      svgAsset: SvgIcons.people,
                       label: 'Patients',
                       onTap: () => context.push(Routes.vetPatients),
                     ),
                     _ClinicActionCard(
-                      icon: Icons.medical_services_outlined,
+                      svgAsset: SvgIcons.visit,
                       label: 'Records',
                       onTap: () => context.push(Routes.vetPatients),
                     ),
                     _ClinicActionCard(
-                      icon: Icons.inventory_2_outlined,
+                      svgAsset: SvgIcons.inventory,
                       label: 'Stock',
                       onTap: () => context.push(Routes.staffInventory),
                     ),
                     _ClinicActionCard(
-                      icon: Icons.document_scanner_outlined,
+                      svgAsset: SvgIcons.scan,
                       label: 'Scan',
                       onTap: () => context.push(Routes.staffScanning),
                     ),
@@ -200,12 +199,12 @@ class _ClinicDashboardContent extends StatelessWidget {
 }
 
 class _ClinicActionCard extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String label;
   final VoidCallback onTap;
 
   const _ClinicActionCard({
-    required this.icon,
+    this.svgAsset,
     required this.label,
     required this.onTap,
   });
@@ -223,7 +222,12 @@ class _ClinicActionCard extends StatelessWidget {
             variant: NeuVariant.pressed,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(NeuTokens.spaceXs),
-            child: Icon(icon, color: accent, size: NeuTokens.iconLg - 4),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconLg - 4)
+                : const SizedBox(
+                    width: NeuTokens.iconLg - 4,
+                    height: NeuTokens.iconLg - 4,
+                  ),
           ),
           const SizedBox(height: NeuTokens.spaceXs),
           Flexible(

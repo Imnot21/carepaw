@@ -4,6 +4,7 @@ import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
 import 'neu_style.dart';
+import 'neu_svg_icon.dart';
 
 enum NeuButtonVariant { primary, secondary, outline, destructive, ghost, text }
 
@@ -23,6 +24,7 @@ class NeuButton extends StatefulWidget {
   final NeuButtonSize size;
   final IconData? icon;
   final IconData? trailingIcon;
+  final String? svgAsset;
   final bool expanded;
   final NeumorphicStyle? style;
 
@@ -36,6 +38,7 @@ class NeuButton extends StatefulWidget {
     this.size = NeuButtonSize.medium,
     this.icon,
     this.trailingIcon,
+    this.svgAsset,
     this.expanded = false,
     this.style,
   });
@@ -189,7 +192,10 @@ class _NeuButtonState extends State<NeuButton> {
           const SizedBox(width: 10),
         ],
         if (widget.icon != null && !widget.isLoading) ...[
-          Icon(widget.icon, size: _getIconSize(), color: bodyColor.color),
+          if (widget.svgAsset != null)
+            NeuSvgIcon(widget.svgAsset!, size: _getIconSize())
+          else
+            Icon(widget.icon, size: _getIconSize(), color: bodyColor.color),
           const SizedBox(width: 8),
         ],
         Text(widget.text, style: bodyColor),

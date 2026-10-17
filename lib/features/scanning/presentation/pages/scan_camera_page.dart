@@ -53,18 +53,18 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     }
   }
 
-  IconData _getTypeIcon(ScanType type) {
+  String _getTypeSvg(ScanType type) {
     switch (type) {
       case ScanType.receipt:
-        return Icons.receipt_long_rounded;
+        return SvgIcons.receipt;
       case ScanType.medicineBox:
-        return Icons.medication_rounded;
+        return SvgIcons.medication;
       case ScanType.prescription:
-        return Icons.description_rounded;
+        return SvgIcons.note;
       case ScanType.labReport:
-        return Icons.science_rounded;
+        return SvgIcons.lab;
       default:
-        return Icons.insert_drive_file_rounded;
+        return SvgIcons.note;
     }
   }
 
@@ -119,7 +119,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       child: Row(
         children: [
           NeuIconButton(
+            plain: true,
             icon: Icons.close_rounded,
+            svgAsset: SvgIcons.close,
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 14),
@@ -149,10 +151,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             padding: const EdgeInsets.all(12),
             borderRadius: 16,
             color: _getTypeColor(_selectedType).withValues(alpha: 0.12),
-            child: Icon(
-              _getTypeIcon(_selectedType),
+            child: NeuSvgIcon(
+              _getTypeSvg(_selectedType),
               size: 28,
-              color: _getTypeColor(_selectedType),
             ),
           ),
         ],
@@ -183,12 +184,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        _getTypeIcon(type),
+                      NeuSvgIcon(
+                        _getTypeSvg(type),
                         size: 20,
-                        color: isSelected
-                            ? _getTypeColor(type)
-                            : ThemeColors.textSecondary(context),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -257,13 +255,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.camera_alt_rounded,
-                              size: 48,
-                              color: _getTypeColor(
-                                _selectedType,
-                              ).withValues(alpha: 0.5),
-                            ),
+                            NeuSvgIcon(SvgIcons.camera, size: 48),
                             const SizedBox(height: 8),
                             Text(
                               'Position ${_selectedType.displayName} in frame',
@@ -296,11 +288,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             padding: const EdgeInsets.all(24),
             borderRadius: 90,
             color: _getTypeColor(_selectedType),
-            child: Icon(
-              Icons.camera_alt_rounded,
-              size: 48,
-              color: AppColors.textOnPrimary,
-            ),
+            child: NeuSvgIcon(SvgIcons.camera, size: 48),
           ),
           const SizedBox(height: 24),
           Text(
@@ -360,11 +348,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                     padding: const EdgeInsets.all(20),
                     borderRadius: 60,
                     color: _getTypeColor(_selectedType),
-                    child: Icon(
-                      Icons.psychology_rounded,
-                      size: 48,
-                      color: AppColors.textOnPrimary,
-                    ),
+                    child: NeuSvgIcon(SvgIcons.scan, size: 48),
                   ),
                 ],
               ),
@@ -410,6 +394,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               text: 'Gallery',
               variant: NeuButtonVariant.secondary,
               icon: Icons.photo_library_rounded,
+              svgAsset: SvgIcons.image,
               onPressed: _pickFromGallery,
               expanded: true,
             ),
@@ -423,6 +408,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               scale: _isScanning ? 1.0 : _pulseAnimation.value,
               child: NeuIconButton(
                 icon: Icons.camera_alt_rounded,
+                svgAsset: SvgIcons.camera,
                 size: 28,
                 onPressed: _isScanning ? null : _capturePhoto,
                 isLoading: _isScanning,
@@ -457,7 +443,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           child: Row(
             children: [
               NeuIconButton(
+                plain: true,
                 icon: Icons.close_rounded,
+                svgAsset: SvgIcons.close,
                 onPressed: () => setState(() => _capturedImagePath = null),
               ),
               const SizedBox(width: 14),
@@ -517,6 +505,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   text: 'Retake',
                   variant: NeuButtonVariant.secondary,
                   icon: Icons.refresh_rounded,
+                  svgAsset: SvgIcons.refresh,
                   onPressed: () => setState(() => _capturedImagePath = null),
                   expanded: true,
                 ),
@@ -528,6 +517,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   text: 'Use Scan',
                   variant: NeuButtonVariant.primary,
                   icon: Icons.check_rounded,
+                  svgAsset: SvgIcons.check,
                   onPressed: _useScan,
                   expanded: true,
                 ),
@@ -548,10 +538,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              _getTypeIcon(_selectedType),
+            NeuSvgIcon(
+              _getTypeSvg(_selectedType),
               size: 64,
-              color: ThemeColors.textTertiary(context),
             ),
             const SizedBox(height: 12),
             Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_page.dart';
+import 'neu_svg_icon.dart';
 
 /// A search field plus a scrolling row of filter chips.
 ///
@@ -55,11 +56,11 @@ class NeuFilterBar extends StatelessWidget {
                 horizontal: NeuTokens.spaceMd,
                 vertical: NeuTokens.spaceSm + 2,
               ),
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              prefixIcon: NeuSvgIcon(SvgIcons.search, size: 20),
               suffixIcon:
                   (controller?.text.isNotEmpty ?? false) || onClear != null
                   ? IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18),
+                      icon: NeuSvgIcon(SvgIcons.close, size: 18),
                       tooltip: 'Clear search',
                       onPressed: onClear,
                     )

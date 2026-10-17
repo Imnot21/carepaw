@@ -1,10 +1,12 @@
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
+import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:flutter/material.dart';
 
 /// Utility class for medical record presentation logic.
 class MedicalRecordUtils {
-  /// Get type-specific icon and color for a medical record type.
+  /// Get type-specific icon and color for a medical record type (legacy Material icons).
+  @Deprecated('Use getTypeInfoCustom instead')
   static TypeInfo getTypeInfo(BuildContext context, MedicalRecordType type) {
     switch (type) {
       case MedicalRecordType.visit:
@@ -45,6 +47,60 @@ class MedicalRecordUtils {
       case MedicalRecordType.allergy:
         return TypeInfo(
           icon: Icons.warning_amber_outlined,
+          color: ThemeColors.error(context),
+        );
+    }
+  }
+
+  /// Get type-specific custom icon type and color for a medical record type.
+  static TypeInfoCustom getTypeInfoCustom(BuildContext context, MedicalRecordType type) {
+    switch (type) {
+      case MedicalRecordType.visit:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.visit,
+          svgAsset: SvgIcons.visit,
+          color: ThemeColors.primary(context),
+        );
+      case MedicalRecordType.vaccination:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.vaccination,
+          svgAsset: SvgIcons.vaccination,
+          color: ThemeColors.success(context),
+        );
+      case MedicalRecordType.deworming:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.medication,
+          svgAsset: SvgIcons.medication,
+          color: ThemeColors.success(context),
+        );
+      case MedicalRecordType.surgery:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.treatment,
+          svgAsset: SvgIcons.treatment,
+          color: ThemeColors.warning(context),
+        );
+      case MedicalRecordType.labResult:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.labTest,
+          svgAsset: SvgIcons.lab,
+          color: ThemeColors.info(context),
+        );
+      case MedicalRecordType.prescription:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.prescription,
+          svgAsset: SvgIcons.prescription,
+          color: AppColors.tertiary,
+        );
+      case MedicalRecordType.note:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.note,
+          svgAsset: SvgIcons.note,
+          color: ThemeColors.textSecondary(context),
+        );
+      case MedicalRecordType.allergy:
+        return TypeInfoCustom(
+          customIcon: NeuIconType.alert,
+          svgAsset: SvgIcons.alert,
           color: ThemeColors.error(context),
         );
     }
@@ -110,21 +166,40 @@ class MedicalRecordUtils {
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  /// Get record type icon.
+  /// Get record type icon (legacy).
+  @Deprecated('Use getTypeCustomIcon instead')
   static IconData getTypeIcon(BuildContext context, MedicalRecordType type) {
     return getTypeInfo(context, type).icon;
   }
 
+  /// Get record type custom icon.
+  static NeuIconType getTypeCustomIcon(BuildContext context, MedicalRecordType type) {
+    return getTypeInfoCustom(context, type).customIcon;
+  }
+
   /// Get record type color.
   static Color getTypeColor(BuildContext context, MedicalRecordType type) {
-    return getTypeInfo(context, type).color;
+    return getTypeInfoCustom(context, type).color;
   }
 }
 
-/// Type information for medical record types.
+/// Type information for medical record types (legacy Material icons).
 class TypeInfo {
   final IconData icon;
   final Color color;
 
   TypeInfo({required this.icon, required this.color});
+}
+
+/// Type information for medical record types (custom neumorphic icons).
+class TypeInfoCustom {
+  final NeuIconType customIcon;
+  final String svgAsset;
+  final Color color;
+
+  TypeInfoCustom({
+    required this.customIcon,
+    required this.svgAsset,
+    required this.color,
+  });
 }

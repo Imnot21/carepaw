@@ -98,14 +98,6 @@ class _CarePawAppState extends State<CarePawApp> {
       _initError = e;
     }
 
-    try {
-      debugPrint('🔄 Initializing Dependency Injection...');
-      await configureDependencies();
-      debugPrint('✅ Dependency Injection initialized');
-    } catch (e) {
-      debugPrint('⚠️ Dependency Injection init failed: $e');
-    }
-
     if (mounted) {
       setState(() {
         _servicesInitialized = true;
@@ -314,11 +306,7 @@ class _InitializationErrorScreen extends StatelessWidget {
                           color: Theme.of(context).colorScheme.errorContainer,
                           borderRadius: BorderRadius.circular(24),
                         ),
-                        child: Icon(
-                          Icons.error_outline_rounded,
-                          size: 52,
-                          color: Theme.of(context).colorScheme.onErrorContainer,
-                        ),
+                        child: NeuSvgIcon(SvgIcons.error, size: 52),
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -351,7 +339,7 @@ class _InitializationErrorScreen extends StatelessWidget {
                         onPressed: () {
                           SystemNavigator.pop();
                         },
-                        icon: const Icon(Icons.refresh_rounded),
+                        icon: NeuSvgIcon(SvgIcons.refresh, size: 20),
                         label: const Text('Restart App'),
                       ),
                     ],
@@ -413,11 +401,7 @@ class _InitializingScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.pets,
-                  size: 58,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
+                child: NeuSvgIcon(SvgIcons.paw, size: 58),
               ),
               const SizedBox(height: 24),
               Text(

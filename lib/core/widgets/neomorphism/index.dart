@@ -14,6 +14,10 @@ export 'neu_container.dart' show NeuContainer, NeuVariant;
 export 'neu_card.dart' show NeuCard;
 export 'neu_button.dart' show NeuButton, NeuButtonSize, NeuButtonVariant;
 export 'neu_icon_button.dart' show NeuIconButton;
+export 'neu_icon_button_v2.dart' show NeuIconButtonV2;
+export 'neu_icon.dart' show NeuIcon, NeuIconSizes;
+export 'neu_icon_system.dart' show NeuIconType, NeuIcons;
+export 'neu_svg_icon.dart' show NeuSvgIcon, SvgIcons;
 export 'neu_text_field.dart' show NeuTextField;
 export 'neu_switch.dart' show NeuSwitch;
 export 'neu_chip.dart' show NeuChip;
@@ -22,7 +26,8 @@ export 'neu_skeleton.dart'
     show NeuShimmer, NeuSkeletonBox, NeuSkeletonList, NeuSkeletonDetail;
 export 'neu_avatar.dart' show NeuAvatar;
 export 'neu_medallion.dart' show NeuMedallion;
-export 'neu_bottom_nav.dart' show NeuBottomNav, NeuNavItem;
+export 'neu_bottom_nav.dart'
+    show NeuBottomNav, NeuNavItem, NeuNavItemCustom, NeuNavItemBase, SpeciesIcons, MedicalRecordIcons;
 export 'neu_dialog.dart' show NeuDialog, NeuConfirmDialog, NeuBottomSheet;
 export 'neu_divider.dart'
     show NeuDivider, NeuVerticalDivider, NeuSectionDivider;

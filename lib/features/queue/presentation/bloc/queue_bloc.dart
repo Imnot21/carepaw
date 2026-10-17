@@ -225,7 +225,12 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     try {
       await _repository.cancel(event.queueId);
       emit(QueueOperationSuccess('Queue entry cancelled'));
-      add(QueueStaffLoadRequested());
+      // Reload the caller's own view: owners would go blank on the staff
+      // event, staff would lose their board on the owner event.
+      final authState = _authBloc.state;
+      final isClinicSide =
+          authState is AuthAuthenticated && authState.user.isOwnerAdmin;
+      add(isClinicSide ? QueueStaffLoadRequested() : QueueLoadRequested());
     } catch (e) {
       emit(QueueError('Failed to cancel: $e'));
     }

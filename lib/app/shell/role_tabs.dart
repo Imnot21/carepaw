@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_bottom_nav.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_system.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
 /// One destination shown in the bottom navigation shell.
@@ -7,16 +8,16 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 /// tab's base path for matching the current route so the active slot stays
 /// highlighted while browsing that section's nested screens.
 class RoleTab {
-  final IconData icon;
-  final IconData? activeIcon;
+  final NeuIconType icon;
+  final NeuIconType activeIcon;
   final String label;
   final String location;
 
   const RoleTab({
     required this.icon,
+    required this.activeIcon,
     required this.label,
     required this.location,
-    this.activeIcon,
   });
 }
 
@@ -83,35 +84,46 @@ class RoleTabs {
     return bestMatchIndex;
   }
 
+  /// Converts to `NeuNavItemCustom` for use with `NeuBottomNav.custom`.
+  List<NeuNavItemCustom> toNavItems() {
+    return tabs
+        .map((tab) => NeuNavItemCustom(
+              icon: tab.icon,
+              activeIcon: tab.activeIcon,
+              label: tab.label,
+            ))
+        .toList();
+  }
+
   // ---- Pet owner journey ----
   static const _owner = [
     RoleTab(
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_rounded,
+      icon: NeuIconType.home,
+      activeIcon: NeuIconType.home,
       label: 'Home',
       location: '/home',
     ),
     RoleTab(
-      icon: Icons.pets_outlined,
-      activeIcon: Icons.pets_rounded,
+      icon: NeuIconType.pets,
+      activeIcon: NeuIconType.pets,
       label: 'Pets',
       location: '/pets',
     ),
     RoleTab(
-      icon: Icons.event_outlined,
-      activeIcon: Icons.event_rounded,
+      icon: NeuIconType.calendar,
+      activeIcon: NeuIconType.calendar,
       label: 'Appointments',
       location: '/appointments',
     ),
     RoleTab(
-      icon: Icons.format_list_numbered_outlined,
-      activeIcon: Icons.format_list_numbered_rounded,
+      icon: NeuIconType.note,
+      activeIcon: NeuIconType.note,
       label: 'Queue',
       location: '/queue',
     ),
     RoleTab(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
+      icon: NeuIconType.profile,
+      activeIcon: NeuIconType.profile,
       label: 'Profile',
       location: '/profile',
     ),
@@ -122,44 +134,44 @@ class RoleTabs {
   // (Old staff/vet/admin tab sets removed with the old roles — backup kept.)
   static const _clinic = [
     RoleTab(
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
+      icon: NeuIconType.home,
+      activeIcon: NeuIconType.home,
       label: 'Home',
       location: '/clinic',
     ),
     RoleTab(
-      icon: Icons.event_outlined,
-      activeIcon: Icons.event_rounded,
+      icon: NeuIconType.calendar,
+      activeIcon: NeuIconType.calendar,
       label: 'Bookings',
       location: '/staff/appointments',
     ),
     RoleTab(
-      icon: Icons.format_list_numbered_outlined,
-      activeIcon: Icons.format_list_numbered_rounded,
+      icon: NeuIconType.note,
+      activeIcon: NeuIconType.note,
       label: 'Line',
       location: '/staff/queue',
     ),
     RoleTab(
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
+      icon: NeuIconType.pets,
+      activeIcon: NeuIconType.pets,
       label: 'Patients',
       location: '/vet/patients',
     ),
     RoleTab(
-      icon: Icons.inventory_2_outlined,
-      activeIcon: Icons.inventory_2_rounded,
+      icon: NeuIconType.settings,
+      activeIcon: NeuIconType.settings,
       label: 'Stock',
       location: '/staff/inventory',
     ),
     RoleTab(
-      icon: Icons.document_scanner_outlined,
-      activeIcon: Icons.document_scanner_rounded,
+      icon: NeuIconType.search,
+      activeIcon: NeuIconType.search,
       label: 'Scan',
       location: '/staff/scanning',
     ),
     RoleTab(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
+      icon: NeuIconType.profile,
+      activeIcon: NeuIconType.profile,
       label: 'Profile',
       location: '/profile',
     ),

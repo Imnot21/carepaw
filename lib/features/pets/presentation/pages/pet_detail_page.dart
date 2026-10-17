@@ -23,6 +23,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 
 /// Page showing detailed pet information with the CarePaw surface system.
@@ -60,12 +61,14 @@ class _PetDetailPageState extends State<PetDetailPage> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_rounded,
           onPressed: () => Navigator.of(context).pop(),
           tooltip: 'Back',
         ),
         actions: [
           NeuIconButton(
+            plain: true,
             icon: Icons.more_vert_rounded,
             onPressed: () => _showMenu(context),
             tooltip: 'More',
@@ -98,7 +101,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                               )
                             : NeuAvatar(
                                 radius: 55,
-                                icon: PetUtils.getSpeciesIcon(_pet.species),
+                                svgAsset: PetUtils.getSpeciesSvg(_pet.species),
                                 backgroundColor: speciesColor.withValues(
                                   alpha: 0.14,
                                 ),
@@ -115,7 +118,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                         const SizedBox(height: 12),
                         NeuChip(
                           label: PetUtils.formatSpecies(_pet.species),
-                          icon: PetUtils.getSpeciesIcon(_pet.species),
+                          svgAsset: PetUtils.getSpeciesSvg(_pet.species),
                           selected: true,
                           selectedColor: speciesColor,
                         ),
@@ -439,28 +442,28 @@ class _QuickInfoChips extends StatelessWidget {
       children: [
         NeuChip(
           label: PetUtils.formatSpecies(pet.species),
-          icon: PetUtils.getSpeciesIcon(pet.species),
+          svgAsset: PetUtils.getSpeciesSvg(pet.species),
           selected: true,
           selectedColor: PetUtils.getSpeciesColor(pet.species),
         ),
         if (pet.breed != null)
           NeuChip(
             label: pet.breed!,
-            icon: Icons.pets,
+            svgAsset: SvgIcons.paw,
             selected: true,
             selectedColor: ThemeColors.primary(context),
           ),
         if (pet.birthDate != null)
           NeuChip(
             label: 'Age: ${PetUtils.calculateAge(pet.birthDate!)}',
-            icon: Icons.cake_outlined,
+            svgAsset: SvgIcons.calendar,
             selected: true,
             selectedColor: AppColors.tertiary,
           ),
         if (pet.weightKg != null)
           NeuChip(
             label: '${pet.weightKg!.toStringAsFixed(1)} kg',
-            icon: Icons.monitor_weight_outlined,
+            svgAsset: SvgIcons.weightScale,
             selected: true,
             selectedColor: ThemeColors.primary(context),
           ),
@@ -494,7 +497,7 @@ class _BasicInfoCard extends StatelessWidget {
           ),
         ),
         _InfoRow(
-          icon: PetUtils.getSpeciesIcon(pet.species),
+          svgAsset: PetUtils.getSpeciesSvg(pet.species),
           label: 'Species',
           value: PetUtils.formatSpecies(pet.species),
           valueStyle: AppTextStyles.bodyLarge.copyWith(
@@ -564,12 +567,14 @@ class _BasicInfoCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final String label;
   final String value;
   final TextStyle? valueStyle;
   const _InfoRow({
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.label,
     required this.value,
     this.valueStyle,
@@ -585,11 +590,13 @@ class _InfoRow extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             borderRadius: 10,
             variant: NeuVariant.flat,
-            child: Icon(
-              icon,
-              size: 22,
-              color: ThemeColors.textSecondary(context),
-            ),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: 22)
+                : Icon(
+                    icon!,
+                    size: 22,
+                    color: ThemeColors.textSecondary(context),
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -725,9 +732,11 @@ class _QuickActionsCard extends StatelessWidget {
           title: 'Book Appointment',
           subtitle: 'Schedule a vet visit',
           color: ThemeColors.primary(context),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Appointment booking coming soon')),
-          ),
+          onTap: () {
+            final petId = pet.id;
+            if (petId == null) return;
+            context.push('${Routes.appointmentRequest}?petId=$petId');
+          },
         ),
         NeuDivider(thickness: 1, indent: 56),
         _ActionTile(
@@ -735,9 +744,11 @@ class _QuickActionsCard extends StatelessWidget {
           title: 'View Medical Records',
           subtitle: 'Vaccinations, treatments, notes',
           color: AppColors.tertiary,
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Medical records coming soon')),
-          ),
+          onTap: () {
+            final petId = pet.id;
+            if (petId == null) return;
+            context.push('${Routes.medicalRecords}?petId=$petId');
+          },
         ),
         NeuDivider(thickness: 1, indent: 56),
         _ActionTile(
@@ -745,9 +756,11 @@ class _QuickActionsCard extends StatelessWidget {
           title: 'Vaccination Schedule',
           subtitle: 'Track upcoming vaccines',
           color: ThemeColors.textSecondary(context),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Vaccination schedule coming soon')),
-          ),
+          onTap: () {
+            final petId = pet.id;
+            if (petId == null) return;
+            context.push('${Routes.medicalRecords}?petId=$petId');
+          },
         ),
       ],
     );
@@ -883,9 +896,11 @@ class _MedicalRecordsCard extends StatelessWidget {
               NeuButton(
                 text: 'View Medical Records',
                 variant: NeuButtonVariant.secondary,
-                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Medical records coming soon')),
-                ),
+                onPressed: () {
+                  final petId = pet.id;
+                  if (petId == null) return;
+                  context.push('${Routes.medicalRecords}?petId=$petId');
+                },
                 icon: Icons.arrow_forward_rounded,
               ),
             ],
@@ -956,6 +971,7 @@ class _PetDetailLoader extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_rounded,
           onPressed: () => Navigator.pop(context),
         ),
@@ -1043,6 +1059,7 @@ class _PetFormLoader extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: NeuIconButton(
+          plain: true,
           icon: Icons.arrow_back_rounded,
           onPressed: () => Navigator.pop(context),
         ),

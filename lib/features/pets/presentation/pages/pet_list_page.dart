@@ -5,7 +5,6 @@ import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
-import 'package:carepaw/features/pets/presentation/pages/pet_detail_page.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
@@ -14,6 +13,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
@@ -285,7 +285,9 @@ class _PetListViewState extends State<_PetListView> {
                   return const NeuSkeletonList();
                 }
 
-                return const _EmptyPetsView(onAddPet: null);
+                return _EmptyPetsView(
+                  onAddPet: () => _navigateToAddPet(context),
+                );
               },
             ),
           ),
@@ -307,9 +309,11 @@ class _PetListViewState extends State<_PetListView> {
   }
 
   void _navigateToPetDetail(BuildContext context, Pet pet) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => PetDetailPage(pet: pet)));
+    final petId = pet.id;
+    if (petId == null) return;
+    // Router route (fetch-by-id + deep-linkable) instead of a raw
+    // MaterialPageRoute, so back-stack and tab highlight stay consistent.
+    context.push('/pets/$petId');
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
@@ -353,8 +357,7 @@ class _PetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final speciesIcon = PetUtils.getSpeciesIcon(pet.species);
-    final speciesColor = PetUtils.getSpeciesColor(pet.species);
+    final speciesSvg = PetUtils.getSpeciesSvg(pet.species);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -423,7 +426,10 @@ class _PetCard extends StatelessWidget {
                   // Species and breed
                   Row(
                     children: [
-                      Icon(speciesIcon, size: 16, color: speciesColor),
+                      NeuSvgIcon(
+                        speciesSvg,
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
@@ -650,6 +656,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: NeuIconButton(
+              plain: true,
               icon: Icons.add,
               onPressed: () => _navigateToAddPet(context),
               tooltip: 'Add Pet',
@@ -758,7 +765,9 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
                   return const NeuSkeletonList();
                 }
 
-                return const _EmptyPetsView(onAddPet: null);
+                return _EmptyPetsView(
+                  onAddPet: () => _navigateToAddPet(context),
+                );
               },
             ),
           ),
@@ -779,9 +788,11 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
   }
 
   void _navigateToPetDetail(BuildContext context, Pet pet) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => PetDetailPage(pet: pet)));
+    final petId = pet.id;
+    if (petId == null) return;
+    // Router route (fetch-by-id + deep-linkable) instead of a raw
+    // MaterialPageRoute, so back-stack and tab highlight stay consistent.
+    context.push('/pets/$petId');
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
@@ -823,8 +834,7 @@ class _StaffPetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final speciesIcon = PetUtils.getSpeciesIcon(pet.species);
-    final speciesColor = PetUtils.getSpeciesColor(pet.species);
+    final speciesSvg = PetUtils.getSpeciesSvg(pet.species);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -897,7 +907,10 @@ class _StaffPetCard extends StatelessWidget {
                   // Species and breed
                   Row(
                     children: [
-                      Icon(speciesIcon, size: 16, color: speciesColor),
+                      NeuSvgIcon(
+                        speciesSvg,
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +

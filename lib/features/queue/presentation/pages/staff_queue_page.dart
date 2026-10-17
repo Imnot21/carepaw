@@ -15,6 +15,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -70,7 +71,9 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: NeuIconButton(
+                  plain: true,
                   icon: Icons.reorder_rounded,
+                  svgAsset: SvgIcons.reorder,
                   onPressed: () {
                     context.read<QueueBloc>().add(
                       const QueueRepositionRequested(),
@@ -150,11 +153,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 blur: 24,
                 opacity: 0.32,
               ),
-              child: const Icon(
-                Icons.people_outline_rounded,
-                size: 60,
-                color: AppColors.textOnPrimary,
-              ),
+              child: NeuSvgIcon(SvgIcons.people, size: 60),
             ),
             const SizedBox(height: 28),
             Text(
@@ -196,11 +195,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 blur: 24,
                 opacity: 0.32,
               ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                size: 60,
-                color: Colors.white,
-              ),
+              child: NeuSvgIcon(SvgIcons.error, size: 60),
             ),
             const SizedBox(height: 28),
             Text(
@@ -225,6 +220,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 context.read<QueueBloc>().add(QueueStaffLoadRequested());
               },
               icon: Icons.refresh_rounded,
+              svgAsset: SvgIcons.refresh,
               variant: NeuButtonVariant.primary,
               expanded: true,
             ),
@@ -316,11 +312,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 blur: 24,
                 opacity: 0.32,
               ),
-              child: const Icon(
-                Icons.people_outline_rounded,
-                size: 60,
-                color: AppColors.textOnPrimary,
-              ),
+              child: NeuSvgIcon(SvgIcons.people, size: 60),
             ),
             const SizedBox(height: 28),
             Text(
@@ -465,7 +457,7 @@ class _StatsBar extends StatelessWidget {
         children: [
           Expanded(
             child: _StatItem(
-              icon: Icons.person_outline_rounded,
+              svgAsset: SvgIcons.person,
               label: 'Waiting',
               value: '$totalWaiting',
               color: ThemeColors.warning(context),
@@ -474,7 +466,7 @@ class _StatsBar extends StatelessWidget {
           Container(width: 1, height: 44, color: ThemeColors.border(context)),
           Expanded(
             child: _StatItem(
-              icon: Icons.door_front_door_outlined,
+              svgAsset: SvgIcons.door,
               label: 'In Room',
               value: '$totalInRoom',
               color: ThemeColors.primary(context),
@@ -483,7 +475,7 @@ class _StatsBar extends StatelessWidget {
           Container(width: 1, height: 44, color: ThemeColors.border(context)),
           Expanded(
             child: _StatItem(
-              icon: Icons.volume_up_outlined,
+              svgAsset: SvgIcons.volume,
               label: 'Now Serving',
               value: currentServing > 0 ? '#$currentServing' : '-',
               color: ThemeColors.info(context),
@@ -496,13 +488,13 @@ class _StatsBar extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String label;
   final String value;
   final Color color;
 
   const _StatItem({
-    required this.icon,
+    this.svgAsset,
     required this.label,
     required this.value,
     required this.color,
@@ -517,7 +509,9 @@ class _StatItem extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           variant: NeuVariant.flat,
           color: color.withValues(alpha: 0.12),
-          child: Icon(icon, size: 22, color: color),
+          child: svgAsset != null
+              ? NeuSvgIcon(svgAsset!, size: 22)
+              : const SizedBox(width: 22, height: 22),
         ),
         const SizedBox(height: 8),
         Text(
@@ -703,11 +697,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   variant: NeuVariant.flat,
                   color: ThemeColors.primary(context).withValues(alpha: 0.12),
-                  child: Icon(
-                    Icons.medical_services_outlined,
-                    size: 18,
-                    color: ThemeColors.primary(context),
-                  ),
+                  child: NeuSvgIcon(SvgIcons.visit, size: 18),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -736,11 +726,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     variant: NeuVariant.flat,
                     color: ThemeColors.warning(context).withValues(alpha: 0.12),
-                    child: Icon(
-                      Icons.timer_outlined,
-                      size: 18,
-                      color: ThemeColors.warning(context),
-                    ),
+                    child: NeuSvgIcon(SvgIcons.schedule, size: 18),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -785,11 +771,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
-                Icons.access_time_outlined,
-                size: 14,
-                color: ThemeColors.textSecondary(context),
-              ),
+              NeuSvgIcon(SvgIcons.schedule, size: 14),
               const SizedBox(width: 6),
               Text(
                 'Checked in: ${_formatTime(entry.queueEntry.checkedInAt)}',
@@ -799,11 +781,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
               ),
               if (entry.queueEntry.calledAt != null) ...[
                 const SizedBox(width: 16),
-                Icon(
-                  Icons.volume_up_outlined,
-                  size: 14,
-                  color: ThemeColors.info(context),
-                ),
+                NeuSvgIcon(SvgIcons.volume, size: 14),
                 const SizedBox(width: 6),
                 Text(
                   'Called: ${_formatTime(entry.queueEntry.calledAt!)}',
@@ -815,11 +793,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
               ],
               if (entry.queueEntry.room != null) ...[
                 const SizedBox(width: 16),
-                Icon(
-                  Icons.door_front_door_outlined,
-                  size: 14,
-                  color: ThemeColors.success(context),
-                ),
+                NeuSvgIcon(SvgIcons.door, size: 14),
                 const SizedBox(width: 6),
                 Text(
                   'Room ${entry.queueEntry.room}',
@@ -852,6 +826,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
             text: 'Call',
             onPressed: onCall!,
             icon: Icons.volume_up_rounded,
+            svgAsset: SvgIcons.volume,
             variant: NeuButtonVariant.secondary,
             size: NeuButtonSize.medium,
             expanded: true,
@@ -868,6 +843,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
             text: 'Room',
             onPressed: onMoveToRoom!,
             icon: Icons.door_front_door_rounded,
+            svgAsset: SvgIcons.door,
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.medium,
             expanded: true,
@@ -884,6 +860,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
             text: 'Complete',
             onPressed: onComplete!,
             icon: Icons.check_rounded,
+            svgAsset: SvgIcons.check,
             variant: NeuButtonVariant.primary,
             size: NeuButtonSize.medium,
             expanded: true,
@@ -900,6 +877,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
             text: 'Skip',
             onPressed: onSkip!,
             icon: Icons.skip_next_rounded,
+            svgAsset: SvgIcons.skipNext,
             variant: NeuButtonVariant.destructive,
             size: NeuButtonSize.medium,
             expanded: true,
@@ -916,6 +894,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
             text: 'Cancel',
             onPressed: onCancel!,
             icon: Icons.cancel_outlined,
+            svgAsset: SvgIcons.error,
             variant: NeuButtonVariant.destructive,
             size: NeuButtonSize.medium,
             expanded: true,
@@ -972,7 +951,7 @@ class _PriorityControl extends StatelessWidget {
         final color = _priorityColor(context, p);
         return NeuChip(
           label: p.displayName,
-          icon: _iconFor(p),
+          svgAsset: _svgFor(p),
           selected: isSelected,
           selectedColor: color,
           onTap: () => onChanged?.call(p),
@@ -982,14 +961,14 @@ class _PriorityControl extends StatelessWidget {
     );
   }
 
-  static IconData _iconFor(QueuePriority p) {
+  static String _svgFor(QueuePriority p) {
     switch (p) {
       case QueuePriority.emergency:
-        return Icons.priority_high_rounded;
+        return SvgIcons.alert;
       case QueuePriority.urgent:
-        return Icons.warning_amber_rounded;
+        return SvgIcons.alert;
       case QueuePriority.routine:
-        return Icons.check_circle_outline_rounded;
+        return SvgIcons.success;
     }
   }
 }
@@ -1029,11 +1008,7 @@ class _NotLoggedInView extends StatelessWidget {
                   blur: 24,
                   opacity: 0.32,
                 ),
-                child: const Icon(
-                  Icons.people_outlined,
-                  size: 80,
-                  color: AppColors.textOnPrimary,
-                ),
+                child: NeuSvgIcon(SvgIcons.people, size: 80),
               ),
               const SizedBox(height: 32),
               Text(
@@ -1056,6 +1031,7 @@ class _NotLoggedInView extends StatelessWidget {
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
+                svgAsset: SvgIcons.login,
               ),
             ],
           ),
@@ -1088,11 +1064,7 @@ class _AccessDeniedView extends StatelessWidget {
                   blur: 24,
                   opacity: 0.32,
                 ),
-                child: const Icon(
-                  Icons.block_rounded,
-                  size: 80,
-                  color: Colors.white,
-                ),
+                child: NeuSvgIcon(SvgIcons.block, size: 80),
               ),
               const SizedBox(height: 32),
               Text(
@@ -1116,6 +1088,7 @@ class _AccessDeniedView extends StatelessWidget {
                 text: 'Go Back',
                 onPressed: () => context.pop(),
                 icon: Icons.arrow_back_rounded,
+                svgAsset: SvgIcons.back,
                 variant: NeuButtonVariant.secondary,
               ),
             ],

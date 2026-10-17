@@ -22,6 +22,7 @@ import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
@@ -160,7 +161,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           leading: Padding(
             padding: const EdgeInsets.all(8),
             child: NeuIconButton(
+              plain: true,
               icon: Icons.arrow_back_ios_new_rounded,
+              svgAsset: SvgIcons.back,
               onPressed: () => context.pop(),
               tooltip: 'Back',
             ),
@@ -170,7 +173,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: NeuIconButton(
+                  plain: true,
                   icon: Icons.delete_outline_rounded,
+                  svgAsset: SvgIcons.delete,
                   onPressed: _showDeleteConfirmation,
                   color: ThemeColors.error(context),
                   tooltip: 'Delete',
@@ -208,6 +213,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                           expanded: true,
                           size: NeuButtonSize.medium,
                           icon: Icons.event_available_rounded,
+                          svgAsset: SvgIcons.eventAvailable,
                           variant: NeuButtonVariant.primary,
                         ),
                         const SizedBox(height: 12),
@@ -279,6 +285,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             context,
             title: 'Select Pet',
             icon: Icons.pets_rounded,
+            svgAsset: SvgIcons.paw,
             iconColor: ThemeColors.primary(context),
             child: const Center(child: NeuCircularProgress(size: 24)),
           );
@@ -298,6 +305,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           title: 'Select Pet',
           subtitle: 'Choose which pet is visiting',
           icon: Icons.pets_rounded,
+          svgAsset: SvgIcons.paw,
           iconColor: ThemeColors.primary(context),
           required: true,
           child: Column(
@@ -311,7 +319,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   final speciesColor = PetUtils.getSpeciesColor(pet.species);
                   return NeuChip(
                     label: pet.name,
-                    icon: PetUtils.getSpeciesIcon(pet.species),
+                    svgAsset: PetUtils.getSpeciesSvg(pet.species),
                     selected: isSelected,
                     selectedColor: speciesColor,
                     onTap: () => setState(() => _selectedPetId = pet.id),
@@ -357,8 +365,47 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               title: 'Your Veterinarian',
               subtitle: 'Assigned veterinarian for this clinic',
               icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
               iconColor: ThemeColors.textSecondary(context),
               child: const Center(child: NeuCircularProgress(size: 24)),
+            );
+          }
+
+          // Repo failure used to leave the spinner up forever — the submit
+          // path already blocks with a snackbar, but the owner deserves to
+          // see the failure here too.
+          if (snapshot.hasError) {
+            return _buildSectionCard(
+              context,
+              title: 'Your Veterinarian',
+              subtitle: 'Assigned veterinarian for this clinic',
+              icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
+              iconColor: ThemeColors.textSecondary(context),
+              child: NeuContainer(
+                variant: NeuVariant.inset,
+                borderRadius: 12,
+                padding: const EdgeInsets.all(16),
+                borderColor: ThemeColors.error(context).withValues(alpha: 0.35),
+                borderWidth: 1,
+                child: Row(
+                  children: [
+                    NeuSvgIcon(
+                      SvgIcons.error,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Failed to load veterinarian: ${snapshot.error}',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: ThemeColors.error(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           }
 
@@ -372,6 +419,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             title: 'Your Veterinarian',
             subtitle: 'Assigned veterinarian for this clinic',
             icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
             iconColor: ThemeColors.textSecondary(context),
             child: NeuContainer(
               variant: NeuVariant.inset,
@@ -432,6 +480,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             title: 'Select Veterinarian',
             subtitle: 'Choose your preferred veterinarian',
             icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
             iconColor: ThemeColors.textSecondary(context),
             child: const Center(child: NeuCircularProgress(size: 24)),
           );
@@ -443,6 +492,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             title: 'Select Veterinarian',
             subtitle: 'Choose your preferred veterinarian',
             icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
             iconColor: ThemeColors.textSecondary(context),
             child: NeuContainer(
               variant: NeuVariant.inset,
@@ -452,9 +502,8 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               borderWidth: 1,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.error_outline_rounded,
-                    color: ThemeColors.error(context),
+                  NeuSvgIcon(
+                    SvgIcons.error,
                     size: 22,
                   ),
                   const SizedBox(width: 12),
@@ -493,6 +542,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           title: 'Select Veterinarian',
           subtitle: 'Choose your preferred veterinarian',
           icon: Icons.medical_services_rounded,
+          svgAsset: SvgIcons.visit,
           iconColor: ThemeColors.textSecondary(context),
           required: true,
           child: Column(
@@ -506,6 +556,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                   return NeuChip(
                     label: 'Dr. ${vet.fullName}',
                     icon: Icons.medical_services_rounded,
+            svgAsset: SvgIcons.visit,
                     selected: isSelected,
                     selectedColor: ThemeColors.primary(context),
                     onTap: () =>
@@ -549,6 +600,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       title: 'Date & Time',
       subtitle: 'When would you like the appointment?',
       icon: Icons.calendar_today_rounded,
+      svgAsset: SvgIcons.calendar,
       iconColor: ThemeColors.info(context),
       required: true,
       child: Column(
@@ -572,13 +624,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                               ? ThemeColors.info(context)
                               : ThemeColors.textSecondary(context))
                           .withValues(alpha: 0.15),
-                  child: Icon(
-                    Icons.calendar_today_rounded,
-                    size: 20,
-                    color: hasDate
-                        ? ThemeColors.info(context)
-                        : ThemeColors.textSecondary(context),
-                  ),
+                  child: NeuSvgIcon(SvgIcons.calendar, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -593,12 +639,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                     ),
                   ),
                 ),
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: hasDate
-                      ? ThemeColors.info(context)
-                      : ThemeColors.textSecondary(context),
-                ),
+                NeuSvgIcon(SvgIcons.chevronDown, size: 24),
               ],
             ),
           ),
@@ -623,6 +664,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       title: 'Duration',
       subtitle: 'How long will the appointment take?',
       icon: Icons.timer_outlined,
+      svgAsset: SvgIcons.schedule,
       iconColor: ThemeColors.warning(context),
       child: Wrap(
         spacing: 10,
@@ -646,6 +688,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       title: 'Service',
       subtitle: 'Which clinic service is this visit for?',
       icon: Icons.medical_services_rounded,
+      svgAsset: SvgIcons.visit,
       iconColor: ThemeColors.primary(context),
       required: true,
       child: DropdownButtonFormField<String>(
@@ -670,6 +713,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       title: 'Reason for Visit',
       subtitle: 'What is the purpose of this appointment?',
       icon: Icons.description_rounded,
+      svgAsset: SvgIcons.note,
       iconColor: ThemeColors.success(context),
       required: true,
       child: NeuTextField(
@@ -679,10 +723,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         validator: (value) => Validators.required(value, 'Reason'),
         maxLines: 3,
         minLines: 2,
-        prefixIcon: Icon(
-          Icons.description_outlined,
-          color: ThemeColors.textSecondary(context),
+        prefixIcon: ClayIconOrMaterial(
+          'description_outlined',
+          fallback: Icons.description_outlined,
           size: 20,
+          color: ThemeColors.textSecondary(context),
         ),
       ),
     );
@@ -694,6 +739,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       title: 'Additional Notes',
       subtitle: 'Any other information for the veterinarian',
       icon: Icons.note_alt_rounded,
+      svgAsset: SvgIcons.prescription,
       iconColor: ThemeColors.textSecondary(context),
       child: NeuTextField(
         controller: _notesController,
@@ -701,10 +747,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         hint: 'Any additional information for the veterinarian...',
         maxLines: 4,
         minLines: 3,
-        prefixIcon: Icon(
-          Icons.note_outlined,
-          color: ThemeColors.textSecondary(context),
+        prefixIcon: ClayIconOrMaterial(
+          'note_outlined',
+          fallback: Icons.note_outlined,
           size: 20,
+          color: ThemeColors.textSecondary(context),
         ),
       ),
     );
@@ -715,6 +762,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     required String title,
     String? subtitle,
     required IconData icon,
+    String? svgAsset,
     required Color iconColor,
     bool required = false,
     required Widget child,
@@ -733,7 +781,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 borderRadius: 12,
                 variant: NeuVariant.flat,
                 color: iconColor.withValues(alpha: 0.15),
-                child: Icon(icon, size: 22, color: iconColor),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset, size: 22)
+                    : Icon(icon, size: 22, color: iconColor),
               ),
               const SizedBox(width: 12),
               Expanded(

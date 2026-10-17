@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
-import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart'
+    as auth_events;
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/app/router/routes.dart';
@@ -12,6 +13,7 @@ import 'package:carepaw/features/users/domain/repositories/user_repository.dart'
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -37,6 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
   bool _editing = false;
   bool _saving = false;
+  bool _changingPassword = false;
 
   @override
   void initState() {
@@ -76,6 +79,9 @@ class _ProfilePageState extends State<ProfilePage> {
         _saving = false;
         _editing = false;
       });
+      // Refresh the session user so the header name updates immediately
+      // instead of staying stale until the next login.
+      context.read<AuthBloc>().add(const auth_events.AuthCheckRequested());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -117,7 +123,42 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // Only react to results of the change-password dialog, never to
+        // unrelated auth traffic (login/logout/session checks).
+        if (!_changingPassword) return;
+        if (state is AuthPasswordChanged) {
+          _changingPassword = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Password changed. Please sign in again.',
+              ),
+              backgroundColor: ThemeColors.success(context),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              margin: const EdgeInsets.all(16),
+            ),
+          );
+        } else if (state is AuthError) {
+          _changingPassword = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Password change failed: ${state.failure.message}'),
+              backgroundColor: ThemeColors.error(context),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              margin: const EdgeInsets.all(16),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         title: Text(
@@ -145,6 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
       extendBody: true,
       bottomNavigationBar:
           const SizedBox.shrink(), // This ensures the scaffold has a bottom navigation bar space
+      ),
     );
   }
 
@@ -157,7 +199,7 @@ class _ProfilePageState extends State<ProfilePage> {
           // Avatar — circular contour
           NeuAvatar(
             radius: 44,
-            icon: Icons.person_outlined,
+            svgAsset: SvgIcons.person,
             backgroundColor: ThemeColors.primary(
               context,
             ).withValues(alpha: 0.14),
@@ -253,6 +295,7 @@ class _ProfilePageState extends State<ProfilePage> {
           text: 'Edit Profile',
           variant: NeuButtonVariant.primary,
           icon: Icons.edit_outlined,
+          svgAsset: SvgIcons.edit,
           expanded: true,
           onPressed: () => setState(() => _editing = true),
         ),
@@ -337,6 +380,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     variant: NeuButtonVariant.primary,
                     size: NeuButtonSize.medium,
                     icon: Icons.check_rounded,
+                    svgAsset: SvgIcons.check,
                     isLoading: _saving,
                     onPressed: _save,
                   ),
@@ -369,7 +413,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         children: [
           _SettingTile(
-            icon: Icons.notifications_outlined,
+            svgAsset: SvgIcons.notifications,
             title: 'Notification Settings',
             subtitle: 'Manage alerts, categories & delivery',
             onTap: () => context.push(Routes.notifications),
@@ -389,7 +433,27 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           _SettingTile(
-            icon: Icons.help_outline,
+            svgAsset: SvgIcons.lock,
+            title: 'Change Password',
+            subtitle: 'Update your sign-in password',
+            onTap: () => _showChangePasswordDialog(context),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              height: 1,
+              child: NeuContainer(
+                padding: EdgeInsets.zero,
+                borderRadius: 0.5,
+                variant: NeuVariant.flat,
+                boxShadow: NeuShadow.none,
+                color: ThemeColors.border(context),
+                child: const SizedBox.shrink(),
+              ),
+            ),
+          ),
+          _SettingTile(
+            svgAsset: SvgIcons.help,
             title: 'Help & Support',
             subtitle: 'FAQs, contact us, feedback',
             onTap: () => _showComingSoon(context, 'Help & Support'),
@@ -406,6 +470,7 @@ class _ProfilePageState extends State<ProfilePage> {
       variant: NeuButtonVariant.destructive,
       size: NeuButtonSize.large,
       icon: Icons.logout_rounded,
+      svgAsset: SvgIcons.logout,
       expanded: true,
       onPressed: () => _confirmLogout(context),
     );
@@ -458,7 +523,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       onPressed: () {
                         Navigator.pop(dialogContext);
                         context.read<AuthBloc>().add(
-                          const AuthLogoutRequested(),
+                          const auth_events.AuthLogoutRequested(),
                         );
                       },
                     ),
@@ -480,16 +545,169 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+  /// Change-password dialog. Dispatches [AuthPasswordChanged]; the
+  /// [BlocListener] above toasts the result. A successful change signs the
+  /// session out (bloc emits a non-authenticated state), so the user signs
+  /// back in with the new password.
+  void _showChangePasswordDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+
+    String? matchValidator(String? value) {
+      if (value == null || value.isEmpty) return 'Please confirm the password';
+      if (value != newController.text) return 'Passwords don\u2019t match';
+      return null;
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.all(24),
+        child: NeuCard(
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Change Password',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'You will be signed out after the change.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  NeuTextField(
+                    controller: currentController,
+                    label: 'Current password',
+                    hint: 'Enter current password',
+                    obscureText: true,
+                    prefixIcon: ClayIconOrMaterial(
+                      'lock_outline_rounded',
+                      fallback: Icons.lock_outline_rounded,
+                      size: 20,
+                    ),
+                    textInputAction: TextInputAction.next,
+                    validator: (v) =>
+                        Validators.required(v, 'Current password'),
+                  ),
+                  const SizedBox(height: 16),
+                  NeuTextField(
+                    controller: newController,
+                    label: 'New password',
+                    hint: 'Create a password',
+                    obscureText: true,
+                    prefixIcon: ClayIconOrMaterial(
+                      'lock_outline_rounded',
+                      fallback: Icons.lock_outline_rounded,
+                      size: 20,
+                    ),
+                    textInputAction: TextInputAction.next,
+                    validator: Validators.requiredWith([
+                      Validators.password,
+                    ], 'New password'),
+                  ),
+                  const SizedBox(height: 4),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: newController,
+                    builder: (context, value, _) => Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        'Min 8 chars, 1 uppercase, 1 lowercase, 1 number',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  NeuTextField(
+                    controller: confirmController,
+                    label: 'Confirm new password',
+                    hint: 'Repeat the new password',
+                    obscureText: true,
+                    prefixIcon: ClayIconOrMaterial(
+                      'lock_reset_rounded',
+                      fallback: Icons.lock_reset_rounded,
+                      size: 20,
+                    ),
+                    textInputAction: TextInputAction.done,
+                    validator: matchValidator,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: NeuButton(
+                          text: 'Cancel',
+                          variant: NeuButtonVariant.outline,
+                          size: NeuButtonSize.medium,
+                          onPressed: () =>
+                              Navigator.pop(dialogContext),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: NeuButton(
+                          text: 'Update',
+                          variant: NeuButtonVariant.primary,
+                          size: NeuButtonSize.medium,
+                          icon: Icons.check_rounded,
+                          svgAsset: SvgIcons.check,
+                          onPressed: () {
+                            if (!(formKey.currentState?.validate() ??
+                                false)) {
+                              return;
+                            }
+                            Navigator.pop(dialogContext);
+                            setState(() => _changingPassword = true);
+                            context.read<AuthBloc>().add(
+                              auth_events.AuthPasswordChanged(
+                                currentPassword: currentController.text,
+                                newPassword: newController.text,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ).then((_) {
+      currentController.dispose();
+      newController.dispose();
+      confirmController.dispose();
+    });
+  }
 }
 
 class _SettingTile extends StatelessWidget {
-  final IconData icon;
+  final String? svgAsset;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   const _SettingTile({
-    required this.icon,
+    this.svgAsset,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -511,7 +729,9 @@ class _SettingTile extends StatelessWidget {
               color: isDark
                   ? AppColors.primary.withValues(alpha: 0.16)
                   : AppColors.primaryTint,
-              child: Icon(icon, color: ThemeColors.primary(context), size: 22),
+              child: svgAsset != null
+                  ? NeuSvgIcon(svgAsset!, size: 22)
+                  : const SizedBox(width: 22, height: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -535,7 +755,7 @@ class _SettingTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: ThemeColors.textTertiary(context)),
+            NeuSvgIcon(SvgIcons.chevronRight, size: 20),
           ],
         ),
       ),

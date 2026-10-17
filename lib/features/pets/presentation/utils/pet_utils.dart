@@ -18,7 +18,8 @@ class PetUtils {
   static const _reptileAccent = Color(0xFF5C8A6E);
   static const _otherAccent = Color(0xFF5B8BC0);
 
-  /// Get the icon for a pet species.
+  /// Get the Material icon for a pet species (for legacy usage).
+  @Deprecated('Use getSpeciesCustomIcon instead')
   static IconData getSpeciesIcon(PetSpecies species) {
     switch (species) {
       case PetSpecies.dog:
@@ -33,6 +34,30 @@ class PetUtils {
         return Icons.eco_outlined;
       case PetSpecies.other:
         return Icons.help_outline;
+    }
+  }
+
+  /// Get the custom neumorphic icon type for a pet species.
+  static NeuIconType getSpeciesCustomIcon(PetSpecies species) {
+    final speciesStr = species.name.toLowerCase();
+    return SpeciesIcons.forSpecies(speciesStr);
+  }
+
+  /// Get the clay SVG asset for a pet species.
+  static String getSpeciesSvg(PetSpecies species) {
+    switch (species) {
+      case PetSpecies.dog:
+        return SvgIcons.dog;
+      case PetSpecies.cat:
+        return SvgIcons.cat;
+      case PetSpecies.bird:
+        return SvgIcons.bird;
+      case PetSpecies.rabbit:
+        return SvgIcons.rabbit;
+      case PetSpecies.reptile:
+        return SvgIcons.reptile;
+      case PetSpecies.other:
+        return SvgIcons.otherPet;
     }
   }
 
@@ -87,7 +112,7 @@ class PetUtils {
     final color = getSpeciesColor(species);
     return NeuAvatar(
       radius: radius,
-      icon: getSpeciesIcon(species),
+      svgAsset: getSpeciesSvg(species),
       backgroundColor: color.withValues(alpha: 0.14),
       foregroundColor: color,
     );

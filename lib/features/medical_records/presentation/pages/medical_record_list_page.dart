@@ -6,6 +6,7 @@ import 'package:carepaw/features/medical_records/presentation/bloc/medical_recor
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart';
 import 'package:carepaw/features/medical_records/presentation/utils/medical_record_utils.dart';
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -189,12 +190,14 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       leading: NeuIconButton(
+        plain: true,
         icon: Icons.arrow_back_ios_new_rounded,
         onPressed: () => context.pop(),
         tooltip: 'Back',
       ),
       actions: [
         NeuIconButton(
+          plain: true,
           icon: Icons.more_vert_rounded,
           onPressed: () => _showOptionsMenu(context),
           tooltip: 'Options',
@@ -315,7 +318,12 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             return NeuChip(
               label: 'All',
               selected: isSelected,
-              onTap: () => setState(() => _selectedFilter = null),
+              onTap: () {
+                setState(() => _selectedFilter = null);
+                context.read<MedicalRecordBloc>().add(
+                  LoadMedicalRecords(widget.pet.id!),
+                );
+              },
               selectedColor: speciesColor,
             );
           }
@@ -579,15 +587,39 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
               leading: Icon(Icons.filter_list_rounded, color: ThemeColors.primary(context)),
               title: const Text('Filter Records'),
               subtitle: Text(_selectedFilter?.displayName ?? 'All records'),
+              // Filters sit right above the list — just close the sheet.
               onTap: () => context.pop(),
             ),
             ListTile(
               leading: Icon(Icons.help_outline_rounded, color: ThemeColors.primary(context)),
               title: const Text('About Medical Records'),
-              onTap: () => context.pop(),
+              onTap: () {
+                context.pop();
+                _showAboutRecords(context);
+              },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAboutRecords(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('About Medical Records'),
+        content: Text(
+          'Records are written by the clinic during visits and can never be '
+          'edited or deleted. Mistakes are fixed by adding a correction note '
+          'on top, so ${widget.pet.name}\u2019s full history is always kept.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
       ),
     );
   }
@@ -621,10 +653,9 @@ class _MedicalRecordCard extends StatelessWidget {
             child: SizedBox(
               width: 56,
               height: 56,
-              child: Icon(
-                typeInfo.icon,
+              child: NeuSvgIcon(
+                typeInfo.svgAsset,
                 size: 26,
-                color: typeInfo.color,
               ),
             ),
           ),
@@ -779,7 +810,7 @@ class _MedicalRecordCard extends StatelessWidget {
     }
   }
 
-  TypeInfo _getTypeInfo(BuildContext context, MedicalRecordType type) {
-    return MedicalRecordUtils.getTypeInfo(context, type);
+  TypeInfoCustom _getTypeInfo(BuildContext context, MedicalRecordType type) {
+    return MedicalRecordUtils.getTypeInfoCustom(context, type);
   }
 }

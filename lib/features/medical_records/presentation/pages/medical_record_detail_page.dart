@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/medical_records/presentation/utils/medical_record_utils.dart';
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
@@ -8,6 +11,7 @@ import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
@@ -26,7 +30,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeInfo = MedicalRecordUtils.getTypeInfo(context, record.recordType);
+    final typeInfo = MedicalRecordUtils.getTypeInfoCustom(context, record.recordType);
 
     return Scaffold(
       appBar: AppBar(
@@ -41,19 +45,32 @@ class MedicalRecordDetailPage extends StatelessWidget {
         leading: Padding(
           padding: const EdgeInsets.all(8),
           child: NeuIconButton(
+            plain: true,
             icon: Icons.arrow_back_ios_new_rounded,
             onPressed: () => context.pop(),
             tooltip: 'Back',
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: NeuIconButton(
-              icon: Icons.edit_outlined,
-              onPressed: () => _navigateToEdit(context),
-              tooltip: 'Edit',
-            ),
+          // Records are append-only: only the clinic side may correct them.
+          // Pet owners get a read-only view (no edit pencil).
+          Builder(
+            builder: (context) {
+              final authState = context.watch<AuthBloc>().state;
+              final canEdit =
+                  authState is AuthAuthenticated &&
+                  authState.user.isOwnerAdmin;
+              if (!canEdit) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: NeuIconButton(
+                  plain: true,
+                  icon: Icons.edit_outlined,
+                  onPressed: () => _navigateToEdit(context),
+                  tooltip: 'Edit',
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -83,7 +100,10 @@ class MedicalRecordDetailPage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(typeInfo.icon, color: Colors.white, size: 20),
+                        NeuSvgIcon(
+          typeInfo.svgAsset,
+          size: 20,
+        ),
                         const SizedBox(width: 10),
                         Text(
                           record.recordType.displayName,

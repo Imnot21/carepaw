@@ -35,6 +35,7 @@ import 'package:carepaw/features/audit/presentation/bloc/audit_log_bloc.dart';
 import 'package:carepaw/features/audit/presentation/bloc/audit_log_event.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:carepaw/features/audit/presentation/pages/admin_audit_page.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/features/home/presentation/pages/admin_settings_page.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/features/users/presentation/bloc/user_management_bloc.dart';
@@ -42,6 +43,12 @@ import 'package:carepaw/features/users/presentation/bloc/user_management_event.d
 import 'package:carepaw/features/users/presentation/pages/admin_user_management_page.dart';
 import 'package:carepaw/features/users/presentation/pages/profile_page.dart';
 import 'package:carepaw/features/medical_records/presentation/pages/medical_record_list_page.dart';
+import 'package:carepaw/features/medical_records/presentation/pages/medical_record_detail_page.dart';
+import 'package:carepaw/features/medical_records/presentation/pages/medical_record_form_page.dart';
+import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
+import 'package:carepaw/features/medical_records/domain/repositories/medical_record_repository.dart';
+import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
+import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
@@ -334,6 +341,51 @@ class AppRouter {
                 child: _MedicalRecordsLoader(petId: petId),
               );
             },
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) {
+                  final extra = state.extra;
+                  final pet = extra is Map
+                      ? extra['pet'] as Pet?
+                      : null;
+                  if (pet == null) {
+                    return const PlaceholderPage(
+                      title: 'Medical Records - Pet Required',
+                    );
+                  }
+                  final existing = extra is Map
+                      ? extra['existingRecord'] as MedicalRecord?
+                      : null;
+                  return BlocProvider(
+                    create: (context) => MedicalRecordBloc(
+                      medicalRecordRepository:
+                          getIt<MedicalRecordRepository>(),
+                    ),
+                    child: MedicalRecordFormPage(
+                      pet: pet,
+                      existingRecord: existing,
+                    ),
+                  );
+                },
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final extra = state.extra;
+                  final record = extra is Map
+                      ? extra['record'] as MedicalRecord?
+                      : null;
+                  final pet = extra is Map ? extra['pet'] as Pet? : null;
+                  if (record == null || pet == null) {
+                    return const PlaceholderPage(
+                      title: 'Medical Record Not Found',
+                    );
+                  }
+                  return MedicalRecordDetailPage(record: record, pet: pet);
+                },
+              ),
+            ],
           ),
 
           // Owner/Admin clinic home (paper-aligned single operator)
@@ -614,11 +666,7 @@ class _SplashPage extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: Icon(
-                Icons.pets,
-                size: 60,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
+              child: NeuSvgIcon(SvgIcons.paw, size: 60),
             ),
             const SizedBox(height: 24),
             Text(
@@ -658,11 +706,7 @@ class PlaceholderPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.construction_outlined,
-              size: 64,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            NeuSvgIcon(SvgIcons.brush, size: 64),
             const SizedBox(height: 16),
             Text(
               '$title Screen',
@@ -698,11 +742,7 @@ class ErrorPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.error,
-              ),
+              NeuSvgIcon(SvgIcons.error, size: 64),
               const SizedBox(height: 16),
               Text(
                 'Something went wrong',
@@ -751,11 +791,7 @@ class _MedicalRecordsLoader extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  NeuSvgIcon(SvgIcons.error, size: 64),
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load pet',
