@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
+import 'neu_svg_icon.dart';
 
 /// One metric on a dashboard.
 ///
@@ -13,6 +14,10 @@ class NeuStatTile extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
+
+  /// Clay SVG asset for [icon]; rendered in its place when present so
+  /// dashboard stats stay on the one icon voice.
+  final String? svgAsset;
   final Color? accent;
 
   /// Optional change indicator. Say which direction is good: for "days until
@@ -32,6 +37,7 @@ class NeuStatTile extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    this.svgAsset,
     this.accent,
     this.delta,
     this.deltaIsGood = true,
@@ -53,7 +59,9 @@ class NeuStatTile extends StatelessWidget {
             variant: NeuVariant.inset,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(NeuTokens.spaceXs),
-            child: Icon(icon, size: NeuTokens.iconSm, color: tint),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
+                : Icon(icon, size: NeuTokens.iconSm, color: tint),
           ),
           const SizedBox(height: NeuTokens.tightGap),
           FittedBox(

@@ -10,6 +10,8 @@ import 'package:carepaw/features/authentication/presentation/pages/register_page
 import 'package:carepaw/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/reset_password_page.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
+import 'package:carepaw/features/home/presentation/bloc/clinic_pulse_bloc.dart';
+import 'package:carepaw/features/home/presentation/bloc/clinic_pulse_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/pages/pet_list_page.dart';
 import 'package:carepaw/features/pets/presentation/pages/pet_form_page.dart';
@@ -346,9 +348,7 @@ class AppRouter {
                 path: 'new',
                 builder: (context, state) {
                   final extra = state.extra;
-                  final pet = extra is Map
-                      ? extra['pet'] as Pet?
-                      : null;
+                  final pet = extra is Map ? extra['pet'] as Pet? : null;
                   if (pet == null) {
                     return const PlaceholderPage(
                       title: 'Medical Records - Pet Required',
@@ -359,8 +359,7 @@ class AppRouter {
                       : null;
                   return BlocProvider(
                     create: (context) => MedicalRecordBloc(
-                      medicalRecordRepository:
-                          getIt<MedicalRecordRepository>(),
+                      medicalRecordRepository: getIt<MedicalRecordRepository>(),
                     ),
                     child: MedicalRecordFormPage(
                       pet: pet,
@@ -392,7 +391,14 @@ class AppRouter {
           GoRoute(
             path: Routes.clinicDashboard,
             name: RouteNames.clinicDashboard,
-            builder: (context, state) => const ClinicDashboardPage(),
+            builder: (context, state) => BlocProvider(
+              create: (context) => ClinicPulseBloc(
+                queueRepository: getIt<QueueRepository>(),
+                appointmentRepository: getIt<AppointmentRepository>(),
+                inventoryRepository: getIt<InventoryItemRepository>(),
+              )..add(const ClinicPulseStarted()),
+              child: const ClinicDashboardPage(),
+            ),
           ),
 
           // Staff routes
