@@ -95,7 +95,7 @@ class _NeuChipState extends State<NeuChip> {
                     type: widget.customIcon!,
                     size: NeuTokens.iconXs,
                     color: widget.selected
-                        ? accent
+                        ? ThemeColors.primaryText(context)
                         : ThemeColors.textSecondary(context),
                   ),
                   const SizedBox(width: NeuTokens.spaceXxs + 2),
@@ -104,7 +104,7 @@ class _NeuChipState extends State<NeuChip> {
                     widget.icon!,
                     size: NeuTokens.iconXs,
                     color: widget.selected
-                        ? accent
+                        ? ThemeColors.primaryText(context)
                         : ThemeColors.textSecondary(context),
                   ),
                   const SizedBox(width: NeuTokens.spaceXxs + 2),
@@ -113,7 +113,7 @@ class _NeuChipState extends State<NeuChip> {
                   widget.label,
                   style: AppTextStyles.labelMedium.copyWith(
                     color: widget.selected
-                        ? accent
+                        ? ThemeColors.primaryText(context)
                         : ThemeColors.textPrimary(context),
                     fontWeight: widget.selected
                         ? FontWeight.w700

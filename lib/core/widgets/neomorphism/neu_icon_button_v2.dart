@@ -111,7 +111,7 @@ class _NeuIconButtonV2State extends State<NeuIconButtonV2> {
         size: widget.size * 0.8,
         strokeWidth: 2,
         value: -1,
-        color: widget.color ?? ThemeColors.primary(context),
+        color: widget.color ?? ThemeColors.primaryText(context),
       ),
     );
   }

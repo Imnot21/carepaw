@@ -201,7 +201,7 @@ class _NavSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = ThemeColors.primary(context);
+    final accent = ThemeColors.primaryText(context);
     final labelColor = ThemeColors.textSecondary(context);
 
     // Resolve icon based on type

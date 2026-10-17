@@ -82,7 +82,7 @@ class _NotLoggedInView extends StatelessWidget {
                 child: Icon(
                   Icons.medical_information_outlined,
                   size: 48,
-                  color: ThemeColors.primary(context),
+                  color: ThemeColors.primaryText(context),
                 ),
               ),
               const SizedBox(height: 16),
@@ -459,13 +459,13 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
               borderRadius: 60,
               variant: NeuVariant.raised,
               color: ThemeColors.error(context),
-              child: const SizedBox(
+              child: SizedBox(
                 width: 120,
                 height: 120,
                 child: Icon(
                   Icons.error_outline_rounded,
                   size: 60,
-                  color: AppColors.textOnPrimary,
+                  color: ThemeColors.onStatus(context),
                 ),
               ),
             ),
@@ -584,14 +584,14 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: Icon(Icons.filter_list_rounded, color: ThemeColors.primary(context)),
+              leading: Icon(Icons.filter_list_rounded, color: ThemeColors.primaryText(context)),
               title: const Text('Filter Records'),
               subtitle: Text(_selectedFilter?.displayName ?? 'All records'),
               // Filters sit right above the list — just close the sheet.
               onTap: () => context.pop(),
             ),
             ListTile(
-              leading: Icon(Icons.help_outline_rounded, color: ThemeColors.primary(context)),
+              leading: Icon(Icons.help_outline_rounded, color: ThemeColors.primaryText(context)),
               title: const Text('About Medical Records'),
               onTap: () {
                 context.pop();
@@ -728,14 +728,14 @@ class _MedicalRecordCard extends StatelessWidget {
                           Icon(
                             Icons.medical_services_outlined,
                             size: 16,
-                            color: ThemeColors.primary(context),
+                            color: ThemeColors.primaryText(context),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Diagnosis: ${record.diagnosis}',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: ThemeColors.primary(context),
+                                color: ThemeColors.primaryText(context),
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -760,14 +760,14 @@ class _MedicalRecordCard extends StatelessWidget {
                           Icon(
                             Icons.healing_outlined,
                             size: 16,
-                            color: ThemeColors.primary(context),
+                            color: ThemeColors.primaryText(context),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Treatment: ${record.treatment}',
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: ThemeColors.primary(context),
+                                color: ThemeColors.primaryText(context),
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,

@@ -80,7 +80,7 @@ class _NeuIconButtonState extends State<NeuIconButton> {
                           size: widget.size * 0.8,
                           strokeWidth: 2,
                           value: -1,
-                          color: widget.color ?? ThemeColors.primary(context),
+                          color: widget.color ?? ThemeColors.primaryText(context),
                         ),
                       )
                     : widget.svgAsset != null
@@ -88,7 +88,7 @@ class _NeuIconButtonState extends State<NeuIconButton> {
                         : Icon(
                             widget.icon,
                             size: widget.size,
-                            color: widget.color ?? ThemeColors.primary(context),
+                            color: widget.color ?? ThemeColors.primaryText(context),
                           ),
               ),
             ),

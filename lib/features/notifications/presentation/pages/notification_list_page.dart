@@ -134,13 +134,13 @@ class _NotificationListPageState extends State<NotificationListPage>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: ThemeColors.primary(context),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '${state.count}',
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.textOnPrimary,
+                            color: ThemeColors.onPrimary(context),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -454,8 +454,8 @@ class _NotificationListPageState extends State<NotificationListPage>
                 Container(
                   width: 10,
                   height: 10,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
+                  decoration: BoxDecoration(
+                    color: ThemeColors.primary(context),
                     shape: BoxShape.circle,
                   ),
                 ),

@@ -24,7 +24,7 @@ class NeuProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fillColor = color ?? ThemeColors.primary(context);
+    final fillColor = color ?? ThemeColors.primaryText(context);
     final channel =
         trackColor ??
         (isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset);
@@ -86,7 +86,7 @@ class NeuCircularProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = color ?? ThemeColors.primary(context);
+    final accent = color ?? ThemeColors.primaryText(context);
     final channel = isDark
         ? AppColors.surfaceInsetDark
         : AppColors.surfaceInset;

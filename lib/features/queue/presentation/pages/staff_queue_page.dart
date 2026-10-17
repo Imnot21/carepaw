@@ -469,7 +469,7 @@ class _StatsBar extends StatelessWidget {
               svgAsset: SvgIcons.door,
               label: 'In Room',
               value: '$totalInRoom',
-              color: ThemeColors.primary(context),
+              color: ThemeColors.primaryText(context),
             ),
           ),
           Container(width: 1, height: 44, color: ThemeColors.border(context)),
@@ -596,7 +596,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                       '#${entry.queueEntry.position}',
                       style: AppTextStyles.titleSmall.copyWith(
                         color: isCurrentServing
-                            ? AppColors.textOnPrimary
+                            ? ThemeColors.onStatus(context)
                             : statusColor,
                         fontWeight: FontWeight.bold,
                       ),
@@ -754,7 +754,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
                   backgroundColor: ThemeColors.primary(
                     context,
                   ).withValues(alpha: 0.15),
-                  foregroundColor: ThemeColors.primary(context),
+                  foregroundColor: ThemeColors.primaryText(context),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -913,7 +913,7 @@ class _StaffQueueEntryCard extends StatelessWidget {
       case QueueStatus.called:
         return ThemeColors.info(context);
       case QueueStatus.inRoom:
-        return ThemeColors.primary(context);
+        return ThemeColors.primaryText(context);
       case QueueStatus.completed:
         return ThemeColors.success(context);
       case QueueStatus.cancelled:

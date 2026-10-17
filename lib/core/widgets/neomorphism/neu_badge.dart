@@ -83,18 +83,14 @@ abstract final class NeuStatusToneResolver {
   static Color colorOf(BuildContext context, NeuStatusTone tone) {
     return switch (tone) {
       NeuStatusTone.muted => ThemeColors.textTertiary(context),
-      NeuStatusTone.accent => ThemeColors.primary(context),
-      NeuStatusTone.progress => _progress(context),
+      NeuStatusTone.accent => ThemeColors.primaryText(context),
+      NeuStatusTone.progress => ThemeColors.progress(context),
       NeuStatusTone.success => ThemeColors.success(context),
       NeuStatusTone.warning => ThemeColors.warning(context),
       NeuStatusTone.danger => ThemeColors.error(context),
     };
   }
 
-  static Color _progress(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? const Color(0xFF5EEAD4)
-      : const Color(0xFF0D9488);
 }
 
 /// A status pill.

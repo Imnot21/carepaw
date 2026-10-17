@@ -66,7 +66,7 @@ class NeuEmptyState extends StatelessWidget {
               _Medallion(
                 icon: icon,
                 svgAsset: svgAsset,
-                color: ThemeColors.primary(context),
+                color: ThemeColors.primaryText(context),
               ),
               const SizedBox(height: NeuTokens.spaceLg),
               Text(

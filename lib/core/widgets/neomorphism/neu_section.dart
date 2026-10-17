@@ -144,7 +144,7 @@ class _HeaderAction extends StatelessWidget {
               child: Text(
                 label,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: ThemeColors.primary(context),
+                  color: ThemeColors.primaryText(context),
                   fontWeight: FontWeight.w700,
                 ),
               ),

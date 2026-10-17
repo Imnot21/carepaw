@@ -176,7 +176,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Medical Records',
                   icon: Icons.medical_services_outlined,
-                  iconColor: AppColors.tertiary,
+                  iconColor: ThemeColors.progress(context),
                   child: _MedicalRecordsCard(pet: _pet),
                 ),
               ]),
@@ -743,7 +743,7 @@ class _QuickActionsCard extends StatelessWidget {
           icon: Icons.medical_services_outlined,
           title: 'View Medical Records',
           subtitle: 'Vaccinations, treatments, notes',
-          color: AppColors.tertiary,
+          color: ThemeColors.progress(context),
           onTap: () {
             final petId = pet.id;
             if (petId == null) return;
@@ -848,7 +848,7 @@ class _MedicalRecordsCard extends StatelessWidget {
               child: Icon(
                 Icons.medical_services_outlined,
                 size: 26,
-                color: AppColors.tertiary,
+                color: ThemeColors.progress(context),
               ),
             ),
             const SizedBox(width: 16),

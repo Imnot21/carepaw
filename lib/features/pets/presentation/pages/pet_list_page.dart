@@ -87,10 +87,10 @@ class _NotLoggedInView extends StatelessWidget {
                     blur: 24,
                     opacity: 0.32,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.pets_outlined,
                     size: 80,
-                    color: AppColors.textOnPrimary,
+                    color: ThemeColors.onPrimary(context),
                   ),
                 ),
               ),
@@ -588,7 +588,7 @@ class _EmptyPetsView extends StatelessWidget {
               child: Icon(
                 Icons.pets_outlined,
                 size: 56,
-                color: ThemeColors.primary(context),
+                color: ThemeColors.primaryText(context),
               ),
             ),
             const SizedBox(height: 28),

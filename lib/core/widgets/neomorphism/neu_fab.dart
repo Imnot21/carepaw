@@ -134,11 +134,12 @@ class NeuFAB extends StatelessWidget {
     if (onPressed == null) return ThemeColors.textTertiary(context);
     switch (variant) {
       case NeuButtonVariant.primary:
-      case NeuButtonVariant.destructive:
         return ThemeColors.onPrimary(context);
+      case NeuButtonVariant.destructive:
+        return AppColors.textOnPrimary;
       case NeuButtonVariant.secondary:
       case NeuButtonVariant.outline:
-        return ThemeColors.primary(context);
+        return ThemeColors.primaryText(context);
       default:
         return ThemeColors.onPrimary(context);
     }

@@ -286,7 +286,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             title: 'Select Pet',
             icon: Icons.pets_rounded,
             svgAsset: SvgIcons.paw,
-            iconColor: ThemeColors.primary(context),
+            iconColor: ThemeColors.primaryText(context),
             child: const Center(child: NeuCircularProgress(size: 24)),
           );
         }
@@ -306,7 +306,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           subtitle: 'Choose which pet is visiting',
           icon: Icons.pets_rounded,
           svgAsset: SvgIcons.paw,
-          iconColor: ThemeColors.primary(context),
+          iconColor: ThemeColors.primaryText(context),
           required: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +435,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                     backgroundColor: ThemeColors.primary(
                       context,
                     ).withValues(alpha: 0.15),
-                    foregroundColor: ThemeColors.primary(context),
+                    foregroundColor: ThemeColors.primaryText(context),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -689,7 +689,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       subtitle: 'Which clinic service is this visit for?',
       icon: Icons.medical_services_rounded,
       svgAsset: SvgIcons.visit,
-      iconColor: ThemeColors.primary(context),
+      iconColor: ThemeColors.primaryText(context),
       required: true,
       child: DropdownButtonFormField<String>(
         initialValue: _selectedService,

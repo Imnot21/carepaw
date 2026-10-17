@@ -15,6 +15,14 @@ class ThemeColors {
   static Color primary(BuildContext context) =>
       _isDark(context) ? AppColors.primaryOnDark : AppColors.primary;
 
+  /// Accent for text/icons on the canvas.
+  ///
+  /// Deeper than the fill accent in light mode so labels, links, and glyphs
+  /// pass 4.5:1 on the bone canvas, white cards, and accent tints. In dark
+  /// mode the lightened accent already passes, so both return `primaryOnDark`.
+  static Color primaryText(BuildContext context) =>
+      _isDark(context) ? AppColors.primaryOnDark : AppColors.primaryText;
+
   static Color primaryLight(BuildContext context) =>
       _isDark(context) ? AppColors.primaryLight : AppColors.primaryLight;
 
@@ -42,6 +50,15 @@ class ThemeColors {
 
   static Color info(BuildContext context) =>
       _isDark(context) ? AppColors.infoDark : AppColors.info;
+
+  /// Teal for "progress" tones — scan states, in-progress visits.
+  static Color progress(BuildContext context) =>
+      _isDark(context) ? AppColors.progressOnDark : AppColors.progress;
+
+  /// Text/glyph colour **on** a full-strength status-tone fill: white on the
+  /// deep light-mode tones, warm ink on their lightened dark-mode versions.
+  static Color onStatus(BuildContext context) =>
+      _isDark(context) ? AppColors.primaryInk : AppColors.textOnPrimary;
 
   static Color surface(BuildContext context) =>
       _isDark(context) ? AppColors.surfaceDarkMode : AppColors.surface;
@@ -85,5 +102,10 @@ class ThemeColors {
   static Color shadowFloating(BuildContext context) =>
       _isDark(context) ? AppColors.shadowDepthDark : AppColors.shadowFloating;
 
-  static Color onPrimary(BuildContext context) => AppColors.textOnPrimary;
+  /// Text/glyph colour **on** an accent fill.
+  ///
+  /// Both modes use the warm near-black: white fails on the terracotta fill
+  /// (2.9:1 light) and on the lightened dark-mode fill (2.3:1), while the
+  /// ink clears 5.5:1 and 6.8:1 respectively.
+  static Color onPrimary(BuildContext context) => AppColors.primaryInk;
 }

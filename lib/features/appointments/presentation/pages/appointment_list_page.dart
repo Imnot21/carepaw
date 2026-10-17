@@ -813,13 +813,13 @@ class _AppointmentCard extends StatelessWidget {
       case AppointmentStatus.requested:
         return ThemeColors.warning(context);
       case AppointmentStatus.confirmed:
-        return ThemeColors.primaryLight(context);
+        return ThemeColors.info(context);
       case AppointmentStatus.rescheduled:
-        return AppColors.info;
+        return ThemeColors.info(context);
       case AppointmentStatus.checkedIn:
-        return ThemeColors.primary(context);
+        return ThemeColors.primaryText(context);
       case AppointmentStatus.inProgress:
-        return AppColors.tertiary;
+        return ThemeColors.progress(context);
       case AppointmentStatus.completed:
         return ThemeColors.success(context);
       case AppointmentStatus.cancelled:

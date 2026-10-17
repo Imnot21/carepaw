@@ -49,6 +49,21 @@ class AppColors {
   static const Color primaryTint = Color(0xFFF5E8E0);
   static const Color primaryTintOnDark = Color(0xFF3A2A26);
 
+  // ============ Accent ink — contrast-safe ============
+  //
+  // Fill and ink are separate jobs. `primary` keeps the warm fill for buttons,
+  // FABs, and tints; `primaryText` is the deeper terracotta used wherever the
+  // accent must be *read* on the canvas, and `primaryInk` is the warm
+  // near-black for text/glyphs *on* an accent fill. Verified ratios:
+  // primaryText ≥ 4.8:1 on bone/white/tint; primaryInk 5.5:1 on primary and
+  // 6.8:1 on primaryOnDark.
+
+  /// Accent for text and icons read on the canvas (light mode).
+  static const Color primaryText = Color(0xFFA8472C);
+
+  /// Warm near-black for text and glyphs on accent fills, both modes.
+  static const Color primaryInk = Color(0xFF2B2118);
+
   // ============ Extrusion shadows ============
   //
   // The light source and the depth shadow. Both are tinted to the canvas hue —
@@ -114,12 +129,20 @@ class AppColors {
   static const Color textTertiaryOnDark = Color(0xFFD1D5DB);
 
   // ============ Status ============
-  static const Color error = Color(0xFFDC2626);
-  static const Color success = Color(0xFF16A34A);
-  static const Color warning = Color(0xFFD97706);
+  //
+  // Deepened for AA: these double as text colours on light planes and as
+  // fills under white text — all three clear 4.5:1 in both roles (e.g.
+  // #B91C1C on bone 5.5:1, white on #B91C1C 5.9:1).
+  static const Color error = Color(0xFFB91C1C);
+  static const Color success = Color(0xFF15803D);
+  static const Color warning = Color(0xFFB45309);
   static const Color errorOnDark = Color(0xFFF87171);
   static const Color successOnDark = Color(0xFF4ADE80);
   static const Color warningOnDark = Color(0xFFFBBF24);
+
+  /// Teal for "progress" tones — scans, in-progress visits.
+  static const Color progress = Color(0xFF0F766E);
+  static const Color progressOnDark = Color(0xFF5EEAD4);
 
   // ============ Pet species accents ============
   static const Color accentCat = Color(0xFF8B7D5B);
@@ -172,8 +195,12 @@ class AppColors {
   static const Color tertiaryDark = Color(0xFF0D9488);
   static const Color surfaceContainerHighest = Color(0xFFFFFFFF);
   static const Color surfaceContainerDark = Color(0xFF262423);
-  static const Color info = primaryLight;
-  static const Color infoDark = primaryOnDark;
+  /// Status blue, deepened for readability: `info` started as pale terracotta
+  /// and failed everywhere it was asked to be *read* (status text, icons,
+  /// timestamps). Steel blue clears 4.7:1 on bone and white; the dark-mode
+  /// variant clears 8.2:1 on charcoal.
+  static const Color info = Color(0xFF4A6FA5);
+  static const Color infoDark = Color(0xFF93B4E4);
 
   static const Color secondary = textSecondary;
   static const Color tertiary = Color(0xFF14B8A6);

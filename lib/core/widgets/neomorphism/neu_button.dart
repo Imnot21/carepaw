@@ -218,12 +218,12 @@ class _NeuButtonState extends State<NeuButton> {
       NeuButtonSize.large => AppTextStyles.titleSmall,
     };
     final color = switch (widget.variant) {
-      NeuButtonVariant.primary => _primaryFillText(context),
+      NeuButtonVariant.primary => ThemeColors.onPrimary(context),
       NeuButtonVariant.destructive => AppColors.textOnPrimary,
-      NeuButtonVariant.secondary => ThemeColors.primary(context),
-      NeuButtonVariant.outline => ThemeColors.primary(context),
+      NeuButtonVariant.secondary => ThemeColors.primaryText(context),
+      NeuButtonVariant.outline => ThemeColors.primaryText(context),
       NeuButtonVariant.ghost => ThemeColors.textSecondary(context),
-      NeuButtonVariant.text => ThemeColors.primary(context),
+      NeuButtonVariant.text => ThemeColors.primaryText(context),
     };
     return base.copyWith(color: color);
   }
@@ -278,20 +278,14 @@ class _NeuButtonState extends State<NeuButton> {
     ];
   }
 
-  /// Pressed state for a filled accent button: the same hue, one step darker,
-  /// so the change reads as "held" rather than as a disabled control.
+  /// Pressed state for a filled accent button: the same hue, one small step
+  /// darker, so the change reads as "held" rather than as a disabled control —
+  /// while keeping the ink label at ≥4.5:1.
   Color _primaryPressedFill(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? AppColors.primaryDark
-      : AppColors.primaryDark;
+      Color.lerp(_primaryFill(context), Colors.black, 0.06)!;
 
   Color _destructivePressedFill(BuildContext context) =>
       Color.lerp(ThemeColors.error(context), Colors.black, 0.14)!;
-
-  Color _primaryFillText(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? AppColors.textPrimary
-      : AppColors.textOnPrimary;
 
   EdgeInsetsGeometry _getPadding() {
     return switch (widget.size) {

@@ -584,7 +584,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
               Icon(
                 Icons.calendar_today_outlined,
                 color: hasDate
-                    ? ThemeColors.primary(context)
+                    ? ThemeColors.primaryText(context)
                     : ThemeColors.textSecondary(context),
                 size: 22,
               ),

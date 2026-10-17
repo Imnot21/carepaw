@@ -135,7 +135,7 @@ abstract final class NeuToast {
           action: (actionLabel != null && onAction != null)
               ? SnackBarAction(
                   label: actionLabel,
-                  textColor: ThemeColors.primary(context),
+                  textColor: ThemeColors.primaryText(context),
                   onPressed: onAction,
                 )
               : null,

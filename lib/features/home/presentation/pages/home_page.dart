@@ -287,7 +287,7 @@ class _PetSummaryCard extends StatelessWidget {
               Text(
                 _formatAge(pet.birthDate!),
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: ThemeColors.primary(context),
+                  color: ThemeColors.primaryText(context),
                   fontWeight: FontWeight.w700,
                 ),
               ),

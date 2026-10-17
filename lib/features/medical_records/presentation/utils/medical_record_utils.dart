@@ -12,7 +12,7 @@ class MedicalRecordUtils {
       case MedicalRecordType.visit:
         return TypeInfo(
           icon: Icons.local_hospital_outlined,
-          color: ThemeColors.primary(context),
+          color: ThemeColors.primaryText(context),
         );
       case MedicalRecordType.vaccination:
         return TypeInfo(
@@ -37,7 +37,7 @@ class MedicalRecordUtils {
       case MedicalRecordType.prescription:
         return TypeInfo(
           icon: Icons.medication_outlined,
-          color: AppColors.tertiary,
+          color: ThemeColors.progress(context),
         );
       case MedicalRecordType.note:
         return TypeInfo(
@@ -59,7 +59,7 @@ class MedicalRecordUtils {
         return TypeInfoCustom(
           customIcon: NeuIconType.visit,
           svgAsset: SvgIcons.visit,
-          color: ThemeColors.primary(context),
+          color: ThemeColors.primaryText(context),
         );
       case MedicalRecordType.vaccination:
         return TypeInfoCustom(
@@ -89,7 +89,7 @@ class MedicalRecordUtils {
         return TypeInfoCustom(
           customIcon: NeuIconType.prescription,
           svgAsset: SvgIcons.prescription,
-          color: AppColors.tertiary,
+          color: ThemeColors.progress(context),
         );
       case MedicalRecordType.note:
         return TypeInfoCustom(

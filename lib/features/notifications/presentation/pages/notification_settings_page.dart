@@ -9,6 +9,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
@@ -611,16 +612,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     ).then((confirmed) {
       if (!mounted) return;
       if (confirmed == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Feature coming soon'),
-            backgroundColor: ThemeColors.primary(context),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+        NeuToast.info(context, 'Feature coming soon');
       }
     });
   }

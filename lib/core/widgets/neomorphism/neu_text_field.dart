@@ -124,7 +124,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasError = _errorText != null || widget.error != null;
-    final accent = ThemeColors.primary(context);
+    final accent = ThemeColors.primaryText(context);
     final errorColor = ThemeColors.error(context);
     // Textfield foreground: stark max-contrast. Uses theme-aware colors for proper light/dark mode handling.
     final inputColor = Theme.of(context).brightness == Brightness.dark

@@ -226,7 +226,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           isActive: true,
         );
       case AppointmentStatus.checkedIn:
-        final color = ThemeColors.primary(context);
+        final color = ThemeColors.primaryText(context);
         return _StatusInfo(
           label: 'Checked In',
           icon: Icons.login_outlined,
@@ -235,7 +235,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           isActive: true,
         );
       case AppointmentStatus.inProgress:
-        final color = isDark ? AppColors.primaryOnDark : AppColors.primaryLight;
+        final color = ThemeColors.progress(context);
         return _StatusInfo(
           label: 'In Progress',
           icon: Icons.medical_services_outlined,
@@ -295,7 +295,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             appointment.appointment.service!,
             Icons.medical_services_rounded,
             SvgIcons.visit,
-            ThemeColors.primary(context),
+            ThemeColors.primaryText(context),
           );
         }
         return const SizedBox.shrink();

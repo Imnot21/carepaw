@@ -782,10 +782,10 @@ class _NotLoggedInView extends StatelessWidget {
                   blur: 24,
                   opacity: 0.32,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.medical_information_outlined,
                   size: 80,
-                  color: AppColors.textOnPrimary,
+                  color: ThemeColors.onPrimary(context),
                 ),
               ),
               const SizedBox(height: 28),

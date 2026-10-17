@@ -18,9 +18,9 @@ class AppTheme {
     const brightness = Brightness.light;
     const scheme = ColorScheme.light(
       primary: AppColors.primary,
-      onPrimary: AppColors.textOnPrimary,
+      onPrimary: AppColors.primaryInk,
       primaryContainer: AppColors.primaryTint,
-      onPrimaryContainer: AppColors.primaryDark,
+      onPrimaryContainer: AppColors.primaryText,
       secondary: AppColors.textSecondary,
       onSecondary: AppColors.textOnPrimary,
       secondaryContainer: AppColors.surfaceContainer,
@@ -80,7 +80,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
+          foregroundColor: AppColors.primaryInk,
           elevation: 0,
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -92,18 +92,18 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryText,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
           ),
-          side: const BorderSide(color: AppColors.primary, width: 1),
+          side: const BorderSide(color: AppColors.primaryText, width: 1),
           textStyle: AppTextStyles.button,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryText,
           textStyle: AppTextStyles.button,
         ),
       ),
@@ -124,7 +124,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primaryText, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
@@ -154,7 +154,7 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
+        selectedItemColor: AppColors.primaryText,
         unselectedItemColor: AppColors.textSecondary,
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -164,7 +164,7 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           return AppTextStyles.labelMedium.copyWith(
             color: states.contains(WidgetState.selected)
-                ? AppColors.primary
+                ? AppColors.primaryText
                 : AppColors.textSecondary,
           );
         }),
@@ -212,7 +212,7 @@ class AppTheme {
         backgroundColor: AppColors.surface,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.primary,
+        color: AppColors.primaryText,
         linearTrackColor: AppColors.primaryTint,
       ),
       iconTheme: const IconThemeData(color: AppColors.textPrimary),

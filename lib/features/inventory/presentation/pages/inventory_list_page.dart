@@ -99,8 +99,8 @@ class _InventoryListPageState extends State<InventoryListPage> {
             onPressed: () => _navigateToForm(),
             icon: NeuSvgIcon(SvgIcons.add, size: 24),
             label: const Text('Add Item'),
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary,
+            backgroundColor: ThemeColors.primary(context),
+            foregroundColor: ThemeColors.onPrimary(context),
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -413,7 +413,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
                               ? (_isDark ? AppColors.errorOnDark : AppColors.error)
                               : isLowStock
                                   ? (_isDark ? AppColors.warningOnDark : AppColors.warning)
-                                  : ThemeColors.primary(context),
+                                  : ThemeColors.primaryText(context),
                         ),
                       ),
                     ],

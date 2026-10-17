@@ -130,7 +130,7 @@ class AuthBrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = ThemeColors.primary(context);
+    final accent = ThemeColors.primaryText(context);
     final size = radius * 2;
 
     return NeuContainer(
@@ -251,7 +251,7 @@ class AuthPromptLink extends StatelessWidget {
                 child: Text(
                   actionLabel,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: ThemeColors.primary(context),
+                    color: ThemeColors.primaryText(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),

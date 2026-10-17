@@ -41,7 +41,7 @@ class NeuStatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tint = accent ?? ThemeColors.primary(context);
+    final tint = accent ?? ThemeColors.primaryText(context);
     final tile = NeuContainer(
       onTap: onTap,
       padding: const EdgeInsets.all(NeuTokens.spaceMd),

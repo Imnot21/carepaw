@@ -497,14 +497,14 @@ class _PositionCard extends StatelessWidget {
             Text(
               'Your Position',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+                color: ThemeColors.onPrimary(context).withValues(alpha: 0.9),
               ),
             ),
             const SizedBox(height: 10),
             Text(
               '$position',
               style: AppTextStyles.displayLarge.copyWith(
-                color: AppColors.textOnPrimary,
+                color: ThemeColors.onPrimary(context),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -514,7 +514,7 @@ class _PositionCard extends StatelessWidget {
                   ? '$petsAhead ${petsAhead == 1 ? 'pet' : 'pets'} ahead of you'
                   : 'You\'re next!',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textOnPrimary.withValues(alpha: 0.9),
+                color: ThemeColors.onPrimary(context).withValues(alpha: 0.9),
               ),
             ),
             if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
@@ -526,7 +526,7 @@ class _PositionCard extends StatelessWidget {
                   vertical: 10,
                 ),
                 variant: NeuVariant.flat,
-                color: AppColors.textOnPrimary.withValues(alpha: 0.15),
+                color: ThemeColors.onPrimary(context).withValues(alpha: 0.15),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -535,7 +535,7 @@ class _PositionCard extends StatelessWidget {
                     Text(
                       'Est. wait: $estimatedWaitMinutes min',
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.textOnPrimary,
+                        color: ThemeColors.onPrimary(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -669,7 +669,7 @@ class _QueueEntryCard extends StatelessWidget {
                     child: Text(
                       '#${entry.queueEntry.position}',
                       style: AppTextStyles.titleSmall.copyWith(
-                        color: AppColors.textOnPrimary,
+                        color: ThemeColors.onStatus(context),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -780,7 +780,7 @@ class _QueueEntryCard extends StatelessWidget {
                   backgroundColor: ThemeColors.primary(
                     context,
                   ).withValues(alpha: 0.15),
-                  foregroundColor: ThemeColors.primary(context),
+                  foregroundColor: ThemeColors.primaryText(context),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -906,7 +906,7 @@ class _QueueEntryCard extends StatelessWidget {
       case QueueStatus.called:
         return ThemeColors.info(context);
       case QueueStatus.inRoom:
-        return ThemeColors.primary(context);
+        return ThemeColors.primaryText(context);
       case QueueStatus.completed:
         return ThemeColors.success(context);
       case QueueStatus.cancelled:
@@ -943,7 +943,7 @@ class _QueueInfoCard extends StatelessWidget {
                 'How It Works',
                 style: AppTextStyles.titleSmall.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: ThemeColors.primary(context),
+                  color: ThemeColors.primaryText(context),
                 ),
               ),
             ],

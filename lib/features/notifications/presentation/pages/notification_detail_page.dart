@@ -174,7 +174,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: ThemeColors.primary(context),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -185,7 +185,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                             Text(
                               'Unread',
                               style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.textOnPrimary,
+                                color: ThemeColors.onPrimary(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

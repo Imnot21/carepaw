@@ -192,7 +192,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Description',
           icon: Icons.description_outlined,
-          color: ThemeColors.primary(context),
+          color: ThemeColors.primaryText(context),
           content: record.description!,
         ),
       );
@@ -214,7 +214,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Treatment',
           icon: Icons.healing_outlined,
-          color: AppColors.tertiary,
+          color: ThemeColors.progress(context),
           content: record.treatment!,
         ),
       );
