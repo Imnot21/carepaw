@@ -11,8 +11,18 @@
       "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "enabled": true,
       "environment": {
-        "MEMORY_FILE_PATH": "C:\\Users\\six6six\\.config\\opencode\\memory\\memory.jsonl"
+        "MEMORY_FILE_PATH": "C:\\Users\\PC\\.config\\opencode\\memory.json"
       }
+    },
+    "dart": {
+      "type": "local",
+      "command": ["dart", "mcp-server", "--flutter-sdk", "E:\\flutter_windows_3.35.1-stable\\flutter"],
+      "enabled": true
+    },
+    "mobile-mcp": {
+      "type": "local",
+      "command": ["npx", "-y", "@mobilenext/mobile-mcp@latest"],
+      "enabled": true
     }
   }
 }

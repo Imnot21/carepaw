@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server", "--flutter-sdk", "E:\\flutter_windows_3.35.1-stable\\flutter"]
+    },
+    "mobile-mcp": {
+      "command": "npx",
+      "args": ["-y", "@mobilenext/mobile-mcp@latest"]
+    }
+  }
+}
