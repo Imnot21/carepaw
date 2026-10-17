@@ -68,6 +68,16 @@ class _InventoryListPageState extends State<InventoryListPage> {
     }
   }
 
+  /// True when the loaded inventory renders its "empty" view, which carries
+  /// its own Add Item call to action.
+  bool _isListEmpty(InventoryState state) {
+    if (state is InventoryItemsLoaded) return state.items.isEmpty;
+    if (state is InventoryItemsByCategoryLoaded) return state.items.isEmpty;
+    if (state is InventorySearchResultsLoaded) return state.items.isEmpty;
+    if (state is LowStockItemsLoaded) return state.items.isEmpty;
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
@@ -95,14 +105,23 @@ class _InventoryListPageState extends State<InventoryListPage> {
               _buildInventoryList(),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _navigateToForm(),
-            icon: NeuSvgIcon(SvgIcons.add, size: 24),
-            label: const Text('Add Item'),
-            backgroundColor: ThemeColors.primary(context),
-            foregroundColor: ThemeColors.onPrimary(context),
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          // The empty state already offers "Add Item" front and center; the
+          // floating button would overlap it, so it steps aside while the
+          // list has nothing to scroll.
+          floatingActionButton: BlocBuilder<InventoryBloc, InventoryState>(
+            builder: (context, state) => _isListEmpty(state)
+                ? const SizedBox.shrink()
+                : FloatingActionButton.extended(
+                    onPressed: () => _navigateToForm(),
+                    icon: NeuSvgIcon(SvgIcons.add, size: 24),
+                    label: const Text('Add Item'),
+                    backgroundColor: ThemeColors.primary(context),
+                    foregroundColor: ThemeColors.onPrimary(context),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
           ),
         );
       },
@@ -128,14 +147,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
               'Inventory',
               style: AppTextStyles.headlineMedium.copyWith(
                 fontWeight: FontWeight.w800,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: _isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Manage your clinic supplies',
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: _isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -186,10 +209,12 @@ class _InventoryListPageState extends State<InventoryListPage> {
                       padding: const EdgeInsets.only(right: 8),
                       child: _buildCategoryChip(null, 'All'),
                     ),
-                    ...InventoryCategory.values.map((cat) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _buildCategoryChip(cat, cat.displayName),
-                        )),
+                    ...InventoryCategory.values.map(
+                      (cat) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildCategoryChip(cat, cat.displayName),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -252,13 +277,13 @@ class _InventoryListPageState extends State<InventoryListPage> {
               title: _searchQuery.isNotEmpty
                   ? 'No Results Found'
                   : _selectedCategory != null
-                      ? 'No Items in This Category'
-                      : 'No Inventory Items',
+                  ? 'No Items in This Category'
+                  : 'No Inventory Items',
               message: _searchQuery.isNotEmpty
                   ? 'Try adjusting your search terms'
                   : _selectedCategory != null
-                      ? 'Add items to the ${_selectedCategory!.displayName.toLowerCase()} category'
-                      : 'Start by adding your first inventory item',
+                  ? 'Add items to the ${_selectedCategory!.displayName.toLowerCase()} category'
+                  : 'Start by adding your first inventory item',
               actionLabel: 'Add Item',
               onAction: _navigateToForm,
             ),
@@ -287,8 +312,8 @@ class _InventoryListPageState extends State<InventoryListPage> {
     final statusColor = isOutOfStock
         ? ThemeColors.error(context)
         : isLowStock
-            ? ThemeColors.warning(context)
-            : _getCategoryColor(item.category);
+        ? ThemeColors.warning(context)
+        : _getCategoryColor(item.category);
 
     return NeuCard(
       padding: const EdgeInsets.all(16),
@@ -305,12 +330,19 @@ class _InventoryListPageState extends State<InventoryListPage> {
               variant: NeuVariant.raised,
               color: _getCategoryColor(item.category),
               boxShadow: isLowStock || isOutOfStock
-                  ? NeuShadow.color(context, statusColor, blur: 16, opacity: 0.35)
-                  : NeuShadow.color(context, _getCategoryColor(item.category), blur: 12, opacity: 0.28),
-              child: NeuSvgIcon(
-                _getCategorySvg(item.category),
-                size: 28,
-              ),
+                  ? NeuShadow.color(
+                      context,
+                      statusColor,
+                      blur: 16,
+                      opacity: 0.35,
+                    )
+                  : NeuShadow.color(
+                      context,
+                      _getCategoryColor(item.category),
+                      blur: 12,
+                      opacity: 0.28,
+                    ),
+              child: NeuSvgIcon(_getCategorySvg(item.category), size: 28),
             ),
           ),
           const SizedBox(width: 16),
@@ -335,9 +367,15 @@ class _InventoryListPageState extends State<InventoryListPage> {
                       ),
                     ),
                     if (isOutOfStock)
-                      _buildStatusBadge('Out of Stock', ThemeColors.error(context))
+                      _buildStatusBadge(
+                        'Out of Stock',
+                        ThemeColors.error(context),
+                      )
                     else if (isLowStock)
-                      _buildStatusBadge('Low Stock', ThemeColors.warning(context))
+                      _buildStatusBadge(
+                        'Low Stock',
+                        ThemeColors.warning(context),
+                      )
                     else if (item.isAtMax)
                       _buildStatusBadge('Full', ThemeColors.success(context)),
                   ],
@@ -376,10 +414,10 @@ class _InventoryListPageState extends State<InventoryListPage> {
                                   color: isOutOfStock
                                       ? ThemeColors.error(context)
                                       : isLowStock
-                                          ? ThemeColors.warning(context)
-                                          : (_isDark
-                                              ? AppColors.textPrimaryOnDark
-                                              : AppColors.textPrimary),
+                                      ? ThemeColors.warning(context)
+                                      : (_isDark
+                                            ? AppColors.textPrimaryOnDark
+                                            : AppColors.textPrimary),
                                 ),
                               ),
                               Text(
@@ -410,10 +448,14 @@ class _InventoryListPageState extends State<InventoryListPage> {
                         style: AppTextStyles.titleSmall.copyWith(
                           fontWeight: FontWeight.w700,
                           color: isOutOfStock
-                              ? (_isDark ? AppColors.errorOnDark : AppColors.error)
+                              ? (_isDark
+                                    ? AppColors.errorOnDark
+                                    : AppColors.error)
                               : isLowStock
-                                  ? (_isDark ? AppColors.warningOnDark : AppColors.warning)
-                                  : ThemeColors.primaryText(context),
+                              ? (_isDark
+                                    ? AppColors.warningOnDark
+                                    : AppColors.warning)
+                              : ThemeColors.primaryText(context),
                         ),
                       ),
                     ],
@@ -479,29 +521,27 @@ class _InventoryListPageState extends State<InventoryListPage> {
   }
 
   void _navigateToForm([InventoryItem? item]) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => InventoryFormPage(item: item),
-      ),
-    ).then((_) {
-      if (!mounted) return;
-      if (_searchQuery.isEmpty && _selectedCategory == null) {
-        context.read<InventoryBloc>().add(const LoadInventoryItems());
-      }
-    });
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => InventoryFormPage(item: item)))
+        .then((_) {
+          if (!mounted) return;
+          if (_searchQuery.isEmpty && _selectedCategory == null) {
+            context.read<InventoryBloc>().add(const LoadInventoryItems());
+          }
+        });
   }
 
   void _navigateToDetail(InventoryItem item) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => InventoryDetailPage(item: item),
-      ),
-    ).then((_) {
-      if (!mounted) return;
-      if (_searchQuery.isEmpty && _selectedCategory == null) {
-        context.read<InventoryBloc>().add(const LoadInventoryItems());
-      }
-    });
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(builder: (_) => InventoryDetailPage(item: item)),
+        )
+        .then((_) {
+          if (!mounted) return;
+          if (_searchQuery.isEmpty && _selectedCategory == null) {
+            context.read<InventoryBloc>().add(const LoadInventoryItems());
+          }
+        });
   }
 
   void _showFilterDialog() {
@@ -521,34 +561,32 @@ class _InventoryListPageState extends State<InventoryListPage> {
               'Filter Inventory',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
-                color: _isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: _isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 20),
-            ...InventoryCategory.values.map((cat) => ListTile(
-                  leading: NeuSvgIcon(
-                    _getCategorySvg(cat),
-                    size: 24,
+            ...InventoryCategory.values.map(
+              (cat) => ListTile(
+                leading: NeuSvgIcon(_getCategorySvg(cat), size: 24),
+                title: Text(
+                  cat.displayName,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: _isDark
+                        ? AppColors.textPrimaryOnDark
+                        : AppColors.textPrimary,
                   ),
-                  title: Text(
-                    cat.displayName,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: _isDark
-                          ? AppColors.textPrimaryOnDark
-                          : AppColors.textPrimary,
-                    ),
-                  ),
-                  trailing: _selectedCategory == cat
-                      ? NeuSvgIcon(
-                          SvgIcons.check,
-                          size: 24,
-                        )
-                      : null,
-                  onTap: () {
-                    _onCategoryChanged(cat);
-                    Navigator.pop(context);
-                  },
-                )),
+                ),
+                trailing: _selectedCategory == cat
+                    ? NeuSvgIcon(SvgIcons.check, size: 24)
+                    : null,
+                onTap: () {
+                  _onCategoryChanged(cat);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
             const SizedBox(height: 12),
             ListTile(
               leading: NeuSvgIcon(SvgIcons.close, size: 24),
@@ -596,7 +634,12 @@ class _NotLoggedInView extends StatelessWidget {
                   borderRadius: 80,
                   variant: NeuVariant.raised,
                   color: AppColors.primary,
-                  boxShadow: NeuShadow.color(context, AppColors.primary, blur: 24, opacity: 0.35),
+                  boxShadow: NeuShadow.color(
+                    context,
+                    AppColors.primary,
+                    blur: 24,
+                    opacity: 0.35,
+                  ),
                   child: NeuSvgIcon(SvgIcons.inventory, size: 80),
                 ),
               ),
@@ -605,7 +648,9 @@ class _NotLoggedInView extends StatelessWidget {
                 'Please log in to manage inventory',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -613,7 +658,9 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to access inventory management',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -655,7 +702,12 @@ class _AccessDeniedView extends StatelessWidget {
                   borderRadius: 80,
                   variant: NeuVariant.raised,
                   color: AppColors.error,
-                  boxShadow: NeuShadow.color(context, AppColors.error, blur: 24, opacity: 0.35),
+                  boxShadow: NeuShadow.color(
+                    context,
+                    AppColors.error,
+                    blur: 24,
+                    opacity: 0.35,
+                  ),
                   child: NeuSvgIcon(SvgIcons.block, size: 80),
                 ),
               ),
@@ -672,7 +724,9 @@ class _AccessDeniedView extends StatelessWidget {
               Text(
                 'Only veterinarians and clinic staff can manage inventory.\n\nThis feature is for clinic operations only.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryOnDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -729,7 +783,12 @@ class _NeuEmptyState extends StatelessWidget {
                 borderRadius: 60,
                 variant: NeuVariant.raised,
                 color: color.withValues(alpha: 0.14),
-                boxShadow: NeuShadow.color(context, color, blur: 20, opacity: 0.18),
+                boxShadow: NeuShadow.color(
+                  context,
+                  color,
+                  blur: 20,
+                  opacity: 0.18,
+                ),
                 child: svgAsset != null
                     ? NeuSvgIcon(svgAsset!, size: 56)
                     : const SizedBox(width: 56, height: 56),
@@ -740,7 +799,9 @@ class _NeuEmptyState extends StatelessWidget {
               title,
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.textPrimaryOnDark : AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.textPrimaryOnDark
+                    : AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -748,7 +809,9 @@ class _NeuEmptyState extends StatelessWidget {
             Text(
               message,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.textSecondaryOnDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryOnDark
+                    : AppColors.textSecondary,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

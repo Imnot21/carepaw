@@ -141,7 +141,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                 if (pet.ageInYears != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${pet.ageInYears} years old',
+                    '${pet.ageInYears} ${pet.ageInYears == 1 ? 'year' : 'years'} old',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: ThemeColors.textSecondary(context),
                     ),

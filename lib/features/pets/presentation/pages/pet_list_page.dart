@@ -429,14 +429,11 @@ class _PetCard extends StatelessWidget {
                   // Species and breed
                   Row(
                     children: [
-                      NeuSvgIcon(
-                        speciesSvg,
-                        size: 16,
-                      ),
+                      NeuSvgIcon(speciesSvg, size: 16),
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
-                            (pet.breed != null ? ' â€¢ ${pet.breed}' : ''),
+                            (pet.breed != null ? ' • ${pet.breed}' : ''),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: isDark
                               ? AppColors.textSecondaryOnDark
@@ -893,14 +890,11 @@ class _StaffPetCard extends StatelessWidget {
                   // Species and breed
                   Row(
                     children: [
-                      NeuSvgIcon(
-                        speciesSvg,
-                        size: 16,
-                      ),
+                      NeuSvgIcon(speciesSvg, size: 16),
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
-                            (pet.breed != null ? ' â€¢ ${pet.breed}' : ''),
+                            (pet.breed != null ? ' • ${pet.breed}' : ''),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: isDark
                               ? AppColors.textSecondaryOnDark

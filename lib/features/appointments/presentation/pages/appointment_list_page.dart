@@ -849,7 +849,8 @@ class _AppointmentCard extends StatelessWidget {
       return 'Tomorrow at ${DateFormat.jm().format(dateTime)}';
     }
 
-    return DateFormat('MMM d, y \'at\' jm').format(dateTime);
+    return '${DateFormat('MMM d, y').format(dateTime)} at '
+        '${DateFormat.jm().format(dateTime)}';
   }
 
   String _getSpeciesSvg(PetSpecies? species) {

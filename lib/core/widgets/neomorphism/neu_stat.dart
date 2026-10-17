@@ -164,7 +164,17 @@ class NeuStatGrid extends StatelessWidget {
   final List<NeuStatTile> tiles;
   final int mobileColumns;
 
-  const NeuStatGrid({super.key, required this.tiles, this.mobileColumns = 2});
+  /// Width-to-height ratio per tile, near-square by default. Pass a smaller
+  /// value (taller tile) when labels wrap to two lines — the three-across
+  /// clinic pulse strip uses 0.75 for "Today's bookings".
+  final double childAspectRatio;
+
+  const NeuStatGrid({
+    super.key,
+    required this.tiles,
+    this.mobileColumns = 2,
+    this.childAspectRatio = 0.92,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -182,9 +192,9 @@ class NeuStatGrid extends StatelessWidget {
         crossAxisCount: columns,
         mainAxisSpacing: NeuTokens.tightGap,
         crossAxisSpacing: NeuTokens.tightGap,
-        // Square is fine for an icon, a number, and a two-line label, and it
-        // keeps the grid on a rhythm without hard-coding a height.
-        childAspectRatio: 0.92,
+        // The aspect keeps the grid on a rhythm without hard-coding a height;
+        // tiles whose labels wrap taller can pass a smaller ratio.
+        childAspectRatio: childAspectRatio,
       ),
       itemCount: tiles.length,
       itemBuilder: (_, index) => tiles[index],

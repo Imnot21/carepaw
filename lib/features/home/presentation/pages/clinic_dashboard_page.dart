@@ -253,6 +253,10 @@ class _ClinicPulseStrip extends StatelessWidget {
         final lowStock = pulse.lowStock;
         return NeuStatGrid(
           mobileColumns: 3,
+          // "Today's bookings" wraps to two lines in a third of the width;
+          // 0.70 keeps the two-line label clear even at the narrower logical
+          // width of a framed preview (~393pt).
+          childAspectRatio: 0.70,
           tiles: [
             NeuStatTile(
               label: 'Waiting',

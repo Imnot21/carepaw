@@ -85,61 +85,34 @@ class RoleTabs {
   /// Converts to `NeuNavItemSvg` for use with `NeuBottomNav.svg`.
   List<NeuNavItemSvg> toNavItems() {
     return tabs
-        .map((tab) => NeuNavItemSvg(
-              svgAsset: tab.svgAsset,
-              label: tab.label,
-            ))
+        .map((tab) => NeuNavItemSvg(svgAsset: tab.svgAsset, label: tab.label))
         .toList();
   }
 
   // ---- Pet owner journey ----
   static const _owner = [
-    RoleTab(
-      svgAsset: SvgIcons.home,
-      label: 'Home',
-      location: '/home',
-    ),
-    RoleTab(
-      svgAsset: SvgIcons.paw,
-      label: 'Pets',
-      location: '/pets',
-    ),
+    RoleTab(svgAsset: SvgIcons.home, label: 'Home', location: '/home'),
+    RoleTab(svgAsset: SvgIcons.paw, label: 'Pets', location: '/pets'),
     RoleTab(
       svgAsset: SvgIcons.calendar,
       label: 'Appointments',
       location: '/appointments',
     ),
-    RoleTab(
-      svgAsset: SvgIcons.queue,
-      label: 'Queue',
-      location: '/queue',
-    ),
-    RoleTab(
-      svgAsset: SvgIcons.person,
-      label: 'Profile',
-      location: '/profile',
-    ),
+    RoleTab(svgAsset: SvgIcons.queue, label: 'Queue', location: '/queue'),
+    RoleTab(svgAsset: SvgIcons.person, label: 'Profile', location: '/profile'),
   ];
 
   // ---- Owner/Admin: single clinic operator (paper-aligned) ----
   // Combines bookings, line, patients, records, stock, and scan in one set.
   // (Old staff/vet/admin tab sets removed with the old roles — backup kept.)
   static const _clinic = [
-    RoleTab(
-      svgAsset: SvgIcons.home,
-      label: 'Home',
-      location: '/clinic',
-    ),
+    RoleTab(svgAsset: SvgIcons.home, label: 'Home', location: '/clinic'),
     RoleTab(
       svgAsset: SvgIcons.calendar,
-      label: 'Bookings',
+      label: 'Booking',
       location: '/staff/appointments',
     ),
-    RoleTab(
-      svgAsset: SvgIcons.queue,
-      label: 'Line',
-      location: '/staff/queue',
-    ),
+    RoleTab(svgAsset: SvgIcons.queue, label: 'Line', location: '/staff/queue'),
     RoleTab(
       svgAsset: SvgIcons.paw,
       label: 'Patients',
@@ -155,10 +128,6 @@ class RoleTabs {
       label: 'Scan',
       location: '/staff/scanning',
     ),
-    RoleTab(
-      svgAsset: SvgIcons.person,
-      label: 'Profile',
-      location: '/profile',
-    ),
+    RoleTab(svgAsset: SvgIcons.person, label: 'Profile', location: '/profile'),
   ];
 }

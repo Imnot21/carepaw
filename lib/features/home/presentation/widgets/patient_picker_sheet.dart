@@ -29,16 +29,24 @@ Future<int?> showPatientPicker(BuildContext context) {
   if (authState is! AuthAuthenticated || authState.user.id == null) {
     return Future<int?>.value();
   }
-  final ownerId = authState.user.id!;
+  final user = authState.user;
+  final ownerId = user.id!;
+  // The clinic operator reads every patient's records, so the picker lists
+  // all patients; pet owners only pick from their own pets.
+  final seesAllPatients = user.isOwnerAdmin;
   return showModalBottomSheet<int>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) => BlocProvider(
-      create: (_) =>
-          PetBloc(petRepository: getIt<PetRepository>())
-            ..add(LoadPets(ownerId: ownerId)),
-      child: _PatientPickerSheet(ownerId: ownerId),
+      create: (_) => PetBloc(petRepository: getIt<PetRepository>())
+        ..add(
+          seesAllPatients ? const LoadAllPets() : LoadPets(ownerId: ownerId),
+        ),
+      child: _PatientPickerSheet(
+        ownerId: ownerId,
+        seesAllPatients: seesAllPatients,
+      ),
     ),
   );
 }
@@ -46,7 +54,14 @@ Future<int?> showPatientPicker(BuildContext context) {
 class _PatientPickerSheet extends StatefulWidget {
   final int ownerId;
 
-  const _PatientPickerSheet({required this.ownerId});
+  /// When true (clinic operator) the sheet lists every patient rather than
+  /// only the signed-in user's pets.
+  final bool seesAllPatients;
+
+  const _PatientPickerSheet({
+    required this.ownerId,
+    required this.seesAllPatients,
+  });
 
   @override
   State<_PatientPickerSheet> createState() => _PatientPickerSheetState();
@@ -55,6 +70,22 @@ class _PatientPickerSheet extends StatefulWidget {
 class _PatientPickerSheetState extends State<_PatientPickerSheet> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+
+  void _reloadPatients() {
+    context.read<PetBloc>().add(
+      widget.seesAllPatients
+          ? const LoadAllPets()
+          : LoadPets(ownerId: widget.ownerId),
+    );
+  }
+
+  void _searchPatients(String query) {
+    context.read<PetBloc>().add(
+      widget.seesAllPatients
+          ? SearchAllPets(query: query)
+          : SearchPets(ownerId: widget.ownerId, query: query),
+    );
+  }
 
   @override
   void dispose() {
@@ -107,9 +138,7 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
-                        context.read<PetBloc>().add(
-                          LoadPets(ownerId: widget.ownerId),
-                        );
+                        _reloadPatients();
                       },
                       tooltip: 'Clear search',
                     )
@@ -117,13 +146,9 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
               onChanged: (value) {
                 setState(() => _searchQuery = value);
                 if (value.isEmpty) {
-                  context.read<PetBloc>().add(
-                    LoadPets(ownerId: widget.ownerId),
-                  );
+                  _reloadPatients();
                 } else {
-                  context.read<PetBloc>().add(
-                    SearchPets(ownerId: widget.ownerId, query: value),
-                  );
+                  _searchPatients(value);
                 }
               },
             ),
@@ -176,9 +201,7 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
                             NeuButton(
                               text: 'Try Again',
                               variant: NeuButtonVariant.secondary,
-                              onPressed: () => context.read<PetBloc>().add(
-                                LoadPets(ownerId: widget.ownerId),
-                              ),
+                              onPressed: _reloadPatients,
                             ),
                           ],
                         ),

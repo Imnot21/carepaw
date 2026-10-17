@@ -217,7 +217,10 @@ class NeuBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dynamicHeight = items.length >= 6 ? 64.0 : 54.0;
+    // A slot needs 22 (icon) + 2 (gap) + 11 (label) + 10 (padding) = 45px,
+    // plus the container's 12px vertical padding = 57px total. The old 54px
+    // clipped every label by 3px ("BOTTOM OVERFLOWED BY 3.0 PIXELS").
+    final dynamicHeight = items.length >= 6 ? 64.0 : 60.0;
     final effectiveHeight = height == 54 ? dynamicHeight : height;
 
     return SafeArea(
@@ -289,13 +292,19 @@ class _NavSlot extends StatelessWidget {
           child: NeuContainer(
             variant: NeuVariant.pressed,
             borderRadius: NeuTokens.radiusMd,
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
             margin: const EdgeInsets.symmetric(horizontal: 2),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildIcon(context, customIcon, legacyIcon, item.svgIcon, accent),
+                _buildIcon(
+                  context,
+                  customIcon,
+                  legacyIcon,
+                  item.svgIcon,
+                  accent,
+                ),
                 const SizedBox(height: 2),
                 Text(
                   item.label,
@@ -324,12 +333,18 @@ class _NavSlot extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildIcon(context, customIcon, legacyIcon, item.svgIcon, labelColor),
+              _buildIcon(
+                context,
+                customIcon,
+                legacyIcon,
+                item.svgIcon,
+                labelColor,
+              ),
               const SizedBox(height: 2),
               Text(
                 item.label,
@@ -361,11 +376,7 @@ class _NavSlot extends StatelessWidget {
       return NeuSvgIcon(svgIcon, size: 22);
     }
     if (customIcon != null) {
-      return NeuIcon(
-        type: customIcon,
-        size: 20,
-        color: color,
-      );
+      return NeuIcon(type: customIcon, size: 20, color: color);
     }
     if (legacyIcon != null) {
       return Icon(legacyIcon, size: 20, color: color);

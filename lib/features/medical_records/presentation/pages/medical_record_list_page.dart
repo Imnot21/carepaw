@@ -40,9 +40,9 @@ class MedicalRecordListPage extends StatelessWidget {
         final user = authState.user;
 
         return BlocProvider(
-          create: (context) => MedicalRecordBloc(
-            medicalRecordRepository: context.read(),
-          )..add(LoadMedicalRecords(pet.id!)),
+          create: (context) =>
+              MedicalRecordBloc(medicalRecordRepository: context.read())
+                ..add(LoadMedicalRecords(pet.id!)),
           child: _MedicalRecordListView(pet: pet, currentUser: user),
         );
       },
@@ -118,10 +118,7 @@ class _MedicalRecordListView extends StatefulWidget {
   final Pet pet;
   final User currentUser;
 
-  const _MedicalRecordListView({
-    required this.pet,
-    required this.currentUser,
-  });
+  const _MedicalRecordListView({required this.pet, required this.currentUser});
 
   @override
   State<_MedicalRecordListView> createState() => _MedicalRecordListViewState();
@@ -130,6 +127,14 @@ class _MedicalRecordListView extends StatefulWidget {
 class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   MedicalRecordType? _selectedFilter;
   bool get _isVetOrStaff => widget.currentUser.isOwnerAdmin;
+
+  /// True when a loaded state renders the "empty" view, which carries its own
+  /// Add Record call to action — the FAB steps aside so the two don't stack.
+  bool _isListEmpty(MedicalRecordState state) {
+    if (state is MedicalRecordsLoaded) return state.records.isEmpty;
+    if (state is MedicalRecordsByTypeLoaded) return state.records.isEmpty;
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,9 +158,17 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 if (state is MedicalRecordLoading) {
                   return const NeuSkeletonList();
                 } else if (state is MedicalRecordsLoaded) {
-                  return _buildRecordsList(context, state.records, speciesColor);
+                  return _buildRecordsList(
+                    context,
+                    state.records,
+                    speciesColor,
+                  );
                 } else if (state is MedicalRecordsByTypeLoaded) {
-                  return _buildRecordsList(context, state.records, speciesColor);
+                  return _buildRecordsList(
+                    context,
+                    state.records,
+                    speciesColor,
+                  );
                 } else if (state is MedicalRecordError) {
                   return _buildErrorState(context, state.failure);
                 } else if (state is MedicalRecordOperationSuccess) {
@@ -168,7 +181,13 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
           ),
         ],
       ),
-      floatingActionButton: _isVetOrStaff ? _buildFab(context, speciesColor) : null,
+      floatingActionButton: _isVetOrStaff
+          ? BlocBuilder<MedicalRecordBloc, MedicalRecordState>(
+              builder: (context, state) => _isListEmpty(state)
+                  ? const SizedBox.shrink()
+                  : _buildFab(context, speciesColor),
+            )
+          : null,
     );
   }
 
@@ -231,7 +250,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.pet.species.displayName}${widget.pet.breed != null ? ' â€¢ ${widget.pet.breed}' : ''}',
+                  '${widget.pet.species.displayName}${widget.pet.breed != null ? ' • ${widget.pet.breed}' : ''}',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: ThemeColors.textTertiary(context),
                   ),
@@ -239,7 +258,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 if (widget.pet.ageInYears != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    '${widget.pet.ageInYears} years old',
+                    '${widget.pet.ageInYears} ${widget.pet.ageInYears == 1 ? 'year' : 'years'} old',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.textTertiary(context),
                     ),
@@ -259,12 +278,20 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 count = state.records.length;
               }
               return NeuContainer(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
                 borderRadius: 20,
                 variant: NeuVariant.raised,
                 borderColor: speciesColor.withValues(alpha: 0.3),
                 borderWidth: 1,
-                boxShadow: NeuShadow.color(context, speciesColor, blur: 10, opacity: 0.18),
+                boxShadow: NeuShadow.color(
+                  context,
+                  speciesColor,
+                  blur: 10,
+                  opacity: 0.18,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -507,7 +534,12 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         // Darkened species tint so the white label/icon clear 4.5:1 on
         // every species (plain cat tint was the failure case).
         color: Color.lerp(speciesColor, Colors.black, 0.16)!,
-        boxShadow: NeuShadow.color(context, speciesColor, blur: 20, opacity: 0.4),
+        boxShadow: NeuShadow.color(
+          context,
+          speciesColor,
+          blur: 20,
+          opacity: 0.4,
+        ),
         child: InkWell(
           onTap: () => _navigateToForm(context),
           borderRadius: BorderRadius.circular(28),
@@ -542,16 +574,11 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
 
   void _navigateToForm(BuildContext context) {
     final bloc = context.read<MedicalRecordBloc>();
-    context.push(
-      '/medical-records/new',
-      extra: {'pet': widget.pet},
-    ).then((_) {
+    context.push('/medical-records/new', extra: {'pet': widget.pet}).then((_) {
       // Reload records after form closes
       if (!mounted) return;
       if (_selectedFilter != null) {
-        bloc.add(
-          LoadMedicalRecordsByType(widget.pet.id!, _selectedFilter!),
-        );
+        bloc.add(LoadMedicalRecordsByType(widget.pet.id!, _selectedFilter!));
       } else {
         bloc.add(LoadMedicalRecords(widget.pet.id!));
       }
@@ -579,7 +606,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
               leading: NeuSvgIcon(SvgIcons.filter, size: 24),
               title: const Text('Filter Records'),
               subtitle: Text(_selectedFilter?.displayName ?? 'All records'),
-              // Filters sit right above the list â€” just close the sheet.
+              // Filters sit right above the list — just close the sheet.
               onTap: () => context.pop(),
             ),
             ListTile(
@@ -622,10 +649,7 @@ class _MedicalRecordCard extends StatelessWidget {
   final MedicalRecord record;
   final Color speciesColor;
 
-  const _MedicalRecordCard({
-    required this.record,
-    required this.speciesColor,
-  });
+  const _MedicalRecordCard({required this.record, required this.speciesColor});
 
   @override
   Widget build(BuildContext context) {
@@ -645,10 +669,7 @@ class _MedicalRecordCard extends StatelessWidget {
             child: SizedBox(
               width: 56,
               height: 56,
-              child: NeuSvgIcon(
-                typeInfo.svgAsset,
-                size: 26,
-              ),
+              child: NeuSvgIcon(typeInfo.svgAsset, size: 26),
             ),
           ),
           const SizedBox(width: 18),
@@ -694,74 +715,78 @@ class _MedicalRecordCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (record.description != null && record.description!.isNotEmpty)
-                  ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      record.description!,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: ThemeColors.textTertiary(context),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                if (record.description != null &&
+                    record.description!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    record.description!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: ThemeColors.textTertiary(context),
                     ),
-                  ],
-                if (record.diagnosis != null && record.diagnosis!.isNotEmpty)
-                  ...[
-                    const SizedBox(height: 10),
-                    NeuContainer(
-                      padding: const EdgeInsets.all(12),
-                      borderRadius: 12,
-                      variant: NeuVariant.raised,
-                      borderColor: ThemeColors.primary(context).withValues(alpha: 0.2),
-                      borderWidth: 1,
-                      child: Row(
-                        children: [
-                          const NeuSvgIcon(SvgIcons.visit, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Diagnosis: ${record.diagnosis}',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: ThemeColors.primaryText(context),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (record.diagnosis != null &&
+                    record.diagnosis!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  NeuContainer(
+                    padding: const EdgeInsets.all(12),
+                    borderRadius: 12,
+                    variant: NeuVariant.raised,
+                    borderColor: ThemeColors.primary(
+                      context,
+                    ).withValues(alpha: 0.2),
+                    borderWidth: 1,
+                    child: Row(
+                      children: [
+                        const NeuSvgIcon(SvgIcons.visit, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Diagnosis: ${record.diagnosis}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: ThemeColors.primaryText(context),
+                              fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                if (record.treatment != null && record.treatment!.isNotEmpty)
-                  ...[
-                    const SizedBox(height: 10),
-                    NeuContainer(
-                      padding: const EdgeInsets.all(12),
-                      borderRadius: 12,
-                      variant: NeuVariant.raised,
-                      borderColor: ThemeColors.primary(context).withValues(alpha: 0.2),
-                      borderWidth: 1,
-                      child: Row(
-                        children: [
-                          const NeuSvgIcon(SvgIcons.treatment, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Treatment: ${record.treatment}',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: ThemeColors.primaryText(context),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (record.treatment != null &&
+                    record.treatment!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  NeuContainer(
+                    padding: const EdgeInsets.all(12),
+                    borderRadius: 12,
+                    variant: NeuVariant.raised,
+                    borderColor: ThemeColors.primary(
+                      context,
+                    ).withValues(alpha: 0.2),
+                    borderWidth: 1,
+                    child: Row(
+                      children: [
+                        const NeuSvgIcon(SvgIcons.treatment, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Treatment: ${record.treatment}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: ThemeColors.primaryText(context),
+                              fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                ],
               ],
             ),
           ),
