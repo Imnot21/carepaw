@@ -6,6 +6,7 @@ import 'neu_shadows.dart';
 import 'neu_shapes.dart';
 import 'neu_icon.dart';
 import 'neu_icon_system.dart';
+import 'neu_svg_icon.dart';
 
 /// Legacy nav item using Material Icons (kept for compatibility).
 class NeuNavItem {
@@ -43,12 +44,29 @@ class NeuNavItemCustom {
       NeuNavItemCustom(icon: icon, activeIcon: icon, label: label);
 }
 
+/// Nav item using a clay SVG asset — the one icon voice.
+///
+/// [svgAsset] is a `SvgIcons.*` path. The active slot is conveyed by the
+/// pressed container and the accent label, so one asset serves both states.
+class NeuNavItemSvg {
+  final String svgAsset;
+  final String label;
+  final VoidCallback? onSelected;
+
+  const NeuNavItemSvg({
+    required this.svgAsset,
+    required this.label,
+    this.onSelected,
+  });
+}
+
 /// Union type for nav items (supports both legacy and custom).
 sealed class NeuNavItemBase {
   const NeuNavItemBase();
 
   static NeuNavItemBase legacy(NeuNavItem item) => _LegacyNavItem(item);
   static NeuNavItemBase custom(NeuNavItemCustom item) => _CustomNavItem(item);
+  static NeuNavItemBase svg(NeuNavItemSvg item) => _SvgNavItem(item);
 
   String get label;
   VoidCallback? get onSelected;
@@ -56,6 +74,7 @@ sealed class NeuNavItemBase {
   NeuIconType? get customActiveIcon;
   IconData? get legacyIcon;
   IconData? get legacyActiveIcon;
+  String? get svgIcon;
 }
 
 class _LegacyNavItem extends NeuNavItemBase {
@@ -79,6 +98,9 @@ class _LegacyNavItem extends NeuNavItemBase {
 
   @override
   IconData? get legacyActiveIcon => item.activeIcon;
+
+  @override
+  String? get svgIcon => null;
 }
 
 class _CustomNavItem extends NeuNavItemBase {
@@ -102,6 +124,35 @@ class _CustomNavItem extends NeuNavItemBase {
 
   @override
   IconData? get legacyActiveIcon => null;
+
+  @override
+  String? get svgIcon => null;
+}
+
+class _SvgNavItem extends NeuNavItemBase {
+  final NeuNavItemSvg item;
+  const _SvgNavItem(this.item);
+
+  @override
+  String get label => item.label;
+
+  @override
+  VoidCallback? get onSelected => item.onSelected;
+
+  @override
+  NeuIconType? get customIcon => null;
+
+  @override
+  NeuIconType? get customActiveIcon => null;
+
+  @override
+  IconData? get legacyIcon => null;
+
+  @override
+  IconData? get legacyActiveIcon => null;
+
+  @override
+  String? get svgIcon => item.svgAsset;
 }
 
 class NeuBottomNav extends StatelessWidget {
@@ -142,6 +193,21 @@ class NeuBottomNav extends StatelessWidget {
   }) {
     return NeuBottomNav(
       items: items.map(NeuNavItemBase.custom).toList(),
+      currentIndex: currentIndex,
+      onTap: onTap,
+      height: height,
+    );
+  }
+
+  /// Convenience constructor for clay SVG items.
+  factory NeuBottomNav.svg({
+    required List<NeuNavItemSvg> items,
+    required int currentIndex,
+    required ValueChanged<int> onTap,
+    double height = 54,
+  }) {
+    return NeuBottomNav(
+      items: items.map(NeuNavItemBase.svg).toList(),
       currentIndex: currentIndex,
       onTap: onTap,
       height: height,
@@ -229,7 +295,7 @@ class _NavSlot extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildIcon(context, customIcon, legacyIcon, accent),
+                _buildIcon(context, customIcon, legacyIcon, item.svgIcon, accent),
                 const SizedBox(height: 2),
                 Text(
                   item.label,
@@ -263,7 +329,7 @@ class _NavSlot extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildIcon(context, customIcon, legacyIcon, labelColor),
+              _buildIcon(context, customIcon, legacyIcon, item.svgIcon, labelColor),
               const SizedBox(height: 2),
               Text(
                 item.label,
@@ -288,8 +354,12 @@ class _NavSlot extends StatelessWidget {
     BuildContext context,
     NeuIconType? customIcon,
     IconData? legacyIcon,
+    String? svgIcon,
     Color color,
   ) {
+    if (svgIcon != null) {
+      return NeuSvgIcon(svgIcon, size: 22);
+    }
     if (customIcon != null) {
       return NeuIcon(
         type: customIcon,

@@ -18,6 +18,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
 /// Page for creating/editing medical records with premium design.
@@ -145,6 +146,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                 child: NeuIconButton(
                   plain: true,
                   icon: Icons.arrow_back_ios_new_rounded,
+                  svgAsset: SvgIcons.back,
                   onPressed: _isLoading ? null : () => context.pop(),
                   tooltip: 'Back',
                 ),
@@ -263,11 +265,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                 padding: const EdgeInsets.all(12),
                 variant: NeuVariant.flat,
                 color: speciesColor.withValues(alpha: 0.12),
-                child: Icon(
-                  Icons.category_outlined,
-                  color: speciesColor,
-                  size: 22,
-                ),
+                child: const NeuSvgIcon(SvgIcons.category, size: 22),
               ),
               const SizedBox(width: 12),
               Text(
@@ -309,6 +307,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         label: 'Title *',
         hint: 'e.g., Annual checkup, Vaccination, Surgery follow-up',
         icon: Icons.title_outlined,
+        svgAsset: SvgIcons.note,
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return 'Title is required';
@@ -326,6 +325,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         label: 'Description',
         hint: 'Brief description of the visit/reason',
         icon: Icons.description_outlined,
+        svgAsset: SvgIcons.note,
         maxLines: 3,
       ),
     );
@@ -340,6 +340,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Diagnosis',
             hint: 'Clinical diagnosis',
             icon: Icons.medical_services_outlined,
+            svgAsset: SvgIcons.visit,
             maxLines: 3,
           ),
           _buildField(
@@ -348,6 +349,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Treatment',
             hint: 'Treatment plan or procedures performed',
             icon: Icons.healing_outlined,
+            svgAsset: SvgIcons.treatment,
             maxLines: 3,
           ),
         ]);
@@ -361,6 +363,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Vaccines Given *',
             hint: 'e.g., Rabies, DHPP, Bordetella',
             icon: Icons.vaccines_outlined,
+            svgAsset: SvgIcons.vaccination,
             maxLines: 3,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -380,6 +383,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Deworming Product *',
             hint: 'e.g., Pyrantel, Fenbendazole',
             icon: Icons.medication_outlined,
+            svgAsset: SvgIcons.medication,
             maxLines: 3,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -399,6 +403,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Procedure *',
             hint: 'Surgical procedure performed',
             icon: Icons.healing_outlined,
+            svgAsset: SvgIcons.treatment,
             maxLines: 3,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -413,6 +418,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Post-op Care',
             hint: 'Post-operative care instructions',
             icon: Icons.medical_information_outlined,
+            svgAsset: SvgIcons.prescription,
             maxLines: 3,
           ),
           _buildField(
@@ -421,6 +427,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Medications Prescribed',
             hint: 'Pain meds, antibiotics, etc.',
             icon: Icons.medication_outlined,
+            svgAsset: SvgIcons.medication,
             maxLines: 3,
           ),
         ]);
@@ -434,6 +441,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Test Results *',
             hint: 'Lab findings and values',
             icon: Icons.science_outlined,
+            svgAsset: SvgIcons.lab,
             maxLines: 5,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -461,6 +469,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Medications *',
             hint: 'Medication name, dosage, frequency, duration',
             icon: Icons.medication_outlined,
+            svgAsset: SvgIcons.medication,
             maxLines: 5,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -475,6 +484,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Instructions',
             hint: 'Special administration instructions',
             icon: Icons.medical_information_outlined,
+            svgAsset: SvgIcons.prescription,
             maxLines: 3,
           ),
         ]);
@@ -488,6 +498,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Clinical Notes *',
             hint: 'Detailed clinical notes',
             icon: Icons.note_outlined,
+            svgAsset: SvgIcons.note,
             maxLines: 5,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -507,6 +518,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Allergen *',
             hint: 'What the pet is allergic to',
             icon: Icons.warning_amber_outlined,
+            svgAsset: SvgIcons.alert,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Allergen is required';
@@ -520,6 +532,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Reaction *',
             hint: 'Description of allergic reaction',
             icon: Icons.medical_services_outlined,
+            svgAsset: SvgIcons.visit,
             maxLines: 3,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -534,6 +547,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             label: 'Management',
             hint: 'Avoidance strategies, emergency meds',
             icon: Icons.healing_outlined,
+            svgAsset: SvgIcons.treatment,
             maxLines: 3,
           ),
         ]);
@@ -548,6 +562,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         label: 'Attachments',
         hint: 'Photo references, document links, etc.',
         icon: Icons.attachment_outlined,
+        svgAsset: SvgIcons.attach,
         maxLines: 2,
       ),
     );
@@ -561,6 +576,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     required String label,
     required String hint,
     required IconData icon,
+    String? svgAsset,
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
@@ -572,7 +588,9 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: ThemeColors.textSecondary(context)),
+              svgAsset != null
+                  ? NeuSvgIcon(svgAsset, size: 20)
+                  : Icon(icon, size: 20, color: ThemeColors.textSecondary(context)),
               const SizedBox(width: 10),
               Text(
                 label,
@@ -599,6 +617,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
       text: isEditing ? 'Update Record' : 'Create Record',
       onPressed: _isLoading ? null : _submitForm,
       icon: isEditing ? Icons.save_rounded : Icons.add_rounded,
+      svgAsset: isEditing ? SvgIcons.save : SvgIcons.add,
       isLoading: _isLoading,
       expanded: true,
       size: NeuButtonSize.medium,
@@ -782,11 +801,7 @@ class _NotLoggedInView extends StatelessWidget {
                   blur: 24,
                   opacity: 0.32,
                 ),
-                child: Icon(
-                  Icons.medical_information_outlined,
-                  size: 80,
-                  color: ThemeColors.onPrimary(context),
-                ),
+                child: const NeuSvgIcon(SvgIcons.prescription, size: 80),
               ),
               const SizedBox(height: 28),
               Text(
@@ -809,6 +824,7 @@ class _NotLoggedInView extends StatelessWidget {
                 text: 'Log In',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
+                svgAsset: SvgIcons.login,
               ),
             ],
           ),
@@ -850,11 +866,7 @@ class _AccessDeniedView extends StatelessWidget {
                   blur: 24,
                   opacity: 0.28,
                 ),
-                child: const Icon(
-                  Icons.block_rounded,
-                  size: 80,
-                  color: Colors.white,
-                ),
+                child: const NeuSvgIcon(SvgIcons.block, size: 80),
               ),
               const SizedBox(height: 28),
               Text(
@@ -878,6 +890,7 @@ class _AccessDeniedView extends StatelessWidget {
                 text: 'Go Back',
                 onPressed: () => context.pop(),
                 icon: Icons.arrow_back_rounded,
+                svgAsset: SvgIcons.back,
                 variant: NeuButtonVariant.secondary,
               ),
             ],

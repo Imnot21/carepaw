@@ -37,7 +37,7 @@ class AppShell extends StatelessWidget {
       // The canvas is the warm bone background, not a white wash. Cards supply
       // the white planes; the page itself stays at the back.
       body: SafeArea(bottom: false, child: child),
-      bottomNavigationBar: NeuBottomNav.custom(
+      bottomNavigationBar: NeuBottomNav.svg(
         items: tabs.toNavItems(),
         currentIndex: currentIndex,
         onTap: (index) => context.go(tabs.tabs[index].location),

@@ -604,11 +604,7 @@ class _NotInQueueCard extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             variant: NeuVariant.flat,
             color: ThemeColors.warning(context).withValues(alpha: 0.12),
-            child: Icon(
-              Icons.info_outline_rounded,
-              size: 48,
-              color: ThemeColors.warning(context),
-            ),
+            child: const NeuSvgIcon(SvgIcons.info, size: 48),
           ),
           const SizedBox(height: 20),
           Text(

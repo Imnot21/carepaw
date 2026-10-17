@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_container.dart';
+import 'neu_svg_icon.dart';
 
 /// A titled block of content.
 ///
@@ -164,6 +165,7 @@ class NeuDetailRow extends StatelessWidget {
   final String label;
   final String value;
   final IconData? icon;
+  final String? svgAsset;
   final Color? valueColor;
   final bool isLast;
 
@@ -172,6 +174,7 @@ class NeuDetailRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.icon,
+    this.svgAsset,
     this.valueColor,
     this.isLast = false,
   });
@@ -183,7 +186,10 @@ class NeuDetailRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (icon != null) ...[
+          if (svgAsset != null) ...[
+            NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm),
+            const SizedBox(width: NeuTokens.spaceXs),
+          ] else if (icon != null) ...[
             Icon(
               icon,
               size: NeuTokens.iconSm,

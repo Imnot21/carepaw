@@ -81,9 +81,9 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
       case InventoryCategory.supply:
         return AppColors.categorySupply;
       case InventoryCategory.equipment:
-        return const Color(0xFF6366F1);
+        return AppColors.categoryEquipment;
       case InventoryCategory.food:
-        return const Color(0xFFF59E0B);
+        return AppColors.categoryFood;
     }
   }
 

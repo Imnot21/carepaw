@@ -63,6 +63,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
         leading: NeuIconButton(
           plain: true,
           icon: Icons.arrow_back_rounded,
+          svgAsset: SvgIcons.back,
           onPressed: () => Navigator.of(context).pop(),
           tooltip: 'Back',
         ),
@@ -70,6 +71,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           NeuIconButton(
             plain: true,
             icon: Icons.more_vert_rounded,
+            svgAsset: SvgIcons.more,
             onPressed: () => _showMenu(context),
             tooltip: 'More',
           ),
@@ -143,6 +145,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Basic Information',
                   icon: Icons.info_outline_rounded,
+                  svgAsset: SvgIcons.info,
                   iconColor: speciesColor,
                   child: _BasicInfoCard(pet: _pet),
                 ),
@@ -153,6 +156,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Weight Tracking',
                   icon: Icons.monitor_weight_outlined,
+                  svgAsset: SvgIcons.weightScale,
                   iconColor: ThemeColors.primary(context),
                   child: _WeightTrackingCard(
                     pet: _pet,
@@ -166,6 +170,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Quick Actions',
                   icon: Icons.flash_on_rounded,
+                  svgAsset: SvgIcons.bolt,
                   iconColor: ThemeColors.textSecondary(context),
                   child: _QuickActionsCard(pet: _pet),
                 ),
@@ -176,6 +181,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   context,
                   title: 'Medical Records',
                   icon: Icons.medical_services_outlined,
+                  svgAsset: SvgIcons.visit,
                   iconColor: ThemeColors.progress(context),
                   child: _MedicalRecordsCard(pet: _pet),
                 ),
@@ -191,6 +197,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     BuildContext context, {
     required String title,
     required IconData icon,
+    String? svgAsset,
     required Color iconColor,
     required Widget child,
   }) {
@@ -204,7 +211,9 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 variant: NeuVariant.pressed,
                 borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                child: Icon(icon, size: 20, color: iconColor),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset, size: 20)
+                    : Icon(icon, size: 20, color: iconColor),
               ),
               const SizedBox(width: NeuTokens.spaceXs),
               Text(
@@ -232,6 +241,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           children: [
             _MenuTile(
               icon: Icons.edit_outlined,
+              svgAsset: SvgIcons.edit,
               title: 'Edit Pet',
               color: ThemeColors.primary(context),
               onTap: () {
@@ -241,6 +251,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             ),
             _MenuTile(
               icon: Icons.monitor_weight_outlined,
+              svgAsset: SvgIcons.weightScale,
               title: 'Add Weight Entry',
               color: ThemeColors.primary(context),
               onTap: () {
@@ -251,6 +262,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             if (_pet.isActive)
               _MenuTile(
                 icon: Icons.archive_outlined,
+                svgAsset: SvgIcons.archive,
                 title: 'Deactivate',
                 color: Theme.of(context).brightness == Brightness.dark
                     ? AppColors.warningOnDark
@@ -263,6 +275,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             else
               _MenuTile(
                 icon: Icons.unarchive_outlined,
+                svgAsset: SvgIcons.unarchive,
                 title: 'Activate',
                 color: Theme.of(context).brightness == Brightness.dark
                     ? AppColors.successOnDark
@@ -305,7 +318,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
             controller: weightController,
             label: 'New Weight (kg)',
             hint: 'e.g., 26.5',
-            prefixIcon: const Icon(Icons.monitor_weight_outlined),
+            prefixIcon: ClayIconOrMaterial(
+              'monitor_weight_outlined',
+              fallback: Icons.monitor_weight_outlined,
+              size: 20,
+            ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             autofocus: true,
             textInputAction: TextInputAction.done,
@@ -323,6 +340,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           text: 'Save',
           variant: NeuButtonVariant.primary,
           icon: Icons.save,
+          svgAsset: SvgIcons.save,
           onPressed: () => _saveWeight(context, weightController),
         ),
       ],
@@ -381,12 +399,14 @@ class _PetDetailPageState extends State<PetDetailPage> {
 /// Menu tile used in the bottom sheet
 class _MenuTile extends StatelessWidget {
   final IconData icon;
+  final String? svgAsset;
   final String title;
   final Color color;
   final VoidCallback onTap;
 
   const _MenuTile({
     required this.icon,
+    this.svgAsset,
     required this.title,
     required this.color,
     required this.onTap,
@@ -405,7 +425,9 @@ class _MenuTile extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             borderRadius: 10,
             variant: NeuVariant.flat,
-            child: Icon(icon, color: color, size: 20),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: 20)
+                : Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -417,11 +439,7 @@ class _MenuTile extends StatelessWidget {
               ),
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: ThemeColors.textTertiary(context),
-            size: 20,
-          ),
+          const NeuSvgIcon(SvgIcons.chevronRight, size: 20),
         ],
       ),
     );
@@ -471,6 +489,7 @@ class _QuickInfoChips extends StatelessWidget {
           NeuChip(
             label: 'Microchipped',
             icon: Icons.nfc_outlined,
+            svgAsset: SvgIcons.microchip,
             selected: true,
             selectedColor: ThemeColors.success(context),
           ),
@@ -490,6 +509,7 @@ class _BasicInfoCard extends StatelessWidget {
       children: [
         _InfoRow(
           icon: Icons.badge_outlined,
+          svgAsset: SvgIcons.badge,
           label: 'Name',
           value: pet.name,
           valueStyle: AppTextStyles.bodyLarge.copyWith(
@@ -508,6 +528,7 @@ class _BasicInfoCard extends StatelessWidget {
         if (pet.breed != null)
           _InfoRow(
             icon: Icons.category_outlined,
+            svgAsset: SvgIcons.category,
             label: 'Breed',
             value: pet.breed!,
           ),
@@ -516,18 +537,21 @@ class _BasicInfoCard extends StatelessWidget {
             icon: pet.sex == PetSex.male
                 ? Icons.male_outlined
                 : Icons.female_outlined,
+            svgAsset: pet.sex == PetSex.male ? SvgIcons.male : SvgIcons.female,
             label: 'Sex',
             value: pet.sex!.displayName,
           ),
         if (pet.color != null)
           _InfoRow(
             icon: Icons.palette_outlined,
+            svgAsset: SvgIcons.palette,
             label: 'Color',
             value: pet.color!,
           ),
         if (pet.birthDate != null)
           _InfoRow(
             icon: Icons.cake_outlined,
+            svgAsset: SvgIcons.cake,
             label: 'Birth Date',
             value:
                 '${pet.birthDate!.day}/${pet.birthDate!.month}/${pet.birthDate!.year}',
@@ -535,11 +559,13 @@ class _BasicInfoCard extends StatelessWidget {
         if (pet.microchipId != null)
           _InfoRow(
             icon: Icons.nfc_outlined,
+            svgAsset: SvgIcons.microchip,
             label: 'Microchip ID',
             value: pet.microchipId!,
           ),
         _InfoRow(
           icon: Icons.flag_outlined,
+          svgAsset: SvgIcons.flag,
           label: 'Status',
           value: pet.isActive ? 'Active' : 'Inactive',
           valueStyle: AppTextStyles.bodyMedium.copyWith(
@@ -551,12 +577,14 @@ class _BasicInfoCard extends StatelessWidget {
         ),
         _InfoRow(
           icon: Icons.access_time_outlined,
+          svgAsset: SvgIcons.schedule,
           label: 'Created',
           value:
               '${pet.createdAt.day}/${pet.createdAt.month}/${pet.createdAt.year}',
         ),
         _InfoRow(
           icon: Icons.update_outlined,
+          svgAsset: SvgIcons.refresh,
           label: 'Last Updated',
           value:
               '${pet.updatedAt.day}/${pet.updatedAt.month}/${pet.updatedAt.year}',
@@ -637,11 +665,7 @@ class _WeightTrackingCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 borderRadius: 14,
                 variant: NeuVariant.flat,
-                child: Icon(
-                  Icons.monitor_weight_outlined,
-                  size: 26,
-                  color: ThemeColors.primary(context),
-                ),
+                child: const NeuSvgIcon(SvgIcons.weightScale, size: 26),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -668,6 +692,7 @@ class _WeightTrackingCard extends StatelessWidget {
                 text: 'Add Entry',
                 onPressed: () => onAddWeight(context),
                 icon: Icons.add,
+                svgAsset: SvgIcons.add,
                 size: NeuButtonSize.medium,
               ),
             ],
@@ -680,13 +705,7 @@ class _WeightTrackingCard extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   borderRadius: 24,
                   variant: NeuVariant.flat,
-                  child: Icon(
-                    Icons.monitor_weight_outlined,
-                    size: 56,
-                    color: ThemeColors.textTertiary(
-                      context,
-                    ).withValues(alpha: 0.5),
-                  ),
+                  child: const NeuSvgIcon(SvgIcons.weightScale, size: 56),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -708,6 +727,7 @@ class _WeightTrackingCard extends StatelessWidget {
                   text: 'Add First Weight',
                   onPressed: () => onAddWeight(context),
                   icon: Icons.add,
+                  svgAsset: SvgIcons.add,
                 ),
               ],
             ),
@@ -729,6 +749,7 @@ class _QuickActionsCard extends StatelessWidget {
       children: [
         _ActionTile(
           icon: Icons.calendar_today_outlined,
+          svgAsset: SvgIcons.calendar,
           title: 'Book Appointment',
           subtitle: 'Schedule a vet visit',
           color: ThemeColors.primary(context),
@@ -741,6 +762,7 @@ class _QuickActionsCard extends StatelessWidget {
         NeuDivider(thickness: 1, indent: 56),
         _ActionTile(
           icon: Icons.medical_services_outlined,
+          svgAsset: SvgIcons.visit,
           title: 'View Medical Records',
           subtitle: 'Vaccinations, treatments, notes',
           color: ThemeColors.progress(context),
@@ -753,6 +775,7 @@ class _QuickActionsCard extends StatelessWidget {
         NeuDivider(thickness: 1, indent: 56),
         _ActionTile(
           icon: Icons.vaccines_outlined,
+          svgAsset: SvgIcons.vaccination,
           title: 'Vaccination Schedule',
           subtitle: 'Track upcoming vaccines',
           color: ThemeColors.textSecondary(context),
@@ -769,12 +792,14 @@ class _QuickActionsCard extends StatelessWidget {
 
 class _ActionTile extends StatelessWidget {
   final IconData icon;
+  final String? svgAsset;
   final String title;
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
   const _ActionTile({
     required this.icon,
+    this.svgAsset,
     required this.title,
     required this.subtitle,
     required this.color,
@@ -794,7 +819,9 @@ class _ActionTile extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             borderRadius: 10,
             variant: NeuVariant.flat,
-            child: Icon(icon, color: color, size: 22),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: 22)
+                : Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -818,11 +845,7 @@ class _ActionTile extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: ThemeColors.textTertiary(context),
-            size: 20,
-          ),
+          const NeuSvgIcon(SvgIcons.chevronRight, size: 20),
         ],
       ),
     );
@@ -845,11 +868,7 @@ class _MedicalRecordsCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               borderRadius: 14,
               variant: NeuVariant.flat,
-              child: Icon(
-                Icons.medical_services_outlined,
-                size: 26,
-                color: ThemeColors.progress(context),
-              ),
+              child: const NeuSvgIcon(SvgIcons.visit, size: 26),
             ),
             const SizedBox(width: 16),
             Text(
@@ -869,13 +888,7 @@ class _MedicalRecordsCard extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 borderRadius: 24,
                 variant: NeuVariant.flat,
-                child: Icon(
-                  Icons.folder_outlined,
-                  size: 56,
-                  color: ThemeColors.textTertiary(
-                    context,
-                  ).withValues(alpha: 0.6),
-                ),
+                child: const NeuSvgIcon(SvgIcons.folder, size: 56),
               ),
               const SizedBox(height: 16),
               Text(
@@ -902,6 +915,7 @@ class _MedicalRecordsCard extends StatelessWidget {
                   context.push('${Routes.medicalRecords}?petId=$petId');
                 },
                 icon: Icons.arrow_forward_rounded,
+                svgAsset: SvgIcons.forward,
               ),
             ],
           ),
@@ -973,6 +987,7 @@ class _PetDetailLoader extends StatelessWidget {
         leading: NeuIconButton(
           plain: true,
           icon: Icons.arrow_back_rounded,
+          svgAsset: SvgIcons.back,
           tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
@@ -989,11 +1004,7 @@ class _PetDetailLoader extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   borderRadius: 24,
                   variant: NeuVariant.flat,
-                  child: Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: ThemeColors.error(context),
-                  ),
+                  child: const NeuSvgIcon(SvgIcons.error, size: 64),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -1016,6 +1027,7 @@ class _PetDetailLoader extends StatelessWidget {
                   onPressed: () =>
                       context.read<PetBloc>().add(LoadPetsById(petId)),
                   icon: Icons.refresh_rounded,
+                  svgAsset: SvgIcons.refresh,
                 ),
               ],
             ),
@@ -1062,6 +1074,7 @@ class _PetFormLoader extends StatelessWidget {
         leading: NeuIconButton(
           plain: true,
           icon: Icons.arrow_back_rounded,
+          svgAsset: SvgIcons.back,
           tooltip: 'Back',
           onPressed: () => Navigator.pop(context),
         ),
@@ -1078,11 +1091,7 @@ class _PetFormLoader extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   borderRadius: 24,
                   variant: NeuVariant.flat,
-                  child: Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: ThemeColors.error(context),
-                  ),
+                  child: const NeuSvgIcon(SvgIcons.error, size: 64),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -1105,6 +1114,7 @@ class _PetFormLoader extends StatelessWidget {
                   onPressed: () =>
                       context.read<PetBloc>().add(LoadPetsById(petId)),
                   icon: Icons.refresh_rounded,
+                  svgAsset: SvgIcons.refresh,
                 ),
               ],
             ),

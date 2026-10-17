@@ -87,11 +87,7 @@ class _NotLoggedInView extends StatelessWidget {
                     blur: 24,
                     opacity: 0.32,
                   ),
-                  child: Icon(
-                    Icons.pets_outlined,
-                    size: 80,
-                    color: ThemeColors.onPrimary(context),
-                  ),
+                  child: const NeuSvgIcon(SvgIcons.paw, size: 80),
                 ),
               ),
               const SizedBox(height: 28),
@@ -121,6 +117,7 @@ class _NotLoggedInView extends StatelessWidget {
                 onPressed: () => context.push('/login'),
                 variant: NeuButtonVariant.primary,
                 icon: Icons.login_outlined,
+                svgAsset: SvgIcons.login,
                 size: NeuButtonSize.medium,
                 expanded: true,
               ),
@@ -167,6 +164,7 @@ class _PetListViewState extends State<_PetListView> {
             padding: const EdgeInsets.only(right: 8),
             child: NeuIconButton(
               icon: Icons.add,
+              svgAsset: SvgIcons.add,
               onPressed: () => _navigateToAddPet(context),
               tooltip: 'Add Pet',
               size: 22,
@@ -183,10 +181,15 @@ class _PetListViewState extends State<_PetListView> {
             child: NeuTextField(
               controller: _searchController,
               hint: 'Search pets...',
-              prefixIcon: const Icon(Icons.search_rounded),
+              prefixIcon: ClayIconOrMaterial(
+                'search_rounded',
+                fallback: Icons.search_rounded,
+                size: 20,
+              ),
               suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
+                  ? NeuIconButton(
+                      icon: Icons.clear_rounded,
+                      svgAsset: SvgIcons.close,
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
@@ -433,7 +436,7 @@ class _PetCard extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
-                            (pet.breed != null ? ' • ${pet.breed}' : ''),
+                            (pet.breed != null ? ' â€¢ ${pet.breed}' : ''),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: isDark
                               ? AppColors.textSecondaryOnDark
@@ -447,11 +450,7 @@ class _PetCard extends StatelessWidget {
                   Row(
                     children: [
                       if (pet.birthDate != null) ...[
-                        Icon(
-                          Icons.cake_outlined,
-                          size: 16,
-                          color: ThemeColors.textSecondary(context),
-                        ),
+                        const NeuSvgIcon(SvgIcons.cake, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           PetUtils.calculateAge(pet.birthDate!),
@@ -466,11 +465,7 @@ class _PetCard extends StatelessWidget {
                         const SizedBox(width: 16),
                       ],
                       if (pet.weightKg != null) ...[
-                        Icon(
-                          Icons.monitor_weight_outlined,
-                          size: 16,
-                          color: ThemeColors.textSecondary(context),
-                        ),
+                        const NeuSvgIcon(SvgIcons.weightScale, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           '${pet.weightKg!.toStringAsFixed(1)} kg',
@@ -488,11 +483,7 @@ class _PetCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.nfc_outlined,
-                          size: 16,
-                          color: ThemeColors.success(context),
-                        ),
+                        const NeuSvgIcon(SvgIcons.microchip, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'Microchipped',
@@ -525,7 +516,7 @@ class _PetCard extends StatelessWidget {
                   value: 'edit',
                   child: const Row(
                     children: [
-                      Icon(Icons.edit_outlined, size: 20),
+                      NeuSvgIcon(SvgIcons.edit, size: 20),
                       SizedBox(width: 8),
                       Text('Edit'),
                     ],
@@ -535,11 +526,7 @@ class _PetCard extends StatelessWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.delete_outline,
-                        size: 20,
-                        color: ThemeColors.error(context),
-                      ),
+                      const NeuSvgIcon(SvgIcons.delete, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         'Delete',
@@ -553,11 +540,7 @@ class _PetCard extends StatelessWidget {
                 borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(NeuTokens.spaceXs),
                 variant: NeuVariant.raised,
-                child: Icon(
-                  Icons.more_vert,
-                  size: 22,
-                  color: ThemeColors.textSecondary(context),
-                ),
+                child: const NeuSvgIcon(SvgIcons.more, size: 22),
               ),
             ),
           ],
@@ -585,11 +568,7 @@ class _EmptyPetsView extends StatelessWidget {
               variant: NeuVariant.inset,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(NeuTokens.spaceLg + 12),
-              child: Icon(
-                Icons.pets_outlined,
-                size: 56,
-                color: ThemeColors.primaryText(context),
-              ),
+              child: const NeuSvgIcon(SvgIcons.paw, size: 56),
             ),
             const SizedBox(height: 28),
             Text(
@@ -613,6 +592,7 @@ class _EmptyPetsView extends StatelessWidget {
                 onPressed: onAddPet,
                 variant: NeuButtonVariant.primary,
                 icon: Icons.add,
+                svgAsset: SvgIcons.add,
                 size: NeuButtonSize.medium,
                 expanded: true,
               ),
@@ -658,6 +638,7 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
             child: NeuIconButton(
               plain: true,
               icon: Icons.add,
+              svgAsset: SvgIcons.add,
               onPressed: () => _navigateToAddPet(context),
               tooltip: 'Add Pet',
               size: 22,
@@ -673,10 +654,15 @@ class _StaffPetListViewState extends State<_StaffPetListView> {
             child: NeuTextField(
               controller: _searchController,
               hint: 'Search pets...',
-              prefixIcon: const Icon(Icons.search_rounded),
+              prefixIcon: ClayIconOrMaterial(
+                'search_rounded',
+                fallback: Icons.search_rounded,
+                size: 20,
+              ),
               suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
+                  ? NeuIconButton(
+                      icon: Icons.clear_rounded,
+                      svgAsset: SvgIcons.close,
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
@@ -914,7 +900,7 @@ class _StaffPetCard extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         PetUtils.formatSpecies(pet.species) +
-                            (pet.breed != null ? ' • ${pet.breed}' : ''),
+                            (pet.breed != null ? ' â€¢ ${pet.breed}' : ''),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: isDark
                               ? AppColors.textSecondaryOnDark
@@ -927,11 +913,7 @@ class _StaffPetCard extends StatelessWidget {
                   // Owner ID
                   Row(
                     children: [
-                      Icon(
-                        Icons.person_outline,
-                        size: 16,
-                        color: ThemeColors.textSecondary(context),
-                      ),
+                      const NeuSvgIcon(SvgIcons.person, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         'Owner ID: ${pet.ownerId}',
@@ -947,11 +929,7 @@ class _StaffPetCard extends StatelessWidget {
                   Row(
                     children: [
                       if (pet.birthDate != null) ...[
-                        Icon(
-                          Icons.cake_outlined,
-                          size: 16,
-                          color: ThemeColors.textSecondary(context),
-                        ),
+                        const NeuSvgIcon(SvgIcons.cake, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           PetUtils.calculateAge(pet.birthDate!),
@@ -966,11 +944,7 @@ class _StaffPetCard extends StatelessWidget {
                         const SizedBox(width: 16),
                       ],
                       if (pet.weightKg != null) ...[
-                        Icon(
-                          Icons.monitor_weight_outlined,
-                          size: 16,
-                          color: ThemeColors.textSecondary(context),
-                        ),
+                        const NeuSvgIcon(SvgIcons.weightScale, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           '${pet.weightKg!.toStringAsFixed(1)} kg',
@@ -988,11 +962,7 @@ class _StaffPetCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.nfc_outlined,
-                          size: 16,
-                          color: ThemeColors.success(context),
-                        ),
+                        const NeuSvgIcon(SvgIcons.microchip, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'Microchipped',
@@ -1025,7 +995,7 @@ class _StaffPetCard extends StatelessWidget {
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit_outlined, size: 20),
+                      NeuSvgIcon(SvgIcons.edit, size: 20),
                       SizedBox(width: 8),
                       Text('Edit'),
                     ],
@@ -1035,11 +1005,7 @@ class _StaffPetCard extends StatelessWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.delete_outline,
-                        size: 20,
-                        color: ThemeColors.error(context),
-                      ),
+                      const NeuSvgIcon(SvgIcons.delete, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         'Delete',
@@ -1053,11 +1019,7 @@ class _StaffPetCard extends StatelessWidget {
                 borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(NeuTokens.spaceXs),
                 variant: NeuVariant.raised,
-                child: Icon(
-                  Icons.more_vert,
-                  size: 22,
-                  color: ThemeColors.textSecondary(context),
-                ),
+                child: const NeuSvgIcon(SvgIcons.more, size: 22),
               ),
             ),
           ],

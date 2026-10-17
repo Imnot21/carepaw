@@ -190,7 +190,7 @@ class AppColors {
   static const Color surfaceContainer = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFFFFFFF);
   static const Color surfaceVariantDark = Color(0xFF262423);
-  static const Color categoryFood = Color(0xFF9C7BA8);
+  static const Color categoryFood = Color(0xFFF59E0B);
   static const Color warningDark = Color(0xFFB45309);
   static const Color tertiaryDark = Color(0xFF0D9488);
   static const Color surfaceContainerHighest = Color(0xFFFFFFFF);
@@ -209,7 +209,7 @@ class AppColors {
   static const Color categoryMedicine = Color(0xFF16A34A);
   static const Color categoryVaccine = primaryLight;
   static const Color categorySupply = Color(0xFF718096);
-  static const Color categoryEquipment = Color(0xFF6B7280);
+  static const Color categoryEquipment = Color(0xFF6366F1);
 
   static const Color dogAccent = accentDog;
   static const Color catAccent = accentCat;

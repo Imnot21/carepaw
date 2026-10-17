@@ -14,6 +14,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -181,6 +182,7 @@ class _PetFormPageState extends State<PetFormPage> {
           leading: NeuIconButton(
             plain: true,
             icon: Icons.arrow_back_rounded,
+            svgAsset: SvgIcons.back,
             tooltip: 'Back',
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -206,6 +208,7 @@ class _PetFormPageState extends State<PetFormPage> {
                       NeuAvatar(
                         radius: 50,
                         customIcon: PetUtils.getSpeciesCustomIcon(_selectedSpecies),
+                        svgAsset: PetUtils.getSpeciesSvg(_selectedSpecies),
                         backgroundColor: PetUtils.getSpeciesColor(
                           _selectedSpecies,
                         ).withValues(alpha: 0.14),
@@ -253,6 +256,7 @@ class _PetFormPageState extends State<PetFormPage> {
                         icon: isEditing
                             ? Icons.save_outlined
                             : Icons.add_rounded,
+                        svgAsset: isEditing ? SvgIcons.save : SvgIcons.add,
                         onPressed: isLoading ? null : _onSubmit,
                         expanded: true,
                       );
@@ -282,7 +286,9 @@ class _PetFormPageState extends State<PetFormPage> {
                 variant: NeuVariant.pressed,
                 borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                child: Icon(section.icon, size: 20, color: speciesColor),
+                child: section.svgAsset != null
+                    ? NeuSvgIcon(section.svgAsset!, size: 20)
+                    : Icon(section.icon, size: 20, color: speciesColor),
               ),
               const SizedBox(width: NeuTokens.spaceXs),
               Text(
@@ -341,13 +347,18 @@ class _PetFormPageState extends State<PetFormPage> {
       _FormSection(
         title: 'Basic Information',
         icon: Icons.info_outline_rounded,
+        svgAsset: SvgIcons.info,
         buildFields: (context) => [
           // Name field (required)
           NeuTextField(
             controller: _nameController,
             label: 'Pet Name *',
             hint: 'e.g., Buddy',
-            prefixIcon: const Icon(Icons.pets_outlined),
+            prefixIcon: ClayIconOrMaterial(
+              'pets_outlined',
+              fallback: Icons.pets_outlined,
+              size: 20,
+            ),
             validator: Validators.requiredWith([
               (value) => Validators.maxLength(value, 50, 'Name'),
             ], 'Name'),
@@ -378,7 +389,11 @@ class _PetFormPageState extends State<PetFormPage> {
             controller: _colorController,
             label: 'Color',
             hint: 'e.g., Golden',
-            prefixIcon: const Icon(Icons.palette_outlined),
+            prefixIcon: ClayIconOrMaterial(
+              'palette_outlined',
+              fallback: Icons.palette_outlined,
+              size: 20,
+            ),
             validator: (value) => Validators.maxLength(value, 30, 'Color'),
             textInputAction: TextInputAction.next,
           ),
@@ -395,13 +410,18 @@ class _PetFormPageState extends State<PetFormPage> {
       _FormSection(
         title: 'Health & ID (Optional)',
         icon: Icons.medical_services_outlined,
+        svgAsset: SvgIcons.visit,
         buildFields: (context) => [
           // Weight
           NeuTextField(
             controller: _weightController,
             label: 'Weight (kg)',
             hint: 'Optional - e.g., 25.5',
-            prefixIcon: const Icon(Icons.monitor_weight_outlined),
+            prefixIcon: ClayIconOrMaterial(
+              'monitor_weight_outlined',
+              fallback: Icons.monitor_weight_outlined,
+              size: 20,
+            ),
             validator: (value) {
               if (value != null && value.isNotEmpty) {
                 return Validators.positiveNumber(value);
@@ -417,7 +437,11 @@ class _PetFormPageState extends State<PetFormPage> {
             controller: _microchipController,
             label: 'Microchip ID',
             hint: 'Optional - e.g., 985112000123456',
-            prefixIcon: const Icon(Icons.nfc_outlined),
+            prefixIcon: ClayIconOrMaterial(
+              'nfc_outlined',
+              fallback: Icons.nfc_outlined,
+              size: 20,
+            ),
             validator: (value) =>
                 Validators.maxLength(value, 20, 'Microchip ID'),
             textInputAction: TextInputAction.done,
@@ -439,11 +463,13 @@ class _PetFormPageState extends State<PetFormPage> {
 class _FormSection {
   final String title;
   final IconData icon;
+  final String? svgAsset;
   final List<Widget> Function(BuildContext) buildFields;
 
   const _FormSection({
     required this.title,
     required this.icon,
+    this.svgAsset,
     required this.buildFields,
   });
 }
@@ -519,6 +545,7 @@ class _PetSexSelector extends StatelessWidget {
               icon: sex == PetSex.male
                   ? Icons.male_outlined
                   : Icons.female_outlined,
+              svgAsset: sex == PetSex.male ? SvgIcons.male : SvgIcons.female,
               selected: isSelected,
               selectedColor: ThemeColors.primary(context),
               onTap: () => onChanged(isSelected ? null : sex),
@@ -581,13 +608,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
           onTap: _pickDate,
           child: Row(
             children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                color: hasDate
-                    ? ThemeColors.primaryText(context)
-                    : ThemeColors.textSecondary(context),
-                size: 22,
-              ),
+              const NeuSvgIcon(SvgIcons.calendar, size: 22),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -602,6 +623,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
               if (hasDate)
                 NeuIconButton(
                   icon: Icons.clear,
+                  svgAsset: SvgIcons.close,
                   size: 18,
                   tooltip: 'Clear date',
                   onPressed: () {
@@ -610,10 +632,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
                   },
                 )
               else
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: ThemeColors.textTertiary(context),
-                ),
+                const NeuSvgIcon(SvgIcons.chevronDown, size: 24),
             ],
           ),
         ),
@@ -724,9 +743,9 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
             isExpanded: true,
             decoration: InputDecoration(
               hintText: 'Select breed',
-              prefixIcon: Icon(
-                Icons.category_outlined,
-                color: ThemeColors.textSecondary(context),
+              prefixIcon: ClayIconOrMaterial(
+                'category_outlined',
+                fallback: Icons.category_outlined,
                 size: 20,
               ),
               border: InputBorder.none,
@@ -787,7 +806,11 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
             controller: _customController,
             label: 'Custom Breed',
             hint: 'Enter breed name',
-            prefixIcon: const Icon(Icons.edit_outlined),
+            prefixIcon: ClayIconOrMaterial(
+              'edit_outlined',
+              fallback: Icons.edit_outlined,
+              size: 20,
+            ),
             textInputAction: TextInputAction.next,
             onChanged: (value) {
               widget.controller.text = value;
@@ -817,15 +840,9 @@ class _PetActiveSwitch extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             borderRadius: 12,
             variant: NeuVariant.flat,
-            child: Icon(
-              value
-                  ? Icons.check_circle_outline_rounded
-                  : Icons.archive_outlined,
-              size: 22,
-              color: value
-                  ? ThemeColors.success(context)
-                  : ThemeColors.warning(context),
-            ),
+            child: value
+                ? const NeuSvgIcon(SvgIcons.success, size: 22)
+                : const NeuSvgIcon(SvgIcons.archive, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(

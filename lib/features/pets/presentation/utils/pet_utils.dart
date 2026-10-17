@@ -11,32 +11,6 @@ import 'package:carepaw/features/pets/domain/entities/pet.dart';
 class PetUtils {
   PetUtils._();
 
-  static const _dogAccent = Color(0xFF7A6C5D);
-  static const _catAccent = Color(0xFF8B7D5B);
-  static const _birdAccent = Color(0xFF4A8B6E);
-  static const _rabbitAccent = Color(0xFF9C7BA8);
-  static const _reptileAccent = Color(0xFF5C8A6E);
-  static const _otherAccent = Color(0xFF5B8BC0);
-
-  /// Get the Material icon for a pet species (for legacy usage).
-  @Deprecated('Use getSpeciesCustomIcon instead')
-  static IconData getSpeciesIcon(PetSpecies species) {
-    switch (species) {
-      case PetSpecies.dog:
-        return Icons.pets;
-      case PetSpecies.cat:
-        return Icons.pets_outlined;
-      case PetSpecies.bird:
-        return Icons.flutter_dash;
-      case PetSpecies.rabbit:
-        return Icons.landscape_outlined;
-      case PetSpecies.reptile:
-        return Icons.eco_outlined;
-      case PetSpecies.other:
-        return Icons.help_outline;
-    }
-  }
-
   /// Get the custom neumorphic icon type for a pet species.
   static NeuIconType getSpeciesCustomIcon(PetSpecies species) {
     final speciesStr = species.name.toLowerCase();
@@ -65,17 +39,17 @@ class PetUtils {
   static Color getSpeciesColor(PetSpecies species) {
     switch (species) {
       case PetSpecies.dog:
-        return _dogAccent;
+        return AppColors.accentDog;
       case PetSpecies.cat:
-        return _catAccent;
+        return AppColors.accentCat;
       case PetSpecies.bird:
-        return _birdAccent;
+        return AppColors.accentBird;
       case PetSpecies.rabbit:
-        return _rabbitAccent;
+        return AppColors.accentRabbit;
       case PetSpecies.reptile:
-        return _reptileAccent;
+        return AppColors.accentReptile;
       case PetSpecies.other:
-        return _otherAccent;
+        return AppColors.accentDefault;
     }
   }
 

@@ -38,7 +38,7 @@ class BatchCard extends StatelessWidget {
       case InventoryCategory.equipment:
         return AppColors.categoryEquipment;
       case InventoryCategory.food:
-        return const Color(0xFFF59E0B);
+        return AppColors.categoryFood;
     }
   }
 

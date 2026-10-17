@@ -224,12 +224,19 @@ abstract final class SvgIcons {
   static const xray = '${_p}xray.svg';
 
   /// Material-name → clay asset. Mirrors `assets/icons/icon-map.json`.
-  /// Strip `_outlined` / `_rounded` suffix before lookup.
+  /// Strips `_outlined` / `_outline` / `_rounded` / `_sharp` / `_filled`
+  /// suffixes before lookup, looping until stable — so `info_outline_rounded`
+  /// resolves via `info` and `check_circle_outline` via `check_circle`.
   static String? assetForMaterial(String materialName) {
-    final base = materialName.replaceAll(
-      RegExp(r'_(outlined|rounded|sharp|filled)$'),
-      '',
-    );
+    var base = materialName;
+    while (true) {
+      final stripped = base.replaceFirst(
+        RegExp(r'_(outlined|outline|rounded|sharp|filled)$'),
+        '',
+      );
+      if (stripped == base) break;
+      base = stripped;
+    }
     return _materialMap[base] ?? _materialMap[materialName];
   }
 
@@ -240,6 +247,7 @@ abstract final class SvgIcons {
     'add_circle_outline': add,
     'alert': alert,
     'alternate_email': email,
+    'archive': archive,
     'arrow_back': back,
     'arrow_back_ios_new': back,
     'arrow_drop_down': chevronDown,
@@ -248,11 +256,14 @@ abstract final class SvgIcons {
     'attach_file': attach,
     'attachment': attach,
     'bird': bird,
+    'bolt': bolt,
     'calendar_month': calendar,
     'calendar_today': calendar,
+    'cake': cake,
     'camera_alt': camera,
     'cancel': error,
     'cat': cat,
+    'category': category,
     'check': check,
     'check_circle': success,
     'check_circle_outline': success,
@@ -275,7 +286,10 @@ abstract final class SvgIcons {
     'event_available': eventAvailable,
     'exit_to_app': logout,
     'expand_more': chevronDown,
+    'female': female,
     'filter_list': filter,
+    'flag': flag,
+    'flash_on': bolt,
     'format_list_numbered': listNumbered,
     'healing': treatment,
     'history': schedule,
@@ -290,13 +304,17 @@ abstract final class SvgIcons {
     'local_hospital': visit,
     'location_on': location,
     'lock': lock,
+    'login': login,
     'logout': logout,
+    'male': male,
     'mark_email_read': email,
     'mark_email_unread': email,
     'medical_information': prescription,
     'medical_services': visit,
     'medication': medication,
+    'monitor_weight': weightScale,
     'more_vert': more,
+    'nfc': microchip,
     'note': note,
     'note_alt': prescription,
     'notes': note,
@@ -304,6 +322,7 @@ abstract final class SvgIcons {
     'notifications_active': notifications,
     'notifications_none': notifications,
     'other-pet': otherPet,
+    'palette': palette,
     'people': people,
     'people_outline': people,
     'person': person,
@@ -327,6 +346,7 @@ abstract final class SvgIcons {
     'title': note,
     'treatment': treatment,
     'tune': filter,
+    'unarchive': unarchive,
     'update': refresh,
     'vaccination': vaccination,
     'vaccines': vaccination,

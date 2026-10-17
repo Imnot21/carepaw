@@ -47,6 +47,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
           child: NeuIconButton(
             plain: true,
             icon: Icons.arrow_back_ios_new_rounded,
+            svgAsset: SvgIcons.back,
             onPressed: () => context.pop(),
             tooltip: 'Back',
           ),
@@ -66,6 +67,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
                 child: NeuIconButton(
                   plain: true,
                   icon: Icons.edit_outlined,
+                  svgAsset: SvgIcons.edit,
                   onPressed: () => _navigateToEdit(context),
                   tooltip: 'Edit',
                 ),
@@ -170,6 +172,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
                 return _SectionCard(
                   title: section.title,
                   icon: section.icon,
+                  svgAsset: section.svgAsset,
                   color: section.color,
                   content: section.content!,
                 );
@@ -192,6 +195,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Description',
           icon: Icons.description_outlined,
+          svgAsset: SvgIcons.note,
           color: ThemeColors.primaryText(context),
           content: record.description!,
         ),
@@ -203,6 +207,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Diagnosis',
           icon: Icons.medical_services_outlined,
+          svgAsset: SvgIcons.visit,
           color: ThemeColors.info(context),
           content: record.diagnosis!,
         ),
@@ -214,6 +219,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Treatment',
           icon: Icons.healing_outlined,
+          svgAsset: SvgIcons.treatment,
           color: ThemeColors.progress(context),
           content: record.treatment!,
         ),
@@ -225,6 +231,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Medications',
           icon: Icons.medication_outlined,
+          svgAsset: SvgIcons.medication,
           color: AppColors.quaternary,
           content: record.medications!,
         ),
@@ -236,6 +243,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
         _DetailSection(
           title: 'Attachments',
           icon: Icons.attachment_outlined,
+          svgAsset: SvgIcons.attach,
           color: ThemeColors.textSecondary(context),
           content: record.attachments!,
         ),
@@ -246,6 +254,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
       _DetailSection(
         title: 'Record Information',
         icon: Icons.info_outline,
+        svgAsset: SvgIcons.info,
         color: ThemeColors.textTertiary(context),
         content: _buildMetadata(),
       ),
@@ -313,6 +322,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
               onPressed: () => context.pop(),
               variant: NeuButtonVariant.primary,
               icon: Icons.check_rounded,
+              svgAsset: SvgIcons.check,
             ),
           ],
         ),
@@ -325,12 +335,14 @@ class MedicalRecordDetailPage extends StatelessWidget {
 class _SectionCard extends StatelessWidget {
   final String title;
   final IconData icon;
+  final String? svgAsset;
   final Color color;
   final String content;
 
   const _SectionCard({
     required this.title,
     required this.icon,
+    this.svgAsset,
     required this.color,
     required this.content,
   });
@@ -351,7 +363,9 @@ class _SectionCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 variant: NeuVariant.flat,
                 color: color.withValues(alpha: 0.12),
-                child: Icon(icon, color: color, size: 24),
+                child: svgAsset != null
+                    ? NeuSvgIcon(svgAsset!, size: 24)
+                    : Icon(icon, color: color, size: 24),
               ),
               const SizedBox(width: 14),
               Text(
@@ -373,12 +387,14 @@ class _SectionCard extends StatelessWidget {
 class _DetailSection {
   final String title;
   final IconData icon;
+  final String? svgAsset;
   final Color color;
   final String? content;
 
   _DetailSection({
     required this.title,
     required this.icon,
+    this.svgAsset,
     required this.color,
     required this.content,
   });

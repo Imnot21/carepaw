@@ -79,11 +79,7 @@ class _NotLoggedInView extends StatelessWidget {
                 variant: NeuVariant.inset,
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(20),
-                child: Icon(
-                  Icons.medical_information_outlined,
-                  size: 48,
-                  color: ThemeColors.primaryText(context),
-                ),
+                child: const NeuSvgIcon(SvgIcons.prescription, size: 48),
               ),
               const SizedBox(height: 16),
               Text(
@@ -106,6 +102,7 @@ class _NotLoggedInView extends StatelessWidget {
                 text: 'Sign in',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
+                svgAsset: SvgIcons.login,
                 variant: NeuButtonVariant.primary,
                 size: NeuButtonSize.medium,
               ),
@@ -192,6 +189,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       leading: NeuIconButton(
         plain: true,
         icon: Icons.arrow_back_ios_new_rounded,
+        svgAsset: SvgIcons.back,
         onPressed: () => context.pop(),
         tooltip: 'Back',
       ),
@@ -199,6 +197,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         NeuIconButton(
           plain: true,
           icon: Icons.more_vert_rounded,
+          svgAsset: SvgIcons.more,
           onPressed: () => _showOptionsMenu(context),
           tooltip: 'Options',
         ),
@@ -232,7 +231,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.pet.species.displayName}${widget.pet.breed != null ? ' • ${widget.pet.breed}' : ''}',
+                  '${widget.pet.species.displayName}${widget.pet.breed != null ? ' â€¢ ${widget.pet.breed}' : ''}',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: ThemeColors.textTertiary(context),
                   ),
@@ -269,11 +268,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.medical_information_outlined,
-                      size: 16,
-                      color: speciesColor,
-                    ),
+                    const NeuSvgIcon(SvgIcons.prescription, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       '$count Records',
@@ -407,10 +402,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
               child: const SizedBox(
                 width: 140,
                 height: 140,
-                child: Icon(
-                  Icons.medical_information_outlined,
-                  size: 70,
-                ),
+                child: NeuSvgIcon(SvgIcons.prescription, size: 70),
               ),
             ),
             const SizedBox(height: 28),
@@ -438,6 +430,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 text: 'Add Record',
                 onPressed: () => _navigateToForm(context),
                 icon: Icons.add_rounded,
+                svgAsset: SvgIcons.add,
                 expanded: false,
                 size: NeuButtonSize.medium,
                 variant: NeuButtonVariant.primary,
@@ -462,11 +455,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
               child: SizedBox(
                 width: 120,
                 height: 120,
-                child: Icon(
-                  Icons.error_outline_rounded,
-                  size: 60,
-                  color: ThemeColors.onStatus(context),
-                ),
+                child: const NeuSvgIcon(SvgIcons.error, size: 60),
               ),
             ),
             const SizedBox(height: 24),
@@ -500,6 +489,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 }
               },
               icon: Icons.refresh_rounded,
+              svgAsset: SvgIcons.refresh,
               variant: NeuButtonVariant.primary,
             ),
           ],
@@ -514,7 +504,9 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       child: NeuContainer(
         borderRadius: 28,
         variant: NeuVariant.raised,
-        color: speciesColor,
+        // Darkened species tint so the white label/icon clear 4.5:1 on
+        // every species (plain cat tint was the failure case).
+        color: Color.lerp(speciesColor, Colors.black, 0.16)!,
         boxShadow: NeuShadow.color(context, speciesColor, blur: 20, opacity: 0.4),
         child: InkWell(
           onTap: () => _navigateToForm(context),
@@ -524,7 +516,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.add_rounded, color: Colors.white, size: 22),
+                const NeuSvgIcon(SvgIcons.add, size: 22),
                 const SizedBox(width: 8),
                 Text(
                   'Add Record',
@@ -584,14 +576,14 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: Icon(Icons.filter_list_rounded, color: ThemeColors.primaryText(context)),
+              leading: NeuSvgIcon(SvgIcons.filter, size: 24),
               title: const Text('Filter Records'),
               subtitle: Text(_selectedFilter?.displayName ?? 'All records'),
-              // Filters sit right above the list — just close the sheet.
+              // Filters sit right above the list â€” just close the sheet.
               onTap: () => context.pop(),
             ),
             ListTile(
-              leading: Icon(Icons.help_outline_rounded, color: ThemeColors.primaryText(context)),
+              leading: NeuSvgIcon(SvgIcons.help, size: 24),
               title: const Text('About Medical Records'),
               onTap: () {
                 context.pop();
@@ -725,11 +717,7 @@ class _MedicalRecordCard extends StatelessWidget {
                       borderWidth: 1,
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.medical_services_outlined,
-                            size: 16,
-                            color: ThemeColors.primaryText(context),
-                          ),
+                          const NeuSvgIcon(SvgIcons.visit, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -757,11 +745,7 @@ class _MedicalRecordCard extends StatelessWidget {
                       borderWidth: 1,
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.healing_outlined,
-                            size: 16,
-                            color: ThemeColors.primaryText(context),
-                          ),
+                          const NeuSvgIcon(SvgIcons.treatment, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -783,11 +767,7 @@ class _MedicalRecordCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           // Chevron
-          Icon(
-            Icons.chevron_right_rounded,
-            color: ThemeColors.textTertiary(context),
-            size: 24,
-          ),
+          const NeuSvgIcon(SvgIcons.chevronRight, size: 24),
         ],
       ),
     );

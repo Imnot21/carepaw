@@ -1,5 +1,5 @@
 import 'package:carepaw/core/widgets/neomorphism/neu_bottom_nav.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_icon_system.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 
 /// One destination shown in the bottom navigation shell.
@@ -8,14 +8,12 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 /// tab's base path for matching the current route so the active slot stays
 /// highlighted while browsing that section's nested screens.
 class RoleTab {
-  final NeuIconType icon;
-  final NeuIconType activeIcon;
+  final String svgAsset;
   final String label;
   final String location;
 
   const RoleTab({
-    required this.icon,
-    required this.activeIcon,
+    required this.svgAsset,
     required this.label,
     required this.location,
   });
@@ -84,12 +82,11 @@ class RoleTabs {
     return bestMatchIndex;
   }
 
-  /// Converts to `NeuNavItemCustom` for use with `NeuBottomNav.custom`.
-  List<NeuNavItemCustom> toNavItems() {
+  /// Converts to `NeuNavItemSvg` for use with `NeuBottomNav.svg`.
+  List<NeuNavItemSvg> toNavItems() {
     return tabs
-        .map((tab) => NeuNavItemCustom(
-              icon: tab.icon,
-              activeIcon: tab.activeIcon,
+        .map((tab) => NeuNavItemSvg(
+              svgAsset: tab.svgAsset,
               label: tab.label,
             ))
         .toList();
@@ -98,32 +95,27 @@ class RoleTabs {
   // ---- Pet owner journey ----
   static const _owner = [
     RoleTab(
-      icon: NeuIconType.home,
-      activeIcon: NeuIconType.home,
+      svgAsset: SvgIcons.home,
       label: 'Home',
       location: '/home',
     ),
     RoleTab(
-      icon: NeuIconType.pets,
-      activeIcon: NeuIconType.pets,
+      svgAsset: SvgIcons.paw,
       label: 'Pets',
       location: '/pets',
     ),
     RoleTab(
-      icon: NeuIconType.calendar,
-      activeIcon: NeuIconType.calendar,
+      svgAsset: SvgIcons.calendar,
       label: 'Appointments',
       location: '/appointments',
     ),
     RoleTab(
-      icon: NeuIconType.note,
-      activeIcon: NeuIconType.note,
+      svgAsset: SvgIcons.queue,
       label: 'Queue',
       location: '/queue',
     ),
     RoleTab(
-      icon: NeuIconType.profile,
-      activeIcon: NeuIconType.profile,
+      svgAsset: SvgIcons.person,
       label: 'Profile',
       location: '/profile',
     ),
@@ -134,44 +126,37 @@ class RoleTabs {
   // (Old staff/vet/admin tab sets removed with the old roles — backup kept.)
   static const _clinic = [
     RoleTab(
-      icon: NeuIconType.home,
-      activeIcon: NeuIconType.home,
+      svgAsset: SvgIcons.home,
       label: 'Home',
       location: '/clinic',
     ),
     RoleTab(
-      icon: NeuIconType.calendar,
-      activeIcon: NeuIconType.calendar,
+      svgAsset: SvgIcons.calendar,
       label: 'Bookings',
       location: '/staff/appointments',
     ),
     RoleTab(
-      icon: NeuIconType.note,
-      activeIcon: NeuIconType.note,
+      svgAsset: SvgIcons.queue,
       label: 'Line',
       location: '/staff/queue',
     ),
     RoleTab(
-      icon: NeuIconType.pets,
-      activeIcon: NeuIconType.pets,
+      svgAsset: SvgIcons.paw,
       label: 'Patients',
       location: '/vet/patients',
     ),
     RoleTab(
-      icon: NeuIconType.settings,
-      activeIcon: NeuIconType.settings,
+      svgAsset: SvgIcons.inventory,
       label: 'Stock',
       location: '/staff/inventory',
     ),
     RoleTab(
-      icon: NeuIconType.search,
-      activeIcon: NeuIconType.search,
+      svgAsset: SvgIcons.scan,
       label: 'Scan',
       location: '/staff/scanning',
     ),
     RoleTab(
-      icon: NeuIconType.profile,
-      activeIcon: NeuIconType.profile,
+      svgAsset: SvgIcons.person,
       label: 'Profile',
       location: '/profile',
     ),
