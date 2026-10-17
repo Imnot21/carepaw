@@ -39,7 +39,6 @@ class NotificationListPage extends StatefulWidget {
 class _NotificationListPageState extends State<NotificationListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -47,26 +46,12 @@ class _NotificationListPageState extends State<NotificationListPage>
     _tabController = TabController(length: 4, vsync: this);
     context.read<NotificationBloc>().add(const LoadNotifications());
     context.read<NotificationBloc>().add(const LoadUnreadCount());
-    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      final state = context.read<NotificationBloc>().state;
-      if (state is NotificationsLoaded && !state.hasReachedMax) {
-        context.read<NotificationBloc>().add(
-          LoadNotifications(limit: 20, offset: state.notifications.length),
-        );
-      }
-    }
   }
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
@@ -86,9 +71,26 @@ class _NotificationListPageState extends State<NotificationListPage>
           backgroundColor: _isDark
               ? AppColors.backgroundDark
               : AppColors.background,
-          body: CustomScrollView(
-            controller: _scrollController,
-            slivers: [_buildAppBar(), _buildTabBar(), _buildTabContent()],
+          appBar: _buildAppBar(),
+          body: Column(
+            children: [
+              _buildTabBar(),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildNotificationList(null),
+                    _buildUnreadList(),
+                    _buildNotificationsByType(
+                      domain.NotificationType.appointmentReminder,
+                    ),
+                    _buildNotificationsByType(
+                      domain.NotificationType.queueUpdate,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           floatingActionButton: isVetOrStaff
               ? _buildFloatingActionButton()
@@ -98,76 +100,72 @@ class _NotificationListPageState extends State<NotificationListPage>
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      toolbarHeight: 96,
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Notifications',
-                  style: AppTextStyles.headlineMedium.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: _isDark
-                        ? AppColors.textPrimaryOnDark
-                        : AppColors.textPrimary,
-                  ),
+      titleSpacing: 20,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Notifications',
+                style: AppTextStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: _isDark
+                      ? AppColors.textPrimaryOnDark
+                      : AppColors.textPrimary,
                 ),
-                const SizedBox(width: 12),
-                BlocBuilder<NotificationBloc, NotificationState>(
-                  builder: (context, state) {
-                    if (state is UnreadCountLoaded && state.count > 0) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ThemeColors.primary(context),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${state.count}',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: ThemeColors.onPrimary(context),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Stay updated with your clinic',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark
-                    ? AppColors.textSecondaryOnDark
-                    : AppColors.textSecondary,
               ),
+              const SizedBox(width: 12),
+              BlocBuilder<NotificationBloc, NotificationState>(
+                builder: (context, state) {
+                  if (state is UnreadCountLoaded && state.count > 0) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ThemeColors.primary(context),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${state.count}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: ThemeColors.onPrimary(context),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Stay updated with your clinic',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: _isDark
+                  ? AppColors.textSecondaryOnDark
+                  : AppColors.textSecondary,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       actions: [
         NeuIconButton(
           plain: true,
-          icon: Icons.tune_rounded,
-          svgAsset: SvgIcons.filter,
+          icon: Icons.settings_rounded,
+          svgAsset: SvgIcons.settings,
           onPressed: _navigateToSettings,
           tooltip: 'Notification Settings',
         ),
@@ -195,24 +193,36 @@ class _NotificationListPageState extends State<NotificationListPage>
   }
 
   Widget _buildTabBar() {
-    return SliverPersistentHeader(
-      pinned: true,
-      delegate: _NotificationTabBarDelegate(tabController: _tabController),
-    );
-  }
+    final tabs = [
+      {'label': 'All', 'svg': SvgIcons.notifications},
+      {'label': 'Unread', 'svg': SvgIcons.email},
+      {'label': 'Appointments', 'svg': SvgIcons.calendar},
+      {'label': 'Queue', 'svg': SvgIcons.queue},
+    ];
 
-  Widget _buildTabContent() {
-    return SliverFillRemaining(
-      child: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildNotificationList(null),
-          _buildUnreadList(),
-          _buildNotificationsByType(
-            domain.NotificationType.appointmentReminder,
+    return Container(
+      color: _isDark ? AppColors.surfaceContainerDark : AppColors.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ListenableBuilder(
+          listenable: _tabController,
+          builder: (context, _) => Row(
+            children: List.generate(tabs.length, (index) {
+              final tab = tabs[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: NeuChip(
+                  label: tab['label'] as String,
+                  svgAsset: tab['svg'] as String,
+                  selected: _tabController.index == index,
+                  onTap: () => _tabController.animateTo(index),
+                  selectedColor: AppColors.primary,
+                ),
+              );
+            }),
           ),
-          _buildNotificationsByType(domain.NotificationType.queueUpdate),
-        ],
+        ),
       ),
     );
   }
@@ -266,7 +276,7 @@ class _NotificationListPageState extends State<NotificationListPage>
 
         if (notifications.isEmpty) {
           return _EmptyState(
-            svgAsset: _getTypeSvg(type ?? domain.NotificationType.system),
+            svgAsset: type != null ? _getTypeSvg(type) : SvgIcons.notifications,
             title: type != null
                 ? 'No ${type.displayName} Notifications'
                 : 'No Notifications Yet',
@@ -607,17 +617,27 @@ class _NotificationListPageState extends State<NotificationListPage>
   }
 
   void _navigateToDetail(domain.Notification notification) {
+    final bloc = context.read<NotificationBloc>();
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => NotificationDetailPage(notification: notification),
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: NotificationDetailPage(notification: notification),
+        ),
       ),
     );
   }
 
   void _navigateToSettings() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const NotificationSettingsPage()));
+    final bloc = context.read<NotificationBloc>();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: const NotificationSettingsPage(),
+        ),
+      ),
+    );
   }
 
   void _showDeleteConfirmation(int notificationId) {
@@ -638,9 +658,19 @@ class _NotificationListPageState extends State<NotificationListPage>
   }
 
   void _showCreateNotificationDialog() {
+    final bloc = context.read<NotificationBloc>();
     showDialog(
       context: context,
-      builder: (context) => _CreateNotificationDialog(),
+      // The dialog hosts NeuTextFields, which need a Material ancestor that
+      // the NeuDialog shell doesn't provide on its own. It also needs the
+      // route-scoped NotificationBloc, which the dialog route can't see.
+      builder: (context) => BlocProvider.value(
+        value: bloc,
+        child: Material(
+          type: MaterialType.transparency,
+          child: _CreateNotificationDialog(),
+        ),
+      ),
     );
   }
 }
@@ -702,8 +732,9 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
           onPressed: () {
             if (_titleController.text.isNotEmpty &&
                 _bodyController.text.isNotEmpty) {
+              final bloc = context.read<NotificationBloc>();
               Navigator.pop(context);
-              context.read<NotificationBloc>().add(
+              bloc.add(
                 CreateNotification(
                   title: _titleController.text,
                   body: _bodyController.text,
@@ -743,62 +774,6 @@ class _CreateNotificationDialogState extends State<_CreateNotificationDialog> {
         ),
       ],
     );
-  }
-}
-
-class _NotificationTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabController tabController;
-
-  _NotificationTabBarDelegate({required this.tabController});
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tabs = [
-      {'label': 'All', 'svg': SvgIcons.notifications},
-      {'label': 'Unread', 'svg': SvgIcons.email},
-      {'label': 'Appointments', 'svg': SvgIcons.calendar},
-      {'label': 'Queue', 'svg': SvgIcons.queue},
-    ];
-
-    return Container(
-      color: isDark ? AppColors.surfaceContainerDark : AppColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(tabs.length, (index) {
-            final tab = tabs[index];
-            final isSelected = tabController.index == index;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: NeuChip(
-                label: tab['label'] as String,
-                svgAsset: tab['svg'] as String,
-                selected: isSelected,
-                onTap: () => tabController.animateTo(index),
-                selectedColor: AppColors.primary,
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  @override
-  double get maxExtent => 60;
-
-  @override
-  double get minExtent => 60;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
   }
 }
 

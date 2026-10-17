@@ -41,54 +41,48 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       backgroundColor: _isDark
           ? AppColors.backgroundDark
           : AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: BlocBuilder<NotificationBloc, NotificationState>(
-                builder: (context, state) {
-                  if (state is NotificationLoading) {
-                    return const NeuSkeletonDetail();
-                  }
+      appBar: _buildAppBar(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+        child: BlocBuilder<NotificationBloc, NotificationState>(
+          builder: (context, state) {
+            if (state is NotificationLoading) {
+              return const NeuSkeletonDetail();
+            }
 
-                  NotificationPreferences? preferences;
-                  if (state is NotificationPreferencesLoaded) {
-                    preferences = state.preferences;
-                  }
+            NotificationPreferences? preferences;
+            if (state is NotificationPreferencesLoaded) {
+              preferences = state.preferences;
+            }
 
-                  return Column(
-                    children: [
-                      _buildMasterToggle(preferences),
-                      const SizedBox(height: 20),
-                      _buildCategoryToggles(preferences),
-                      const SizedBox(height: 20),
-                      _buildDeliverySettings(preferences),
-                      const SizedBox(height: 20),
-                      _buildQuietHours(preferences),
-                      const SizedBox(height: 20),
-                      _buildDataManagement(),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
+            return Column(
+              children: [
+                _buildMasterToggle(preferences),
+                const SizedBox(height: 20),
+                _buildCategoryToggles(preferences),
+                const SizedBox(height: 20),
+                _buildDeliverySettings(preferences),
+                const SizedBox(height: 20),
+                _buildQuietHours(preferences),
+                const SizedBox(height: 20),
+                _buildDataManagement(),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 100,
-      floating: false,
-      pinned: true,
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      toolbarHeight: 88,
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
+      leadingWidth: 64,
+      titleSpacing: 0,
       leading: NeuIconButton(
         plain: true,
         icon: Icons.arrow_back_rounded,
@@ -96,32 +90,29 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         tooltip: 'Back',
         onPressed: () => Navigator.pop(context),
       ),
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 64, bottom: 16),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Notification Settings',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w800,
-                color: _isDark
-                    ? AppColors.textPrimaryOnDark
-                    : AppColors.textPrimary,
-              ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Notification Settings',
+            style: AppTextStyles.headlineSmall.copyWith(
+              fontWeight: FontWeight.w800,
+              color: _isDark
+                  ? AppColors.textPrimaryOnDark
+                  : AppColors.textPrimary,
             ),
-            const SizedBox(height: 2),
-            Text(
-              'Customize how you receive alerts',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark
-                    ? AppColors.textSecondaryOnDark
-                    : AppColors.textSecondary,
-              ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Customize how you receive alerts',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: _isDark
+                  ? AppColors.textSecondaryOnDark
+                  : AppColors.textSecondary,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

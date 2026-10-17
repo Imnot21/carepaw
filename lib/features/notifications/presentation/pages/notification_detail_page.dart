@@ -35,37 +35,34 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       backgroundColor: _isDark
           ? AppColors.backgroundDark
           : AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(notification, typeColor),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: Column(
-                children: [
-                  _buildNotificationCard(notification, typeColor),
-                  const SizedBox(height: 16),
-                  _buildMetaSection(notification),
-                  const SizedBox(height: 24),
-                  _buildActionButtons(notification),
-                ],
-              ),
-            ),
-          ),
-        ],
+      appBar: _buildAppBar(notification, typeColor),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+        child: Column(
+          children: [
+            _buildNotificationCard(notification, typeColor),
+            const SizedBox(height: 16),
+            _buildMetaSection(notification),
+            const SizedBox(height: 24),
+            _buildActionButtons(notification),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAppBar(domain.Notification notification, Color typeColor) {
-    return SliverAppBar(
-      expandedHeight: 100,
-      floating: false,
-      pinned: true,
+  PreferredSizeWidget _buildAppBar(
+    domain.Notification notification,
+    Color typeColor,
+  ) {
+    return AppBar(
+      toolbarHeight: 88,
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
+      leadingWidth: 64,
+      titleSpacing: 0,
       leading: NeuIconButton(
         plain: true,
         icon: Icons.arrow_back_rounded,
@@ -73,38 +70,35 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
         tooltip: 'Back',
         onPressed: () => Navigator.pop(context),
       ),
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 64, bottom: 16),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Notification',
-              style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.w700,
-                color: _isDark
-                    ? AppColors.textPrimaryOnDark
-                    : AppColors.textPrimary,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Notification',
+            style: AppTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.w700,
+              color: _isDark
+                  ? AppColors.textPrimaryOnDark
+                  : AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: typeColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              notification.type.displayName,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: typeColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 2),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: typeColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                notification.type.displayName,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: typeColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
       actions: [
         if (!notification.isRead)
