@@ -5,15 +5,16 @@ export 'theme_colors.dart' show ThemeColors;
 /// CarePaw palette — warm bone canvas, terracotta primary, warm charcoal dark
 /// mode.
 ///
-/// Depth is expressed with **hairline borders and surface tints**, not
-/// shadows. Every surface reads as a distinct plane because of a 1px warm
-/// hairline and a small step in fill lightness — that is the whole mechanism,
-/// and it stays legible on cheap panels and in bright clinic lighting.
+/// Depth is expressed with **token-driven dual extrusion** — a top-left light
+/// and a bottom-right tinted depth shadow per plane (`NeuShadow`; see
+/// `DESIGN.md` "How depth works now"). Hairlines survive only where an edge
+/// carries data — queue position, batch expiry — because a hairline and a
+/// highlight fight over the same edge.
 ///
 /// Design principles:
 /// - Warm bone canvas keeps the app fresh, calm, and trustworthy
 /// - Terracotta primary feels warm and caring without looking generic
-/// - Tinted surface levels carry hierarchy; hairlines carry the edges
+/// - Tinted surface levels carry hierarchy; the light/depth pair carries the edges
 /// - One warm accent per screen; everything else stays quiet
 /// - Dark mode is a deep warm charcoal, never a quick invert
 class AppColors {

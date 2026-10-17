@@ -10,7 +10,7 @@ Flutter cross-platform app (iOS, Android, web, desktop builds). Design target is
 
 ## Stack
 
-Flutter 3.12+ / Dart 3.12+, BLoC (`flutter_bloc`), GoRouter, GetIt + Injectable, Firebase (Auth, Cloud Firestore, Cloud Messaging, Cloud Functions, App Check), `flutter_local_notifications`, `flutter_secure_storage`, `shared_preferences`. Custom surface widget library in `lib/core/widgets/neomorphism/` (the directory name is historical; the widgets are flat-material now — hairline borders and tinted planes, no extrusion). The codebase answers the stack; no greenfield choice needed.
+Flutter 3.12+ / Dart 3.12+, BLoC (`flutter_bloc`), GoRouter, GetIt + Injectable, Firebase (Auth, Cloud Firestore, Cloud Messaging, Cloud Functions, App Check), `flutter_local_notifications`, `flutter_secure_storage`, `shared_preferences`. Custom surface widget library in `lib/core/widgets/neomorphism/` — the neumorphic revival documented in `DESIGN.md` (dual light/depth extrusion on every plane, token-driven shadows; the directory name is historical, the extrusion is current). Clay SVG icons render via `flutter_svg`. The codebase answers the stack; no greenfield choice needed.
 
 ## Users
 
@@ -45,6 +45,8 @@ Confirmed capabilities:
 - Notifications: appointment reminders, queue updates, prescription-ready, low-inventory alerts.
 - Audit logging: security events and sensitive-operation tracking.
 
+Demo scope (2-role paper build): the shipping demo path is pet owner + clinic owner-admin (operator) — bookings, line, patients, records, stock, and scanning via the clinic dashboard. Veterinarian/staff/admin dashboards, audit, user management, and clinic settings are built but parked as reserve (unreachable from the demo navigation).
+
 Durable constraints (from project rules):
 - Never commit secrets; use environment variables / secure storage.
 - Never trust OCR blindly; always require human confirmation.
@@ -54,18 +56,18 @@ Durable constraints (from project rules):
 - Always validate input, client and server side.
 - Always log sensitive operations.
 
-Undecided: authentication flow details, notification delivery specifics, offline behavior.
+Undecided: notification delivery specifics, offline behavior.
 
 ## Brand Commitments
 
 - Name: **CarePaw**.
 - Stated concept: "Making veterinary care simpler, smarter, and more pet-friendly."
--   Visual direction: the full neumorphic revival documented in `DESIGN.md` — dual light/depth extrusion on every plane (top-left light, bottom-right tinted depth), wells carved into the canvas, and accent-tinted lighting on species discs and filled buttons. This is the user-directed re-execution of `PLAN_NEUMORPHISM.md` with calibrated, token-driven shadows rather than per-call-site guesses; see §2 of the design system for the calibration and §3 for the dark-mode treatment (white light source replaced by a faint charcoal rim).
+- Visual direction: the full neumorphic revival documented in `DESIGN.md` — dual light/depth extrusion on every plane (top-left light, bottom-right tinted depth), wells carved into the canvas, and accent-tinted lighting on species discs and filled buttons. This is the calibrated re-execution of the direction staged in `PLAN_NEUMORPHISM.md` and `PLAN_FRONTEND_OVERHAUL.md` (both now archived under `docs/archive/`): every shadow value is a token rather than a per-call-site guess, and dark mode replaces the white light source with a faint charcoal rim.
 - No confirmed logo, typography, or asset commitments beyond the above.
 
 ## Evidence on Hand
 
-- `README.md`, `CLAUDE.md`, `PLAN_NEUMORPHISM.md`.
+- `README.md`, `CLAUDE.md`, `DESIGN.md`; superseded plans under `docs/archive/`.
 - Implemented feature scaffolding: pages, BLoC state management, Firestore repositories, domain entities, the `Neu*` surface widget library.
 - Absences future work must not fabricate: real clinic data, testimonials, customer logos, benchmarks, pricing, deployment claims.
 

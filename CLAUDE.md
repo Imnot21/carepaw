@@ -58,25 +58,32 @@ The system connects:
 |-------|------------|
 | Framework | Flutter 3.12+ |
 | Language | Dart 3.12+ |
-| State Management | TBD (BLoC/Provider/Riverpod) |
-| Database | TBD (SQLite/PostgreSQL via API) |
-| Authentication | TBD (Firebase/Auth0/Custom) |
+| State Management | BLoC (`flutter_bloc`) |
+| Backend / Database | Firebase — Cloud Firestore, Auth, Cloud Functions, FCM, App Check |
+| Routing / DI | GoRouter, GetIt + Injectable |
+| Local storage / notifs | `shared_preferences`, `flutter_secure_storage`, `flutter_local_notifications` |
+| Icons / Assets | Clay SVG set (`assets/icons/`, `flutter_svg`) — see `docs/SVG_CATALOG.md` |
+| Design System | Neumorphic revival — see `DESIGN.md` |
 
 ## Project Structure
 
 ```
 lib/
-├── app/                    # App configuration, routing, theme
+├── app/                    # App configuration, routing, theme, shell
 │   ├── router/
+│   ├── shell/
 │   └── theme/
 ├── core/                   # Shared infrastructure
 │   ├── constants/
+│   ├── di/
 │   ├── errors/
-│   ├── network/
+│   ├── firebase/
+│   ├── notifications/
+│   ├── repositories/
 │   ├── security/
 │   ├── storage/
 │   ├── utils/
-│   └── widgets/
+│   └── widgets/            # Neu* surface widget library (neumorphism)
 ├── features/               # Feature modules
 │   ├── authentication/
 │   ├── users/
@@ -86,7 +93,9 @@ lib/
 │   ├── medical_records/
 │   ├── inventory/
 │   ├── scanning/
-│   └── notifications/
+│   ├── notifications/
+│   ├── home/
+│   └── audit/
 └── main.dart
 ```
 
@@ -118,15 +127,18 @@ Specialized agents are available for specific tasks. Invoke the appropriate agen
 | Project Setup | ✅ COMPLETE |
 | Agent Structure | ✅ COMPLETE |
 | Core Architecture | ✅ COMPLETE |
-| Database Schema | ✅ COMPLETE |
-| Authentication | 📋 PLANNED |
-| Pet Management | 📋 PLANNED |
-| Appointments | 📋 PLANNED |
-| Queue Management | 📋 PLANNED |
-| Medical Records | 📋 PLANNED |
-| Inventory | 📋 PLANNED |
-| Scanning/OCR | 📋 PLANNED |
-| Notifications | 📋 PLANNED |
+| Database Schema | ✅ COMPLETE (Firestore rules + indexes) |
+| Authentication | ✅ COMPLETE |
+| Pet Management | ✅ COMPLETE |
+| Appointments | ✅ COMPLETE |
+| Queue Management | ✅ COMPLETE |
+| Medical Records | ✅ COMPLETE |
+| Inventory | ✅ COMPLETE |
+| Scanning/OCR | ✅ BUILT — routed from the clinic dashboard (Scan) |
+| Notifications | ✅ COMPLETE — demo surfaces appointment + queue types |
+| Users / Audit / Admin Settings | ✅ BUILT — hidden from demo UI (reserve) |
+
+**Demo scope:** 2-role paper build — Pet Owner + Clinic Owner/Admin. Vet/staff/admin dashboards and audit/users/settings are reserved: built, but unreachable from the demo navigation.
 
 ## Key Workflows
 
@@ -157,7 +169,8 @@ Document Visit → Create Prescriptions → Update Records
 5. **Always use transactions** - For related database operations
 6. **Always validate input** - Both client and server side
 7. **Always log sensitive operations** - Audit trail required
-8.When I ask you to install, configure, update, or remove something in the development environment, do not merely explain how to do it. First determine the appropriate CLI command or available tool, then execute it. If the first command fails, inspect the error and determine the correct command instead of giving up. Only ask me for clarification when the request genuinely requires information you cannot determine.
+8. **Execute, don't explain** - When I ask you to install, configure, update, or remove something in the development environment, do not merely explain how to do it. First determine the appropriate CLI command or available tool, then execute it. If the first command fails, inspect the error and determine the correct command instead of giving up. Only ask me for clarification when the request genuinely requires information you cannot determine.
+
 ## Getting Started
 
 1. Ensure Flutter SDK 3.12+ is installed
@@ -169,6 +182,10 @@ Document Visit → Create Prescriptions → Update Records
 ## Documentation
 
 - [Architecture Documentation](.claude/docs/CAREPAW_ARCHITECTURE.md)
+- [Database Design](.claude/docs/DATABASE_DESIGN.md)
+- [Design System](DESIGN.md) · [Product](PRODUCT.md)
+- [SVG Icon Catalog](docs/SVG_CATALOG.md)
+- [Archived Plans](docs/archive/)
 - [Agent Index](.claude/agents/)
 
 ---
