@@ -6,7 +6,7 @@ p0_count: 0
 p1_count: 0
 p2_count: 2
 p3_count: 1
-addendum: "2026-10-17 same-day fixes: dialog IME inset fixed; stray colors 39->17; 1.3x font-scale pass done. Adaptivity 2->3; total 14->15."
+addendum: "2026-10-17 same-day fixes: dialog IME inset fixed; stray colors 39->17; 1.3x font-scale pass done; tablet+landscape pass done (tile caps 539f5a3). Adaptivity 2->3; total 14->15."
 baseline: "13/20 (recorded at Phase 0-3 close-out)"
 target_identity: "file:D:\\Desktop\\carepaw\\lib\\features\\home\\presentation\\pages\\clinic_dashboard_page.dart"
 target_fingerprint: "sha256:d5089f7f5b01cb08d7478ddfa4d0a5990ea8a70d22bcfdb57d44c0c4d97de317"
@@ -105,5 +105,6 @@ slug: clinic-operator-flow-d5089f7f
 1. **Dialog IME edge — fixed.** `NeuDialog` now lifts with the keyboard (`AnimatedPadding` on `MediaQuery.viewInsetsOf`) and wraps content in a scroll view. Verified live: the create-notification dialog stays fully operable while the keyboard is open — the flow was completed end-to-end without dismissing the IME.
 2. **Stray colors — reduced 39 → 17.** All literals in `app_text_styles.dart` re-pointed at `AppColors` (the three unused `*At` status helpers now use the AA-verified status tokens); `app_theme.dart` swapped 3 exact matches; `neu_button` / `neu_avatar` / `neu_icon_system` now use tokens. Remaining literals are ColorScheme role definitions in the theme layer and scan camera/status chrome (reserve surface, documented exception).
 3. **Font-scale pass — completed at 1.3×.** Clinic dashboard, bookings, queue, profile, and notification detail all hold with no overflow stripes. One accepted degradation: bottom-nav labels ellipsize at 1.3× ("Booki…") — semantics still read the full label.
+4. **Tablet/landscape pass — completed.** Emulator re-sized to 800×1280dp portrait and 1280×800dp landscape and the operator flow swept: dashboard, bookings, queue, patients, stock, profile. No overflow anywhere (pixel scan, 0 red-band rows); the dashboard already steps its grids to 3 columns at ≥600dp. One real finding fixed in `539f5a3`: aspect-ratio tiles ballooned into near-empty panels on wide viewports — tile heights are now capped at ≥600dp (`NeuStatGrid` uses `mainAxisExtent: 160`; the action grid uses a 1.45 aspect), and the phone layout is byte-identical (0.70/0.95 aspects preserved, re-verified on device). Note: the in-app Device Preview overlay (`device_preview`, `enabled: !kReleaseMode`) presents a sidebar/rail at wide widths — it is debug-build chrome only; release builds ship without it.
 
-Revised scores: Adaptivity 2 → 3. **Revised total: 15/20 (Good).** Remaining: tablet/landscape pass (P3) and the >800-line page/TODO sweep (P2, maintainability only).
+Revised scores: Adaptivity 2 → 3 (residual: wide-viewport content stretches edge-to-edge rather than using dedicated multi-column masters — cosmetic, not breakage). **Revised total: 15/20 (Good).** Remaining: the >800-line page / TODO sweep (P2, maintainability only).
