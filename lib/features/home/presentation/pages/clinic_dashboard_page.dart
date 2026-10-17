@@ -163,47 +163,53 @@ class _ClinicDashboardContent extends StatelessWidget {
                   ),
                   const SizedBox(height: NeuTokens.tightGap),
                   BlocBuilder<ClinicPulseBloc, ClinicPulseState>(
-                    builder: (context, pulse) => GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 3,
-                      crossAxisSpacing: NeuTokens.tightGap,
-                      mainAxisSpacing: NeuTokens.tightGap,
-                      childAspectRatio: 0.95,
-                      children: [
-                        _ClinicActionCard(
-                          svgAsset: SvgIcons.calendar,
-                          label: 'Bookings',
-                          onTap: () => context.push(Routes.staffAppointments),
-                        ),
-                        _ClinicActionCard(
-                          svgAsset: SvgIcons.listNumbered,
-                          label: 'Line',
-                          onTap: () => context.push(Routes.staffQueue),
-                        ),
-                        _ClinicActionCard(
-                          svgAsset: SvgIcons.people,
-                          label: 'Patients',
-                          onTap: () => context.push(Routes.vetPatients),
-                        ),
-                        _ClinicActionCard(
-                          svgAsset: SvgIcons.visit,
-                          label: 'Records',
-                          onTap: () => _openRecordsPicker(context),
-                        ),
-                        _ClinicActionCard(
-                          svgAsset: SvgIcons.inventory,
-                          label: 'Stock',
-                          alert: (pulse.lowStock ?? 0) > 0,
-                          onTap: () => context.push(Routes.staffInventory),
-                        ),
-                        _ClinicActionCard(
-                          svgAsset: SvgIcons.scan,
-                          label: 'Scan',
-                          onTap: () => context.push(Routes.staffScanning),
-                        ),
-                      ],
-                    ),
+                    builder: (context, pulse) {
+                      // Tablet widths get flatter cells: six action cards
+                      // three across at phone proportions would otherwise
+                      // scale into full-width billboards on a tablet.
+                      final isWide = MediaQuery.sizeOf(context).width >= 600;
+                      return GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 3,
+                        crossAxisSpacing: NeuTokens.tightGap,
+                        mainAxisSpacing: NeuTokens.tightGap,
+                        childAspectRatio: isWide ? 1.45 : 0.95,
+                        children: [
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.calendar,
+                            label: 'Bookings',
+                            onTap: () => context.push(Routes.staffAppointments),
+                          ),
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.listNumbered,
+                            label: 'Line',
+                            onTap: () => context.push(Routes.staffQueue),
+                          ),
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.people,
+                            label: 'Patients',
+                            onTap: () => context.push(Routes.vetPatients),
+                          ),
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.visit,
+                            label: 'Records',
+                            onTap: () => _openRecordsPicker(context),
+                          ),
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.inventory,
+                            label: 'Stock',
+                            alert: (pulse.lowStock ?? 0) > 0,
+                            onTap: () => context.push(Routes.staffInventory),
+                          ),
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.scan,
+                            label: 'Scan',
+                            onTap: () => context.push(Routes.staffScanning),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),

@@ -178,9 +178,10 @@ class NeuStatGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 600;
     final columns = tiles.length == 1
         ? 1
-        : MediaQuery.sizeOf(context).width >= 600
+        : isWide
         ? 3
         : mobileColumns;
 
@@ -192,8 +193,11 @@ class NeuStatGrid extends StatelessWidget {
         crossAxisCount: columns,
         mainAxisSpacing: NeuTokens.tightGap,
         crossAxisSpacing: NeuTokens.tightGap,
-        // The aspect keeps the grid on a rhythm without hard-coding a height;
-        // tiles whose labels wrap taller can pass a smaller ratio.
+        // Phones keep the aspect rhythm (tiles whose labels wrap taller pass
+        // a smaller ratio). Tablet widths cap the height instead: tiles three
+        // across a wide viewport would otherwise stretch into near-empty
+        // panels, twice the height of their content.
+        mainAxisExtent: isWide ? 160 : null,
         childAspectRatio: childAspectRatio,
       ),
       itemCount: tiles.length,
