@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T08:34:55Z",
+  "title": "Design System: CarePaw",
+  "extensions": {
+    "colorMeta": {
+      "warm-bone": { "role": "neutral", "displayName": "Warm Bone", "canonical": "oklch(97.1% 0.007 81)", "tonalRamp": ["#342A18", "#5E4B2C", "#886C3F", "#AF8D55", "#C3A97E", "#D6C5A8", "#EAE1D2", "#F7F3EE"] },
+      "chalk": { "role": "neutral", "displayName": "Chalk", "canonical": "oklch(100.0% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "recessed-bone": { "role": "neutral", "displayName": "Recessed Bone", "canonical": "oklch(94.5% 0.013 82)", "tonalRamp": ["#332A1A", "#5C4B2E", "#856D42", "#AC8E58", "#C0AA81", "#D4C5AA", "#E9E1D3", "#F6F3EE"] },
+      "bone-mist": { "role": "neutral", "displayName": "Bone Mist", "canonical": "oklch(97.7% 0.007 81)", "tonalRamp": ["#372B15", "#634D26", "#906F37", "#BA904B", "#CBAB77", "#DCC6A3", "#EDE2CF", "#F8F4ED"] },
+      "warm-charcoal": { "role": "neutral", "displayName": "Warm Charcoal", "canonical": "oklch(21.8% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "charcoal-card": { "role": "neutral", "displayName": "Charcoal Card", "canonical": "oklch(26.2% 0.004 49)", "tonalRamp": ["#282625", "#484442", "#68625F", "#87807D", "#A59F9D", "#C2BEBD", "#DFDDDC", "#F3F2F2"] },
+      "charcoal-well": { "role": "neutral", "displayName": "Charcoal Well", "canonical": "oklch(23.6% 0.002 68)", "tonalRamp": ["#282625", "#474543", "#676360", "#86827E", "#A4A19E", "#C1BFBD", "#DFDEDD", "#F3F2F2"] },
+      "ash-rim": { "role": "neutral", "displayName": "Ash Rim", "canonical": "oklch(33.9% 0.005 56)", "tonalRamp": ["#282625", "#484442", "#68635F", "#88817C", "#A5A09C", "#C2BFBC", "#DFDEDC", "#F3F2F2"] },
+      "terracotta": { "role": "primary", "displayName": "Terracotta", "canonical": "oklch(69.5% 0.132 37)", "tonalRamp": ["#41180C", "#742A15", "#A83D1F", "#D8522C", "#E27D5F", "#EBA793", "#F5D1C7", "#FBEDE9"] },
+      "terracotta-on-dark": { "role": "primary", "displayName": "Terracotta on Dark", "canonical": "oklch(75.2% 0.120 35)", "tonalRamp": ["#451408", "#7C240E", "#B33414", "#E6471E", "#EC7455", "#F2A18C", "#F8CEC3", "#FCECE8"] },
+      "deep-terracotta": { "role": "primary", "displayName": "Deep Terracotta", "canonical": "oklch(52.1% 0.134 36)", "tonalRamp": ["#3D1A10", "#6D2E1D", "#9E4329", "#CB5939", "#D88169", "#E5AA9A", "#F1D3CA", "#FAEEEB"] },
+      "umber-ink": { "role": "primary", "displayName": "Umber Ink", "canonical": "oklch(25.7% 0.022 64)", "tonalRamp": ["#31261B", "#584431", "#806247", "#A5805F", "#BB9F86", "#D1BEAD", "#E7DDD4", "#F6F2EF"] },
+      "terracotta-tint": { "role": "primary", "displayName": "Terracotta Tint", "canonical": "oklch(93.9% 0.018 54)", "tonalRamp": ["#3A2213", "#683C22", "#965731", "#C27342", "#D19570", "#E0B79F", "#EFDACD", "#F9F1EC"] },
+      "terracotta-deep": { "role": "primary", "displayName": "Terracotta Deep", "canonical": "oklch(62.7% 0.127 37)", "tonalRamp": ["#3A1B12", "#693121", "#98472F", "#C45F40", "#D2866F", "#E1AD9E", "#EFD4CC", "#F9EFEC"] },
+      "terracotta-bright": { "role": "primary", "displayName": "Terracotta Bright", "canonical": "oklch(79.9% 0.100 45)", "tonalRamp": ["#461A06", "#7E2F0C", "#B64311", "#EA5A1A", "#EF8252", "#F4AB8A", "#F9D3C2", "#FDEEE8"] },
+      "light-source": { "role": "neutral", "displayName": "Light Source", "canonical": "oklch(100.0% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "bone-depth": { "role": "neutral", "displayName": "Bone Depth", "canonical": "oklch(75.5% 0.025 80)", "tonalRamp": ["#2C2820", "#50473A", "#736754", "#95876F", "#AFA492", "#C9C2B5", "#E3DFD9", "#F4F3F0"] },
+      "deep-bone": { "role": "neutral", "displayName": "Deep Bone", "canonical": "oklch(54.5% 0.028 75)", "tonalRamp": ["#2B2721", "#4E463C", "#706557", "#928472", "#ADA294", "#C8C0B7", "#E2DEDA", "#F4F2F1"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(17.8% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "ink-secondary": { "role": "neutral", "displayName": "Ink Secondary", "canonical": "oklch(28.9% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "ink-soft": { "role": "neutral", "displayName": "Ink Soft", "canonical": "oklch(40.9% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "ink-on-dark": { "role": "neutral", "displayName": "Ink on Dark", "canonical": "oklch(100.0% 0.000 90)", "tonalRamp": ["#262626", "#454545", "#636363", "#828282", "#A1A1A1", "#BFBFBF", "#DEDEDE", "#F2F2F2"] },
+      "ink-secondary-dark": { "role": "neutral", "displayName": "Ink Secondary on Dark", "canonical": "oklch(92.8% 0.006 265)", "tonalRamp": ["#21252B", "#3C424E", "#565F70", "#727D92", "#949DAD", "#B7BCC8", "#DADCE2", "#F1F2F4"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "oklch(90.9% 0.017 79)", "tonalRamp": ["#31291C", "#584932", "#7F6948", "#A48A60", "#BAA687", "#D1C3AE", "#E7E0D5", "#F6F3EF"] },
+      "hairline-strong": { "role": "neutral", "displayName": "Hairline Strong", "canonical": "oklch(84.9% 0.023 78)", "tonalRamp": ["#2F281D", "#554835", "#7B684C", "#9F8865", "#B7A58B", "#CEC2B0", "#E6DFD6", "#F5F3EF"] },
+      "divider": { "role": "neutral", "displayName": "Divider", "canonical": "oklch(93.0% 0.016 83)", "tonalRamp": ["#332A1A", "#5B4B2F", "#836D44", "#AA8E5A", "#BFAA82", "#D4C5AB", "#E8E1D3", "#F6F3EE"] },
+      "skeleton": { "role": "neutral", "displayName": "Skeleton", "canonical": "oklch(93.0% 0.016 83)", "tonalRamp": ["#332A1A", "#5B4B2F", "#836D44", "#AA8E5A", "#BFAA82", "#D4C5AB", "#E8E1D3", "#F6F3EE"] },
+      "skeleton-dark": { "role": "neutral", "displayName": "Skeleton on Dark", "canonical": "oklch(30.8% 0.005 39)", "tonalRamp": ["#282525", "#484342", "#68615F", "#877F7D", "#A59F9D", "#C2BEBD", "#DFDDDC", "#F3F2F2"] },
+      "brick": { "role": "status", "displayName": "Brick", "canonical": "oklch(50.5% 0.190 28)", "tonalRamp": ["#420A0A", "#781212", "#AD1A1A", "#DE2626", "#E65B5B", "#EE9090", "#F6C5C5", "#FCE9E9"] },
+      "brick-on-dark": { "role": "status", "displayName": "Brick on Dark", "canonical": "oklch(71.1% 0.166 22)", "tonalRamp": ["#490404", "#830606", "#BE0909", "#F31111", "#F64B4B", "#F98585", "#FCC0C0", "#FEE7E7"] },
+      "forest": { "role": "status", "displayName": "Forest", "canonical": "oklch(52.7% 0.137 150)", "tonalRamp": ["#0B421F", "#137638", "#1CAB51", "#28DC6B", "#5DE490", "#91EDB4", "#C6F6D8", "#E9FBF0"] },
+      "forest-on-dark": { "role": "status", "displayName": "Forest on Dark", "canonical": "oklch(80.0% 0.182 152)", "tonalRamp": ["#0C411F", "#157438", "#1FA851", "#2CD86B", "#5FE28F", "#93EBB3", "#C7F5D8", "#E9FBF0"] },
+      "amber-bark": { "role": "status", "displayName": "Amber Bark", "canonical": "oklch(55.5% 0.146 49)", "tonalRamp": ["#492204", "#833C07", "#BD5709", "#F37311", "#F6954B", "#F9B786", "#FCDAC0", "#FEF1E7"] },
+      "amber-on-dark": { "role": "status", "displayName": "Amber on Dark", "canonical": "oklch(83.7% 0.164 84)", "tonalRamp": ["#4B3701", "#876202", "#C38E04", "#FBB70A", "#FCC946", "#FDDA82", "#FEECBE", "#FFF8E6"] },
+      "steel-blue": { "role": "status", "displayName": "Steel Blue", "canonical": "oklch(53.8% 0.095 258)", "tonalRamp": ["#182435", "#2B405F", "#3E5C89", "#5279B2", "#7D9AC5", "#A7BBD8", "#D1DBEA", "#EDF1F7"] },
+      "steel-blue-on-dark": { "role": "status", "displayName": "Steel Blue on Dark", "canonical": "oklch(76.3% 0.078 258)", "tonalRamp": ["#0F223D", "#1C3D6E", "#28589F", "#3774CD", "#6896D9", "#99B8E6", "#CADAF2", "#EBF1FA"] },
+      "deep-teal": { "role": "status", "displayName": "Deep Teal", "canonical": "oklch(51.1% 0.086 186)", "tonalRamp": ["#09443F", "#107A72", "#16B0A5", "#21E3D4", "#58EADE", "#8EF1E9", "#C4F8F4", "#E8FCFB"] },
+      "teal-on-dark": { "role": "status", "displayName": "Teal on Dark", "canonical": "oklch(85.5% 0.125 181)", "tonalRamp": ["#09443A", "#107A69", "#17B098", "#22E2C4", "#58E9D2", "#8EF0E1", "#C4F7EF", "#E8FCF9"] },
+      "species-cat": { "role": "species", "displayName": "Species: Cat", "canonical": "oklch(59.4% 0.051 88)", "tonalRamp": ["#2E2A1E", "#534B36", "#786C4F", "#9C8D68", "#B4A98D", "#CDC5B2", "#E5E1D7", "#F5F3F0"] },
+      "species-dog": { "role": "species", "displayName": "Species: Dog", "canonical": "oklch(54.0% 0.029 69)", "tonalRamp": ["#2B2621", "#4E453C", "#716456", "#938371", "#ADA194", "#C8C0B7", "#E2DED9", "#F4F2F1"] },
+      "species-bird": { "role": "species", "displayName": "Species: Bird", "canonical": "oklch(58.5% 0.081 163)", "tonalRamp": ["#1B3228", "#305A47", "#458267", "#5CA886", "#84BDA4", "#ACD3C1", "#D4E8DF", "#EEF6F3"] },
+      "species-rabbit": { "role": "species", "displayName": "Species: Rabbit", "canonical": "oklch(63.0% 0.076 317)", "tonalRamp": ["#2A1E2E", "#4B3753", "#6D4F78", "#8E689C", "#AA8DB4", "#C5B2CC", "#E1D7E5", "#F3F0F5"] },
+      "species-reptile": { "role": "species", "displayName": "Species: Reptile", "canonical": "oklch(59.2% 0.066 157)", "tonalRamp": ["#1F2E25", "#375342", "#50775F", "#699B7D", "#8EB49D", "#B3CCBC", "#D7E4DC", "#F0F5F2"] },
+      "species-other": { "role": "species", "displayName": "Species: Other", "canonical": "oklch(62.5% 0.096 252)", "tonalRamp": ["#152537", "#264363", "#376190", "#4A7FBA", "#779FCB", "#A3BEDC", "#CFDDED", "#EDF2F8"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Onboarding and hero moments only — Nunito at its loudest, never for working screens." },
+      "headline": { "displayName": "Headline", "purpose": "Page and sheet titles, section heroes — Nunito." },
+      "title": { "displayName": "Title", "purpose": "Card and list-item titles on the system face; app bars use the Nunito appBarTitle (20)." },
+      "body": { "displayName": "Body", "purpose": "Reading text; measure stays under 75ch and under the 640 content width on phones." },
+      "label": { "displayName": "Label", "purpose": "Buttons, chips, tile labels, captions; overline (10, +1.2 tracking) for eyebrow text." },
+      "number": { "displayName": "Number", "purpose": "Dashboard numerals in Nunito 24/34 — the loudest element on any stat tile." }
+    },
+    "shadows": [
+      { "name": "raised", "value": "-6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55)", "purpose": "The default extruded plane — cards, chips, discs, buttons at rest. Both halves always ship together." },
+      { "name": "pressed", "value": "-3px -3px 6px rgba(184,174,158,0.35), 3px 3px 6px rgba(255,255,255,0.55)", "purpose": "A surface mid-press: light and depth swap, the plane sinks. Cards never scale — the lighting change is the signal." },
+      { "name": "inset", "value": "-4px -4px 10px rgba(184,174,158,0.40), 4px 4px 10px rgba(255,255,255,0.70)", "purpose": "Recessed wells — fields, progress tracks, stat icon wells. Always filled, never outlined." },
+      { "name": "floating", "value": "0 10px 28px rgba(122,110,94,0.32)", "purpose": "Chrome above other surfaces — nav bar, FAB, dialog, sheet. One offset, cast straight down." },
+      { "name": "raised-dark", "value": "-5px -5px 14px rgba(58,55,53,0.55), 5px 5px 14px rgba(0,0,0,0.50)", "purpose": "Dark mode drops the light source: a faint rim in the surface's own hue plus a near-black depth, slightly tighter." },
+      { "name": "accent-glow", "value": "0 3px 12px rgba(226,125,96,0.24)", "purpose": "Anchored glow for selected or active elements, parameterised by accent colour. Rationed — the accent may glow, the canvas may not." }
+    ],
+    "motion": [
+      { "name": "micro", "value": "80ms", "purpose": "Hover and tint micro-feedback (durationMicro)." },
+      { "name": "press", "value": "90-100ms", "purpose": "Press shadow swaps and the 0.97 scale on buttons and chips (durationFast / durationCard)." },
+      { "name": "fade", "value": "200ms", "purpose": "Colour and opacity transitions (durationMedium)." },
+      { "name": "screen", "value": "300ms", "purpose": "Page and skeleton transitions (durationSlow)." },
+      { "name": "shimmer", "value": "1500ms loop", "purpose": "Skeleton shimmer sweep (durationShimmer)." },
+      { "name": "ease-default", "value": "ease-out (Curves.easeOut)", "purpose": "The default curve for every state change." },
+      { "name": "reduce-motion", "value": "0ms", "purpose": "NeuMotion collapses every kit animation to zero duration when the platform asks; state still changes, nothing travels." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "<600px", "purpose": "Stat grids run two-to-three-up; lists single-column." },
+      { "name": "tablet", "value": ">=600px", "purpose": "NeuStatGrid switches to three columns." },
+      { "name": "content-max", "value": "640px", "purpose": "maxContentWidth — cards never stretch further." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one accent action per screen: terracotta fill, umber ink text, pill, extruded pair. Press swaps to the pressed shadows and scales 0.97.",
+      "html": "<button class=\"ds-btn-primary\">Book visit</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 24px; border: none; border-radius: 999px; cursor: pointer; background: #E27D60; color: #2B2118; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.05px; box-shadow: -6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55); transition: box-shadow 200ms ease-out, transform 90ms ease-out; } .ds-btn-primary:hover { box-shadow: -8px -8px 18px rgba(255,255,255,0.9), 8px 8px 18px rgba(184,174,158,0.62); } .ds-btn-primary:active { transform: scale(0.97); box-shadow: inset -3px -3px 6px rgba(184,174,158,0.35), inset 3px 3px 6px rgba(255,255,255,0.55); } .ds-btn-primary:focus-visible { outline: 2px solid #2B2118; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The quiet sibling: chalk plane, deep terracotta text, same extrusion and press behaviour.",
+      "html": "<button class=\"ds-btn-secondary\">Add patient</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 24px; border: none; border-radius: 999px; cursor: pointer; background: #FFFFFF; color: #A8472C; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.05px; box-shadow: -6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55); transition: box-shadow 200ms ease-out, transform 90ms ease-out; } .ds-btn-secondary:hover { box-shadow: -8px -8px 18px rgba(255,255,255,0.9), 8px 8px 18px rgba(184,174,158,0.62); } .ds-btn-secondary:active { transform: scale(0.97); box-shadow: inset -3px -3px 6px rgba(184,174,158,0.35), inset 3px 3px 6px rgba(255,255,255,0.55); } .ds-btn-secondary:focus-visible { outline: 2px solid #A8472C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Brick fill with white text for cancel/delete actions; keeps the pill and the extrusion.",
+      "html": "<button class=\"ds-btn-destructive\">Cancel visit</button>",
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 24px; border: none; border-radius: 999px; cursor: pointer; background: #B91C1C; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.05px; box-shadow: -6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55); transition: box-shadow 200ms ease-out, transform 90ms ease-out; } .ds-btn-destructive:hover { box-shadow: -8px -8px 18px rgba(255,255,255,0.9), 8px 8px 18px rgba(184,174,158,0.62); } .ds-btn-destructive:active { transform: scale(0.97); box-shadow: inset -3px -3px 6px rgba(184,174,158,0.35), inset 3px 3px 6px rgba(255,255,255,0.55); } .ds-btn-destructive:focus-visible { outline: 2px solid #B91C1C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A carved well: recessed bone fill with the inset pair, no border at rest. Focus adds a 2px deep-terracotta ring; a well is never outlined while idle.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search patients...\" />",
+      "css": ".ds-input { min-width: 260px; padding: 16px 20px; border: none; border-radius: 24px; background: #F1ECE3; color: #111111; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.5; box-shadow: inset -4px -4px 10px rgba(184,174,158,0.40), inset 4px 4px 10px rgba(255,255,255,0.70); transition: box-shadow 200ms ease-out; } .ds-input::placeholder { color: #4A4A4A; opacity: 0.75; } .ds-input:hover { box-shadow: inset -4px -4px 10px rgba(184,174,158,0.46), inset 4px 4px 10px rgba(255,255,255,0.76); } .ds-input:focus { outline: none; box-shadow: inset -4px -4px 10px rgba(184,174,158,0.40), inset 4px 4px 10px rgba(255,255,255,0.70), 0 0 0 2px #A8472C; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filter/choice pill. Unselected stands proud of the canvas; selected sinks into it with a terracotta-tint wash and deep-terracotta text.",
+      "html": "<div class=\"ds-chip-row\"><button class=\"ds-chip\">All</button><button class=\"ds-chip ds-chip--selected\">Vaccines</button></div>",
+      "css": ".ds-chip-row { display: flex; gap: 12px; } .ds-chip { padding: 8px 12px; border: none; border-radius: 999px; cursor: pointer; background: #FFFFFF; color: #111111; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1px; box-shadow: -6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55); transition: box-shadow 200ms ease-out, background 200ms ease-out, color 200ms ease-out; } .ds-chip:hover { box-shadow: -7px -7px 16px rgba(255,255,255,0.9), 7px 7px 16px rgba(184,174,158,0.6); } .ds-chip--selected, .ds-chip:active { background: #F5E8E0; color: #A8472C; box-shadow: inset -3px -3px 6px rgba(184,174,158,0.35), inset 3px 3px 6px rgba(255,255,255,0.55); } .ds-chip:focus-visible { outline: 2px solid #A8472C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The workhorse raised plane. Press swaps the pair — the card never scales; the lighting change is the signal at card size.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card__title\">Bella</h3><p class=\"ds-card__meta\">Dog &middot; Labrador &middot; 3 yrs</p></article>",
+      "css": ".ds-card { width: 280px; padding: 20px; border-radius: 24px; background: #FFFFFF; box-shadow: -6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55); transition: box-shadow 200ms ease-out; cursor: pointer; } .ds-card:hover { box-shadow: -8px -8px 18px rgba(255,255,255,0.9), 8px 8px 18px rgba(184,174,158,0.62); } .ds-card:active { box-shadow: inset -3px -3px 6px rgba(184,174,158,0.35), inset 3px 3px 6px rgba(255,255,255,0.55); } .ds-card__title { margin: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; color: #111111; } .ds-card__meta { margin: 4px 0 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 400; letter-spacing: 0.2px; color: #4A4A4A; }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Floating pill chrome casting one straight-down shadow. The active item sits in a pressed terracotta-tint well with a deep-terracotta glyph.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav__item ds-nav__item--active\" aria-label=\"Home\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3.2 3.5 10.4V21h6v-5.6h5V21h6V10.4L12 3.2Z\"/></svg></button><button class=\"ds-nav__item\" aria-label=\"Bookings\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm11 7H6v10h12V9Z\"/></svg></button><button class=\"ds-nav__item\" aria-label=\"Profile\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 12.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4 0-7.5 2.1-7.5 4.7V21h15v-1.8c0-2.6-3.5-4.7-7.5-4.7Z\"/></svg></button></nav>",
+      "css": ".ds-nav { display: inline-flex; align-items: center; gap: 8px; height: 72px; padding: 0 16px; background: #FFFFFF; border-radius: 999px; box-shadow: 0 10px 28px rgba(122,110,94,0.32); } .ds-nav__item { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 48px; border: none; border-radius: 999px; background: transparent; color: #4A4A4A; cursor: pointer; transition: background 200ms ease-out, color 200ms ease-out, box-shadow 200ms ease-out; } .ds-nav__item svg { width: 24px; height: 24px; fill: currentColor; } .ds-nav__item:hover { color: #2B2B2B; } .ds-nav__item--active { background: #F5E8E0; color: #A8472C; box-shadow: inset -3px -3px 6px rgba(184,174,158,0.30), inset 3px 3px 6px rgba(255,255,255,0.50); } .ds-nav__item:focus-visible { outline: 2px solid #A8472C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Stat Tile",
+      "kind": "custom",
+      "refersTo": "stat-tile",
+      "description": "The clinic pulse unit: icon in a recessed well, the number loudest, the label quietest. Raised, therefore tappable; accent tints appear only on exceptions (waiting > 0, low stock > 0). Unknown values render as a dash, never a fake zero.",
+      "html": "<div class=\"ds-stat\"><span class=\"ds-stat__well\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 2.6 3.5 7v10L12 21.4 20.5 17V7L12 2.6Zm6.8 5.2L12 10.9 5.2 7.8 12 4.5l6.8 3.3ZM5.5 9.6l5.6 2.6v6.6l-5.6-2.6V9.6Zm7.4 9.2v-6.6l5.6-2.6v6.6l-5.6 2.6Z\"/></svg></span><span class=\"ds-stat__value\">3</span><span class=\"ds-stat__label\">Low stock</span></div>",
+      "css": ".ds-stat { display: inline-flex; flex-direction: column; align-items: flex-start; width: 108px; padding: 16px; border-radius: 24px; background: #FFFFFF; box-shadow: -6px -6px 14px rgba(255,255,255,0.85), 6px 6px 14px rgba(184,174,158,0.55); cursor: pointer; transition: box-shadow 200ms ease-out; } .ds-stat:hover { box-shadow: -8px -8px 18px rgba(255,255,255,0.9), 8px 8px 18px rgba(184,174,158,0.62); } .ds-stat:active { box-shadow: inset -3px -3px 6px rgba(184,174,158,0.35), inset 3px 3px 6px rgba(255,255,255,0.55); } .ds-stat__well { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin-bottom: 12px; border-radius: 16px; background: #F1ECE3; color: #A8472C; box-shadow: inset -4px -4px 10px rgba(184,174,158,0.40), inset 4px 4px 10px rgba(255,255,255,0.70); } .ds-stat__well svg { width: 20px; height: 20px; fill: currentColor; } .ds-stat--alert .ds-stat__well { color: #B45309; } .ds-stat__value { margin-bottom: 2px; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.1px; line-height: 1.2; color: #111111; } .ds-stat__label { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 400; letter-spacing: 0.2px; color: #4A4A4A; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Clay Counter",
+    "overview": "CarePaw looks like a surface you could press with a fingertip — soft, warm, and continuous. The whole app is one clay plane lit from the top-left: cards stand proud of a warm bone canvas, input wells sink into it, and nothing floats without casting depth. The visual world is built on two layers that must never fight: organic neumorphism owns surfaces, depth, and controls (dual light/depth extrusion on every plane, wells carved into the canvas), while clinic clarity owns layout, type, and colour (warm bone canvas, generous whitespace, exactly one terracotta accent, data-first density).\n\nThis system is a deliberate revival, re-executed at full strength. An earlier neumorphic attempt failed on dense clinical screens — edges dissolved, contrast turned to mush. That is treated as a calibration problem, not a direction problem: every shadow value is now a token rather than a per-call-site guess, the depth pair is tinted to the canvas hue instead of left neutral grey, and blur runs at roughly twice the distance so highlights fall off like light rather than like a bevel. Contrast is non-negotiable on top of the effect: accent fills and accent ink are separate tokens, and every text role clears AA in both modes.\n\nThe audience is a busy single-clinic operator and pet owners in transit. Screens are phone-first, task-oriented, and read at arm's length at a front desk — so numbers are the loudest element on a dashboard, labels the quietest, and feedback is honest (skeletons, empty states, friendly errors, no silent failures). Motion is budgeted: state changes are shadow swaps and restrained scale, one authored moment per screen, and everything collapses to zero travel when the platform asks for reduced motion.",
+    "keyCharacteristics": [
+      "Dual extrusion on every plane — a top-left light and a bottom-right tinted depth shadow, always as a pair",
+      "Warm bone canvas, terracotta as the only accent, warm charcoal dark mode (never a quick invert)",
+      "Nunito for display/headlines/numerals, the system face for body and controls",
+      "Token-driven: spacing, radius, depth, and motion come from NeuTokens; colors resolve through ThemeColors",
+      "Clay SVG icons as the single icon voice, with Material fallbacks only where the pack has no art",
+      "Edges come from shadows, not borders; hairlines appear only where an edge carries data",
+      "Reduce-motion is a first-class state: NeuMotion collapses kit animations to zero duration"
+    ],
+    "rules": [
+      { "name": "The Text Beats Effect Rule", "body": "Accent read on the canvas uses Deep Terracotta; accent fills carry Umber Ink; status fills carry white in light mode and ink in dark mode; body text steps down the ink scale, never greys invented per screen.", "section": "colors" },
+      { "name": "The Tinted Depth Rule", "body": "Shadows are the canvas hue darkened — Bone Depth (#B8AE9E) and Deep Bone (#7A6E5E) — never neutral grey. A grey shadow on bone reads as dirt.", "section": "colors" },
+      { "name": "The One Warm Accent Rule", "body": "Terracotta appears on <=10% of any given screen. Its rarity is what makes it point.", "section": "colors" },
+      { "name": "The Inherited Colour Rule", "body": "No AppTextStyles getter bakes in a color. Styles resolve colour from the ambient theme (ColorScheme.onSurface), and call sites that need a specific colour go through ThemeColors / *Of(context) helpers — so a heading is black on light and white on dark with zero per-site branching.", "section": "typography" },
+      { "name": "The No-Lone-Shadow Rule", "body": "Never ship one half of the pair on an extruded plane; a single shadow is a sticker, not a surface.", "section": "elevation" },
+      { "name": "The Edge-Carries-Data Rule", "body": "Hairlines are allowed only where the edge itself is information — separators in data rows, focused fields, table dividers. Decorative borders on cards and wells are banned.", "section": "elevation" },
+      { "name": "The One Step Wider Rule", "body": "When adding a new surface, take the nearest radius from the radius table — never invent a value, and never go tighter than radiusSm (16) on an extruded plane.", "section": "shapes" },
+      { "name": "The One Icon Voice Rule", "body": "The user-made clay SVG pack (assets/icons/, rendered by NeuSvgIcon) is the only icon family on shipped surfaces. Multicolor clay art is never tinted with a ColorFilter. Where the pack has no art for a name, ClayIconOrMaterial / optional svgAsset params fall back to Material — a sanctioned exception, not a second style.", "section": "components" }
+    ],
+    "dos": [
+      "Do resolve every colour through ThemeColors (or *Of(context) style helpers) and every gap, radius, and duration through NeuTokens; the tokens are the system.",
+      "Do use Deep Terracotta (#A8472C) for accent text/icons on the canvas and Umber Ink (#2B2118) on terracotta fills; verify each new pairing against the Text Beats Effect Rule.",
+      "Do pair the light and depth shadows on every extruded plane, with blur >= 2x distance.",
+      "Do keep interactive surfaces raised and input surfaces inset; press feedback is the shadow swap (+0.97 scale on buttons/chips only).",
+      "Do give every async surface its three honest states: skeleton, empty state with an action, friendly error with retry — never a dead end or a raw exception string.",
+      "Do test every screen in both light and dark mode; dark mode drops the light source and leans on the depth shadow.",
+      "Do route motion through NeuMotion so reduce-motion collapses it; one authored moment per screen."
+    ],
+    "donts": [
+      "Don't use neutral-grey shadows, cool greys in the palette, or white highlights in dark mode — the depth pair is always tinted to the surface's world.",
+      "Don't bake a color into a text style, or invent a per-screen grey; step down the ink scale instead.",
+      "Don't outline wells, add decorative card borders, or let hairlines appear where no data edge exists.",
+      "Don't scale cards on press, animate layouts with bouncy springs, or run more than the budgeted motion.",
+      "Don't introduce a second accent, a second icon family, or tinted multicolor clay art.",
+      "Don't let the accent exceed its 10% budget, or print fake zeros in place of unknown values.",
+      "Don't let the effect win a contrast fight: if a pairing fails AA, the words change the design, not the other way round."
+    ]
+  }
+}
