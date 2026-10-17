@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
-import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
 import 'package:carepaw/features/inventory/presentation/pages/inventory_form_page.dart';
-import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart';
-import 'package:carepaw/features/inventory/presentation/widgets/transaction_card.dart';
+import 'package:carepaw/features/inventory/presentation/widgets/inventory_detail_sheets.dart';
+import 'package:carepaw/features/inventory/presentation/widgets/inventory_detail_widgets.dart';
+import 'package:carepaw/features/inventory/presentation/widgets/inventory_visuals.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
-import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
 /// Inventory detail page with the CarePaw surface system.
@@ -61,8 +52,6 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final isLowStock = item.isLowStock;
-    final isOutOfStock = item.isOutOfStock;
 
     return Scaffold(
       backgroundColor: _isDark
@@ -70,7 +59,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           : AppColors.background,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(item, isLowStock, isOutOfStock),
+          InventoryDetailHeader(item: item, onDelete: _showDeleteDialog),
           _buildStockOverview(item),
           _buildTabBar(),
           _buildTabContent(),
@@ -86,155 +75,6 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     );
   }
 
-  Widget _buildAppBar(InventoryItem item, bool isLowStock, bool isOutOfStock) {
-    return SliverAppBar(
-      expandedHeight: 200,
-      floating: false,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      scrolledUnderElevation: 0,
-      elevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: NeuIconButton(
-          plain: true,
-          icon: Icons.arrow_back_ios_new_rounded,
-          svgAsset: SvgIcons.back,
-          tooltip: 'Back',
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      actions: [
-        NeuIconButton(
-          plain: true,
-          icon: Icons.delete_outline_rounded,
-          svgAsset: SvgIcons.delete,
-          tooltip: 'Delete item',
-          onPressed: _showDeleteDialog,
-        ),
-        const SizedBox(width: 8),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: NeuContainer(
-                    borderRadius: 18,
-                    variant: NeuVariant.raised,
-                    color: _getCategoryColor(item.category),
-                    boxShadow: NeuShadow.color(
-                      context,
-                      _getCategoryColor(item.category),
-                      blur: 18,
-                      opacity: 0.32,
-                    ),
-                    child: NeuSvgIcon(
-                      _getCategorySvg(item.category),
-                      size: 36,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        item.name,
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: _isDark
-                              ? AppColors.textPrimaryOnDark
-                              : AppColors.textPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.surfaceDarkMode.withValues(
-                                      alpha: 0.9,
-                                    )
-                                  : AppColors.surface.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              item.category.displayName,
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: _getCategoryColor(item.category),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (isOutOfStock)
-                            _buildStatusChip(
-                              'Out of Stock',
-                              _isDark ? AppColors.errorOnDark : AppColors.error,
-                            )
-                          else if (isLowStock)
-                            _buildStatusChip(
-                              'Low Stock',
-                              _isDark
-                                  ? AppColors.warningOnDark
-                                  : AppColors.warning,
-                            )
-                          else
-                            _buildStatusChip(
-                              'In Stock',
-                              _isDark
-                                  ? AppColors.successOnDark
-                                  : AppColors.success,
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
   Widget _buildStockOverview(InventoryItem item) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -242,37 +82,39 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         child: Row(
           children: [
             Expanded(
-              child: _buildStatCard(
-                'Current Stock',
-                formatNumber(item.currentStock),
-                item.unit,
-                _getCategoryColor(item.category),
-                Icons.inventory_2_rounded,
-                SvgIcons.inventory,
+              child: InventoryStatCard(
+                label: 'Current Stock',
+                value: formatNumber(item.currentStock),
+                unit: item.unit,
+                color: inventoryCategoryColor(item.category),
+                icon: Icons.inventory_2_rounded,
+                svgAsset: SvgIcons.inventory,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildStatCard(
-                'Minimum',
-                formatNumber(item.minStock),
-                item.unit,
-                _isDark ? AppColors.warningOnDark : AppColors.warning,
-                Icons.warning_amber_rounded,
-                SvgIcons.alert,
+              child: InventoryStatCard(
+                label: 'Minimum',
+                value: formatNumber(item.minStock),
+                unit: item.unit,
+                color: _isDark ? AppColors.warningOnDark : AppColors.warning,
+                icon: Icons.warning_amber_rounded,
+                svgAsset: SvgIcons.alert,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildStatCard(
-                item.maxStock != null ? 'Maximum' : 'No Max',
-                item.maxStock != null ? formatNumber(item.maxStock!) : '-',
-                item.unit,
-                Theme.of(context).brightness == Brightness.dark
+              child: InventoryStatCard(
+                label: item.maxStock != null ? 'Maximum' : 'No Max',
+                value: item.maxStock != null
+                    ? formatNumber(item.maxStock!)
+                    : '-',
+                unit: item.unit,
+                color: Theme.of(context).brightness == Brightness.dark
                     ? AppColors.infoDark
                     : AppColors.info,
-                Icons.flag_rounded,
-                SvgIcons.flag,
+                icon: Icons.flag_rounded,
+                svgAsset: SvgIcons.flag,
               ),
             ),
           ],
@@ -281,73 +123,13 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     );
   }
 
-  Widget _buildStatCard(
-    String label,
-    String value,
-    String unit,
-    Color color,
-    IconData icon,
-    String? svgAsset,
-  ) {
-    return NeuContainer(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
-      variant: NeuVariant.raised,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(8),
-                borderRadius: 10,
-                variant: NeuVariant.raised,
-                color: color.withValues(alpha: 0.1),
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset, size: 20)
-                    : Icon(icon, size: 20, color: color),
-              ),
-              const Spacer(),
-              Text(
-                label,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: _isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: AppTextStyles.headlineSmall.copyWith(
-              fontWeight: FontWeight.w800,
-              color: _isDark
-                  ? AppColors.textPrimaryOnDark
-                  : AppColors.textPrimary,
-            ),
-          ),
-          Text(
-            unit,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: _isDark
-                  ? AppColors.textSecondaryOnDark
-                  : AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTabBar() {
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _NeuTabBarDelegate(
+      delegate: InventoryTabBarDelegate(
         tabController: _tabController,
         tabs: const ['Batches', 'Expiring', 'Transactions'],
-        color: _getCategoryColor(widget.item.category),
+        color: inventoryCategoryColor(widget.item.category),
       ),
     );
   }
@@ -357,619 +139,35 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       child: TabBarView(
         controller: _tabController,
         children: [
-          _buildBatchesTab(),
-          _buildExpiringTab(),
-          _buildTransactionsTab(),
+          InventoryBatchesTab(
+            item: widget.item,
+            onBatchTap: _showBatchDetail,
+            onEditBatch: _editBatch,
+            onTransaction: _showTransactionDialog,
+            onAddBatch: _showAddBatchDialog,
+          ),
+          InventoryExpiringTab(item: widget.item, onBatchTap: _showBatchDetail),
+          InventoryTransactionsTab(item: widget.item),
         ],
       ),
-    );
-  }
-
-  Widget _buildBatchesTab() {
-    return BlocBuilder<InventoryBloc, InventoryState>(
-      builder: (context, state) {
-        if (state is ItemBatchesLoaded && state.itemId == widget.item.id) {
-          final batches = state.batches;
-          if (batches.isEmpty) {
-            return _EmptyState(
-              svgAsset: SvgIcons.barcode,
-              title: 'No Batches',
-              message:
-                  'Add batches to track inventory lots and expiration dates',
-              actionLabel: 'Add Batch',
-              onAction: _showAddBatchDialog,
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: batches.length,
-            itemBuilder: (context, index) {
-              final batch = batches[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: BatchCard(
-                  batch: batch,
-                  item: widget.item,
-                  onTap: () => _showBatchDetail(batch),
-                  onEdit: () => _editBatch(batch),
-                  onTransaction: () => _showTransactionDialog(batch),
-                ),
-              );
-            },
-          );
-        }
-        if (state is InventoryLoading) {
-          return const NeuSkeletonDetail(blocks: 4);
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _buildExpiringTab() {
-    return BlocBuilder<InventoryBloc, InventoryState>(
-      builder: (context, state) {
-        if (state is ExpiringBatchesLoaded) {
-          final batches = state.batches
-              .where((b) => b.inventoryId == widget.item.id)
-              .toList();
-          if (batches.isEmpty) {
-            return _EmptyState(
-              svgAsset: SvgIcons.eventAvailable,
-              title: 'No Expiring Batches',
-              message: 'All batches have sufficient shelf life',
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: batches.length,
-            itemBuilder: (context, index) {
-              final batch = batches[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: BatchCard(
-                  batch: batch,
-                  item: widget.item,
-                  highlightExpiry: true,
-                  onTap: () => _showBatchDetail(batch),
-                ),
-              );
-            },
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _buildTransactionsTab() {
-    return BlocBuilder<InventoryBloc, InventoryState>(
-      builder: (context, state) {
-        if (state is ItemBatchesLoaded && state.itemId == widget.item.id) {
-          // Get all transactions for all batches
-          final allTransactions = <InventoryTransaction>[];
-          for (final batch in state.batches) {
-            context.read<InventoryBloc>().add(LoadBatchTransactions(batch.id!));
-          }
-          if (allTransactions.isEmpty) {
-            return _EmptyState(
-              svgAsset: SvgIcons.receipt,
-              title: 'No Transactions',
-              message: 'Transaction history will appear here',
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: allTransactions.length,
-            itemBuilder: (context, index) {
-              final transaction = allTransactions[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TransactionCard(transaction: transaction),
-              );
-            },
-          );
-        }
-        return const SizedBox.shrink();
-      },
     );
   }
 
   void _showBatchDetail(InventoryBatch batch) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => NeuContainer(
-        margin: const EdgeInsets.all(20),
-        borderRadius: 24,
-        variant: NeuVariant.raised,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: NeuContainer(
-                    borderRadius: 14,
-                    variant: NeuVariant.raised,
-                    color: _getCategoryColor(widget.item.category),
-                    boxShadow: NeuShadow.color(
-                      context,
-                      _getCategoryColor(widget.item.category),
-                      blur: 14,
-                      opacity: 0.3,
-                    ),
-                    child: NeuSvgIcon(
-                      _getCategorySvg(widget.item.category),
-                      size: 28,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Batch Details',
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: _isDark
-                              ? AppColors.textPrimaryOnDark
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        batch.batchNumber,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: _isDark
-                              ? AppColors.textSecondaryOnDark
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (batch.isExpired)
-                  _buildStatusChip(
-                    'Expired',
-                    _isDark ? AppColors.errorOnDark : AppColors.error,
-                  )
-                else if (batch.isExpiringSoon)
-                  _buildStatusChip(
-                    'Expiring Soon',
-                    _isDark ? AppColors.warningOnDark : AppColors.warning,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildDetailRow(
-              'Quantity',
-              '${formatNumber(batch.quantity)} ${widget.item.unit}',
-            ),
-            _buildDetailRow('Received', formatDate(batch.receivedAt)),
-            if (batch.expiresAt != null)
-              _buildDetailRow('Expires', formatDate(batch.expiresAt!)),
-            if (batch.costPerUnit != null)
-              _buildDetailRow('Cost/Unit', formatCurrency(batch.costPerUnit!)),
-            if (batch.supplier != null)
-              _buildDetailRow('Supplier', batch.supplier!),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: NeuButton(
-                    text: 'Close',
-                    variant: NeuButtonVariant.secondary,
-                    onPressed: () => Navigator.pop(context),
-                    expanded: true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: NeuButton(
-                    text: 'Add Transaction',
-                    variant: NeuButtonVariant.primary,
-                    icon: Icons.add_rounded,
-                    svgAsset: SvgIcons.add,
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _showTransactionDialog(batch);
-                    },
-                    expanded: true,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: _isDark
-                    ? AppColors.textSecondaryOnDark
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: _isDark
-                    ? AppColors.textPrimaryOnDark
-                    : AppColors.textPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
+    showBatchDetailSheet(
+      context,
+      item: widget.item,
+      batch: batch,
+      onAddTransaction: () => _showTransactionDialog(batch),
     );
   }
 
   void _showTransactionDialog(InventoryBatch batch) {
-    final quantityController = TextEditingController();
-    final reasonController = TextEditingController();
-    final notesController = TextEditingController();
-    TransactionType selectedType = TransactionType.in_;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => NeuContainer(
-          margin: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            top: 20,
-          ),
-          borderRadius: 24,
-          variant: NeuVariant.raised,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Record Transaction',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: _isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Batch: ${batch.batchNumber}',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: _isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: TransactionType.values.map((type) {
-                  final isSelected = selectedType == type;
-                  return NeuChip(
-                    label: type.displayName,
-                    svgAsset: _getTransactionSvg(type),
-                    selected: isSelected,
-                    selectedColor: _getCategoryColor(widget.item.category),
-                    onTap: () => setState(() => selectedType = type),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              NeuTextField(
-                controller: quantityController,
-                hint: 'Quantity',
-                keyboardType: TextInputType.number,
-                prefixIcon: NeuSvgIcon(SvgIcons.numbers, size: 20),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 12),
-              NeuTextField(
-                controller: reasonController,
-                hint: 'Reason (e.g., Restock, Sale, Adjustment)',
-                prefixIcon: NeuSvgIcon(SvgIcons.note, size: 20),
-              ),
-              const SizedBox(height: 12),
-              NeuTextField(
-                controller: notesController,
-                hint: 'Notes (optional)',
-                prefixIcon: NeuSvgIcon(SvgIcons.note, size: 20),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: NeuButton(
-                      text: 'Cancel',
-                      variant: NeuButtonVariant.ghost,
-                      onPressed: () => Navigator.pop(context),
-                      expanded: true,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: NeuButton(
-                      text: 'Record',
-                      variant: NeuButtonVariant.primary,
-                      icon: Icons.save_rounded,
-                      svgAsset: SvgIcons.save,
-                      onPressed: () {
-                        final quantity = double.tryParse(
-                          quantityController.text,
-                        );
-                        if (quantity == null || quantity <= 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Please enter a valid quantity',
-                              ),
-                              backgroundColor: ThemeColors.error(context),
-                            ),
-                          );
-                          return;
-                        }
-                        Navigator.pop(context);
-                        _recordTransaction(
-                          batch,
-                          selectedType,
-                          quantity,
-                          reasonController.text.trim(),
-                          notesController.text.trim().isEmpty
-                              ? null
-                              : notesController.text.trim(),
-                        );
-                      },
-                      expanded: true,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _recordTransaction(
-    InventoryBatch batch,
-    TransactionType type,
-    double quantity,
-    String reason,
-    String? notes,
-  ) {
-    final userId = 1; // TODO: Get from auth state
-    switch (type) {
-      case TransactionType.in_:
-        context.read<InventoryBloc>().add(
-          CreateStockInTransaction(
-            batchId: batch.id!,
-            quantity: quantity,
-            reason: reason,
-            performedBy: userId,
-            notes: notes,
-          ),
-        );
-        break;
-      case TransactionType.out:
-        context.read<InventoryBloc>().add(
-          CreateStockOutTransaction(
-            batchId: batch.id!,
-            quantity: quantity,
-            reason: reason,
-            performedBy: userId,
-            notes: notes,
-          ),
-        );
-        break;
-      case TransactionType.adjustment:
-        context.read<InventoryBloc>().add(
-          CreateAdjustmentTransaction(
-            batchId: batch.id!,
-            quantityChange: quantity,
-            reason: reason,
-            performedBy: userId,
-            notes: notes,
-          ),
-        );
-        break;
-    }
+    showTransactionSheet(context, item: widget.item, batch: batch);
   }
 
   void _showAddBatchDialog() {
-    final batchNumberController = TextEditingController();
-    final quantityController = TextEditingController();
-    final costController = TextEditingController();
-    final supplierController = TextEditingController();
-    DateTime? expiryDate;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => NeuContainer(
-          margin: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            top: 20,
-          ),
-          borderRadius: 24,
-          variant: NeuVariant.raised,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Add New Batch',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: _isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              NeuTextField(
-                controller: batchNumberController,
-                hint: 'Batch Number',
-                prefixIcon: NeuSvgIcon(SvgIcons.ticket, size: 20),
-              ),
-              const SizedBox(height: 12),
-              NeuTextField(
-                controller: quantityController,
-                hint: 'Quantity',
-                keyboardType: TextInputType.number,
-                prefixIcon: NeuSvgIcon(SvgIcons.numbers, size: 20),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 12),
-              NeuTextField(
-                controller: costController,
-                hint: 'Cost per Unit (optional)',
-                keyboardType: TextInputType.number,
-                prefixIcon: NeuSvgIcon(SvgIcons.money, size: 20),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                ],
-              ),
-              const SizedBox(height: 12),
-              NeuTextField(
-                controller: supplierController,
-                hint: 'Supplier (optional)',
-                prefixIcon: NeuSvgIcon(SvgIcons.truck, size: 20),
-              ),
-              const SizedBox(height: 12),
-              NeuTextField(
-                readOnly: true,
-                onTap: () async {
-                  final date = await NeuDialog.show<DateTime?>(
-                    context: context,
-                    title: 'Select Expiry Date',
-                    content: SizedBox(
-                      height: 300,
-                      child: CalendarDatePicker(
-                        initialDate: DateTime.now().add(
-                          const Duration(days: 365),
-                        ),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(
-                          const Duration(days: 3650),
-                        ),
-                        onDateChanged: (date) => Navigator.pop(context, date),
-                      ),
-                    ),
-                    actions: [
-                      NeuButton(
-                        text: 'Cancel',
-                        variant: NeuButtonVariant.ghost,
-                        onPressed: () => Navigator.pop(context),
-                        expanded: true,
-                      ),
-                    ],
-                  );
-                  if (date != null) {
-                    setState(() => expiryDate = date);
-                  }
-                },
-                hint: expiryDate != null
-                    ? 'Expiry: ${formatDate(expiryDate!)}'
-                    : 'Set Expiry Date (optional)',
-                prefixIcon: NeuSvgIcon(SvgIcons.calendar, size: 20),
-                suffixIcon: NeuSvgIcon(SvgIcons.chevronDown, size: 24),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: NeuButton(
-                      text: 'Cancel',
-                      variant: NeuButtonVariant.ghost,
-                      onPressed: () => Navigator.pop(context),
-                      expanded: true,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: NeuButton(
-                      text: 'Add Batch',
-                      variant: NeuButtonVariant.primary,
-                      icon: Icons.add_rounded,
-                      svgAsset: SvgIcons.add,
-                      onPressed: () {
-                        final batchNumber = batchNumberController.text.trim();
-                        final quantity = double.tryParse(
-                          quantityController.text,
-                        );
-                        final cost = costController.text.isEmpty
-                            ? null
-                            : double.tryParse(costController.text);
-                        if (batchNumber.isEmpty || quantity == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Please fill required fields',
-                              ),
-                              backgroundColor: ThemeColors.error(context),
-                            ),
-                          );
-                          return;
-                        }
-                        Navigator.pop(context);
-                        context.read<InventoryBloc>().add(
-                          CreateBatch(
-                            inventoryId: widget.item.id!,
-                            batchNumber: batchNumber,
-                            quantity: quantity,
-                            receivedAt: DateTime.now(),
-                            expiresAt: expiryDate,
-                            costPerUnit: cost,
-                            supplier: supplierController.text.trim().isEmpty
-                                ? null
-                                : supplierController.text.trim(),
-                          ),
-                        );
-                      },
-                      expanded: true,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    showAddBatchSheet(context, item: widget.item);
   }
 
   void _editBatch(InventoryBatch batch) {
@@ -1007,186 +205,5 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         // TODO: Implement delete
       }
     });
-  }
-
-  Color _getCategoryColor(InventoryCategory category) {
-    switch (category) {
-      case InventoryCategory.medicine:
-        return AppColors.categoryMedicine;
-      case InventoryCategory.vaccine:
-        return AppColors.categoryVaccine;
-      case InventoryCategory.supply:
-        return AppColors.categorySupply;
-      case InventoryCategory.equipment:
-        return AppColors.categoryEquipment;
-      case InventoryCategory.food:
-        return AppColors.categoryFood;
-    }
-  }
-
-  String _getCategorySvg(InventoryCategory category) {
-    switch (category) {
-      case InventoryCategory.medicine:
-        return SvgIcons.medication;
-      case InventoryCategory.vaccine:
-        return SvgIcons.vaccination;
-      case InventoryCategory.supply:
-        return SvgIcons.inventory;
-      case InventoryCategory.equipment:
-        return SvgIcons.microscope;
-      case InventoryCategory.food:
-        return SvgIcons.foodBowl;
-    }
-  }
-
-  String _getTransactionSvg(TransactionType type) {
-    switch (type) {
-      case TransactionType.in_:
-        return SvgIcons.add;
-      case TransactionType.out:
-        return SvgIcons.remove;
-      case TransactionType.adjustment:
-        return SvgIcons.filter;
-    }
-  }
-}
-
-class _NeuTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabController tabController;
-  final List<String> tabs;
-  final Color color;
-
-  _NeuTabBarDelegate({
-    required this.tabController,
-    required this.tabs,
-    required this.color,
-  });
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      color: isDark
-          ? AppColors.surfaceDarkMode.withValues(alpha: 0.95)
-          : AppColors.surface.withValues(alpha: 0.95),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        child: Row(
-          children: tabs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final label = entry.value;
-            final isSelected = tabController.index == index;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: NeuChip(
-                  label: label,
-                  selected: isSelected,
-                  selectedColor: color,
-                  onTap: () => tabController.animateTo(index),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  @override
-  double get maxExtent => 64;
-
-  @override
-  double get minExtent => 64;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
-  }
-}
-
-/// Empty state shown when an inventory tab has no content.
-class _EmptyState extends StatelessWidget {
-  final String? svgAsset;
-  final String title;
-  final String message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  const _EmptyState({
-    this.svgAsset,
-    required this.title,
-    required this.message,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        child: NeuCard(
-          borderRadius: 20,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NeuContainer(
-                borderRadius: 90,
-                padding: const EdgeInsets.all(22),
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(
-                  context,
-                  AppColors.primary,
-                  blur: 24,
-                  opacity: 0.32,
-                ),
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset!, size: 48)
-                    : const SizedBox(width: 48, height: 48),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                title,
-                style: AppTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 20),
-                NeuButton(
-                  text: actionLabel!,
-                  onPressed: onAction,
-                  variant: NeuButtonVariant.primary,
-                  size: NeuButtonSize.medium,
-                  icon: Icons.add_rounded,
-                  svgAsset: SvgIcons.add,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
