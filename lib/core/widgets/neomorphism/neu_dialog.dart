@@ -79,36 +79,44 @@ class NeuDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolvedPadding = style?.padding ?? contentPadding;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth!),
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: ThemeColors.surface(context),
-            shape: RoundedRectangleBorder(borderRadius: NeuShape.panel),
-            shadows: NeuShadow.floating(context),
-          ),
-          child: Padding(
-            padding: resolvedPadding,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (title != null) ...[
-                  Text(title!, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
+    // Lift the dialog above the keyboard (the shell is not a Material Dialog,
+    // so nothing else applies the IME inset), and let tall content scroll
+    // instead of overflowing when space runs out.
+    return AnimatedPadding(
+      padding: MediaQuery.viewInsetsOf(context),
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.decelerate,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth!),
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              color: ThemeColors.surface(context),
+              shape: RoundedRectangleBorder(borderRadius: NeuShape.panel),
+              shadows: NeuShadow.floating(context),
+            ),
+            child: Padding(
+              padding: resolvedPadding,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (title != null) ...[
+                    Text(title!, style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 16),
+                  ],
+                  if (content != null) ...[
+                    Flexible(child: SingleChildScrollView(child: content!)),
+                    const SizedBox(height: 24),
+                  ],
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: actions,
+                  ),
                 ],
-                if (content != null) ...[
-                  Flexible(child: content!),
-                  const SizedBox(height: 24),
-                ],
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: actions,
-                ),
-              ],
+              ),
             ),
           ),
         ),
