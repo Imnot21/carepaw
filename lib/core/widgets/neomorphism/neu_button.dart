@@ -259,7 +259,7 @@ class _NeuButtonState extends State<NeuButton> {
           blurRadius: blur,
         ),
         BoxShadow(
-          color: const Color(0xFF000000).withValues(alpha: 0.42 * strength),
+          color: AppColors.shadowDepthDark.withValues(alpha: 0.42 * strength),
           offset: Offset(distance, distance),
           blurRadius: blur,
         ),

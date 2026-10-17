@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../app/theme/app_colors.dart';
 
 /// Custom neumorphic icon system with handcrafted paths.
 ///
@@ -121,7 +122,7 @@ class _IconPainter extends CustomPainter {
   Color _resolveIconColor(Size size) {
     // Will be overridden by parent widget if needed
     // Default fallback for standalone use
-    return const Color(0xFF1A1A1A);
+    return AppColors.textPrimary;
   }
 
   @override
@@ -199,28 +200,36 @@ Path _home(double scale) {
 Path _pawPrint(double scale) {
   final p = Path();
   // Center pad
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 16),
-    width: scale * 6,
-    height: scale * 6,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 16),
+      width: scale * 6,
+      height: scale * 6,
+    ),
+  );
   // Toes
   final toeR = scale * 2;
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 6, scale * 10),
-    width: toeR * 2,
-    height: toeR * 2,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 6),
-    width: toeR * 2,
-    height: toeR * 2,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 18, scale * 10),
-    width: toeR * 2,
-    height: toeR * 2,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 6, scale * 10),
+      width: toeR * 2,
+      height: toeR * 2,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 6),
+      width: toeR * 2,
+      height: toeR * 2,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 18, scale * 10),
+      width: toeR * 2,
+      height: toeR * 2,
+    ),
+  );
   return p;
 }
 
@@ -231,38 +240,50 @@ Path _calendar(double scale) {
   // Header
   p.addRect(Rect.fromLTWH(scale * 4, scale * 8, scale * 16, scale * 6));
   // Dots
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 8, scale * 11),
-    width: scale * 2,
-    height: scale * 2,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 11),
-    width: scale * 2,
-    height: scale * 2,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 16, scale * 11),
-    width: scale * 2,
-    height: scale * 2,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 8, scale * 11),
+      width: scale * 2,
+      height: scale * 2,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 11),
+      width: scale * 2,
+      height: scale * 2,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 16, scale * 11),
+      width: scale * 2,
+      height: scale * 2,
+    ),
+  );
   return p;
 }
 
 Path _bell(double scale) {
   final p = Path();
   // Bell body
-  p.addArc(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 14),
-    width: scale * 8,
-    height: scale * 8,
-  ), -1.1, 2.2);
+  p.addArc(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 14),
+      width: scale * 8,
+      height: scale * 8,
+    ),
+    -1.1,
+    2.2,
+  );
   // Clapper
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 20),
-    width: scale * 3,
-    height: scale * 3,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 20),
+      width: scale * 3,
+      height: scale * 3,
+    ),
+  );
   // Handle
   p.moveTo(scale * 10, scale * 8);
   p.lineTo(scale * 14, scale * 8);
@@ -272,11 +293,13 @@ Path _bell(double scale) {
 Path _user(double scale) {
   final p = Path();
   // Head
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 7),
-    width: scale * 8,
-    height: scale * 8,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 7),
+      width: scale * 8,
+      height: scale * 8,
+    ),
+  );
   // Body
   p.moveTo(scale * 6, scale * 15);
   p.lineTo(scale * 18, scale * 15);
@@ -290,44 +313,54 @@ Path _user(double scale) {
 Path _dogFace(double scale) {
   final p = Path();
   // Face
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 11),
-    width: scale * 14,
-    height: scale * 10,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 11),
+      width: scale * 14,
+      height: scale * 10,
+    ),
+  );
   // Ears
   p.moveTo(scale * 5, scale * 6);
   p.quadraticBezierTo(scale * 2, scale * 2, scale * 4, scale * 8);
   p.moveTo(scale * 19, scale * 6);
   p.quadraticBezierTo(scale * 22, scale * 2, scale * 20, scale * 8);
   // Nose
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 13),
-    width: scale * 3,
-    height: scale * 3,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 13),
+      width: scale * 3,
+      height: scale * 3,
+    ),
+  );
   // Eyes
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 8, scale * 9),
-    width: scale * 2,
-    height: scale * 2,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 16, scale * 9),
-    width: scale * 2,
-    height: scale * 2,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 8, scale * 9),
+      width: scale * 2,
+      height: scale * 2,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 16, scale * 9),
+      width: scale * 2,
+      height: scale * 2,
+    ),
+  );
   return p;
 }
 
 Path _catFace(double scale) {
   final p = Path();
   // Face
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 12),
-    width: scale * 12,
-    height: scale * 10,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 12),
+      width: scale * 12,
+      height: scale * 10,
+    ),
+  );
   // Ears (triangles)
   p.moveTo(scale * 7, scale * 4);
   p.lineTo(scale * 3, scale * 10);
@@ -349,27 +382,33 @@ Path _catFace(double scale) {
   p.moveTo(scale * 20, scale * 14);
   p.lineTo(scale * 22, scale * 15);
   // Eyes
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 8, scale * 10),
-    width: scale * 2,
-    height: scale * 3,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 16, scale * 10),
-    width: scale * 2,
-    height: scale * 3,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 8, scale * 10),
+      width: scale * 2,
+      height: scale * 3,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 16, scale * 10),
+      width: scale * 2,
+      height: scale * 3,
+    ),
+  );
   return p;
 }
 
 Path _bird(double scale) {
   final p = Path();
   // Body
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 14),
-    width: scale * 10,
-    height: scale * 7,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 14),
+      width: scale * 10,
+      height: scale * 7,
+    ),
+  );
   // Head
   p.moveTo(scale * 8, scale * 13);
   p.quadraticBezierTo(scale * 4, scale * 11, scale * 4, scale * 9);
@@ -394,23 +433,29 @@ Path _rabbit(double scale) {
   p.lineTo(scale * 19, scale * 14);
   p.lineTo(scale * 15, scale * 14);
   // Head
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 11),
-    width: scale * 8,
-    height: scale * 7,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 11),
+      width: scale * 8,
+      height: scale * 7,
+    ),
+  );
   // Body
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 18),
-    width: scale * 10,
-    height: scale * 6,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 18),
+      width: scale * 10,
+      height: scale * 6,
+    ),
+  );
   // Nose
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 7),
-    width: scale * 2,
-    height: scale * 1.5,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 7),
+      width: scale * 2,
+      height: scale * 1.5,
+    ),
+  );
   return p;
 }
 
@@ -425,11 +470,13 @@ Path _lizard(double scale) {
   p.lineTo(scale * 8, scale * 20);
   p.close();
   // Head
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 6, scale * 12),
-    width: scale * 5,
-    height: scale * 5,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 6, scale * 12),
+      width: scale * 5,
+      height: scale * 5,
+    ),
+  );
   return p;
 }
 
@@ -438,16 +485,20 @@ Path _lizard(double scale) {
 Path _stethoscope(double scale) {
   final p = Path();
   // Chest piece
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 7, scale * 10),
-    width: scale * 6,
-    height: scale * 6,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 17, scale * 10),
-    width: scale * 6,
-    height: scale * 6,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 7, scale * 10),
+      width: scale * 6,
+      height: scale * 6,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 17, scale * 10),
+      width: scale * 6,
+      height: scale * 6,
+    ),
+  );
   // Tube
   p.moveTo(scale * 10, scale * 13);
   p.quadraticBezierTo(scale * 12, scale * 18, scale * 14, scale * 13);
@@ -481,11 +532,13 @@ Path _syringe(double scale) {
 
 Path _pill(double scale) {
   final p = Path();
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 12),
-    width: scale * 14,
-    height: scale * 8,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 12),
+      width: scale * 14,
+      height: scale * 8,
+    ),
+  );
   // Half division
   p.moveTo(scale * 4, scale * 12);
   p.lineTo(scale * 20, scale * 12);
@@ -557,11 +610,13 @@ Path _alert(double scale) {
   // Exclamation
   p.moveTo(scale * 12, scale * 12);
   p.lineTo(scale * 12, scale * 16);
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 19),
-    width: scale * 1.5,
-    height: scale * 1.5,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 19),
+      width: scale * 1.5,
+      height: scale * 1.5,
+    ),
+  );
   return p;
 }
 
@@ -605,11 +660,13 @@ Path _trash(double scale) {
 
 Path _checkCircle(double scale) {
   final p = Path();
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 12),
-    width: scale * 16,
-    height: scale * 16,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 12),
+      width: scale * 16,
+      height: scale * 16,
+    ),
+  );
   p.moveTo(scale * 8, scale * 12);
   p.lineTo(scale * 11, scale * 15);
   p.lineTo(scale * 17, scale * 9);
@@ -626,44 +683,58 @@ Path _chevronLeft(double scale) {
 
 Path _dots(double scale) {
   final p = Path();
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 8, scale * 12),
-    width: scale * 3,
-    height: scale * 3,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 12),
-    width: scale * 3,
-    height: scale * 3,
-  ));
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 16, scale * 12),
-    width: scale * 3,
-    height: scale * 3,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 8, scale * 12),
+      width: scale * 3,
+      height: scale * 3,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 12),
+      width: scale * 3,
+      height: scale * 3,
+    ),
+  );
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 16, scale * 12),
+      width: scale * 3,
+      height: scale * 3,
+    ),
+  );
   return p;
 }
 
 Path _refresh(double scale) {
   final p = Path();
   p.moveTo(scale * 12, scale * 6);
-  p.arcToPoint(Offset(scale * 6, scale * 12),
-      radius: Radius.circular(scale * 6), clockwise: false);
+  p.arcToPoint(
+    Offset(scale * 6, scale * 12),
+    radius: Radius.circular(scale * 6),
+    clockwise: false,
+  );
   p.lineTo(scale * 6, scale * 12);
   p.moveTo(scale * 12, scale * 18);
-  p.arcToPoint(Offset(scale * 18, scale * 12),
-      radius: Radius.circular(scale * 6), clockwise: true);
+  p.arcToPoint(
+    Offset(scale * 18, scale * 12),
+    radius: Radius.circular(scale * 6),
+    clockwise: true,
+  );
   p.lineTo(scale * 18, scale * 12);
   return p;
 }
 
 Path _search(double scale) {
   final p = Path();
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 10, scale * 10),
-    width: scale * 8,
-    height: scale * 8,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 10, scale * 10),
+      width: scale * 8,
+      height: scale * 8,
+    ),
+  );
   p.moveTo(scale * 16, scale * 16);
   p.lineTo(scale * 22, scale * 22);
   return p;
@@ -685,11 +756,13 @@ Path _filter(double scale) {
 Path _gear(double scale) {
   final p = Path();
   // Simplified gear
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 12),
-    width: scale * 10,
-    height: scale * 10,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 12),
+      width: scale * 10,
+      height: scale * 10,
+    ),
+  );
   // Teeth (simplified)
   p.moveTo(scale * 12, scale * 4);
   p.lineTo(scale * 12, scale * 2);
@@ -731,11 +804,13 @@ Path _x(double scale) {
 
 Path _info(double scale) {
   final p = Path();
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 11),
-    width: scale * 10,
-    height: scale * 10,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 11),
+      width: scale * 10,
+      height: scale * 10,
+    ),
+  );
   p.moveTo(scale * 12, scale * 7);
   p.lineTo(scale * 12, scale * 10);
   p.moveTo(scale * 12, scale * 13);
@@ -751,21 +826,25 @@ Path _warning(double scale) {
   p.close();
   p.moveTo(scale * 12, scale * 11);
   p.lineTo(scale * 12, scale * 15);
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 18),
-    width: scale * 2,
-    height: scale * 2,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 18),
+      width: scale * 2,
+      height: scale * 2,
+    ),
+  );
   return p;
 }
 
 Path _xCircle(double scale) {
   final p = Path();
-  p.addOval(Rect.fromCenter(
-    center: Offset(scale * 12, scale * 12),
-    width: scale * 16,
-    height: scale * 16,
-  ));
+  p.addOval(
+    Rect.fromCenter(
+      center: Offset(scale * 12, scale * 12),
+      width: scale * 16,
+      height: scale * 16,
+    ),
+  );
   p.moveTo(scale * 8, scale * 8);
   p.lineTo(scale * 16, scale * 16);
   p.moveTo(scale * 16, scale * 8);

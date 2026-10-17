@@ -149,7 +149,7 @@ class NeuAvatar extends StatelessWidget {
           blurRadius: blur,
         ),
         BoxShadow(
-          color: const Color(0xFF000000).withValues(alpha: 0.46),
+          color: AppColors.shadowDepthDark.withValues(alpha: 0.46),
           offset: Offset(distance, distance),
           blurRadius: blur,
         ),

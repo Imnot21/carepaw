@@ -39,7 +39,7 @@ class AppTheme {
       surfaceContainerHighest: AppColors.surfaceContainerHighest,
       outline: AppColors.border,
       outlineVariant: AppColors.divider,
-      shadow: Color(0xFF7A6E5E),
+      shadow: AppColors.shadowFloating,
       inverseSurface: AppColors.textPrimary,
       onInverseSurface: AppColors.background,
       inversePrimary: AppColors.primaryLight,
@@ -124,7 +124,10 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
-          borderSide: const BorderSide(color: AppColors.primaryText, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.primaryText,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
@@ -224,7 +227,7 @@ class AppTheme {
     const scheme = ColorScheme.dark(
       primary: AppColors.primaryOnDark,
       onPrimary: Color(0xFF1C1917),
-      primaryContainer: Color(0xFF3A2A26),
+      primaryContainer: AppColors.primaryTintOnDark,
       onPrimaryContainer: AppColors.primaryLight,
       secondary: AppColors.textSecondaryOnDark,
       onSecondary: Color(0xFF1C1917),
@@ -244,7 +247,7 @@ class AppTheme {
       surfaceContainerHighest: Color(0xFF3D3937),
       outline: AppColors.borderDark,
       outlineVariant: AppColors.dividerDark,
-      shadow: Color(0xFF000000),
+      shadow: AppColors.shadowDepthDark,
       inverseSurface: AppColors.textPrimaryOnDark,
       onInverseSurface: AppColors.backgroundDark,
       inversePrimary: AppColors.primaryLight,

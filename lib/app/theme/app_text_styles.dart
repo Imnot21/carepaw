@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'theme_colors.dart';
+import 'app_colors.dart';
 
 /// CarePaw typography — warm humanist display voice, quiet system body.
 ///
@@ -23,21 +23,24 @@ class AppTextStyles {
 
   // ============ Display (Nunito — rounded, organic) ============
 
-  static TextStyle get displayLarge => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get displayLarge => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.15,
   );
 
-  static TextStyle get displayMedium => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get displayMedium => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
     height: 1.2,
   );
 
-  static TextStyle get displaySmall => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get displaySmall => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
@@ -46,21 +49,24 @@ class AppTextStyles {
 
   // ============ Headline (Nunito) ============
 
-  static TextStyle get headlineLarge => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get headlineLarge => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
     height: 1.25,
   );
 
-  static TextStyle get headlineMedium => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get headlineMedium => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.1,
     height: 1.3,
   );
 
-  static TextStyle get headlineSmall => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get headlineSmall => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
@@ -138,7 +144,8 @@ class AppTextStyles {
 
   // ============ Specialized ============
 
-  static TextStyle get appBarTitle => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get appBarTitle => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
@@ -173,14 +180,16 @@ class AppTextStyles {
     height: 1.43,
   );
 
-  static TextStyle get numberLarge => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get numberLarge => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
     height: 1.1,
   );
 
-  static TextStyle get numberMedium => TextStyle(fontFamily: 'Nunito', 
+  static TextStyle get numberMedium => TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.1,
@@ -245,43 +254,43 @@ class AppTextStyles {
   static TextStyle primaryAt(Brightness brightness, TextStyle style) =>
       style.copyWith(
         color: brightness == Brightness.dark
-            ? const Color(0xFFF0927A)
-            : const Color(0xFFE27D60),
+            ? AppColors.primaryOnDark
+            : AppColors.primary,
       );
 
   static TextStyle secondaryAt(Brightness brightness, TextStyle style) =>
       style.copyWith(
         color: brightness == Brightness.dark
-            ? const Color(0xFFE5E7EB)
-            : const Color(0xFF2B2B2B),
+            ? AppColors.textSecondaryOnDark
+            : AppColors.textSecondary,
       );
 
   static TextStyle tertiaryAt(Brightness brightness, TextStyle style) =>
       style.copyWith(
         color: brightness == Brightness.dark
-            ? const Color(0xFFD1D5DB)
-            : const Color(0xFF4A4A4A),
+            ? AppColors.textTertiaryOnDark
+            : AppColors.textTertiary,
       );
 
   static TextStyle successAt(Brightness brightness, TextStyle style) =>
       style.copyWith(
         color: brightness == Brightness.dark
-            ? const Color(0xFF4ADE80)
-            : const Color(0xFF16A34A),
+            ? AppColors.successOnDark
+            : AppColors.success,
       );
 
   static TextStyle errorAt(Brightness brightness, TextStyle style) =>
       style.copyWith(
         color: brightness == Brightness.dark
-            ? const Color(0xFFF87171)
-            : const Color(0xFFDC2626),
+            ? AppColors.errorOnDark
+            : AppColors.error,
       );
 
   static TextStyle warningAt(Brightness brightness, TextStyle style) =>
       style.copyWith(
         color: brightness == Brightness.dark
-            ? const Color(0xFFFBBF24)
-            : const Color(0xFFD97706),
+            ? AppColors.warningOnDark
+            : AppColors.warning,
       );
 }
 
@@ -296,12 +305,12 @@ extension TextStyleX on TextStyle {
   // resolvers on AppTextStyles instead of these.
 
   TextStyle subtleOf(Brightness brightness) => brightness == Brightness.dark
-      ? copyWith(color: const Color(0xFFE5E7EB))
-      : copyWith(color: const Color(0xFF2B2B2B));
+      ? copyWith(color: AppColors.textSecondaryOnDark)
+      : copyWith(color: AppColors.textSecondary);
 
   TextStyle mutedOf(Brightness brightness) => brightness == Brightness.dark
-      ? copyWith(color: const Color(0xFFD1D5DB))
-      : copyWith(color: const Color(0xFF4A4A4A));
+      ? copyWith(color: AppColors.textTertiaryOnDark)
+      : copyWith(color: AppColors.textTertiary);
 
   TextStyle primaryOf(BuildContext context) =>
       copyWith(color: ThemeColors.primary(context));
