@@ -1,9 +1,12 @@
 ---
 target: clinic operator flow (dashboard → bookings → line → patients → records → stock → notifications) + pet owner flow
-total_score: 14
+total_score: 15
 max_score: 20
 p0_count: 0
 p1_count: 0
+p2_count: 2
+p3_count: 1
+addendum: "2026-10-17 same-day fixes: dialog IME inset fixed; stray colors 39->17; 1.3x font-scale pass done. Adaptivity 2->3; total 14->15."
 baseline: "13/20 (recorded at Phase 0-3 close-out)"
 target_identity: "file:D:\\Desktop\\carepaw\\lib\\features\\home\\presentation\\pages\\clinic_dashboard_page.dart"
 target_fingerprint: "sha256:d5089f7f5b01cb08d7478ddfa4d0a5990ea8a70d22bcfdb57d44c0c4d97de317"
@@ -96,3 +99,11 @@ slug: clinic-operator-flow-d5089f7f
 2. **[P2] `/impeccable polish`** — tokenize stray colors; extract widgets from the largest pages as touched.
 3. **[P3] `/impeccable adapt`** — tablet/landscape review (post-demo).
 4. Finish with `/impeccable polish` when the above land.
+
+## Addendum — post-audit fixes (same day, verified)
+
+1. **Dialog IME edge — fixed.** `NeuDialog` now lifts with the keyboard (`AnimatedPadding` on `MediaQuery.viewInsetsOf`) and wraps content in a scroll view. Verified live: the create-notification dialog stays fully operable while the keyboard is open — the flow was completed end-to-end without dismissing the IME.
+2. **Stray colors — reduced 39 → 17.** All literals in `app_text_styles.dart` re-pointed at `AppColors` (the three unused `*At` status helpers now use the AA-verified status tokens); `app_theme.dart` swapped 3 exact matches; `neu_button` / `neu_avatar` / `neu_icon_system` now use tokens. Remaining literals are ColorScheme role definitions in the theme layer and scan camera/status chrome (reserve surface, documented exception).
+3. **Font-scale pass — completed at 1.3×.** Clinic dashboard, bookings, queue, profile, and notification detail all hold with no overflow stripes. One accepted degradation: bottom-nav labels ellipsize at 1.3× ("Booki…") — semantics still read the full label.
+
+Revised scores: Adaptivity 2 → 3. **Revised total: 15/20 (Good).** Remaining: tablet/landscape pass (P3) and the >800-line page/TODO sweep (P2, maintainability only).
