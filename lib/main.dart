@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:device_preview/device_preview.dart';
@@ -55,40 +54,32 @@ class _CarePawAppState extends State<CarePawApp> {
   }
 
   Future<void> _initializeServices() async {
-    try {
-      debugPrint('🔄 Initializing LocalStorage...');
-      await LocalStorage.init().timeout(const Duration(seconds: 10));
-      debugPrint('✅ LocalStorage initialized');
-    } catch (e) {
-      debugPrint('⚠️ LocalStorage init failed: $e');
-    }
+    // Independent subsystems run in parallel: startup is bounded by the
+    // slowest step, not the sum of all of them.
+    await Future.wait([
+      _initStep(
+        'LocalStorage',
+        () => LocalStorage.init(),
+        timeout: const Duration(seconds: 10),
+      ),
+      _initStep(
+        'SecureStorage',
+        () async => SecureStorage.init(),
+        timeout: const Duration(seconds: 5),
+      ),
+      _initStep(
+        'Firebase',
+        () => FirebaseInit.initialize(),
+        timeout: const Duration(seconds: 15),
+      ),
+      _initStep(
+        'LocalNotificationService',
+        () => LocalNotificationService.initialize(),
+        timeout: const Duration(seconds: 10),
+      ),
+    ]);
 
-    try {
-      debugPrint('🔄 Initializing SecureStorage...');
-      SecureStorage.init();
-      debugPrint('✅ SecureStorage initialized');
-    } catch (e) {
-      debugPrint('⚠️ SecureStorage init failed: $e');
-    }
-
-    try {
-      debugPrint('🔄 Initializing Firebase...');
-      await FirebaseInit.initialize().timeout(const Duration(seconds: 15));
-      debugPrint('✅ Firebase initialized');
-    } catch (e) {
-      debugPrint('⚠️ Firebase init failed: $e');
-    }
-
-    try {
-      debugPrint('🔄 Initializing LocalNotificationService...');
-      await LocalNotificationService.initialize().timeout(
-        const Duration(seconds: 10),
-      );
-      debugPrint('✅ LocalNotificationService initialized');
-    } catch (e) {
-      debugPrint('⚠️ LocalNotificationService init failed: $e');
-    }
-
+    // Dependency registration needs Firebase to be initialized first.
     try {
       debugPrint('🔄 Configuring Dependencies...');
       await configureDependencies().timeout(const Duration(seconds: 10));
@@ -106,6 +97,29 @@ class _CarePawAppState extends State<CarePawApp> {
     }
   }
 
+  /// Run one startup step, logging its outcome without aborting the others.
+  Future<void> _initStep(
+    String name,
+    Future<void> Function() step, {
+    required Duration timeout,
+  }) async {
+    try {
+      debugPrint('🔄 Initializing $name...');
+      await step().timeout(timeout);
+      debugPrint('✅ $name initialized');
+    } catch (e) {
+      debugPrint('⚠️ $name init failed: $e');
+    }
+  }
+
+  void _retryInitialization() {
+    setState(() {
+      _initError = null;
+      _servicesInitialized = false;
+    });
+    _initializeServices();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_servicesInitialized) {
@@ -118,7 +132,10 @@ class _CarePawAppState extends State<CarePawApp> {
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         home: _initError != null
-            ? _InitializationErrorScreen(error: _initError!)
+            ? _InitializationErrorScreen(
+                error: _initError!,
+                onRetry: _retryInitialization,
+              )
             : const _InitializingScreen(),
       );
     }
@@ -187,39 +204,16 @@ class _CarePawAppRouter extends StatefulWidget {
 class _CarePawAppRouterState extends State<_CarePawAppRouter> {
   late final AuthStateListenable _authStateListenable;
   late final GoRouter _router;
-  bool _initialized = false;
-  Object? _initError;
 
   @override
   void initState() {
     super.initState();
     _authStateListenable = AuthStateListenable();
-    // Initialize the listenable with the AuthBloc immediately
-    _initializeAuth();
-  }
-
-  Future<void> _initializeAuth() async {
-    // Small delay to ensure BlocProvider is fully ready
-    await Future.delayed(const Duration(milliseconds: 50));
-    if (!mounted) return;
-    try {
-      final authBloc = context.read<AuthBloc>();
-      _authStateListenable.initialize(authBloc);
-      _initialized = true;
-      // Build router with the listenable AFTER initialization
-      _router = AppRouter.buildRouter(_authStateListenable);
-      if (mounted) {
-        setState(() {});
-      }
-    } catch (e) {
-      // Handle initialization error
-      debugPrint('Auth initialization error: $e');
-      _initError = e;
-      _router = AppRouter.buildRouter(_authStateListenable);
-      if (mounted) {
-        setState(() {});
-      }
-    }
+    // `AuthBloc` is provided by an ancestor (see [_CarePawAppState]), and
+    // ancestors are already mounted when this widget initializes — the bloc
+    // can be read synchronously, so no delay/rebuild dance is needed.
+    _authStateListenable.initialize(context.read<AuthBloc>());
+    _router = AppRouter.buildRouter(_authStateListenable);
   }
 
   @override
@@ -230,21 +224,6 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
-      return MaterialApp(
-        title: 'CarePaw',
-        debugShowCheckedModeBanner: false,
-        locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        home: _initError != null
-            ? _InitializationErrorScreen(error: _initError!)
-            : const _InitializingScreen(),
-      );
-    }
-
     return MaterialApp.router(
       title: 'CarePaw',
       debugShowCheckedModeBanner: false,
@@ -265,8 +244,12 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
 /// Screen shown when initialization fails
 class _InitializationErrorScreen extends StatelessWidget {
   final Object error;
+  final VoidCallback onRetry;
 
-  const _InitializationErrorScreen({required this.error});
+  const _InitializationErrorScreen({
+    required this.error,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -329,6 +312,8 @@ class _InitializationErrorScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       Text(
                         error.toString(),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -336,11 +321,9 @@ class _InitializationErrorScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 28),
                       FilledButton.icon(
-                        onPressed: () {
-                          SystemNavigator.pop();
-                        },
-                        icon: NeuSvgIcon(SvgIcons.refresh, size: 20),
-                        label: const Text('Restart App'),
+                        onPressed: onRetry,
+                        icon: const NeuSvgIcon(SvgIcons.refresh, size: 20),
+                        label: const Text('Try Again'),
                       ),
                     ],
                   ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'theme_colors.dart';
 
 /// CarePaw typography — warm humanist display voice, quiet system body.
@@ -24,21 +23,21 @@ class AppTextStyles {
 
   // ============ Display (Nunito — rounded, organic) ============
 
-  static TextStyle get displayLarge => GoogleFonts.nunito(
+  static TextStyle get displayLarge => TextStyle(fontFamily: 'Nunito', 
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.15,
   );
 
-  static TextStyle get displayMedium => GoogleFonts.nunito(
+  static TextStyle get displayMedium => TextStyle(fontFamily: 'Nunito', 
     fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
     height: 1.2,
   );
 
-  static TextStyle get displaySmall => GoogleFonts.nunito(
+  static TextStyle get displaySmall => TextStyle(fontFamily: 'Nunito', 
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
@@ -47,21 +46,21 @@ class AppTextStyles {
 
   // ============ Headline (Nunito) ============
 
-  static TextStyle get headlineLarge => GoogleFonts.nunito(
+  static TextStyle get headlineLarge => TextStyle(fontFamily: 'Nunito', 
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
     height: 1.25,
   );
 
-  static TextStyle get headlineMedium => GoogleFonts.nunito(
+  static TextStyle get headlineMedium => TextStyle(fontFamily: 'Nunito', 
     fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.1,
     height: 1.3,
   );
 
-  static TextStyle get headlineSmall => GoogleFonts.nunito(
+  static TextStyle get headlineSmall => TextStyle(fontFamily: 'Nunito', 
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
@@ -139,7 +138,7 @@ class AppTextStyles {
 
   // ============ Specialized ============
 
-  static TextStyle get appBarTitle => GoogleFonts.nunito(
+  static TextStyle get appBarTitle => TextStyle(fontFamily: 'Nunito', 
     fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
@@ -174,14 +173,14 @@ class AppTextStyles {
     height: 1.43,
   );
 
-  static TextStyle get numberLarge => GoogleFonts.nunito(
+  static TextStyle get numberLarge => TextStyle(fontFamily: 'Nunito', 
     fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
     height: 1.1,
   );
 
-  static TextStyle get numberMedium => GoogleFonts.nunito(
+  static TextStyle get numberMedium => TextStyle(fontFamily: 'Nunito', 
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.1,

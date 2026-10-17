@@ -50,9 +50,6 @@ dependencies:
   timezone: ^0.9.4
   device_preview: ^1.3.1
 
-  # Warm humanist display face (Soft Clinic organic type)
-  google_fonts: ^6.2.1
-
   # SVG icons (SVGRepo, CC0 — see docs/SVG_CATALOG.md)
   flutter_svg: ^2.0.10
 
@@ -71,3 +68,15 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+  fonts:
+    # Bundled Nunito (display/headline face) — no runtime font fetching.
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Nunito-ExtraBold.ttf
+          weight: 800
