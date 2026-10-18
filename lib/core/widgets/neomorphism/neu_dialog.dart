@@ -54,7 +54,7 @@ class NeuDialog extends StatelessWidget {
     String? title,
     Widget? content,
     required List<Widget> actions,
-    double? maxWidth,
+    double? maxWidth = 360,
     EdgeInsetsGeometry contentPadding = const EdgeInsets.all(NeuTokens.spaceXl),
     CrossAxisAlignment actionsAlignment = CrossAxisAlignment.stretch,
     bool barrierDismissible = true,
@@ -62,6 +62,11 @@ class NeuDialog extends StatelessWidget {
   }) {
     return showDialog<T>(
       context: context,
+      // Keep the dialog on the navigator the opener's context belongs to
+      // (the shell's nested navigator) so that action callbacks built with
+      // that context — e.g. `Navigator.pop(context)` in a Cancel button —
+      // resolve to this dialog and not to the route below it.
+      useRootNavigator: false,
       barrierDismissible: barrierDismissible,
       builder: (context) => NeuDialog(
         title: title,
@@ -95,27 +100,36 @@ class NeuDialog extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: NeuShape.panel),
               shadows: NeuShadow.floating(context),
             ),
-            child: Padding(
-              padding: resolvedPadding,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (title != null) ...[
-                    Text(title!, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 16),
+            // Material widgets placed in dialog content (e.g. a
+            // CalendarDatePicker) need a Material ancestor; the neumorphic
+            // panel is a plain DecoratedBox, so supply a transparent one.
+            child: Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: resolvedPadding,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (title != null) ...[
+                      Text(
+                        title!,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    if (content != null) ...[
+                      Flexible(child: SingleChildScrollView(child: content!)),
+                      const SizedBox(height: 24),
+                    ],
+                    Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: actions,
+                    ),
                   ],
-                  if (content != null) ...[
-                    Flexible(child: SingleChildScrollView(child: content!)),
-                    const SizedBox(height: 24),
-                  ],
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: actions,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
