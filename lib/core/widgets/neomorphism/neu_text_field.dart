@@ -186,6 +186,11 @@ class _NeuTextFieldState extends State<NeuTextField> {
               obscureText: _obscureText,
               enabled: widget.enabled,
               readOnly: widget.readOnly,
+              // A read-only text field swallows taps (the gesture arena gives
+              // the inner field priority over the outer GestureDetector), so
+              // forward the tap callback through it — that is how read-only
+              // pickers (e.g. the expiry date field) open their dialogs.
+              onTap: widget.readOnly ? widget.onTap : null,
               maxLines: widget.obscureText ? 1 : widget.maxLines,
               minLines: widget.minLines,
               maxLength: widget.maxLength,
