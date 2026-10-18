@@ -12,11 +12,9 @@ import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
-import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/inventory_visuals.dart';
-import 'package:carepaw/features/inventory/presentation/widgets/transaction_card.dart';
 
 /// The scrolling header of the inventory detail page: category medallion,
 /// item name, category + stock-status chips, back and delete actions.
@@ -36,36 +34,35 @@ class InventoryDetailHeader extends StatelessWidget {
     final isLowStock = item.isLowStock;
     final isOutOfStock = item.isOutOfStock;
 
-    return SliverAppBar(
-      expandedHeight: 200,
-      floating: false,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      scrolledUnderElevation: 0,
-      elevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: NeuIconButton(
-          plain: true,
-          icon: Icons.arrow_back_ios_new_rounded,
-          svgAsset: SvgIcons.back,
-          tooltip: 'Back',
-          onPressed: () => Navigator.pop(context),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: 56,
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              NeuIconButton(
+                plain: true,
+                icon: Icons.arrow_back_ios_new_rounded,
+                svgAsset: SvgIcons.back,
+                tooltip: 'Back',
+                onPressed: () => Navigator.pop(context),
+              ),
+              const Spacer(),
+              NeuIconButton(
+                plain: true,
+                icon: Icons.delete_outline_rounded,
+                svgAsset: SvgIcons.delete,
+                tooltip: 'Delete item',
+                onPressed: onDelete,
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
         ),
-      ),
-      actions: [
-        NeuIconButton(
-          plain: true,
-          icon: Icons.delete_outline_rounded,
-          svgAsset: SvgIcons.delete,
-          tooltip: 'Delete item',
-          onPressed: onDelete,
-        ),
-        const SizedBox(width: 8),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Padding(
+        const SizedBox(height: 4),
+        Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Align(
             alignment: Alignment.bottomLeft,
@@ -164,7 +161,7 @@ class InventoryDetailHeader extends StatelessWidget {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -229,29 +226,25 @@ class InventoryStatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(8),
-                borderRadius: 10,
-                variant: NeuVariant.raised,
-                color: color.withValues(alpha: 0.1),
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset!, size: 20)
-                    : Icon(icon, size: 20, color: color),
-              ),
-              const Spacer(),
-              Text(
-                label,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
-                ),
-              ),
-            ],
+          NeuContainer(
+            padding: const EdgeInsets.all(8),
+            borderRadius: 10,
+            variant: NeuVariant.raised,
+            color: color.withValues(alpha: 0.1),
+            child: svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: 20)
+                : Icon(icon, size: 20, color: color),
           ),
           const SizedBox(height: 12),
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: isDark
+                  ? AppColors.textSecondaryOnDark
+                  : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             value,
             style: AppTextStyles.headlineSmall.copyWith(
@@ -321,62 +314,51 @@ class InventoryDetailRow extends StatelessWidget {
   }
 }
 
-/// Pinned chip tab bar for the detail page's three tabs.
-class InventoryTabBarDelegate extends SliverPersistentHeaderDelegate {
+/// Chip tab bar for the detail page's three tabs.
+class InventoryTabBar extends StatelessWidget {
   final TabController tabController;
   final List<String> tabs;
   final Color color;
 
-  InventoryTabBarDelegate({
+  const InventoryTabBar({
+    super.key,
     required this.tabController,
     required this.tabs,
     required this.color,
   });
 
   @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       color: isDark
           ? AppColors.surfaceDarkMode.withValues(alpha: 0.95)
           : AppColors.surface.withValues(alpha: 0.95),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        child: Row(
-          children: tabs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final label = entry.value;
-            final isSelected = tabController.index == index;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: NeuChip(
-                  label: label,
-                  selected: isSelected,
-                  selectedColor: color,
-                  onTap: () => tabController.animateTo(index),
+      child: AnimatedBuilder(
+        animation: tabController,
+        builder: (context, _) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
+            children: tabs.asMap().entries.map((entry) {
+              final index = entry.key;
+              final label = entry.value;
+              final isSelected = tabController.index == index;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: NeuChip(
+                    label: label,
+                    selected: isSelected,
+                    selectedColor: color,
+                    onTap: () => tabController.animateTo(index),
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
-  }
-
-  @override
-  double get maxExtent => 64;
-
-  @override
-  double get minExtent => 64;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
   }
 }
 
@@ -583,28 +565,14 @@ class InventoryTransactionsTab extends StatelessWidget {
     return BlocBuilder<InventoryBloc, InventoryState>(
       builder: (context, state) {
         if (state is ItemBatchesLoaded && state.itemId == item.id) {
-          // Get all transactions for all batches
-          final allTransactions = <InventoryTransaction>[];
-          for (final batch in state.batches) {
-            context.read<InventoryBloc>().add(LoadBatchTransactions(batch.id!));
-          }
-          if (allTransactions.isEmpty) {
-            return const InventoryDetailEmptyState(
-              svgAsset: SvgIcons.receipt,
-              title: 'No Transactions',
-              message: 'Transaction history will appear here',
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: allTransactions.length,
-            itemBuilder: (context, index) {
-              final transaction = allTransactions[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TransactionCard(transaction: transaction),
-              );
-            },
+          // TODO(post-demo): the bloc exposes transactions one batch at a
+          // time, so there is nothing to aggregate here yet. Previously this
+          // builder dispatched a load per batch on every rebuild, which could
+          // loop forever once the item had batches; removed for the demo.
+          return const InventoryDetailEmptyState(
+            svgAsset: SvgIcons.receipt,
+            title: 'No Transactions',
+            message: 'Transaction history will appear here',
           );
         }
         return const SizedBox.shrink();
