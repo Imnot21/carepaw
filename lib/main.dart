@@ -27,9 +27,16 @@ import 'app/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Device preview is a dev convenience only and is opt-in: pass
+  // --dart-define=DEVICE_PREVIEW=true to `flutter run` to enable it.
+  //
+  // Off by default so debug builds (and demo APKs) run with real device
+  // metrics and without the preview's on-screen toolbar.
+  const useDevicePreview = bool.fromEnvironment('DEVICE_PREVIEW');
+
   runApp(
     DevicePreview(
-      enabled: !kReleaseMode,
+      enabled: useDevicePreview && !kReleaseMode,
       builder: (context) => const CarePawApp(),
     ),
   );
