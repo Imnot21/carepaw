@@ -200,6 +200,10 @@ class _NeuTextFieldState extends State<NeuTextField> {
               onFieldSubmitted: widget.onSubmitted,
               onTapOutside: (_) => _internalFocusNode?.unfocus(),
               validator: _validate,
+              // Auto-validate after the user interacts so an error raised by
+              // a submit (e.g. "Required") clears as soon as the field is
+              // fixed, instead of lingering until the next submit.
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               inputFormatters: widget.inputFormatters,
               autofocus: widget.autofocus,
               style: AppTextStyles.bodyLarge.copyWith(color: inputColor),
@@ -297,18 +301,16 @@ class _NeuTextFieldState extends State<NeuTextField> {
   }
 
   String? _validate(String? value) {
-    if (widget.validator != null) {
-      final error = widget.validator!(value);
-      if (error != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) setState(() => _errorText = error);
-        });
-        return error;
-      }
+    final error = widget.validator?.call(value);
+    // Skip rebuilds when the validation result is unchanged — with
+    // autovalidate enabled this runs on every keystroke.
+    if (error != _errorText) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && error != _errorText) {
+          setState(() => _errorText = error);
+        }
+      });
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _errorText = null);
-    });
-    return null;
+    return error;
   }
 }
