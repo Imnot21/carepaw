@@ -326,6 +326,8 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         createdAt: DateTime.now(),
       );
       await _batchRepository.create(batch);
+      // A new batch adds its quantity to the item's aggregate stock.
+      await _syncItemStock(event.inventoryId, event.quantity);
       emit(
         const states.InventoryOperationSuccess('Batch created successfully'),
       );
@@ -376,6 +378,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       await _batchRepository.update(
         batch.copyWith(quantity: batch.quantity + event.quantity),
       );
+      await _syncItemStock(batch.inventoryId, event.quantity);
       emit(
         const states.InventoryOperationSuccess(
           'Stock in recorded successfully',
@@ -438,6 +441,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       await _batchRepository.update(
         batch.copyWith(quantity: batch.quantity - event.quantity),
       );
+      await _syncItemStock(batch.inventoryId, -event.quantity);
       emit(
         const states.InventoryOperationSuccess(
           'Stock out recorded successfully',
@@ -498,6 +502,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       );
       await _transactionRepository.create(transaction);
       await _batchRepository.update(batch.copyWith(quantity: newQuantity));
+      await _syncItemStock(batch.inventoryId, event.quantityChange);
       emit(
         const states.InventoryOperationSuccess(
           'Adjustment recorded successfully',
@@ -530,5 +535,20 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       debugPrint('[inventory_bloc] unexpected: $e');
       emit(states.InventoryError(const UnexpectedFailure()));
     }
+  }
+
+  /// Keeps the aggregate item stock in sync with its batch quantities.
+  ///
+  /// The item's stock is the sum of its batch quantities, so every batch
+  /// quantity change must apply the same [delta] to the item, floored at
+  /// zero (mirrors the clamping used by consumeFromBatches in the batch
+  /// repository).
+  Future<void> _syncItemStock(int itemId, double delta) async {
+    final item = await _itemRepository.findById(itemId);
+    if (item == null) return;
+    await _itemRepository.updateStock(
+      itemId,
+      (item.currentStock + delta).clamp(0, double.infinity),
+    );
   }
 }
