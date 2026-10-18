@@ -521,8 +521,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
   }
 
   void _navigateToForm([InventoryItem? item]) {
+    // The form route needs the route-scoped InventoryBloc, which a pushed
+    // route can't see on its own — pass it explicitly.
+    final bloc = context.read<InventoryBloc>();
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => InventoryFormPage(item: item)))
+        .push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: bloc,
+              child: InventoryFormPage(item: item),
+            ),
+          ),
+        )
         .then((_) {
           if (!mounted) return;
           if (_searchQuery.isEmpty && _selectedCategory == null) {
@@ -532,9 +542,17 @@ class _InventoryListPageState extends State<InventoryListPage> {
   }
 
   void _navigateToDetail(InventoryItem item) {
+    // The detail route needs the route-scoped InventoryBloc, which a pushed
+    // route can't see on its own — pass it explicitly.
+    final bloc = context.read<InventoryBloc>();
     Navigator.of(context)
         .push(
-          MaterialPageRoute(builder: (_) => InventoryDetailPage(item: item)),
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: bloc,
+              child: InventoryDetailPage(item: item),
+            ),
+          ),
         )
         .then((_) {
           if (!mounted) return;
