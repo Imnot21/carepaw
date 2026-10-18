@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
 import 'package:carepaw/features/inventory/presentation/pages/inventory_form_page.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/inventory_detail_sheets.dart';
 import 'package:carepaw/features/inventory/presentation/widgets/inventory_detail_widgets.dart';
@@ -29,11 +30,16 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   late TabController _tabController;
   int _loadedTab = 0;
 
+  /// Local copy of the item so the header and stat cards stay in sync with
+  /// edits and stock operations without re-pushing the page.
+  late InventoryItem _item;
+
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   void initState() {
     super.initState();
+    _item = widget.item;
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadTabData(0);
@@ -50,7 +56,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       case 0:
       case 2:
         // The transactions tab also renders from the batch list.
-        bloc.add(LoadItemBatches(widget.item.id!));
+        bloc.add(LoadItemBatches(_item.id!));
       case 1:
         bloc.add(LoadExpiringBatches());
     }
@@ -63,6 +69,33 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     _loadTabData(index);
   }
 
+  /// Keeps the header and stat cards live: after an edit the bloc re-emits
+  /// the reloaded item list, and after any batch-quantity change it re-emits
+  /// this item's batches — from which the aggregate stock is derived (item
+  /// stock equals the sum of its batch quantities).
+  void _onInventoryState(BuildContext context, InventoryState state) {
+    InventoryItem? updated;
+    if (state is InventoryItemsLoaded) {
+      for (final candidate in state.items) {
+        if (candidate.id == _item.id) {
+          updated = candidate;
+          break;
+        }
+      }
+    } else if (state is ItemBatchesLoaded && state.itemId == _item.id) {
+      final stock = state.batches.fold<double>(
+        0,
+        (sum, batch) => sum + batch.quantity,
+      );
+      if (stock != _item.currentStock) {
+        updated = _item.copyWith(currentStock: stock);
+      }
+    }
+    final next = updated;
+    if (next == null) return;
+    setState(() => _item = next);
+  }
+
   @override
   void dispose() {
     _tabController.removeListener(_onTabChanged);
@@ -72,29 +105,32 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    final item = widget.item;
+    final item = _item;
 
-    return Scaffold(
-      backgroundColor: _isDark
-          ? AppColors.backgroundDark
-          : AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            InventoryDetailHeader(item: item, onDelete: _showDeleteDialog),
-            _buildStockOverview(item),
-            _buildTabBar(),
-            Expanded(child: _buildTabContent()),
-          ],
+    return BlocListener<InventoryBloc, InventoryState>(
+      listener: _onInventoryState,
+      child: Scaffold(
+        backgroundColor: _isDark
+            ? AppColors.backgroundDark
+            : AppColors.background,
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              InventoryDetailHeader(item: item, onDelete: _showDeleteDialog),
+              _buildStockOverview(item),
+              _buildTabBar(),
+              Expanded(child: _buildTabContent()),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: NeuFAB.extended(
-        onPressed: _navigateToForm,
-        icon: Icons.edit_rounded,
-        svgAsset: SvgIcons.edit,
-        extendedText: 'Edit',
-        variant: NeuButtonVariant.primary,
+        floatingActionButton: NeuFAB.extended(
+          onPressed: _navigateToForm,
+          icon: Icons.edit_rounded,
+          svgAsset: SvgIcons.edit,
+          extendedText: 'Edit',
+          variant: NeuButtonVariant.primary,
+        ),
       ),
     );
   }
@@ -147,7 +183,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     return InventoryTabBar(
       tabController: _tabController,
       tabs: const ['Batches', 'Expiring', 'Transactions'],
-      color: inventoryCategoryColor(widget.item.category),
+      color: inventoryCategoryColor(_item.category),
     );
   }
 
@@ -156,14 +192,14 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       controller: _tabController,
       children: [
         InventoryBatchesTab(
-          item: widget.item,
+          item: _item,
           onBatchTap: _showBatchDetail,
           onEditBatch: _editBatch,
           onTransaction: _showTransactionDialog,
           onAddBatch: _showAddBatchDialog,
         ),
-        InventoryExpiringTab(item: widget.item, onBatchTap: _showBatchDetail),
-        InventoryTransactionsTab(item: widget.item),
+        InventoryExpiringTab(item: _item, onBatchTap: _showBatchDetail),
+        InventoryTransactionsTab(item: _item),
       ],
     );
   }
@@ -171,18 +207,18 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   void _showBatchDetail(InventoryBatch batch) {
     showBatchDetailSheet(
       context,
-      item: widget.item,
+      item: _item,
       batch: batch,
       onAddTransaction: () => _showTransactionDialog(batch),
     );
   }
 
   void _showTransactionDialog(InventoryBatch batch) {
-    showTransactionSheet(context, item: widget.item, batch: batch);
+    showTransactionSheet(context, item: _item, batch: batch);
   }
 
   void _showAddBatchDialog() {
-    showAddBatchSheet(context, item: widget.item);
+    showAddBatchSheet(context, item: _item);
   }
 
   void _editBatch(InventoryBatch batch) {
@@ -199,7 +235,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           MaterialPageRoute(
             builder: (_) => BlocProvider.value(
               value: bloc,
-              child: InventoryFormPage(item: widget.item),
+              child: InventoryFormPage(item: _item),
             ),
           ),
         )
@@ -215,7 +251,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       context: context,
       title: 'Delete Item',
       message:
-          'Are you sure you want to delete "${widget.item.name}"? This action cannot be undone.',
+          'Are you sure you want to delete "${_item.name}"? This action cannot be undone.',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmVariant: NeuButtonVariant.destructive,
