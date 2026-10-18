@@ -27,6 +27,7 @@ class InventoryDetailPage extends StatefulWidget {
 class _InventoryDetailPageState extends State<InventoryDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _loadedTab = 0;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
@@ -34,17 +35,37 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadData();
+    _tabController.addListener(_onTabChanged);
+    _loadTabData(0);
   }
 
-  void _loadData() {
-    context.read<InventoryBloc>().add(LoadItemBatches(widget.item.id!));
-    context.read<InventoryBloc>().add(LoadExpiringBatches());
-    context.read<InventoryBloc>().add(LoadExpiredBatches());
+  /// Loads the data for [index]'s tab. The bloc holds a single state for the
+  /// whole page, so dispatching every load at once clobbered the previous
+  /// ones and left the visible tab without a matching state (blank tab
+  /// body). Dispatch only the active tab's load and re-dispatch when the
+  /// tab changes.
+  void _loadTabData(int index) {
+    final bloc = context.read<InventoryBloc>();
+    switch (index) {
+      case 0:
+      case 2:
+        // The transactions tab also renders from the batch list.
+        bloc.add(LoadItemBatches(widget.item.id!));
+      case 1:
+        bloc.add(LoadExpiringBatches());
+    }
+  }
+
+  void _onTabChanged() {
+    final index = _tabController.index;
+    if (index == _loadedTab) return;
+    _loadedTab = index;
+    _loadTabData(index);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -57,13 +78,16 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
       backgroundColor: _isDark
           ? AppColors.backgroundDark
           : AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          InventoryDetailHeader(item: item, onDelete: _showDeleteDialog),
-          _buildStockOverview(item),
-          _buildTabBar(),
-          _buildTabContent(),
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            InventoryDetailHeader(item: item, onDelete: _showDeleteDialog),
+            _buildStockOverview(item),
+            _buildTabBar(),
+            Expanded(child: _buildTabContent()),
+          ],
+        ),
       ),
       floatingActionButton: NeuFAB.extended(
         onPressed: _navigateToForm,
@@ -76,80 +100,71 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   }
 
   Widget _buildStockOverview(InventoryItem item) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: InventoryStatCard(
-                label: 'Current Stock',
-                value: formatNumber(item.currentStock),
-                unit: item.unit,
-                color: inventoryCategoryColor(item.category),
-                icon: Icons.inventory_2_rounded,
-                svgAsset: SvgIcons.inventory,
-              ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: InventoryStatCard(
+              label: 'Current Stock',
+              value: formatNumber(item.currentStock),
+              unit: item.unit,
+              color: inventoryCategoryColor(item.category),
+              icon: Icons.inventory_2_rounded,
+              svgAsset: SvgIcons.inventory,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: InventoryStatCard(
-                label: 'Minimum',
-                value: formatNumber(item.minStock),
-                unit: item.unit,
-                color: _isDark ? AppColors.warningOnDark : AppColors.warning,
-                icon: Icons.warning_amber_rounded,
-                svgAsset: SvgIcons.alert,
-              ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: InventoryStatCard(
+              label: 'Minimum',
+              value: formatNumber(item.minStock),
+              unit: item.unit,
+              color: _isDark ? AppColors.warningOnDark : AppColors.warning,
+              icon: Icons.warning_amber_rounded,
+              svgAsset: SvgIcons.alert,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: InventoryStatCard(
-                label: item.maxStock != null ? 'Maximum' : 'No Max',
-                value: item.maxStock != null
-                    ? formatNumber(item.maxStock!)
-                    : '-',
-                unit: item.unit,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.infoDark
-                    : AppColors.info,
-                icon: Icons.flag_rounded,
-                svgAsset: SvgIcons.flag,
-              ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: InventoryStatCard(
+              label: item.maxStock != null ? 'Maximum' : 'No Max',
+              value: item.maxStock != null ? formatNumber(item.maxStock!) : '-',
+              unit: item.unit,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.infoDark
+                  : AppColors.info,
+              icon: Icons.flag_rounded,
+              svgAsset: SvgIcons.flag,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTabBar() {
-    return SliverPersistentHeader(
-      pinned: true,
-      delegate: InventoryTabBarDelegate(
-        tabController: _tabController,
-        tabs: const ['Batches', 'Expiring', 'Transactions'],
-        color: inventoryCategoryColor(widget.item.category),
-      ),
+    return InventoryTabBar(
+      tabController: _tabController,
+      tabs: const ['Batches', 'Expiring', 'Transactions'],
+      color: inventoryCategoryColor(widget.item.category),
     );
   }
 
   Widget _buildTabContent() {
-    return SliverFillRemaining(
-      child: TabBarView(
-        controller: _tabController,
-        children: [
-          InventoryBatchesTab(
-            item: widget.item,
-            onBatchTap: _showBatchDetail,
-            onEditBatch: _editBatch,
-            onTransaction: _showTransactionDialog,
-            onAddBatch: _showAddBatchDialog,
-          ),
-          InventoryExpiringTab(item: widget.item, onBatchTap: _showBatchDetail),
-          InventoryTransactionsTab(item: widget.item),
-        ],
-      ),
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        InventoryBatchesTab(
+          item: widget.item,
+          onBatchTap: _showBatchDetail,
+          onEditBatch: _editBatch,
+          onTransaction: _showTransactionDialog,
+          onAddBatch: _showAddBatchDialog,
+        ),
+        InventoryExpiringTab(item: widget.item, onBatchTap: _showBatchDetail),
+        InventoryTransactionsTab(item: widget.item),
+      ],
     );
   }
 
@@ -176,16 +191,22 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
   }
 
   void _navigateToForm() {
+    // The form route needs the route-scoped InventoryBloc, which a pushed
+    // route can't see on its own — pass it explicitly.
+    final bloc = context.read<InventoryBloc>();
     Navigator.of(context)
         .push(
           MaterialPageRoute(
-            builder: (_) => InventoryFormPage(item: widget.item),
+            builder: (_) => BlocProvider.value(
+              value: bloc,
+              child: InventoryFormPage(item: widget.item),
+            ),
           ),
         )
         .then((_) {
           // Refresh on return
           setState(() {});
-          _loadData();
+          _loadTabData(_tabController.index);
         });
   }
 
