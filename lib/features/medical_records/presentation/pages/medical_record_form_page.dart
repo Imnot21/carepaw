@@ -4,22 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart';
-import 'package:carepaw/features/medical_records/presentation/utils/medical_record_utils.dart';
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
+import 'package:carepaw/features/medical_records/presentation/widgets/medical_record_form_widgets.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
-import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
 /// Page for creating/editing medical records with premium design.
 class MedicalRecordFormPage extends StatefulWidget {
@@ -85,14 +79,14 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
-          return const _NotLoggedInView();
+          return const MedicalRecordNotLoggedInView();
         }
 
         final user = authState.user;
         final isVetOrStaff = user.isOwnerAdmin;
 
         if (!isVetOrStaff) {
-          return _AccessDeniedView(petName: widget.pet.name);
+          return MedicalRecordAccessDeniedView(petName: widget.pet.name);
         }
 
         return BlocListener<MedicalRecordBloc, MedicalRecordState>(
@@ -161,7 +155,11 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
                     sliver: SliverToBoxAdapter(
-                      child: _buildPetHeader(context, speciesColor),
+                      child: MedicalRecordPetHeader(
+                        pet: widget.pet,
+                        selectedType: _selectedType,
+                        speciesColor: speciesColor,
+                      ),
                     ),
                   ),
 
@@ -169,7 +167,11 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     sliver: SliverToBoxAdapter(
-                      child: _buildTypeSelector(context, speciesColor),
+                      child: MedicalRecordTypeSelector(
+                        selectedType: _selectedType,
+                        speciesColor: speciesColor,
+                        onChanged: (type) => setState(() => _selectedType = type),
+                      ),
                     ),
                   ),
 
@@ -199,110 +201,12 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     );
   }
 
-  Widget _buildPetHeader(BuildContext context, Color speciesColor) {
-    return Row(
-      children: [
-        PetUtils.buildAvatar(
-          species: widget.pet.species,
-          radius: 36,
-          iconSize: 36,
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Creating record for',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                widget.pet.name,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        NeuContainer(
-          borderRadius: 16,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          variant: NeuVariant.flat,
-          color: speciesColor.withValues(alpha: 0.12),
-          borderColor: speciesColor.withValues(alpha: 0.3),
-          borderWidth: 1,
-          child: Text(
-            _selectedType.displayName,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: speciesColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTypeSelector(BuildContext context, Color speciesColor) {
-    final types = MedicalRecordType.values;
-
-    return NeuCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(20),
-      borderColor: speciesColor.withValues(alpha: 0.2),
-      borderWidth: 1,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              NeuContainer(
-                borderRadius: 14,
-                padding: const EdgeInsets.all(12),
-                variant: NeuVariant.flat,
-                color: speciesColor.withValues(alpha: 0.12),
-                child: const NeuSvgIcon(SvgIcons.category, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Record Type',
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: types.map((type) {
-              final typeInfo = MedicalRecordUtils.getTypeInfoCustom(context, type);
-              return NeuChip(
-                label: type.displayName,
-                svgAsset: typeInfo.svgAsset,
-                selected: _selectedType == type,
-                selectedColor: typeInfo.color,
-                onTap: () => setState(() => _selectedType = type),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
   List<Widget> _getFields() {
     final fields = <Widget>[];
 
     // Title (required for all types)
     fields.add(
-      _buildField(
-        context: context,
+      MedicalRecordFormField(
         controller: _titleController,
         label: 'Title *',
         hint: 'e.g., Annual checkup, Vaccination, Surgery follow-up',
@@ -319,8 +223,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
     // Description (optional for all types)
     fields.add(
-      _buildField(
-        context: context,
+      MedicalRecordFormField(
         controller: _descriptionController,
         label: 'Description',
         hint: 'Brief description of the visit/reason',
@@ -334,8 +237,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     switch (_selectedType) {
       case MedicalRecordType.visit:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _diagnosisController,
             label: 'Diagnosis',
             hint: 'Clinical diagnosis',
@@ -343,8 +245,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             svgAsset: SvgIcons.visit,
             maxLines: 3,
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _treatmentController,
             label: 'Treatment',
             hint: 'Treatment plan or procedures performed',
@@ -357,8 +258,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.vaccination:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _medicationsController,
             label: 'Vaccines Given *',
             hint: 'e.g., Rabies, DHPP, Bordetella',
@@ -377,8 +277,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.deworming:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _medicationsController,
             label: 'Deworming Product *',
             hint: 'e.g., Pyrantel, Fenbendazole',
@@ -397,8 +296,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.surgery:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _diagnosisController,
             label: 'Procedure *',
             hint: 'Surgical procedure performed',
@@ -412,8 +310,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               return null;
             },
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _treatmentController,
             label: 'Post-op Care',
             hint: 'Post-operative care instructions',
@@ -421,8 +318,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             svgAsset: SvgIcons.prescription,
             maxLines: 3,
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _medicationsController,
             label: 'Medications Prescribed',
             hint: 'Pain meds, antibiotics, etc.',
@@ -435,8 +331,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.labResult:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _diagnosisController,
             label: 'Test Results *',
             hint: 'Lab findings and values',
@@ -450,8 +345,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               return null;
             },
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _treatmentController,
             label: 'Interpretation',
             hint: 'Clinical interpretation of results',
@@ -463,8 +357,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.prescription:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _medicationsController,
             label: 'Medications *',
             hint: 'Medication name, dosage, frequency, duration',
@@ -478,8 +371,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               return null;
             },
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _treatmentController,
             label: 'Instructions',
             hint: 'Special administration instructions',
@@ -492,8 +384,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.note:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _diagnosisController,
             label: 'Clinical Notes *',
             hint: 'Detailed clinical notes',
@@ -512,8 +403,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
       case MedicalRecordType.allergy:
         fields.addAll([
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _diagnosisController,
             label: 'Allergen *',
             hint: 'What the pet is allergic to',
@@ -526,8 +416,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               return null;
             },
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _treatmentController,
             label: 'Reaction *',
             hint: 'Description of allergic reaction',
@@ -541,8 +430,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               return null;
             },
           ),
-          _buildField(
-            context: context,
+          MedicalRecordFormField(
             controller: _medicationsController,
             label: 'Management',
             hint: 'Avoidance strategies, emergency meds',
@@ -556,8 +444,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
     // Attachments (optional for all types)
     fields.add(
-      _buildField(
-        context: context,
+      MedicalRecordFormField(
         controller: _attachmentsController,
         label: 'Attachments',
         hint: 'Photo references, document links, etc.',
@@ -568,48 +455,6 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     );
 
     return fields;
-  }
-
-  Widget _buildField({
-    required BuildContext context,
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    String? svgAsset,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return NeuCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              svgAsset != null
-                  ? NeuSvgIcon(svgAsset, size: 20)
-                  : Icon(icon, size: 20, color: ThemeColors.textSecondary(context)),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: AppTextStyles.labelLarge.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          NeuTextField(
-            controller: controller,
-            hint: hint,
-            maxLines: maxLines,
-            validator: validator,
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildSubmitButton(BuildContext context, bool isEditing) {
@@ -769,134 +614,5 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                   .trim(),
         );
     }
-  }
-}
-
-class _NotLoggedInView extends StatelessWidget {
-  const _NotLoggedInView();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('New Medical Record'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              NeuContainer(
-                borderRadius: 80,
-                padding: const EdgeInsets.all(40),
-                color: AppColors.primary,
-                boxShadow: NeuShadow.color(
-                  context,
-                  AppColors.primary,
-                  blur: 24,
-                  opacity: 0.32,
-                ),
-                child: const NeuSvgIcon(SvgIcons.prescription, size: 80),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'Please log in to create records',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Sign in to add medical records for your pet',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 36),
-              NeuButton(
-                text: 'Log In',
-                onPressed: () => context.go('/login'),
-                icon: Icons.login_rounded,
-                svgAsset: SvgIcons.login,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Access denied view for pet owners trying to access medical record creation/editing
-class _AccessDeniedView extends StatelessWidget {
-  final String petName;
-
-  const _AccessDeniedView({required this.petName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Medical Record'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              NeuContainer(
-                borderRadius: 80,
-                padding: const EdgeInsets.all(40),
-                color: AppColors.error,
-                boxShadow: NeuShadow.color(
-                  context,
-                  AppColors.error,
-                  blur: 24,
-                  opacity: 0.28,
-                ),
-                child: const NeuSvgIcon(SvgIcons.block, size: 80),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'Access Denied',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: ThemeColors.error(context),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Only veterinarians and clinic staff can create or edit medical records for $petName.\n\nMedical records are created during consultations and will appear here automatically.',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              NeuButton(
-                text: 'Go Back',
-                onPressed: () => context.pop(),
-                icon: Icons.arrow_back_rounded,
-                svgAsset: SvgIcons.back,
-                variant: NeuButtonVariant.secondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
