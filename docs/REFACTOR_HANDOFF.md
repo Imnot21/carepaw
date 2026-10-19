@@ -1,6 +1,6 @@
 # Refactor sweep — handoff doc (continue on the laptop)
 
-Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `fc75e1c`
+Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `89d8d30`
 Repo: https://github.com/Imnot21/carepaw
 
 This doc is the continuation package for the ">800-line file sweep" (P2 maintainability work).
@@ -10,8 +10,8 @@ Read this first on the laptop, then continue from **Next target**.
 
 ## 1. Current state
 
-- `feature/neumorphism-design` == `master` == `fc75e1c` (this doc adds one commit on top; both
-  branches are pushed after it — see `git log --oneline -3`).
+- `feature/neumorphism-design` == `master` == `89d8d30` (doc-update commits may follow; check
+  `git log --oneline -3` on the laptop to see the true head).
 - Working tree clean. `flutter analyze` clean. `flutter test` green (9/9).
 - Sweep canon (locked): **zero behavior change**, one file per commit, analyze + test each,
   live spot-check on the emulator before push, push = branch + fast-forward `master`.
@@ -28,8 +28,21 @@ Each split = one commit. Numbers are line counts at split time.
 | 3 | `pet_detail_page.dart` 1127 | page 599 + `widgets/pet_detail_widgets.dart` 557 | `f5d9f4c` |
 | 4 | `appointment_form_page.dart` 1107 | page 482 + `widgets/appointment_form_widgets.dart` 791 | `13ed209` |
 | 5 | `staff_queue_page.dart` 1100 | page 437 + `widgets/staff_queue_widgets.dart` 679 | `fc75e1c` |
+| 6 | `pet_list_page.dart` 1024 | page 46 + `widgets/pet_list_widgets.dart` 983 | `89d8d30` |
 
-Latest split (#5) details:
+Latest split (#6) details:
+- Moved private helpers became public with `super.key`: `PetListView`, `StaffPetListView`,
+  `PetNotLoggedInView` (the `Pet` prefix avoids colliding with the owner-queue
+  `NotLoggedInView` in `queue_widgets.dart`).
+- `_PetListViewState`, `_StaffPetListViewState`, `_PetCard`, `_EmptyPetsView`,
+  `_StaffPetCard` stayed file-private.
+- Reverse-rename gotcha: `PetListView`/`StaffPetListView` are substrings of their State
+  class names — protect state names with placeholders before renaming (same trick applies to
+  any `Foo` + `FooState` pair, and to ctor lines when verifying).
+- 16 unused imports pruned from the page; zero-drift verified; analyze clean; 9/9 tests;
+  live-checked vet Patients tab incl. search filter + empty state.
+
+Previous split (#5) details:
 - Moved private helpers became public with `super.key`: `StatsBar`, `StaffQueueEntryCard`,
   `StaffNotLoggedInView`, `StaffAccessDeniedView`.
 - `_StatItem`, `_PriorityControl`, `_priorityColor` stayed file-private (used only inside the
@@ -60,12 +73,12 @@ Re-derive the list at session start, then continue top-down:
 Get-ChildItem -Recurse lib -Filter *.dart | ForEach-Object { $n=(Get-Content $_.FullName).Count; if($n -gt 800){ '{0,5}  {1}' -f $n, $_.FullName } } | Sort-Object -Descending
 ```
 
-Remaining >800 files (as of `fc75e1c`):
+Remaining >800 files (as of `89d8d30`):
 
 | File | Lines | Status |
 |---|---|---|
-| `features/pets/presentation/pages/pet_list_page.dart` | 1024 | **next** |
-| `features/notifications/presentation/pages/notification_list_page.dart` | 925 | pending |
+| `features/notifications/presentation/pages/notification_list_page.dart` | 925 | **next** |
+| `features/pets/presentation/widgets/pet_list_widgets.dart` | 983 | second pass (widgets file) |
 | `features/medical_records/presentation/pages/medical_record_form_page.dart` | 902 | pending |
 | `features/pets/presentation/pages/pet_form_page.dart` | 876 | pending |
 | `features/appointments/presentation/pages/appointment_list_page.dart` | 860 | pending |
@@ -198,5 +211,5 @@ remote refs equal local HEAD.
 
 ---
 
-*Continue with §3 "next target": `pet_list_page.dart` (1024 lines) — recon first, likely
-another mechanical move. Keep one commit per file and the §5 gate.*
+*Continue with §3 "next target": `notification_list_page.dart` (925 lines) — recon first.
+Keep one commit per file and the §5 gate.*
