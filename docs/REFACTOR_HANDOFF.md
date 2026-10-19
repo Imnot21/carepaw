@@ -1,6 +1,6 @@
 # Refactor sweep — handoff doc (continue on the laptop)
 
-Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `89d8d30`
+Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `7817377`
 Repo: https://github.com/Imnot21/carepaw
 
 This doc is the continuation package for the ">800-line file sweep" (P2 maintainability work).
@@ -10,7 +10,7 @@ Read this first on the laptop, then continue from **Next target**.
 
 ## 1. Current state
 
-- `feature/neumorphism-design` == `master` == `89d8d30` (doc-update commits may follow; check
+- `feature/neumorphism-design` == `master` == `7817377` (doc-update commits may follow; check
   `git log --oneline -3` on the laptop to see the true head).
 - Working tree clean. `flutter analyze` clean. `flutter test` green (9/9).
 - Sweep canon (locked): **zero behavior change**, one file per commit, analyze + test each,
@@ -29,8 +29,19 @@ Each split = one commit. Numbers are line counts at split time.
 | 4 | `appointment_form_page.dart` 1107 | page 482 + `widgets/appointment_form_widgets.dart` 791 | `13ed209` |
 | 5 | `staff_queue_page.dart` 1100 | page 437 + `widgets/staff_queue_widgets.dart` 679 | `fc75e1c` |
 | 6 | `pet_list_page.dart` 1024 | page 46 + `widgets/pet_list_widgets.dart` 983 | `89d8d30` |
+| 7 | `notification_list_page.dart` 925 | page 509 + `widgets/notification_list_widgets.dart` 475 | `7817377` |
 
-Latest split (#6) details:
+Latest split (#7) details:
+- Mixed split: tail classes moved mechanically (`NotificationCreateDialog` + private state,
+  `NotificationEmptyState`, `NotificationNotLoggedInView`), and the 184-line
+  `_buildNotificationCard` method was extracted into `NotificationCard` (takes
+  `typeColor`/`typeSvg` + `onViewDetails`/`onDelete`; the unused `highlightUnread` param was
+  dropped). Page keeps tabs/bloc/route wiring + list sections.
+- Verified with two block checks: tail region and card body are line-identical to HEAD after
+  reverting renames/replacements.
+- 8 unused imports pruned; live-checked all four tabs + both card states + View Details nav.
+
+Previous split (#6) details:
 - Moved private helpers became public with `super.key`: `PetListView`, `StaffPetListView`,
   `PetNotLoggedInView` (the `Pet` prefix avoids colliding with the owner-queue
   `NotLoggedInView` in `queue_widgets.dart`).
@@ -73,11 +84,11 @@ Re-derive the list at session start, then continue top-down:
 Get-ChildItem -Recurse lib -Filter *.dart | ForEach-Object { $n=(Get-Content $_.FullName).Count; if($n -gt 800){ '{0,5}  {1}' -f $n, $_.FullName } } | Sort-Object -Descending
 ```
 
-Remaining >800 files (as of `89d8d30`):
+Remaining >800 files (as of `7817377`):
 
 | File | Lines | Status |
 |---|---|---|
-| `features/notifications/presentation/pages/notification_list_page.dart` | 925 | **next** |
+| `features/medical_records/presentation/pages/medical_record_form_page.dart` | 902 | **next** |
 | `features/pets/presentation/widgets/pet_list_widgets.dart` | 983 | second pass (widgets file) |
 | `features/medical_records/presentation/pages/medical_record_form_page.dart` | 902 | pending |
 | `features/pets/presentation/pages/pet_form_page.dart` | 876 | pending |
@@ -211,5 +222,5 @@ remote refs equal local HEAD.
 
 ---
 
-*Continue with §3 "next target": `notification_list_page.dart` (925 lines) — recon first.
+*Continue with §3 "next target": `medical_record_form_page.dart` (902 lines) — recon first.
 Keep one commit per file and the §5 gate.*
