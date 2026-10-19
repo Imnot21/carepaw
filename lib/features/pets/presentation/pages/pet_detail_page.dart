@@ -9,6 +9,7 @@ import 'package:carepaw/features/pets/presentation/pages/pet_form_page.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
+import 'package:carepaw/features/pets/presentation/widgets/pet_detail_widgets.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
@@ -19,7 +20,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
@@ -130,7 +130,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
 
                   // Quick info chips
                   const SizedBox(height: 16),
-                  _QuickInfoChips(pet: _pet),
+                  QuickInfoChips(pet: _pet),
                 ],
               ),
             ),
@@ -147,7 +147,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   icon: Icons.info_outline_rounded,
                   svgAsset: SvgIcons.info,
                   iconColor: speciesColor,
-                  child: _BasicInfoCard(pet: _pet),
+                  child: BasicInfoCard(pet: _pet),
                 ),
                 const SizedBox(height: 20),
 
@@ -158,7 +158,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   icon: Icons.monitor_weight_outlined,
                   svgAsset: SvgIcons.weightScale,
                   iconColor: ThemeColors.primary(context),
-                  child: _WeightTrackingCard(
+                  child: WeightTrackingCard(
                     pet: _pet,
                     onAddWeight: _showAddWeightDialog,
                   ),
@@ -172,7 +172,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   icon: Icons.flash_on_rounded,
                   svgAsset: SvgIcons.bolt,
                   iconColor: ThemeColors.textSecondary(context),
-                  child: _QuickActionsCard(pet: _pet),
+                  child: QuickActionsCard(pet: _pet),
                 ),
                 const SizedBox(height: 20),
 
@@ -183,7 +183,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   icon: Icons.medical_services_outlined,
                   svgAsset: SvgIcons.visit,
                   iconColor: ThemeColors.progress(context),
-                  child: _MedicalRecordsCard(pet: _pet),
+                  child: MedicalRecordsCard(pet: _pet),
                 ),
               ]),
             ),
@@ -239,7 +239,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _MenuTile(
+            MenuTile(
               icon: Icons.edit_outlined,
               svgAsset: SvgIcons.edit,
               title: 'Edit Pet',
@@ -249,7 +249,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 _navigateToEdit(context);
               },
             ),
-            _MenuTile(
+            MenuTile(
               icon: Icons.monitor_weight_outlined,
               svgAsset: SvgIcons.weightScale,
               title: 'Add Weight Entry',
@@ -260,7 +260,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
               },
             ),
             if (_pet.isActive)
-              _MenuTile(
+              MenuTile(
                 icon: Icons.archive_outlined,
                 svgAsset: SvgIcons.archive,
                 title: 'Deactivate',
@@ -273,7 +273,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 },
               )
             else
-              _MenuTile(
+              MenuTile(
                 icon: Icons.unarchive_outlined,
                 svgAsset: SvgIcons.unarchive,
                 title: 'Activate',
@@ -392,535 +392,6 @@ class _PetDetailPageState extends State<PetDetailPage> {
         _updatePet(updatedPet);
         context.read<PetBloc>().add(UpdatePet(pet: updatedPet));
       },
-    );
-  }
-}
-
-/// Menu tile used in the bottom sheet
-class _MenuTile extends StatelessWidget {
-  final IconData icon;
-  final String? svgAsset;
-  final String title;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _MenuTile({
-    required this.icon,
-    this.svgAsset,
-    required this.title,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return NeuContainer(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      borderRadius: 14,
-      variant: NeuVariant.flat,
-      child: Row(
-        children: [
-          NeuContainer(
-            padding: const EdgeInsets.all(8),
-            borderRadius: 10,
-            variant: NeuVariant.flat,
-            child: svgAsset != null
-                ? NeuSvgIcon(svgAsset!, size: 20)
-                : Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.titleSmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: ThemeColors.textPrimary(context),
-              ),
-            ),
-          ),
-          const NeuSvgIcon(SvgIcons.chevronRight, size: 20),
-        ],
-      ),
-    );
-  }
-}
-
-/// Quick info chips row using PetUtils.buildInfoChip
-class _QuickInfoChips extends StatelessWidget {
-  final Pet pet;
-  const _QuickInfoChips({required this.pet});
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      alignment: WrapAlignment.center,
-      children: [
-        NeuChip(
-          label: PetUtils.formatSpecies(pet.species),
-          svgAsset: PetUtils.getSpeciesSvg(pet.species),
-          selected: true,
-          selectedColor: PetUtils.getSpeciesColor(pet.species),
-        ),
-        if (pet.breed != null)
-          NeuChip(
-            label: pet.breed!,
-            svgAsset: SvgIcons.paw,
-            selected: true,
-            selectedColor: ThemeColors.primary(context),
-          ),
-        if (pet.birthDate != null)
-          NeuChip(
-            label: 'Age: ${PetUtils.calculateAge(pet.birthDate!)}',
-            svgAsset: SvgIcons.calendar,
-            selected: true,
-            selectedColor: AppColors.tertiary,
-          ),
-        if (pet.weightKg != null)
-          NeuChip(
-            label: '${pet.weightKg!.toStringAsFixed(1)} kg',
-            svgAsset: SvgIcons.weightScale,
-            selected: true,
-            selectedColor: ThemeColors.primary(context),
-          ),
-        if (pet.microchipId != null)
-          NeuChip(
-            label: 'Microchipped',
-            icon: Icons.nfc_outlined,
-            svgAsset: SvgIcons.microchip,
-            selected: true,
-            selectedColor: ThemeColors.success(context),
-          ),
-      ],
-    );
-  }
-}
-
-/// Basic info card using PetUtils for species formatting
-class _BasicInfoCard extends StatelessWidget {
-  final Pet pet;
-  const _BasicInfoCard({required this.pet});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _InfoRow(
-          icon: Icons.badge_outlined,
-          svgAsset: SvgIcons.badge,
-          label: 'Name',
-          value: pet.name,
-          valueStyle: AppTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        _InfoRow(
-          svgAsset: PetUtils.getSpeciesSvg(pet.species),
-          label: 'Species',
-          value: PetUtils.formatSpecies(pet.species),
-          valueStyle: AppTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-            color: PetUtils.getSpeciesColor(pet.species),
-          ),
-        ),
-        if (pet.breed != null)
-          _InfoRow(
-            icon: Icons.category_outlined,
-            svgAsset: SvgIcons.category,
-            label: 'Breed',
-            value: pet.breed!,
-          ),
-        if (pet.sex != null)
-          _InfoRow(
-            icon: pet.sex == PetSex.male
-                ? Icons.male_outlined
-                : Icons.female_outlined,
-            svgAsset: pet.sex == PetSex.male ? SvgIcons.male : SvgIcons.female,
-            label: 'Sex',
-            value: pet.sex!.displayName,
-          ),
-        if (pet.color != null)
-          _InfoRow(
-            icon: Icons.palette_outlined,
-            svgAsset: SvgIcons.palette,
-            label: 'Color',
-            value: pet.color!,
-          ),
-        if (pet.birthDate != null)
-          _InfoRow(
-            icon: Icons.cake_outlined,
-            svgAsset: SvgIcons.cake,
-            label: 'Birth Date',
-            value:
-                '${pet.birthDate!.day}/${pet.birthDate!.month}/${pet.birthDate!.year}',
-          ),
-        if (pet.microchipId != null)
-          _InfoRow(
-            icon: Icons.nfc_outlined,
-            svgAsset: SvgIcons.microchip,
-            label: 'Microchip ID',
-            value: pet.microchipId!,
-          ),
-        _InfoRow(
-          icon: Icons.flag_outlined,
-          svgAsset: SvgIcons.flag,
-          label: 'Status',
-          value: pet.isActive ? 'Active' : 'Inactive',
-          valueStyle: AppTextStyles.bodyMedium.copyWith(
-            color: pet.isActive
-                ? ThemeColors.success(context)
-                : ThemeColors.warning(context),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        _InfoRow(
-          icon: Icons.access_time_outlined,
-          svgAsset: SvgIcons.schedule,
-          label: 'Created',
-          value:
-              '${pet.createdAt.day}/${pet.createdAt.month}/${pet.createdAt.year}',
-        ),
-        _InfoRow(
-          icon: Icons.update_outlined,
-          svgAsset: SvgIcons.refresh,
-          label: 'Last Updated',
-          value:
-              '${pet.updatedAt.day}/${pet.updatedAt.month}/${pet.updatedAt.year}',
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData? icon;
-  final String? svgAsset;
-  final String label;
-  final String value;
-  final TextStyle? valueStyle;
-  const _InfoRow({
-    this.icon,
-    this.svgAsset,
-    required this.label,
-    required this.value,
-    this.valueStyle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Row(
-        children: [
-          NeuContainer(
-            padding: const EdgeInsets.all(10),
-            borderRadius: 10,
-            variant: NeuVariant.flat,
-            child: svgAsset != null
-                ? NeuSvgIcon(svgAsset!, size: 22)
-                : Icon(
-                    icon!,
-                    size: 22,
-                    color: ThemeColors.textSecondary(context),
-                  ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style:
-                valueStyle ??
-                AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Weight tracking card
-class _WeightTrackingCard extends StatelessWidget {
-  final Pet pet;
-  final void Function(BuildContext) onAddWeight;
-  const _WeightTrackingCard({required this.pet, required this.onAddWeight});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (pet.weightKg != null) ...[
-          Row(
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(12),
-                borderRadius: 14,
-                variant: NeuVariant.flat,
-                child: const NeuSvgIcon(SvgIcons.weightScale, size: 26),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Current Weight',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: ThemeColors.textSecondary(context),
-                      ),
-                    ),
-                    Text(
-                      '${pet.weightKg!.toStringAsFixed(1)} kg',
-                      style: AppTextStyles.headlineMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: ThemeColors.primary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              NeuButton(
-                text: 'Add Entry',
-                onPressed: () => onAddWeight(context),
-                icon: Icons.add,
-                svgAsset: SvgIcons.add,
-                size: NeuButtonSize.medium,
-              ),
-            ],
-          ),
-        ] else ...[
-          Center(
-            child: Column(
-              children: [
-                NeuContainer(
-                  padding: const EdgeInsets.all(24),
-                  borderRadius: 24,
-                  variant: NeuVariant.flat,
-                  child: const NeuSvgIcon(SvgIcons.weightScale, size: 56),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No weight recorded yet',
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Add a weight entry to track your pet's health",
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                NeuButton(
-                  text: 'Add First Weight',
-                  onPressed: () => onAddWeight(context),
-                  icon: Icons.add,
-                  svgAsset: SvgIcons.add,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// Quick actions card
-class _QuickActionsCard extends StatelessWidget {
-  final Pet pet;
-  const _QuickActionsCard({required this.pet});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _ActionTile(
-          icon: Icons.calendar_today_outlined,
-          svgAsset: SvgIcons.calendar,
-          title: 'Book Appointment',
-          subtitle: 'Schedule a vet visit',
-          color: ThemeColors.primary(context),
-          onTap: () {
-            final petId = pet.id;
-            if (petId == null) return;
-            context.push('${Routes.appointmentRequest}?petId=$petId');
-          },
-        ),
-        NeuDivider(thickness: 1, indent: 56),
-        _ActionTile(
-          icon: Icons.medical_services_outlined,
-          svgAsset: SvgIcons.visit,
-          title: 'View Medical Records',
-          subtitle: 'Vaccinations, treatments, notes',
-          color: ThemeColors.progress(context),
-          onTap: () {
-            final petId = pet.id;
-            if (petId == null) return;
-            context.push('${Routes.medicalRecords}?petId=$petId');
-          },
-        ),
-        NeuDivider(thickness: 1, indent: 56),
-        _ActionTile(
-          icon: Icons.vaccines_outlined,
-          svgAsset: SvgIcons.vaccination,
-          title: 'Vaccination Schedule',
-          subtitle: 'Track upcoming vaccines',
-          color: ThemeColors.textSecondary(context),
-          onTap: () {
-            final petId = pet.id;
-            if (petId == null) return;
-            context.push('${Routes.medicalRecords}?petId=$petId');
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionTile extends StatelessWidget {
-  final IconData icon;
-  final String? svgAsset;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
-  const _ActionTile({
-    required this.icon,
-    this.svgAsset,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return NeuContainer(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      borderRadius: 14,
-      variant: NeuVariant.flat,
-      child: Row(
-        children: [
-          NeuContainer(
-            padding: const EdgeInsets.all(8),
-            borderRadius: 10,
-            variant: NeuVariant.flat,
-            child: svgAsset != null
-                ? NeuSvgIcon(svgAsset!, size: 22)
-                : Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyles.titleSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: ThemeColors.textPrimary(context),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const NeuSvgIcon(SvgIcons.chevronRight, size: 20),
-        ],
-      ),
-    );
-  }
-}
-
-/// Medical records card
-class _MedicalRecordsCard extends StatelessWidget {
-  final Pet pet;
-  const _MedicalRecordsCard({required this.pet});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            NeuContainer(
-              padding: const EdgeInsets.all(12),
-              borderRadius: 14,
-              variant: NeuVariant.flat,
-              child: const NeuSvgIcon(SvgIcons.visit, size: 26),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              'Medical Records',
-              style: AppTextStyles.titleSmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: ThemeColors.textPrimary(context),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Center(
-          child: Column(
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(24),
-                borderRadius: 24,
-                variant: NeuVariant.flat,
-                child: const NeuSvgIcon(SvgIcons.folder, size: 56),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No medical records yet',
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Medical records will appear here after vet visits',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              NeuButton(
-                text: 'View Medical Records',
-                variant: NeuButtonVariant.secondary,
-                onPressed: () {
-                  final petId = pet.id;
-                  if (petId == null) return;
-                  context.push('${Routes.medicalRecords}?petId=$petId');
-                },
-                icon: Icons.arrow_forward_rounded,
-                svgAsset: SvgIcons.forward,
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
