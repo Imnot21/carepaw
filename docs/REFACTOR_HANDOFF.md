@@ -1,6 +1,6 @@
 # Refactor sweep — handoff doc (continue on the laptop)
 
-Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `7817377`
+Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `d3edee5`
 Repo: https://github.com/Imnot21/carepaw
 
 This doc is the continuation package for the ">800-line file sweep" (P2 maintainability work).
@@ -10,12 +10,24 @@ Read this first on the laptop, then continue from **Next target**.
 
 ## 1. Current state
 
-- `feature/neumorphism-design` == `master` == `7817377` (doc-update commits may follow; check
-  `git log --oneline -3` on the laptop to see the true head).
+- `feature/neumorphism-design` == `master` == `d3edee5` (8/15 splits shipped; doc-update
+  commits may follow — check `git log --oneline -3` on the laptop for the true head).
 - Working tree clean. `flutter analyze` clean. `flutter test` green (9/9).
 - Sweep canon (locked): **zero behavior change**, one file per commit, analyze + test each,
   live spot-check on the emulator before push, push = branch + fast-forward `master`.
 - `carepawdemo` mirror branch intentionally **not** pushed.
+
+### Resume on the laptop (quick start)
+
+```powershell
+git fetch origin
+git checkout feature/neumorphism-design   # creates the tracking branch if new
+git pull
+flutter pub get
+flutter analyze                           # expect: No issues found!
+flutter test                              # expect: 9/9 passed
+# next: §3 next target = pet_form_page.dart (876); use §4 recipe + §5 gate checklist
+```
 
 ## 2. What was changed in the sweep (so far)
 
