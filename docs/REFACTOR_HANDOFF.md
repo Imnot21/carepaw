@@ -30,8 +30,23 @@ Each split = one commit. Numbers are line counts at split time.
 | 5 | `staff_queue_page.dart` 1100 | page 437 + `widgets/staff_queue_widgets.dart` 679 | `fc75e1c` |
 | 6 | `pet_list_page.dart` 1024 | page 46 + `widgets/pet_list_widgets.dart` 983 | `89d8d30` |
 | 7 | `notification_list_page.dart` 925 | page 509 + `widgets/notification_list_widgets.dart` 475 | `7817377` |
+| 8 | `medical_record_form_page.dart` 902 | page 625 + `widgets/medical_record_form_widgets.dart` 330 | `121fc2c` |
 
-Latest split (#7) details:
+Latest split (#8) details:
+- Mixed split: 3 builder methods extracted into widgets (`MedicalRecordPetHeader` from
+  `_buildPetHeader`, `MedicalRecordTypeSelector` from `_buildTypeSelector` with an `onChanged`
+  callback, `MedicalRecordFormField` from `_buildField` — 18 call sites renamed, `context:`
+  args dropped, `svgAsset!` after null-check because widget fields lose null-promotion) + the
+  two tail views moved with `MedicalRecord` prefixes (`MedicalRecordNotLoggedInView`,
+  `MedicalRecordAccessDeniedView` — avoids the queue/notification `NotLoggedInView`/
+  `AccessDeniedView` clashes).
+- Zero-drift verified with 4 block checks: tail + all three method bodies line-identical to
+  HEAD after reverting renames/replacements; 7 unused imports pruned.
+- Live-checked the New Record form: pet header + type chip, type selector (Visit→Vaccination
+  swapped the header chip and Diagnosis→Vaccines Given), validators block submit on an empty
+  form (no Firestore write), back nav; logcat clean.
+
+Previous split (#7) details:
 - Mixed split: tail classes moved mechanically (`NotificationCreateDialog` + private state,
   `NotificationEmptyState`, `NotificationNotLoggedInView`), and the 184-line
   `_buildNotificationCard` method was extracted into `NotificationCard` (takes
@@ -84,14 +99,12 @@ Re-derive the list at session start, then continue top-down:
 Get-ChildItem -Recurse lib -Filter *.dart | ForEach-Object { $n=(Get-Content $_.FullName).Count; if($n -gt 800){ '{0,5}  {1}' -f $n, $_.FullName } } | Sort-Object -Descending
 ```
 
-Remaining >800 files (as of `7817377`):
+Remaining >800 files (as of `121fc2c`):
 
 | File | Lines | Status |
 |---|---|---|
-| `features/medical_records/presentation/pages/medical_record_form_page.dart` | 902 | **next** |
 | `features/pets/presentation/widgets/pet_list_widgets.dart` | 983 | second pass (widgets file) |
-| `features/medical_records/presentation/pages/medical_record_form_page.dart` | 902 | pending |
-| `features/pets/presentation/pages/pet_form_page.dart` | 876 | pending |
+| `features/pets/presentation/pages/pet_form_page.dart` | 876 | **next** |
 | `features/appointments/presentation/pages/appointment_list_page.dart` | 860 | pending |
 | `features/queue/presentation/widgets/queue_widgets.dart` | 858 | maybe second pass |
 | `features/inventory/presentation/pages/inventory_list_page.dart` | 853 | pending |
@@ -222,5 +235,5 @@ remote refs equal local HEAD.
 
 ---
 
-*Continue with §3 "next target": `medical_record_form_page.dart` (902 lines) — recon first.
+*Continue with §3 "next target": `pet_form_page.dart` (876 lines) — recon first.
 Keep one commit per file and the §5 gate.*
