@@ -54,8 +54,12 @@ Latest split (#9) details:
   moved with their widgets; `super.key` added to the five public constructors.
 - Zero-drift verified with two block checks: both the page body and the moved widget body are
   byte-identical to HEAD after reverting renames + `super.key` insertions. 2 unused imports
-  pruned (`neu_chip`, `neu_switch`). Live spot-check was not possible on this machine
-  (no Android emulator installed); debug APK build passed.
+  pruned (`neu_chip`, `neu_switch`).
+- Live spot-check: this machine has no Android emulator, so the form was verified on
+  Flutter web instead (Chrome, 500×805 viewport): species chips switch + avatar updates,
+  sex selector, breed dropdown shows the correct per-species list (Cat → shorthair/longhair/
+  Persian/Maine Coon/…), birth-date picker opens, lower sections and submit render. Debug APK
+  build also passed.
 
 Previous split (#8) details:
 - Mixed split: 3 builder methods extracted into widgets (`MedicalRecordPetHeader` from
