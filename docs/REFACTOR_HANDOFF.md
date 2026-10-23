@@ -10,7 +10,7 @@ Read this first on either machine, then continue from **Next target**.
 
 ## 1. Current state
 
-- `feature/neumorphism-design` == `master` (9/15 splits shipped; doc-update
+- `feature/neumorphism-design` == `master` (10/15 splits shipped; doc-update
   commits may follow — check `git log --oneline -3` for the true head).
 - Working tree clean. `flutter analyze` clean. `flutter test` green (9/9).
 - Sweep canon (locked): **zero behavior change**, one file per commit, analyze + test each,
@@ -26,7 +26,7 @@ git pull
 flutter pub get
 flutter analyze                           # expect: No issues found!
 flutter test                              # expect: 9/9 passed
-# next: §3 next target = appointment_list_page.dart (860); use §4 recipe + §5 gate checklist
+# next: §3 next target = inventory_list_page.dart (853); use §4 recipe + §5 gate checklist
 ```
 
 ## 2. What was changed in the sweep (so far)
@@ -44,8 +44,16 @@ Each split = one commit. Numbers are line counts at split time.
 | 7 | `notification_list_page.dart` 925 | page 509 + `widgets/notification_list_widgets.dart` 475 | `7817377` |
 | 8 | `medical_record_form_page.dart` 902 | page 625 + `widgets/medical_record_form_widgets.dart` 330 | `121fc2c` |
 | 9 | `pet_form_page.dart` 876 | page 391 + `widgets/pet_form_widgets.dart` 501 | `33a47b0` |
+| 10 | `appointment_list_page.dart` 813 | page 451 + `widgets/appointment_list_widgets.dart` 375 | `a0d55da` |
 
-Latest split (#9) details:
+Latest split (#10) details:
+- Pure mechanical tail move: `_AppointmentCard` → `widgets/appointment_list_widgets.dart`,
+  renamed public `AppointmentCard` with `super.key` added; one call site updated.
+- Zero-drift verified: moved block is byte-identical to HEAD after reverting the rename and
+  the `super.key` insertion. 5 imports pruned from the page (`intl`, `neu_card`,
+  `neu_container`, `neu_shapes`, `pet_utils`), none added.
+
+Previous split (#9) details:
 - Mechanical move of the five form widgets — `PetSpeciesSelector`, `PetSexSelector`,
   `PetBreedSelector`, `PetBirthDateField`, `PetActiveSwitch` — plus the private
   `_commonBreedsBySpecies` map into `widgets/pet_form_widgets.dart`.
@@ -128,14 +136,13 @@ Re-derive the list at session start, then continue top-down:
 Get-ChildItem -Recurse lib -Filter *.dart | ForEach-Object { $n=(Get-Content $_.FullName).Count; if($n -gt 800){ '{0,5}  {1}' -f $n, $_.FullName } } | Sort-Object -Descending
 ```
 
-Remaining >800 files (as of `33a47b0`):
+Remaining >800 files (as of `a0d55da`):
 
 | File | Lines | Status |
 |---|---|---|
 | `features/pets/presentation/widgets/pet_list_widgets.dart` | 983 | second pass (widgets file) |
-| `features/appointments/presentation/pages/appointment_list_page.dart` | 860 | **next** |
 | `features/queue/presentation/widgets/queue_widgets.dart` | 858 | maybe second pass |
-| `features/inventory/presentation/pages/inventory_list_page.dart` | 853 | pending |
+| `features/inventory/presentation/pages/inventory_list_page.dart` | 853 | **next** |
 | `core/widgets/neomorphism/neu_icon_system.dart` | 853 | pending (shared widget — extra care) |
 | `features/medical_records/presentation/pages/medical_record_list_page.dart` | 821 | pending |
 | `features/home/presentation/pages/staff_dashboard_page.dart` | 832 | **reserve — after defense** |
@@ -263,5 +270,5 @@ remote refs equal local HEAD.
 
 ---
 
-*Continue with §3 "next target": `appointment_list_page.dart` (860 lines) — recon first.
+*Continue with §3 "next target": `inventory_list_page.dart` (853 lines) — recon first.
 Keep one commit per file and the §5 gate.*
