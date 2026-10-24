@@ -120,18 +120,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               ),
             ),
             const SizedBox(height: 4),
-            NeuContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              borderRadius: NeuTokens.radiusSm,
-              variant: NeuVariant.flat,
-              child: Text(
-                record.scanType.displayName,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: typeColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+            NeuTag(label: record.scanType.displayName, color: typeColor),
           ],
         ),
       ),

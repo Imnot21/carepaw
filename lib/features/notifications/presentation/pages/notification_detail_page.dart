@@ -15,6 +15,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
@@ -90,20 +91,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             ),
           ),
           const SizedBox(height: 2),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: typeColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-            ),
-            child: Text(
-              notification.type.displayName,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: typeColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          NeuTag(label: notification.type.displayName, color: typeColor),
         ],
       ),
       actions: [

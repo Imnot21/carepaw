@@ -393,35 +393,17 @@ class _ScanListPageState extends State<ScanListPage>
   }
 
   Widget _buildConfidenceIndicator(double confidence) {
-    Color color;
-    if (confidence >= 0.8) {
-      color = ThemeColors.success(context);
-    } else if (confidence >= 0.6) {
-      color = ThemeColors.warning(context);
-    } else {
-      color = ThemeColors.error(context);
-    }
+    final tone = confidence >= 0.8
+        ? NeuStatusTone.success
+        : confidence >= 0.6
+        ? NeuStatusTone.warning
+        : NeuStatusTone.danger;
 
-    return NeuContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      borderRadius: NeuTokens.radiusSm,
-      variant: NeuVariant.flat,
-      borderColor: color.withValues(alpha: 0.3),
-      borderWidth: 1,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NeuSvgIcon(SvgIcons.bolt, size: 12),
-          const SizedBox(width: 4),
-          Text(
-            '${(confidence * 100).toInt()}%',
-            style: AppTextStyles.labelSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
+    return NeuStatusBadge(
+      label: '${(confidence * 100).toInt()}%',
+      tone: tone,
+      icon: Icons.bolt_rounded,
+      compact: true,
     );
   }
 

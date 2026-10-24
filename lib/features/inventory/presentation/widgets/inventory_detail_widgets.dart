@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
@@ -132,19 +133,19 @@ class InventoryDetailHeader extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           if (isOutOfStock)
-                            InventoryStatusChip(
-                              text: 'Out of Stock',
-                              color: ThemeColors.error(context),
+                            NeuStatusBadge(
+                              label: 'Out of Stock',
+                              tone: NeuStatusTone.danger,
                             )
                           else if (isLowStock)
-                            InventoryStatusChip(
-                              text: 'Low Stock',
-                              color: ThemeColors.warning(context),
+                            NeuStatusBadge(
+                              label: 'Low Stock',
+                              tone: NeuStatusTone.warning,
                             )
                           else
-                            InventoryStatusChip(
-                              text: 'In Stock',
-                              color: ThemeColors.success(context),
+                            NeuStatusBadge(
+                              label: 'In Stock',
+                              tone: NeuStatusTone.success,
                             ),
                         ],
                       ),
@@ -156,37 +157,6 @@ class InventoryDetailHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Small tinted pill for stock/batch status (`Low Stock`, `Expired`, ...).
-class InventoryStatusChip extends StatelessWidget {
-  final String text;
-  final Color color;
-
-  const InventoryStatusChip({
-    super.key,
-    required this.text,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -92,14 +93,14 @@ void showBatchDetailSheet(
                 ),
               ),
               if (batch.isExpired)
-                InventoryStatusChip(
-                  text: 'Expired',
-                  color: ThemeColors.error(context),
+                NeuStatusBadge(
+                  label: 'Expired',
+                  tone: NeuStatusTone.danger,
                 )
               else if (batch.isExpiringSoon)
-                InventoryStatusChip(
-                  text: 'Expiring Soon',
-                  color: ThemeColors.warning(context),
+                NeuStatusBadge(
+                  label: 'Expiring Soon',
+                  tone: NeuStatusTone.warning,
                 ),
             ],
           ),
