@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -85,31 +86,11 @@ class _ProfilePageState extends State<ProfilePage> {
       // instead of staying stale until the next login.
       context.read<AuthBloc>().add(const auth_events.AuthCheckRequested());
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Profile updated.'),
-          backgroundColor: ThemeColors.success(context),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      NeuToast.success(context, 'Profile updated.');
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Update failed: $e'),
-          backgroundColor: ThemeColors.error(context),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      NeuToast.error(context, 'Could not update profile. Please try again.');
     }
   }
 
@@ -132,62 +113,43 @@ class _ProfilePageState extends State<ProfilePage> {
         if (!_changingPassword) return;
         if (state is AuthPasswordChanged) {
           _changingPassword = false;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'Password changed. Please sign in again.',
-              ),
-              backgroundColor: ThemeColors.success(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          NeuToast.success(context, 'Password changed. Please sign in again.');
         } else if (state is AuthError) {
           _changingPassword = false;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Password change failed: ${state.failure.message}'),
-              backgroundColor: ThemeColors.error(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
+          NeuToast.error(
+            context,
+            'Password change failed: ${state.failure.message}',
           );
         }
       },
       child: Scaffold(
-      backgroundColor: ThemeColors.background(context),
-      appBar: AppBar(
-        title: Text(
-          'Profile',
-          style: AppTextStyles.appBarTitle.copyWith(
-            color: ThemeColors.textPrimary(context),
+        backgroundColor: ThemeColors.background(context),
+        appBar: AppBar(
+          title: Text(
+            'Profile',
+            style: AppTextStyles.appBarTitle.copyWith(
+              color: ThemeColors.textPrimary(context),
+            ),
           ),
+          centerTitle: true,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: Colors.transparent,
         ),
-        centerTitle: true,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, authState) {
-          if (authState is! AuthAuthenticated) {
-            return const Center(
-              child: NeuCircularProgress(size: 32, strokeWidth: 3),
-            );
-          }
-          return _buildProfile(context, authState.user);
-        },
-      ),
-      // Add bottom padding to prevent content from being hidden by navigation bar
-      extendBody: true,
-      bottomNavigationBar:
-          const SizedBox.shrink(), // This ensures the scaffold has a bottom navigation bar space
+        body: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            if (authState is! AuthAuthenticated) {
+              return const Center(
+                child: NeuCircularProgress(size: 32, strokeWidth: 3),
+              );
+            }
+            return _buildProfile(context, authState.user);
+          },
+        ),
+        // Add bottom padding to prevent content from being hidden by navigation bar
+        extendBody: true,
+        bottomNavigationBar:
+            const SizedBox.shrink(), // This ensures the scaffold has a bottom navigation bar space
       ),
     );
   }
@@ -668,8 +630,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           text: 'Cancel',
                           variant: NeuButtonVariant.outline,
                           size: NeuButtonSize.medium,
-                          onPressed: () =>
-                              Navigator.pop(dialogContext),
+                          onPressed: () => Navigator.pop(dialogContext),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -681,8 +642,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: Icons.check_rounded,
                           svgAsset: SvgIcons.check,
                           onPressed: () {
-                            if (!(formKey.currentState?.validate() ??
-                                false)) {
+                            if (!(formKey.currentState?.validate() ?? false)) {
                               return;
                             }
                             Navigator.pop(dialogContext);

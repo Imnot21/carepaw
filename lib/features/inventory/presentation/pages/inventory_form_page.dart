@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
@@ -470,8 +471,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                               Text(
                                 'Max: ${_maxStockController.text}',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color:
-                                      ThemeColors.info(context),
+                                  color: ThemeColors.info(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -638,32 +638,14 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
         subscription.cancel();
         if (mounted) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: ThemeColors.success(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-            ),
-          );
+          NeuToast.success(context, state.message);
           Navigator.pop(context, true);
         }
       } else if (state is InventoryError) {
         subscription.cancel();
         if (mounted) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.failure.message),
-              backgroundColor: ThemeColors.error(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-            ),
-          );
+          NeuToast.error(context, state.failure.message);
         }
       }
     });

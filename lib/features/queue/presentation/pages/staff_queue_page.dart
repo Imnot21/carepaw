@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
@@ -85,31 +86,11 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           body: BlocConsumer<QueueBloc, QueueState>(
             listener: (context, state) {
               if (state is QueueOperationSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: ThemeColors.success(context),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                    ),
-                    margin: const EdgeInsets.all(16),
-                  ),
-                );
+                NeuToast.success(context, state.message);
                 // Reload queue after successful operation
                 context.read<QueueBloc>().add(QueueStaffLoadRequested());
               } else if (state is QueueError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: ThemeColors.error(context),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                    ),
-                    margin: const EdgeInsets.all(16),
-                  ),
-                );
+                NeuToast.error(context, state.message);
               }
             },
             builder: (context, state) {

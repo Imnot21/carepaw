@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -101,36 +102,15 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               _isLoading = false;
               if (mounted) {
                 context.go(Routes.appointments);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      isEditing
-                          ? 'Appointment updated'
-                          : 'Appointment requested',
-                    ),
-                    backgroundColor: ThemeColors.success(context),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                    ),
-                    margin: const EdgeInsets.all(16),
-                  ),
+                NeuToast.success(
+                  context,
+                  isEditing ? 'Appointment updated' : 'Appointment requested',
                 );
               }
             } else if (state is AppointmentError) {
               _isLoading = false;
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: ThemeColors.error(context),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                    ),
-                    margin: const EdgeInsets.all(16),
-                  ),
-                );
+                NeuToast.error(context, state.message);
               }
             } else if (state is AppointmentLoading) {
               _isLoading = true;
@@ -237,8 +217,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             isVetOrStaff: _isVetOrStaff,
             veterinariansFuture: _veterinariansFuture,
             selectedVeterinarianId: _selectedVeterinarianId,
-            onVetSelected: (id) =>
-                setState(() => _selectedVeterinarianId = id),
+            onVetSelected: (id) => setState(() => _selectedVeterinarianId = id),
             onAutoSelect: (id) => _selectedVeterinarianId = id,
           );
         case 2:
@@ -319,17 +298,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedPetId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a pet'),
-          backgroundColor: ThemeColors.error(context),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      NeuToast.error(context, 'Please select a pet');
       return;
     }
 
@@ -344,62 +313,22 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         } catch (_) {}
         if (_selectedVeterinarianId == null) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('No veterinarian available for this clinic'),
-              backgroundColor: ThemeColors.error(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          NeuToast.error(context, 'No veterinarian available for this clinic');
           return;
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Please select a veterinarian'),
-            backgroundColor: ThemeColors.error(context),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-            ),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
+        NeuToast.error(context, 'Please select a veterinarian');
         return;
       }
     }
 
     if (_selectedDateTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a date and time'),
-          backgroundColor: ThemeColors.error(context),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      NeuToast.error(context, 'Please select a date and time');
       return;
     }
 
     if (_selectedDateTime!.isBefore(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Cannot schedule appointment in the past'),
-          backgroundColor: ThemeColors.error(context),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      NeuToast.error(context, 'Cannot schedule appointment in the past');
       return;
     }
 

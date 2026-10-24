@@ -41,7 +41,6 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
 
-
   String _getTypeSvg(ScanType type) {
     switch (type) {
       case ScanType.receipt:
@@ -140,10 +139,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             padding: const EdgeInsets.all(12),
             borderRadius: NeuTokens.radiusSm,
             color: _getTypeColor(_selectedType).withValues(alpha: 0.12),
-            child: NeuSvgIcon(
-              _getTypeSvg(_selectedType),
-              size: 28,
-            ),
+            child: NeuSvgIcon(_getTypeSvg(_selectedType), size: 28),
           ),
         ],
       ),
@@ -173,10 +169,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      NeuSvgIcon(
-                        _getTypeSvg(type),
-                        size: 20,
-                      ),
+                      NeuSvgIcon(_getTypeSvg(type), size: 20),
                       const SizedBox(height: 4),
                       Text(
                         type.displayName,
@@ -527,10 +520,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            NeuSvgIcon(
-              _getTypeSvg(_selectedType),
-              size: 64,
-            ),
+            NeuSvgIcon(_getTypeSvg(_selectedType), size: 64),
             const SizedBox(height: 12),
             Text(
               'Captured Image Preview',
@@ -558,25 +548,11 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   }
 
   void _pickFromGallery() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Gallery picker would open here'),
-        backgroundColor: ThemeColors.primary(context),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
-      ),
-    );
+    NeuToast.info(context, 'Gallery picker would open here');
   }
 
   void _toggleFlash() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Flash toggled'),
-        backgroundColor: ThemeColors.primary(context),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
-      ),
-    );
+    NeuToast.info(context, 'Flash toggled');
   }
 
   void _useScan() {
@@ -601,7 +577,10 @@ class _FrameGuidePainter extends CustomPainter {
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(NeuTokens.radiusSm)),
+      RRect.fromRectAndRadius(
+        Offset.zero & size,
+        const Radius.circular(NeuTokens.radiusSm),
+      ),
       border,
     );
 

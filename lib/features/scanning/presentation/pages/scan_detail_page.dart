@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -146,10 +147,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 padding: const EdgeInsets.all(14),
                 borderRadius: NeuTokens.radiusSm,
                 color: typeColor,
-                child: NeuSvgIcon(
-                  _getTypeSvg(record.scanType),
-                  size: 28,
-                ),
+                child: NeuSvgIcon(_getTypeSvg(record.scanType), size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -390,12 +388,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                     ? authState.user.id
                     : null;
                 if (userId == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Please log in again'),
-                      backgroundColor: ThemeColors.error(context),
-                    ),
-                  );
+                  NeuToast.error(context, 'Please log in again');
                   return;
                 }
                 context.read<ScanBloc>().add(
@@ -468,7 +461,6 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
   }
 
   Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
-
 
   Color _getStatusColor(ScanStatus status) {
     switch (status) {

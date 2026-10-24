@@ -30,7 +30,10 @@ class MedicalRecordDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeInfo = MedicalRecordUtils.getTypeInfoCustom(context, record.recordType);
+    final typeInfo = MedicalRecordUtils.getTypeInfoCustom(
+      context,
+      record.recordType,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -59,8 +62,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
             builder: (context) {
               final authState = context.watch<AuthBloc>().state;
               final canEdit =
-                  authState is AuthAuthenticated &&
-                  authState.user.isOwnerAdmin;
+                  authState is AuthAuthenticated && authState.user.isOwnerAdmin;
               if (!canEdit) return const SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -102,10 +104,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        NeuSvgIcon(
-          typeInfo.svgAsset,
-          size: 20,
-        ),
+                        NeuSvgIcon(typeInfo.svgAsset, size: 20),
                         const SizedBox(width: 10),
                         Text(
                           record.recordType.displayName,

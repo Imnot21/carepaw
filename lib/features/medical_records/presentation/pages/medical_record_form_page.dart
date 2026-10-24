@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart';
@@ -95,29 +95,11 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               setState(() => _isLoading = true);
             } else if (state is MedicalRecordOperationSuccess) {
               setState(() => _isLoading = false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: ThemeColors.success(context),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                  ),
-                ),
-              );
+              NeuToast.success(context, state.message);
               context.pop();
             } else if (state is MedicalRecordError) {
               setState(() => _isLoading = false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.failure.message),
-                  backgroundColor: ThemeColors.error(context),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                  ),
-                ),
-              );
+              NeuToast.error(context, state.failure.message);
             } else if (state is MedicalRecordsLoaded ||
                 state is MedicalRecordsByTypeLoaded) {
               setState(() => _isLoading = false);
@@ -170,7 +152,8 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                       child: MedicalRecordTypeSelector(
                         selectedType: _selectedType,
                         speciesColor: speciesColor,
-                        onChanged: (type) => setState(() => _selectedType = type),
+                        onChanged: (type) =>
+                            setState(() => _selectedType = type),
                       ),
                     ),
                   ),
@@ -475,23 +458,13 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please log in again'),
-          backgroundColor: ThemeColors.error(context),
-        ),
-      );
+      NeuToast.error(context, 'Please log in again');
       return;
     }
 
     final userId = authState.user.id;
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please log in again'),
-          backgroundColor: ThemeColors.error(context),
-        ),
-      );
+      NeuToast.error(context, 'Please log in again');
       return;
     }
 

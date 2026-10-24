@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -263,13 +264,9 @@ void showTransactionSheet(
                     onPressed: () {
                       final quantity = double.tryParse(quantityController.text);
                       if (quantity == null || quantity <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Please enter a valid quantity',
-                            ),
-                            backgroundColor: ThemeColors.error(context),
-                          ),
+                        NeuToast.error(
+                          context,
+                          'Please enter a valid quantity',
                         );
                         return;
                       }
@@ -278,12 +275,7 @@ void showTransactionSheet(
                           ? authState.user.id
                           : null;
                       if (userId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Please log in again'),
-                            backgroundColor: ThemeColors.error(context),
-                          ),
-                        );
+                        NeuToast.error(context, 'Please log in again');
                         return;
                       }
                       Navigator.pop(context);
@@ -488,12 +480,7 @@ void showAddBatchSheet(BuildContext context, {required InventoryItem item}) {
                           ? null
                           : double.tryParse(costController.text);
                       if (batchNumber.isEmpty || quantity == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Please fill required fields'),
-                            backgroundColor: ThemeColors.error(context),
-                          ),
-                        );
+                        NeuToast.error(context, 'Please fill required fields');
                         return;
                       }
                       Navigator.pop(context);

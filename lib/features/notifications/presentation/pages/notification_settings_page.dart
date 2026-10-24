@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/storage/local_storage.dart';
@@ -525,16 +526,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         context.read<NotificationBloc>().add(
           const DeleteAllReadNotifications(),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Read notifications cleared'),
-            backgroundColor: ThemeColors.success(context),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-            ),
-          ),
-        );
+        NeuToast.success(context, 'Read notifications cleared');
       }
     });
   }

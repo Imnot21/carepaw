@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
@@ -283,10 +284,7 @@ class _ScanListPageState extends State<ScanListPage>
                 padding: const EdgeInsets.all(12),
                 borderRadius: NeuTokens.radiusSm,
                 color: _getTypeColor(record.scanType),
-                child: NeuSvgIcon(
-                  _getTypeSvg(record.scanType),
-                  size: 24,
-                ),
+                child: NeuSvgIcon(_getTypeSvg(record.scanType), size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -432,7 +430,6 @@ class _ScanListPageState extends State<ScanListPage>
     );
   }
 
-
   Widget _buildConfidenceIndicator(double confidence) {
     Color color;
     if (confidence >= 0.8) {
@@ -467,7 +464,6 @@ class _ScanListPageState extends State<ScanListPage>
   }
 
   Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
-
 
   String _getTypeSvg(ScanType type) {
     switch (type) {
@@ -512,14 +508,7 @@ class _ScanListPageState extends State<ScanListPage>
 
   void _useScanData(ScanRecord record) {
     // Navigate to appropriate feature based on scan type
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Using ${record.scanType.displayName} data...'),
-        backgroundColor: ThemeColors.success(context),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
-      ),
-    );
+    NeuToast.success(context, 'Using ${record.scanType.displayName} data...');
   }
 }
 

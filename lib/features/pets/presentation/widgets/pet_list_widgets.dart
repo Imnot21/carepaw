@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/app/router/routes.dart';
@@ -179,29 +180,9 @@ class _PetListViewState extends State<PetListView> {
             child: BlocConsumer<PetBloc, PetState>(
               listener: (context, state) {
                 if (state is PetError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.failure.message),
-                      backgroundColor: ThemeColors.error(context),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
+                  NeuToast.error(context, state.failure.message);
                 } else if (state is PetOperationSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: ThemeColors.success(context),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
+                  NeuToast.success(context, state.message);
                 }
               },
               builder: (context, state) {
@@ -367,7 +348,9 @@ class _PetCard extends StatelessWidget {
                             color: ThemeColors.warning(
                               context,
                             ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+                            borderRadius: BorderRadius.circular(
+                              NeuTokens.radiusSm,
+                            ),
                             border: Border.all(
                               color: ThemeColors.warning(
                                 context,
@@ -643,29 +626,9 @@ class _StaffPetListViewState extends State<StaffPetListView> {
             child: BlocConsumer<PetBloc, PetState>(
               listener: (context, state) {
                 if (state is PetError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.failure.message),
-                      backgroundColor: ThemeColors.error(context),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
+                  NeuToast.error(context, state.failure.message);
                 } else if (state is PetOperationSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: ThemeColors.success(context),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
+                  NeuToast.success(context, state.message);
                 }
               },
               builder: (context, state) {
@@ -828,7 +791,9 @@ class _StaffPetCard extends StatelessWidget {
                             color: ThemeColors.warning(
                               context,
                             ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+                            borderRadius: BorderRadius.circular(
+                              NeuTokens.radiusSm,
+                            ),
                             border: Border.all(
                               color: ThemeColors.warning(
                                 context,
