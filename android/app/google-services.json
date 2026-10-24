@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:776268691579:android:c3356116d98588129d8ade",
+        "android_client_info": {
+          "package_name": "com.carepaw.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGHVfBgm_ja4JsPEiicZRDV26qZN4Z_dM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:776268691579:android:4292c4c7d27405ab9d8ade",
         "android_client_info": {
           "package_name": "com.example.carepaw"

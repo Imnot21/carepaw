@@ -8,6 +8,7 @@ import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_detail_page.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_camera_page.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
@@ -85,8 +86,8 @@ class _ScanListPageState extends State<ScanListPage>
               ],
             ),
           ),
-          floatingActionButton: NeuButton(
-            text: 'New Scan',
+          floatingActionButton: NeuFAB.extended(
+            extendedText: 'New Scan',
             icon: Icons.camera_alt_rounded,
             svgAsset: SvgIcons.camera,
             onPressed: _navigateToCamera,
@@ -176,9 +177,7 @@ class _ScanListPageState extends State<ScanListPage>
                 : 'No Scans Yet',
             message: type != null
                 ? 'Scan your first ${type.displayName.toLowerCase()}'
-                : 'Start by scanning a document',
-            actionLabel: 'Start Scanning',
-            onAction: _navigateToCamera,
+                : 'Tap New Scan to scan a document',
           );
         }
 
@@ -211,8 +210,6 @@ class _ScanListPageState extends State<ScanListPage>
               svgAsset: SvgIcons.pending,
               title: 'No Pending Scans',
               message: 'All scans have been processed',
-              actionLabel: 'New Scan',
-              onAction: _navigateToCamera,
             );
           }
           return ListView.builder(

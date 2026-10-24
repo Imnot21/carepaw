@@ -212,8 +212,8 @@ remote refs equal local HEAD.
 ## 6. Demo context (facts that must stay true)
 
 - Demo accounts — do **not** modify/delete:
-  - `vet@carepaw.com` / `Carepaw123` — OWNER_ADMIN (id 3); used for staff/vet flows in demos.
-  - `admin@carepaw.com` / `Carepaw123` — PET_OWNER (Alex Rivera, id 2; fresh owner state).
+  - `vet@carepaw.com` — OWNER_ADMIN (id 3); used for staff/vet flows in demos.
+  - `admin@carepaw.com` — PET_OWNER (Alex Rivera, id 2; fresh owner state).
   - `azazeljin69@gmail.com` — OWNER_ADMIN (id 12).
 - Demo data (Firestore project `carepaw-93d16`): `inventoryItems/1` "Test SyrupV3" with
   `currentStock` 24.00 + batch `B-001` (24.00, expires Nov 6 2026). Keep it coherent.
@@ -243,7 +243,7 @@ remote refs equal local HEAD.
 - flutter: `E:\flutter_windows_3.35.1-stable\flutter\bin\flutter.bat`
 - adb: `C:\Users\PC\AppData\Local\Android\Sdk\platform-tools\adb.exe`
 - Firestore REST recipe (for data checks): Android apiKey in `lib/firebase_options.dart`,
-  sign-in `vet@carepaw.com` / `Carepaw123`, project `carepaw-93d16`.
+  sign-in `vet@carepaw.com`, project `carepaw-93d16`.
 
 ---
 

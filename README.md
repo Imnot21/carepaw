@@ -46,10 +46,12 @@ inventory → records → notifications → settings) and the pet owner flow
 
 ## Demo Accounts
 
-| Role | Email | Password |
-|------|-------|----------|
-| Clinic operator (Owner/Admin) | `admin@carepaw.com` | `Carepaw123` |
-| Clinic operator (Owner/Admin) | `vet@carepaw.com` | `Carepaw123` |
+| Role | Email |
+|------|-------|
+| Clinic operator (Owner/Admin) | `vet@carepaw.com` |
+| Pet owner | `admin@carepaw.com` |
+
+Passwords are shared privately by the team and are not kept in this repo.
 
 Pet owner accounts can be registered from the app's sign-up screen.
 

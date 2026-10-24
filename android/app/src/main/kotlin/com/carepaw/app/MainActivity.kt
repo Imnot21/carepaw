@@ -1,4 +1,4 @@
-package com.example.carepaw
+package com.carepaw.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -74,7 +74,7 @@ class NeuFAB extends StatelessWidget {
       icon: icon,
       svgAsset: svgAsset,
       size: NeuButtonSize.medium,
-      expanded: extended,
+      expanded: false,
       trailingIcon: null,
     );
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches AppColors.background so launch blends into the first frame. -->
+    <color name="ic_launcher_background">#F8F5F0</color>
+    <color name="splash_background">#F8F5F0</color>
+</resources>
