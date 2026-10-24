@@ -8,6 +8,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dar
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/app/router/routes.dart';
+import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
@@ -17,6 +18,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -455,8 +457,8 @@ class _ProfilePageState extends State<ProfilePage> {
           _SettingTile(
             svgAsset: SvgIcons.help,
             title: 'Help & Support',
-            subtitle: 'FAQs, contact us, feedback',
-            onTap: () => _showComingSoon(context, 'Help & Support'),
+            subtitle: 'Clinic contact and app info',
+            onTap: () => _showHelp(context),
           ),
         ],
       ),
@@ -468,7 +470,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return NeuButton(
       text: 'Logout',
       variant: NeuButtonVariant.destructive,
-      size: NeuButtonSize.large,
+      size: NeuButtonSize.medium,
       icon: Icons.logout_rounded,
       svgAsset: SvgIcons.logout,
       expanded: true,
@@ -537,12 +539,22 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        behavior: SnackBarBehavior.floating,
+  void _showHelp(BuildContext context) {
+    NeuDialog.show(
+      context: context,
+      title: 'Help & Support',
+      content: Text(
+        'For bookings, records, or account help, please contact or visit '
+        '${AppConstants.clinicName}, ${AppConstants.clinicLocation}.\n\n'
+        '${AppConstants.appName} v${AppConstants.appVersion}',
       ),
+      actions: [
+        NeuButton(
+          text: 'Got it',
+          variant: NeuButtonVariant.primary,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 

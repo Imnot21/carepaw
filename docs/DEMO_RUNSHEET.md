@@ -24,14 +24,14 @@ screen-verified on the demo build (emulator, 1080×2424).
 |---|--------|--------------------|
 | 1 | **Login** | Email + password auth; the app routes by role automatically. Sign in as `vet@carepaw.com`. |
 | 2 | **Clinic dashboard** | The pulse strip — waiting / today's bookings / low stock. "Clinic work" grid is the operator's launchpad for every module. |
-| 3 | **Booking tab** | Appointment list with Upcoming / Past. Open a booking → detail shows its status; confirm / decline actions. |
+| 3 | **Booking tab** | Appointment list with Upcoming / Past. Open a *Pending Approval* booking → tap **Approve Booking** (clinic only). Then Check In → Start → Complete. Status words: Pending Approval, Approved, Checked In, In Progress, Completed. |
 | 4 | **Patients tab** | Pet cards; open one → pet profile with owner, species, age, and a Records entry point. |
 | 5 | **Records** | Per-pet, append-only health history + vaccinations. "Records are never deleted — only corrected." |
-| 6 | **Line tab** | Queue management: Waiting / In Room / Now Serving stats; check-in moves a pet into the queue. |
+| 6 | **Line tab** | Queue management: Waiting / Being Served / Now Serving stats; check-in moves a pet into the queue. |
 | 7 | **Stock tab** | Inventory list with category filters; item detail shows batches and expiry tracking. Low stock ties back to the dashboard pulse. |
 | 8 | **Scan tab** | Receipt / medicine-box scans with status tabs (All, Receipts, Medicine, Pending, Confirmed). "OCR output is never trusted blindly — every scan needs human confirmation." |
 | 9 | **Bell → Notifications** | Tap the bell (top-right of the dashboard). Create a test notification with the FAB — it persists and appears with an unread dot. Open its detail page; **View Appointment / View Queue** jumps to the related screen. |
-| 10 | **Profile tab** | Settings: notification settings, help, logout. |
+| 10 | **Profile tab** | Settings: notification settings, Help & Support (clinic contact + app version), logout. |
 
 ## Owner flow (≈3 minutes)
 

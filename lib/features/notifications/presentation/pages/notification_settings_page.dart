@@ -10,7 +10,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
@@ -62,8 +61,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 _buildCategoryToggles(preferences),
                 const SizedBox(height: 20),
                 _buildDeliverySettings(preferences),
-                const SizedBox(height: 20),
-                _buildQuietHours(preferences),
                 const SizedBox(height: 20),
                 _buildDataManagement(),
               ],
@@ -389,47 +386,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
-  Widget _buildQuietHours(NotificationPreferences? preferences) {
-    return NeuCard(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          NeuAvatar(
-            radius: 20,
-            svgAsset: SvgIcons.moon,
-            backgroundColor: ThemeColors.primary(context),
-            foregroundColor: AppColors.textOnPrimary,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quiet Hours',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: _isDark
-                        ? AppColors.textPrimaryOnDark
-                        : AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  'Silence notifications during specified hours (coming soon)',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: _isDark
-                        ? AppColors.textSecondaryOnDark
-                        : AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDataManagement() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,16 +410,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 subtitle: 'Permanently delete all read notifications',
                 color: ThemeColors.warning(context),
                 onTap: _clearReadNotifications,
-              ),
-              const Divider(height: 24),
-              _buildDataAction(
-                svgAsset: SvgIcons.delete,
-                title: 'Delete All Notifications',
-                subtitle:
-                    'Permanently delete all notifications (cannot be undone)',
-                color: ThemeColors.error(context),
-                onTap: _deleteAllNotifications,
-                isDestructive: true,
               ),
             ],
           ),
@@ -589,22 +535,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             ),
           ),
         );
-      }
-    });
-  }
-
-  void _deleteAllNotifications() {
-    NeuConfirmDialog.show(
-      context: context,
-      title: 'Delete All Notifications',
-      message:
-          'This will permanently delete ALL notifications. This action cannot be undone.',
-      confirmText: 'Delete All',
-      confirmVariant: NeuButtonVariant.destructive,
-    ).then((confirmed) {
-      if (!mounted) return;
-      if (confirmed == true) {
-        NeuToast.info(context, 'Feature coming soon');
       }
     });
   }

@@ -69,7 +69,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
                   icon: Icons.edit_outlined,
                   svgAsset: SvgIcons.edit,
                   onPressed: () => _navigateToEdit(context),
-                  tooltip: 'Edit',
+                  tooltip: 'Correct record',
                 ),
               );
             },
@@ -303,14 +303,16 @@ class MedicalRecordDetailPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Edit Record',
+              'Correcting a Record',
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Edit functionality coming soon',
+              'Medical records can never be edited or deleted. Mistakes are '
+              'fixed by adding a correction note on top, so the full '
+              'history is always kept.',
               style: AppTextStyles.bodyLarge.copyWith(
                 color: ThemeColors.textSecondary(context),
               ),
@@ -318,7 +320,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             NeuButton(
-              text: 'Close',
+              text: 'Got it',
               onPressed: () => context.pop(),
               variant: NeuButtonVariant.primary,
               icon: Icons.check_rounded,
