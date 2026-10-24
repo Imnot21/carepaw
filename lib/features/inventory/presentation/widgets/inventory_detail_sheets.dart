@@ -351,14 +351,26 @@ void _recordTransaction(
 }
 
 /// Add-batch bottom sheet: create a new batch for [item].
-void showAddBatchSheet(BuildContext context, {required InventoryItem item}) {
+///
+/// [initialBatchNumber] and [initialExpiry] prefill the form, e.g. with
+/// values read from a confirmed scan; the person can still change them.
+/// [scanRecordId] links the batch's opening transaction to that scan.
+void showAddBatchSheet(
+  BuildContext context, {
+  required InventoryItem item,
+  String? initialBatchNumber,
+  DateTime? initialExpiry,
+  int? scanRecordId,
+}) {
   final bloc = context.read<InventoryBloc>();
   final isDark = Theme.of(context).brightness == Brightness.dark;
-  final batchNumberController = TextEditingController();
+  final batchNumberController = TextEditingController(
+    text: initialBatchNumber,
+  );
   final quantityController = TextEditingController();
   final costController = TextEditingController();
   final supplierController = TextEditingController();
-  DateTime? expiryDate;
+  DateTime? expiryDate = initialExpiry;
 
   showModalBottomSheet(
     context: context,
@@ -428,9 +440,11 @@ void showAddBatchSheet(BuildContext context, {required InventoryItem item}) {
                   content: SizedBox(
                     height: 300,
                     child: CalendarDatePicker(
-                      initialDate: DateTime.now().add(
-                        const Duration(days: 365),
-                      ),
+                      initialDate:
+                          expiryDate != null &&
+                              expiryDate!.isAfter(DateTime.now())
+                          ? expiryDate!
+                          : DateTime.now().add(const Duration(days: 365)),
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 3650)),
                       onDateChanged: (date) => Navigator.pop(context, date),
@@ -483,6 +497,14 @@ void showAddBatchSheet(BuildContext context, {required InventoryItem item}) {
                         NeuToast.error(context, 'Please fill required fields');
                         return;
                       }
+                      final authState = context.read<AuthBloc>().state;
+                      final userId = authState is AuthAuthenticated
+                          ? authState.user.id
+                          : null;
+                      if (userId == null) {
+                        NeuToast.error(context, 'Please log in again');
+                        return;
+                      }
                       Navigator.pop(context);
                       bloc.add(
                         CreateBatch(
@@ -490,6 +512,9 @@ void showAddBatchSheet(BuildContext context, {required InventoryItem item}) {
                           batchNumber: batchNumber,
                           quantity: quantity,
                           receivedAt: DateTime.now(),
+                          performedBy: userId,
+                          referenceType: scanRecordId == null ? null : 'SCAN',
+                          referenceId: scanRecordId,
                           expiresAt: expiryDate,
                           costPerUnit: cost,
                           supplier: supplierController.text.trim().isEmpty

@@ -47,5 +47,33 @@ void main() {
       final f = ScanTextParser.parse(raw, ScanType.labReport);
       expect(f.toDisplay(), 'Title: Lab Result\nDate: 2026-10-01');
     });
+
+    test('display text reads back into the same fields', () {
+      const raw = 'Amoxicillin 250mg\nLOT: AMX2291\nEXP 12/2027';
+      final f = ScanTextParser.parse(raw, ScanType.medicineBox);
+      expect(ScanTextParser.fromDisplay(f.toDisplay()), f.values);
+      expect(ScanTextParser.fromDisplay(null), isEmpty);
+    });
+  });
+
+  group('ScanTextParser.parseDate', () {
+    test('month-only dates mean the end of that month', () {
+      expect(ScanTextParser.parseDate('12/2027'), DateTime(2027, 12, 31));
+      expect(ScanTextParser.parseDate('2028-02'), DateTime(2028, 2, 29));
+      expect(ScanTextParser.parseDate('MAR 2027'), DateTime(2027, 3, 31));
+    });
+
+    test('full dates, month first unless the day comes first', () {
+      expect(ScanTextParser.parseDate('2027-03-01'), DateTime(2027, 3, 1));
+      expect(ScanTextParser.parseDate('03/01/2027'), DateTime(2027, 3, 1));
+      expect(ScanTextParser.parseDate('25/12/27'), DateTime(2027, 12, 25));
+      expect(ScanTextParser.parseDate('Mar 01, 2027'), DateTime(2027, 3, 1));
+    });
+
+    test('nonsense is null, not a guess', () {
+      expect(ScanTextParser.parseDate('13/13/2027'), isNull);
+      expect(ScanTextParser.parseDate('02/30/2027'), isNull);
+      expect(ScanTextParser.parseDate('soon'), isNull);
+    });
   });
 }

@@ -345,7 +345,27 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         supplier: event.supplier,
         createdAt: DateTime.now(),
       );
-      await _batchRepository.create(batch);
+      final created = await _batchRepository.create(batch);
+      // Opening stock-in, so every unit in stock traces to a transaction.
+      if (created.id != null) {
+        await _transactionRepository.create(
+          InventoryTransaction(
+            id: null,
+            batchId: created.id!,
+            type: TransactionType.in_,
+            quantityChange: event.quantity,
+            quantityBefore: 0,
+            quantityAfter: event.quantity,
+            reason: event.referenceType == 'SCAN'
+                ? 'New batch from scan'
+                : 'New batch received',
+            referenceType: event.referenceType,
+            referenceId: event.referenceId,
+            performedBy: event.performedBy,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
       // A new batch adds its quantity to the item's aggregate stock.
       await _syncItemStock(event.inventoryId, event.quantity);
       emit(

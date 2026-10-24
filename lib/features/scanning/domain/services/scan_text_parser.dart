@@ -87,6 +87,71 @@ class ScanTextParser {
     return ScanFields(values, values.length / expected);
   }
 
+  /// Reads the `Label: value` lines written by [ScanFields.toDisplay] back
+  /// into a map.
+  static Map<String, String> fromDisplay(String? display) {
+    final out = <String, String>{};
+    for (final line in (display ?? '').split('\n')) {
+      final i = line.indexOf(': ');
+      if (i > 0) out[line.substring(0, i).trim()] = line.substring(i + 2).trim();
+    }
+    return out;
+  }
+
+  static const _months = [
+    'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+  ];
+
+  /// Turns a date as printed on a label into a [DateTime], or null.
+  ///
+  /// Handles `2027-03-01`, `03/01/2027` (month first, unless the first
+  /// number cannot be a month), `12/2027`, `MAR 2027`, and `Mar 01, 2027`.
+  /// A month-only date means the last day of that month, as on medicine
+  /// boxes.
+  static DateTime? parseDate(String text) {
+    final s = text.trim().toUpperCase();
+    int year(String y) => y.length == 2 ? 2000 + int.parse(y) : int.parse(y);
+    DateTime? valid(int y, int m, int d) {
+      if (m < 1 || m > 12 || d < 1 || d > DateTime(y, m + 1, 0).day) {
+        return null;
+      }
+      return DateTime(y, m, d);
+    }
+
+    DateTime? endOfMonth(int y, int m) =>
+        m < 1 || m > 12 ? null : DateTime(y, m + 1, 0);
+
+    var m = RegExp(r'^(\d{4})[/\-.](\d{1,2})(?:[/\-.](\d{1,2}))?$').firstMatch(s);
+    if (m != null) {
+      final y = int.parse(m.group(1)!), mo = int.parse(m.group(2)!);
+      return m.group(3) == null
+          ? endOfMonth(y, mo)
+          : valid(y, mo, int.parse(m.group(3)!));
+    }
+    m = RegExp(r'^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$').firstMatch(s);
+    if (m != null) {
+      final a = int.parse(m.group(1)!), b = int.parse(m.group(2)!);
+      final y = year(m.group(3)!);
+      return a > 12 ? valid(y, b, a) : valid(y, a, b);
+    }
+    m = RegExp(r'^(\d{1,2})[/\-.](\d{4})$').firstMatch(s);
+    if (m != null) {
+      return endOfMonth(int.parse(m.group(2)!), int.parse(m.group(1)!));
+    }
+    m = RegExp(r'^([A-Z]{3})[A-Z]*\.?[ \-/]?(?:(\d{1,2}),?[ \-/])?(\d{2,4})$')
+        .firstMatch(s);
+    if (m != null) {
+      final mo = _months.indexOf(m.group(1)!) + 1;
+      if (mo == 0) return null;
+      final y = year(m.group(3)!);
+      return m.group(2) == null
+          ? endOfMonth(y, mo)
+          : valid(y, mo, int.parse(m.group(2)!));
+    }
+    return null;
+  }
+
   static void _put(Map<String, String> into, String key, String? value) {
     final v = value?.trim();
     if (v != null && v.isNotEmpty) into[key] = v;

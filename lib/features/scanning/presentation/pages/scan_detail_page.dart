@@ -10,6 +10,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
+import 'package:carepaw/features/scanning/presentation/pages/scan_to_stock_page.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart'
     as scan_event;
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
@@ -62,6 +63,22 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                     _buildExtractedDataSection(record),
                   ],
                   const SizedBox(height: 28),
+                  if (_canAddToStock(record)) ...[
+                    NeuButton(
+                      text: 'Add to Stock',
+                      variant: NeuButtonVariant.primary,
+                      icon: Icons.inventory_2_rounded,
+                      svgAsset: SvgIcons.inventory,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ScanToStockPage(record: record),
+                        ),
+                      ),
+                      expanded: true,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   _buildActionButtons(record, typeColor),
                 ],
               ),
@@ -384,6 +401,12 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
       ),
     );
   }
+
+  /// A confirmed medicine-box scan with read values can become a stock batch.
+  bool _canAddToStock(ScanRecord record) =>
+      record.status == ScanStatus.confirmed &&
+      record.scanType == ScanType.medicineBox &&
+      (record.extractedData?.isNotEmpty ?? false);
 
   Widget _buildActionButtons(ScanRecord record, Color typeColor) {
     final isPending = record.status == ScanStatus.pending;

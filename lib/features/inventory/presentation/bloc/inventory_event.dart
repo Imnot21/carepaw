@@ -199,14 +199,24 @@ class CreateBatch extends InventoryEvent {
   final double? costPerUnit;
   final String? supplier;
 
+  /// Who received the batch; recorded on its opening stock-in transaction.
+  final int performedBy;
+
+  /// What the batch came from, e.g. `SCAN` and the scan record's id.
+  final String? referenceType;
+  final int? referenceId;
+
   const CreateBatch({
     required this.inventoryId,
     required this.batchNumber,
     required this.quantity,
     required this.receivedAt,
+    required this.performedBy,
     this.expiresAt,
     this.costPerUnit,
     this.supplier,
+    this.referenceType,
+    this.referenceId,
   });
 
   @override
@@ -215,9 +225,12 @@ class CreateBatch extends InventoryEvent {
     batchNumber,
     quantity,
     receivedAt,
+    performedBy,
     expiresAt,
     costPerUnit,
     supplier,
+    referenceType,
+    referenceId,
   ];
 }
 

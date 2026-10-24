@@ -22,7 +22,7 @@ The paper asks for 4 main jobs. All 4 are in the app:
 | 1. Booking and scheduling | Owners book visits; the clinic approves, moves, or cancels them |
 | 2. Digital health records | Visit notes, vaccines, medicine instructions, full history per pet |
 | 3. Live waiting line | Owners see their number; the clinic calls next, moves to room, finishes |
-| 4. Medicine stock with camera scanning | Stock counts, expiry dates, scan a box, a person always double-checks |
+| 4. Medicine stock with camera scanning | Stock counts, expiry dates, photograph a box or receipt, the phone reads the words and suggests name, expiry, and lot; a person always confirms or rejects |
 
 These also match: pet profiles (name, animal, breed, age, weight), booking
 and line messages, login with account types, search, works on phones, needs
@@ -91,7 +91,12 @@ honest and private (the paper asks for exactly that).
 1. ~~Demo with 2 logins only~~ — **done**, the app now has only 2 logins.
 2. ~~Owner/Admin writes medicine instructions~~ — **done**.
 3. Add one paragraph to the paper: record "changes" are correction notes on
-   top of history.
+   top of history. Ready-to-paste text:
+
+   > *In CarePaw, changing a health record means adding a correction entry
+   > that supersedes the earlier one. The original entry is never edited or
+   > deleted, so the pet's complete medical history, including every
+   > correction and who made it, is always preserved.*
 4. ~~Match the status words between paper and app~~ — **done**. Bookings:
    Pending Approval (paper: waiting for approval) → Approved → Rescheduled
    (paper: moved) → Checked In → In Progress → Completed (paper: done) /
@@ -99,8 +104,12 @@ honest and private (the paper asks for exactly that).
    Waiting → Called → Being Served → Done / Cancelled.
 5. ~~Put the client's real name in the app~~ — **done**: the sign-in screen
    reads "Sign in to DocMyk's PILA VET HUB", and the README names the clinic.
+6. ~~Make camera scanning real~~ — **done** (2026-10-25): it was a
+   placeholder before. Now the phone reads the photo's words itself (no
+   upload), suggests the values, and the scan waits as *pending* until the
+   clinic confirms or rejects it.
 
 ---
 
 *Checked against: g-chapter-1.docx (Chapter 1 through objectives, scope, and
-sprint plan) and the app as built. Date: 2026-10-12.*
+sprint plan) and the app as built. Date: 2026-10-12, updated 2026-10-25.*
