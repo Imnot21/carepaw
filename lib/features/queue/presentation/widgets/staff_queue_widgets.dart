@@ -30,7 +30,7 @@ class StatsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuContainer(
       borderRadius: 0,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       variant: NeuVariant.flat,
       child: Row(
         children: [

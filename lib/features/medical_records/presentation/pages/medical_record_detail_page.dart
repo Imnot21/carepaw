@@ -351,7 +351,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       borderColor: color.withValues(alpha: 0.2),
       borderWidth: 1,
       child: Column(

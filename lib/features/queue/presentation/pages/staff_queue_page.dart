@@ -123,7 +123,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           children: [
             NeuContainer(
               borderRadius: 70,
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(32),
               color: ThemeColors.primary(context),
               boxShadow: NeuShadow.color(
                 context,
@@ -165,7 +165,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           children: [
             NeuContainer(
               borderRadius: 70,
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(32),
               color: ThemeColors.error(context),
               boxShadow: NeuShadow.color(
                 context,
@@ -282,7 +282,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           children: [
             NeuContainer(
               borderRadius: 70,
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(32),
               color: ThemeColors.primary(context),
               boxShadow: NeuShadow.color(
                 context,

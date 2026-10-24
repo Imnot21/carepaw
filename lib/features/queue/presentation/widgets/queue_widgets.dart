@@ -280,7 +280,7 @@ class EmptyQueueCard extends StatelessWidget {
         children: [
           NeuContainer(
             borderRadius: 48,
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.all(24),
             color: ThemeColors.primary(context),
             boxShadow: NeuShadow.color(
               context,

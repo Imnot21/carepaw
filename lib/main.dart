@@ -25,6 +25,7 @@ import 'package:carepaw/features/users/domain/repositories/user_repository.dart'
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'app/router/app_router.dart';
 import 'app/theme/app_theme.dart';
+import 'app/theme/design_tokens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -307,7 +308,7 @@ class _InitializationErrorScreen extends StatelessWidget {
                         height: 94,
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
                         ),
                         child: NeuSvgIcon(SvgIcons.error, size: 52),
                       ),
@@ -331,7 +332,9 @@ class _InitializationErrorScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        error.toString(),
+                        kDebugMode
+                            ? error.toString()
+                            : 'Check your internet connection, then try again.',
                         maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -340,10 +343,12 @@ class _InitializationErrorScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 28),
-                      FilledButton.icon(
+                      NeuButton(
+                        text: 'Try Again',
+                        variant: NeuButtonVariant.primary,
+                        icon: Icons.refresh_rounded,
+                        svgAsset: SvgIcons.refresh,
                         onPressed: onRetry,
-                        icon: const NeuSvgIcon(SvgIcons.refresh, size: 20),
-                        label: const Text('Try Again'),
                       ),
                     ],
                   ),

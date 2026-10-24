@@ -169,7 +169,7 @@ class MedicalRecordFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuCard(
       borderRadius: NeuTokens.radiusMd,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

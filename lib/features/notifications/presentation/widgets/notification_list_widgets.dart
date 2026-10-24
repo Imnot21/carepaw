@@ -357,7 +357,7 @@ class NotificationEmptyState extends StatelessWidget {
             children: [
               NeuContainer(
                 borderRadius: 90,
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(24),
                 color: ThemeColors.primary(context),
                 boxShadow: NeuShadow.color(
                   context,
