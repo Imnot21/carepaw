@@ -6,6 +6,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/register_page.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
+import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
@@ -75,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               const AuthHeading(
                 title: 'Welcome back',
-                subtitle: 'Sign in to continue to CarePaw',
+                subtitle: 'Sign in to ${AppConstants.clinicName}',
               ),
               const SizedBox(height: NeuTokens.sectionGap),
               NeuCard(

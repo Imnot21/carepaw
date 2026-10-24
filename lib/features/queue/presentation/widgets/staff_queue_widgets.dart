@@ -45,7 +45,7 @@ class StatsBar extends StatelessWidget {
           Expanded(
             child: _StatItem(
               svgAsset: SvgIcons.door,
-              label: 'In Room',
+              label: 'Being Served',
               value: '$totalInRoom',
               color: ThemeColors.primaryText(context),
             ),

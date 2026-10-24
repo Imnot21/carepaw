@@ -177,9 +177,9 @@ enum AppointmentStatus {
   String get displayName {
     switch (this) {
       case AppointmentStatus.requested:
-        return 'Requested';
+        return 'Pending Approval';
       case AppointmentStatus.confirmed:
-        return 'Confirmed';
+        return 'Approved';
       case AppointmentStatus.rescheduled:
         return 'Rescheduled';
       case AppointmentStatus.checkedIn:

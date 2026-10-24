@@ -8,7 +8,11 @@ class AppConstants {
   // ============ App Info ============
 
   static const String appName = 'CarePaw';
-  static const String appVersion = '0.1.0';
+  static const String appVersion = '1.0.0';
+
+  /// The partner clinic this build is made for (thesis client).
+  static const String clinicName = "DocMyk's PILA VET HUB";
+  static const String clinicLocation = 'Pila, Laguna';
   static const String appDescription =
       'Smart Veterinary Patient Management System';
 

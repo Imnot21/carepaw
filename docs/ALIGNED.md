@@ -92,10 +92,13 @@ honest and private (the paper asks for exactly that).
 2. ~~Owner/Admin writes medicine instructions~~ — **done**.
 3. Add one paragraph to the paper: record "changes" are correction notes on
    top of history.
-4. Match the status words between paper and app (Rescheduled + Cancelled now
-   exist; map the rest in one sentence).
-5. Put the client's real name — DocMyk's PILA VET HUB, Pila, Laguna — in the
-   app's own documents, so paper and project name the same client.
+4. ~~Match the status words between paper and app~~ — **done**. Bookings:
+   Pending Approval (paper: waiting for approval) → Approved → Rescheduled
+   (paper: moved) → Checked In → In Progress → Completed (paper: done) /
+   Cancelled. The clinic now has an **Approve Booking** button. Line:
+   Waiting → Called → Being Served → Done / Cancelled.
+5. ~~Put the client's real name in the app~~ — **done**: the sign-in screen
+   reads "Sign in to DocMyk's PILA VET HUB", and the README names the clinic.
 
 ---
 

@@ -2,6 +2,8 @@
 
 > Smart Veterinary Patient Management System
 
+Built for **DocMyk's PILA VET HUB**, Pila, Laguna.
+
 CarePaw is an integrated veterinary clinic management system that connects pet
 owners, pets, and clinic operators through a single, organized platform. It
 modernizes everyday clinic operations — appointment scheduling, real-time queue

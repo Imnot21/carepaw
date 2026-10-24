@@ -9,6 +9,7 @@ import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
@@ -201,7 +202,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       case AppointmentStatus.requested:
         final color = isDark ? AppColors.warningOnDark : AppColors.warning;
         return _StatusInfo(
-          label: 'Requested',
+          label: 'Pending Approval',
           icon: Icons.pending_outlined,
           svgAsset: SvgIcons.pending,
           color: color,
@@ -210,7 +211,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       case AppointmentStatus.confirmed:
         final color = isDark ? AppColors.infoDark : AppColors.info;
         return _StatusInfo(
-          label: 'Confirmed',
+          label: 'Approved',
           icon: Icons.check_circle_outline_rounded,
           svgAsset: SvgIcons.success,
           color: color,
@@ -545,16 +546,40 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   }
 
   Widget _buildActionButtons(Appointment appointment) {
+    // Approving and moving a visit along is clinic work; owners can only
+    // reschedule or cancel their own booking.
+    final authState = context.read<AuthBloc>().state;
+    final isClinic =
+        authState is AuthAuthenticated && authState.user.isOwnerAdmin;
     final canEdit = !appointment.isTerminal;
-    final canCheckIn = appointment.status == AppointmentStatus.confirmed;
-    final canStart = appointment.status == AppointmentStatus.checkedIn;
-    final canComplete = appointment.status == AppointmentStatus.inProgress;
+    final canApprove =
+        isClinic &&
+        (appointment.status == AppointmentStatus.requested ||
+            appointment.status == AppointmentStatus.rescheduled);
+    final canCheckIn =
+        isClinic && appointment.status == AppointmentStatus.confirmed;
+    final canStart =
+        isClinic && appointment.status == AppointmentStatus.checkedIn;
+    final canComplete =
+        isClinic && appointment.status == AppointmentStatus.inProgress;
     final canCancel =
         !appointment.isTerminal &&
         appointment.status != AppointmentStatus.cancelled;
 
     return Column(
       children: [
+        if (canApprove) ...[
+          NeuButton(
+            text: 'Approve Booking',
+            onPressed: () => _updateStatus(AppointmentStatus.confirmed),
+            expanded: true,
+            icon: Icons.check_circle_rounded,
+            svgAsset: SvgIcons.success,
+            variant: NeuButtonVariant.primary,
+            size: NeuButtonSize.medium,
+          ),
+          const SizedBox(height: 10),
+        ],
         if (canEdit) ...[
           NeuButton(
             text: 'Edit Appointment',
