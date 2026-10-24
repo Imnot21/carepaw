@@ -108,28 +108,9 @@ class InventoryDetailHeader extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.surfaceDarkMode.withValues(
-                                      alpha: 0.9,
-                                    )
-                                  : AppColors.surface.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                            ),
-                            child: Text(
-                              item.category.displayName,
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: inventoryCategoryColor(item.category),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                          NeuTag(
+                            label: item.category.displayName,
+                            color: inventoryCategoryColor(item.category),
                           ),
                           const SizedBox(width: 8),
                           if (isOutOfStock)

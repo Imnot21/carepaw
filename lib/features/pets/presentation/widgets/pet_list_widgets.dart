@@ -10,6 +10,7 @@ import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -339,31 +340,9 @@ class _PetCard extends StatelessWidget {
                         ),
                       ),
                       if (!pet.isActive)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ThemeColors.warning(
-                              context,
-                            ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(
-                              NeuTokens.radiusSm,
-                            ),
-                            border: Border.all(
-                              color: ThemeColors.warning(
-                                context,
-                              ).withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'Inactive',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: ThemeColors.warning(context),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                        const NeuStatusBadge(
+                          label: 'Inactive',
+                          tone: NeuStatusTone.warning,
                         ),
                     ],
                   ),
@@ -782,31 +761,9 @@ class _StaffPetCard extends StatelessWidget {
                         ),
                       ),
                       if (!pet.isActive)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ThemeColors.warning(
-                              context,
-                            ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(
-                              NeuTokens.radiusSm,
-                            ),
-                            border: Border.all(
-                              color: ThemeColors.warning(
-                                context,
-                              ).withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'Inactive',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: ThemeColors.warning(context),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                        const NeuStatusBadge(
+                          label: 'Inactive',
+                          tone: NeuStatusTone.warning,
                         ),
                     ],
                   ),

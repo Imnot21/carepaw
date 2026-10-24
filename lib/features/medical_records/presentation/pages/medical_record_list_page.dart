@@ -15,6 +15,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -681,21 +682,9 @@ class _MedicalRecordCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    NeuContainer(
-                      borderRadius: NeuTokens.radiusSm,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      variant: NeuVariant.flat,
-                      color: typeInfo.color.withValues(alpha: 0.12),
-                      child: Text(
-                        record.recordType.displayName,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: typeInfo.color,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    NeuTag(
+                      label: record.recordType.displayName,
+                      color: typeInfo.color,
                     ),
                     const Spacer(),
                     Text(

@@ -157,29 +157,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                     ),
                     const SizedBox(height: 4),
                     if (!notification.isRead) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ThemeColors.primary(context),
-                          borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            NeuSvgIcon(SvgIcons.sparkles, size: 12),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Unread',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: ThemeColors.onPrimary(context),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+                      const NeuStatusBadge(
+                        label: 'Unread',
+                        tone: NeuStatusTone.accent,
                       ),
                     ],
                   ],
