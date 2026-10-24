@@ -346,30 +346,14 @@ class AuthRepositoryImpl implements AuthRepository {
   ///
   /// Used on first sign-in for accounts provisioned outside the app (Firebase
   /// Console, seed scripts) or left orphaned when a registration's Firestore
-  /// write was blocked. Assigns [UserRole.ownerAdmin] if this user should be
-  /// considered the clinic operator based on email domain matching with the
-  /// first user in the system, otherwise defaults to [UserRole.petOwner]. Returns
-  /// `null` if the profile cannot be written (e.g. Firestore rules still deny
-  /// it), so the caller can fail with an actionable message.
+  /// write was blocked. Always assigns [UserRole.petOwner]: a client must
+  /// never grant itself clinic access, and Firestore rules reject a
+  /// self-created OWNER_ADMIN profile. Operators are provisioned by an
+  /// existing Owner/Admin. Returns `null` if the profile cannot be written
+  /// (e.g. Firestore rules still deny it), so the caller can fail with an
+  /// actionable message.
   Future<DomainUser?> _autoProvisionFromAuthUser(User fireUser) async {
     try {
-      // Check if this is the first user in the system
-      final bool isFirstUser = await _isFirstUser();
-
-      UserRole effectiveRole;
-      if (isFirstUser) {
-        // First user becomes the Owner/Admin (clinic operator)
-        effectiveRole = UserRole.ownerAdmin;
-      } else {
-        // Not first user - check if email domain matches the first user's domain
-        final bool shouldBeAdmin = await _shouldBeAdminBasedOnEmailDomain(
-          fireUser.email ?? '',
-        );
-        effectiveRole = shouldBeAdmin
-            ? UserRole.ownerAdmin
-            : UserRole.petOwner;
-      }
-
       final newId = await _userIdSequence.next();
       final now = DateTime.now();
       final domainUser = DomainUser(
@@ -379,7 +363,7 @@ class AuthRepositoryImpl implements AuthRepository {
         fullName: fireUser.displayName?.trim().isNotEmpty == true
             ? fireUser.displayName!
             : (fireUser.email?.split('@').first ?? 'User'),
-        role: effectiveRole,
+        role: UserRole.petOwner,
         isActive: true,
         createdAt: now,
         updatedAt: now,
@@ -393,55 +377,6 @@ class AuthRepositoryImpl implements AuthRepository {
       // Firestore write blocked (rules) or counter unavailable.
       return null;
     }
-  }
-
-  /// Check if this is the first user being created in the system.
-  /// Returns true if no users exist yet in the Firestore users collection.
-  Future<bool> _isFirstUser() async {
-    final snapshot = await _firestore
-        .collection(FirestoreSchema.users)
-        .limit(1)
-        .get();
-    return snapshot.docs.isEmpty;
-  }
-
-  /// Check if a user should be an admin based on email domain matching
-  /// with the first user in the system. Returns true if:
-  /// 1. There is at least one user in the system (the first user)
-  /// 2. The first user has an email address
-  /// 3. The provided email has the same domain as the first user's email
-  Future<bool> _shouldBeAdminBasedOnEmailDomain(String email) async {
-    if (email.isEmpty || !email.contains('@')) {
-      return false;
-    }
-
-    // Get the first user (by lowest ID, assuming they were created first)
-    final firstUserSnapshot = await _firestore
-        .collection(FirestoreSchema.users)
-        .orderBy(FirestoreSchema.id, descending: false)
-        .limit(1)
-        .get();
-
-    if (firstUserSnapshot.docs.isEmpty) {
-      // No users found - should not happen if !isFirstUser, but handle gracefully
-      return false;
-    }
-
-    final firstUserData = firstUserSnapshot.docs.first.data();
-    final firstUserEmail = firstUserData[FirestoreSchema.email] as String?;
-
-    if (firstUserEmail == null ||
-        firstUserEmail.isEmpty ||
-        !firstUserEmail.contains('@')) {
-      // First user has no valid email
-      return false;
-    }
-
-    // Extract domains
-    final firstUserDomain = firstUserEmail.split('@').last.toLowerCase();
-    final userDomain = email.split('@').last.toLowerCase();
-
-    return firstUserDomain == userDomain;
   }
 
   AuthResult _buildAuthResult(DomainUser user, String? accessToken) {
