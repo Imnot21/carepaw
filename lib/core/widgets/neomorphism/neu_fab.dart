@@ -79,9 +79,11 @@ class NeuFAB extends StatelessWidget {
     );
 
     if (extended) {
+      // NeuButton centres its label, which stretches to the full width the
+      // FAB slot allows. IntrinsicWidth keeps the pill hugging its label.
       return ConstrainedBox(
         constraints: BoxConstraints(minHeight: 50),
-        child: button,
+        child: IntrinsicWidth(child: button),
       );
     }
 
