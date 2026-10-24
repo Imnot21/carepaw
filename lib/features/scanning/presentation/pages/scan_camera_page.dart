@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
 /// Scan camera page with premium design
@@ -149,7 +149,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           const SizedBox(width: 12),
           NeuContainer(
             padding: const EdgeInsets.all(12),
-            borderRadius: 16,
+            borderRadius: NeuTokens.radiusSm,
             color: _getTypeColor(_selectedType).withValues(alpha: 0.12),
             child: NeuSvgIcon(
               _getTypeSvg(_selectedType),
@@ -174,7 +174,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 onTap: () => setState(() => _selectedType = type),
                 child: NeuContainer(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  borderRadius: 14,
+                  borderRadius: NeuTokens.radiusSm,
                   variant: isSelected
                       ? NeuVariant.pressed
                       : NeuVariant.transparent,
@@ -219,12 +219,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           // Camera placeholder — recessed surface
           NeuContainer(
             variant: NeuVariant.inset,
-            borderRadius: 24,
+            borderRadius: NeuTokens.radiusMd,
             padding: EdgeInsets.zero,
             borderColor: _getTypeColor(_selectedType).withValues(alpha: 0.3),
             borderWidth: 2,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
               child: _isScanning
                   ? _buildScanningOverlay()
                   : _buildCameraPlaceholder(),
@@ -317,7 +317,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         // Simulated camera feed
         NeuContainer(
           variant: NeuVariant.flat,
-          borderRadius: 22,
+          borderRadius: NeuTokens.radiusMd,
           padding: EdgeInsets.zero,
           boxShadow: NeuShadow.none,
           color: _getTypeColor(_selectedType).withValues(alpha: 0.08),
@@ -532,7 +532,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   Widget _buildPreviewPlaceholder() {
     return NeuContainer(
       variant: NeuVariant.inset,
-      borderRadius: 22,
+      borderRadius: NeuTokens.radiusMd,
       padding: EdgeInsets.zero,
       child: Center(
         child: Column(
@@ -574,7 +574,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         content: const Text('Gallery picker would open here'),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
       ),
     );
   }
@@ -585,7 +585,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         content: const Text('Flash toggled'),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
       ),
     );
   }
@@ -612,7 +612,7 @@ class _FrameGuidePainter extends CustomPainter {
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(16)),
+      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(NeuTokens.radiusSm)),
       border,
     );
 

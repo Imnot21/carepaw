@@ -101,7 +101,7 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
       ),
       child: NeuContainer(
         margin: const EdgeInsets.all(20),
-        borderRadius: 24,
+        borderRadius: NeuTokens.radiusMd,
         variant: NeuVariant.raised,
         padding: const EdgeInsets.all(24),
         child: Column(

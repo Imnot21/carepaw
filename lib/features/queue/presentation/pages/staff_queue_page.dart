@@ -91,7 +91,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                     backgroundColor: ThemeColors.success(context),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                     ),
                     margin: const EdgeInsets.all(16),
                   ),
@@ -105,7 +105,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                     backgroundColor: ThemeColors.error(context),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                     ),
                     margin: const EdgeInsets.all(16),
                   ),

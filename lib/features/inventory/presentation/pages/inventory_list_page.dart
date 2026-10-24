@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
@@ -21,7 +22,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
@@ -182,7 +182,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
         child: NeuCard(
           padding: const EdgeInsets.all(16),
-          borderRadius: 20,
+          borderRadius: NeuTokens.radiusMd,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -314,7 +314,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
 
     return NeuCard(
       padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       onTap: () => _navigateToDetail(item),
       child: Row(
         children: [
@@ -323,7 +323,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
             width: 56,
             height: 56,
             child: NeuContainer(
-              borderRadius: 14,
+              borderRadius: NeuTokens.radiusSm,
               variant: NeuVariant.raised,
               color: _getCategoryColor(item.category),
               boxShadow: isLowStock || isOutOfStock
@@ -547,7 +547,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => NeuContainer(
         margin: const EdgeInsets.all(20),
-        borderRadius: 24,
+        borderRadius: NeuTokens.radiusMd,
         variant: NeuVariant.raised,
         padding: const EdgeInsets.all(24),
         child: Column(

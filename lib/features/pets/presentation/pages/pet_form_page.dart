@@ -604,7 +604,7 @@ class _PetBirthDateFieldState extends State<_PetBirthDateField> {
         NeuContainer(
           variant: NeuVariant.flat,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          borderRadius: 16,
+          borderRadius: NeuTokens.radiusSm,
           onTap: _pickDate,
           child: Row(
             children: [
@@ -736,7 +736,7 @@ class _PetBreedSelectorState extends State<_PetBreedSelector> {
         const SizedBox(height: 12),
         NeuContainer(
           variant: NeuVariant.inset,
-          borderRadius: 16,
+          borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: DropdownButtonFormField<String>(
             initialValue: _selectedBreed,
@@ -838,7 +838,7 @@ class _PetActiveSwitch extends StatelessWidget {
         children: [
           NeuContainer(
             padding: const EdgeInsets.all(10),
-            borderRadius: 12,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.flat,
             child: value
                 ? const NeuSvgIcon(SvgIcons.success, size: 22)

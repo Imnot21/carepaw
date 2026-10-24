@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
@@ -14,8 +15,6 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/app/router/routes.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
-import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
@@ -112,7 +111,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                     backgroundColor: ThemeColors.success(context),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                     ),
                     margin: const EdgeInsets.all(16),
                   ),
@@ -127,7 +126,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                     backgroundColor: ThemeColors.error(context),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                     ),
                     margin: const EdgeInsets.all(16),
                   ),
@@ -326,7 +325,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
           ),
           margin: const EdgeInsets.all(16),
         ),
@@ -351,7 +350,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -365,7 +364,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             backgroundColor: ThemeColors.error(context),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -381,7 +380,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
           ),
           margin: const EdgeInsets.all(16),
         ),
@@ -396,7 +395,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
           ),
           margin: const EdgeInsets.all(16),
         ),

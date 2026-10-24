@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
@@ -9,9 +10,7 @@ import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/utils/validators.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
@@ -162,7 +161,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
               iconColor: ThemeColors.textSecondary(context),
               child: NeuContainer(
                 variant: NeuVariant.inset,
-                borderRadius: 12,
+                borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(16),
                 borderColor: ThemeColors.error(context).withValues(alpha: 0.35),
                 borderWidth: 1,
@@ -200,7 +199,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
             iconColor: ThemeColors.textSecondary(context),
             child: NeuContainer(
               variant: NeuVariant.inset,
-              borderRadius: 12,
+              borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
@@ -271,7 +270,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
             iconColor: ThemeColors.textSecondary(context),
             child: NeuContainer(
               variant: NeuVariant.inset,
-              borderRadius: 12,
+              borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(16),
               borderColor: ThemeColors.error(context).withValues(alpha: 0.35),
               borderWidth: 1,
@@ -397,7 +396,7 @@ class DateTimeSelectionSection extends StatelessWidget {
           NeuContainer(
             onTap: onTap,
             variant: NeuVariant.inset,
-            borderRadius: 14,
+            borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             borderColor: !hasDate ? ThemeColors.error(context) : null,
             borderWidth: !hasDate ? 1 : 0,
@@ -405,7 +404,7 @@ class DateTimeSelectionSection extends StatelessWidget {
               children: [
                 NeuContainer(
                   padding: const EdgeInsets.all(8),
-                  borderRadius: 10,
+                  borderRadius: NeuTokens.radiusSm,
                   variant: NeuVariant.flat,
                   color:
                       (hasDate
@@ -608,7 +607,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
+      borderRadius: NeuTokens.radiusMd,
       padding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: NeuShape.card),
       child: Column(
@@ -618,7 +617,7 @@ class _SectionCard extends StatelessWidget {
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(10),
-                borderRadius: 12,
+                borderRadius: NeuTokens.radiusSm,
                 variant: NeuVariant.flat,
                 color: iconColor.withValues(alpha: 0.15),
                 child: svgAsset != null
@@ -709,7 +708,7 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
         const SizedBox(height: 24),
         // Date picker
         NeuContainer(
-          borderRadius: 16,
+          borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.all(16),
           variant: NeuVariant.raised,
           child: CalendarDatePicker(
@@ -722,7 +721,7 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
         const SizedBox(height: 16),
         // Time picker
         NeuContainer(
-          borderRadius: 16,
+          borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.all(16),
           variant: NeuVariant.raised,
           child: SizedBox(

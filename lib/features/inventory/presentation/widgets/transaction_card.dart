@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
@@ -20,7 +20,7 @@ class TransactionCard extends StatelessWidget {
 
     return NeuCard(
       padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       borderColor: typeColor.withValues(alpha: 0.15),
       borderWidth: 1,
       child: Row(
@@ -30,7 +30,7 @@ class TransactionCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: typeColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
             ),
             child: NeuSvgIcon(typeSvg, size: 24),
           ),
@@ -58,7 +58,7 @@ class TransactionCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: typeColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                       ),
                       child: Text(
                         isPositive ? '+' : '−',

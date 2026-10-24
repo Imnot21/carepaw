@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
@@ -72,7 +72,7 @@ class InventoryDetailHeader extends StatelessWidget {
                   width: 72,
                   height: 72,
                   child: NeuContainer(
-                    borderRadius: 18,
+                    borderRadius: NeuTokens.radiusSm,
                     variant: NeuVariant.raised,
                     color: inventoryCategoryColor(item.category),
                     boxShadow: NeuShadow.color(
@@ -120,7 +120,7 @@ class InventoryDetailHeader extends StatelessWidget {
                                       alpha: 0.9,
                                     )
                                   : AppColors.surface.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                             ),
                             child: Text(
                               item.category.displayName,
@@ -183,7 +183,7 @@ class InventoryStatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
@@ -221,14 +221,14 @@ class InventoryStatCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return NeuContainer(
       padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       variant: NeuVariant.raised,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           NeuContainer(
             padding: const EdgeInsets.all(8),
-            borderRadius: 10,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.raised,
             color: color.withValues(alpha: 0.1),
             child: svgAsset != null
@@ -386,7 +386,7 @@ class InventoryDetailEmptyState extends StatelessWidget {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: NeuCard(
-          borderRadius: 20,
+          borderRadius: NeuTokens.radiusMd,
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
@@ -13,7 +14,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
 /// Inventory form page with the CarePaw surface system.
@@ -143,7 +143,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                   width: 64,
                   height: 64,
                   child: NeuContainer(
-                    borderRadius: 16,
+                    borderRadius: NeuTokens.radiusSm,
                     variant: NeuVariant.raised,
                     color: _getCategoryColor(_selectedCategory),
                     boxShadow: NeuShadow.color(
@@ -389,7 +389,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               // Preview card
               NeuContainer(
                 padding: const EdgeInsets.all(16),
-                borderRadius: 16,
+                borderRadius: NeuTokens.radiusSm,
                 variant: NeuVariant.raised,
                 borderColor: _getCategoryColor(
                   _selectedCategory,
@@ -414,7 +414,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                           width: 48,
                           height: 48,
                           child: NeuContainer(
-                            borderRadius: 12,
+                            borderRadius: NeuTokens.radiusSm,
                             variant: NeuVariant.raised,
                             color: _getCategoryColor(_selectedCategory),
                             boxShadow: NeuShadow.color(
@@ -505,7 +505,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
   Widget _buildCategorySelector() {
     return NeuContainer(
       padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       variant: NeuVariant.raised,
       child: Column(
         children: [
@@ -647,7 +647,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
             ),
           );
@@ -663,7 +663,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
               backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
             ),
           );

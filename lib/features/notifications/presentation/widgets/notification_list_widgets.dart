@@ -143,7 +143,7 @@ class NotificationCard extends StatelessWidget {
             NeuCard(
               padding: const EdgeInsets.all(10),
               variant: NeuVariant.inset,
-              borderRadius: 8,
+              borderRadius: NeuTokens.radiusSm,
               child: Row(
                 children: [
                   NeuSvgIcon(SvgIcons.info, size: 16),
@@ -350,7 +350,7 @@ class NotificationEmptyState extends StatelessWidget {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: NeuCard(
-          borderRadius: 20,
+          borderRadius: NeuTokens.radiusMd,
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,

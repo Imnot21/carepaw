@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
@@ -37,7 +37,7 @@ void showBatchDetailSheet(
     backgroundColor: Colors.transparent,
     builder: (context) => NeuContainer(
       margin: const EdgeInsets.all(20),
-      borderRadius: 24,
+      borderRadius: NeuTokens.radiusMd,
       variant: NeuVariant.raised,
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -50,7 +50,7 @@ void showBatchDetailSheet(
                 width: 56,
                 height: 56,
                 child: NeuContainer(
-                  borderRadius: 14,
+                  borderRadius: NeuTokens.radiusSm,
                   variant: NeuVariant.raised,
                   color: inventoryCategoryColor(item.category),
                   boxShadow: NeuShadow.color(
@@ -181,7 +181,7 @@ void showTransactionSheet(
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           top: 20,
         ),
-        borderRadius: 24,
+        borderRadius: NeuTokens.radiusMd,
         variant: NeuVariant.raised,
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -380,7 +380,7 @@ void showAddBatchSheet(BuildContext context, {required InventoryItem item}) {
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           top: 20,
         ),
-        borderRadius: 24,
+        borderRadius: NeuTokens.radiusMd,
         variant: NeuVariant.raised,
         padding: const EdgeInsets.all(24),
         child: Column(

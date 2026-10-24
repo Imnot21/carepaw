@@ -127,7 +127,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                       ),
                       decoration: BoxDecoration(
                         color: ThemeColors.primary(context),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                       ),
                       child: Text(
                         '${state.count}',

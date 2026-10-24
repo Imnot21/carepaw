@@ -60,7 +60,7 @@ class UpcomingCheckInSection extends StatelessWidget {
               Row(
                 children: [
                   NeuContainer(
-                    borderRadius: 12,
+                    borderRadius: NeuTokens.radiusSm,
                     padding: const EdgeInsets.all(10),
                     variant: NeuVariant.flat,
                     color: ThemeColors.primary(context).withValues(alpha: 0.12),
@@ -202,7 +202,7 @@ class PositionCard extends StatelessWidget {
       width: double.infinity,
       child: NeuContainer(
         padding: const EdgeInsets.all(28),
-        borderRadius: 28,
+        borderRadius: NeuTokens.radiusLg,
         color: ThemeColors.primary(context),
         boxShadow: NeuShadow.color(
           context,
@@ -238,7 +238,7 @@ class PositionCard extends StatelessWidget {
             if (estimatedWaitMinutes != null && estimatedWaitMinutes! > 0) ...[
               const SizedBox(height: 20),
               NeuContainer(
-                borderRadius: 20,
+                borderRadius: NeuTokens.radiusMd,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,
                   vertical: 10,
@@ -374,7 +374,7 @@ class QueueEntryCard extends StatelessWidget {
             children: [
               // Position badge
               NeuContainer(
-                borderRadius: 20,
+                borderRadius: NeuTokens.radiusMd,
                 padding: const EdgeInsets.all(10),
                 variant: NeuVariant.raised,
                 color: statusColor,
@@ -433,7 +433,7 @@ class QueueEntryCard extends StatelessWidget {
 
           // Appointment info
           NeuContainer(
-            borderRadius: 14,
+            borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(14),
             variant: NeuVariant.inset,
             child: Row(

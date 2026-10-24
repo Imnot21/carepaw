@@ -84,7 +84,7 @@ class _StatItem extends StatelessWidget {
     return Column(
       children: [
         NeuContainer(
-          borderRadius: 14,
+          borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.all(12),
           variant: NeuVariant.flat,
           color: color.withValues(alpha: 0.12),
@@ -154,7 +154,7 @@ class StaffQueueEntryCard extends StatelessWidget {
             children: [
               // Position badge
               NeuContainer(
-                borderRadius: 20,
+                borderRadius: NeuTokens.radiusMd,
                 padding: const EdgeInsets.all(10),
                 variant: NeuVariant.raised,
                 color: isCurrentServing
@@ -204,7 +204,7 @@ class StaffQueueEntryCard extends StatelessWidget {
                         if (isCurrentServing) ...[
                           const SizedBox(width: 8),
                           NeuContainer(
-                            borderRadius: 12,
+                            borderRadius: NeuTokens.radiusSm,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
@@ -253,13 +253,13 @@ class StaffQueueEntryCard extends StatelessWidget {
 
           // Appointment info
           NeuContainer(
-            borderRadius: 14,
+            borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(14),
             variant: NeuVariant.inset,
             child: Row(
               children: [
                 NeuContainer(
-                  borderRadius: 10,
+                  borderRadius: NeuTokens.radiusSm,
                   padding: const EdgeInsets.all(8),
                   variant: NeuVariant.flat,
                   color: ThemeColors.primary(context).withValues(alpha: 0.12),
@@ -288,7 +288,7 @@ class StaffQueueEntryCard extends StatelessWidget {
                 ),
                 if (entry.queueEntry.estimatedWaitMinutes != null) ...[
                   NeuContainer(
-                    borderRadius: 10,
+                    borderRadius: NeuTokens.radiusSm,
                     padding: const EdgeInsets.all(8),
                     variant: NeuVariant.flat,
                     color: ThemeColors.warning(context).withValues(alpha: 0.12),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
@@ -15,7 +16,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
@@ -101,7 +101,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
             const SizedBox(height: 4),
             NeuContainer(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              borderRadius: 10,
+              borderRadius: NeuTokens.radiusSm,
               variant: NeuVariant.flat,
               child: Text(
                 record.scanType.displayName,
@@ -143,7 +143,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(14),
-                borderRadius: 16,
+                borderRadius: NeuTokens.radiusSm,
                 color: typeColor,
                 child: NeuSvgIcon(
                   _getTypeSvg(record.scanType),
@@ -283,7 +283,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
           const SizedBox(height: 16),
           NeuContainer(
             padding: const EdgeInsets.all(14),
-            borderRadius: 12,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.inset,
             child: SingleChildScrollView(
               child: Text(
@@ -323,7 +323,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
           const SizedBox(height: 16),
           NeuContainer(
             padding: const EdgeInsets.all(14),
-            borderRadius: 12,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.inset,
             child: SingleChildScrollView(
               child: Text(

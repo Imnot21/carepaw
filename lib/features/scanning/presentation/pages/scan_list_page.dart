@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
@@ -16,7 +17,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/app/router/routes.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -280,7 +280,7 @@ class _ScanListPageState extends State<ScanListPage>
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(12),
-                borderRadius: 14,
+                borderRadius: NeuTokens.radiusSm,
                 color: _getTypeColor(record.scanType),
                 child: NeuSvgIcon(
                   _getTypeSvg(record.scanType),
@@ -323,7 +323,7 @@ class _ScanListPageState extends State<ScanListPage>
           if (record.rawOcrText != null && record.rawOcrText!.isNotEmpty) ...[
             NeuContainer(
               padding: const EdgeInsets.all(14),
-              borderRadius: 12,
+              borderRadius: NeuTokens.radiusSm,
               variant: NeuVariant.inset,
               child: Row(
                 children: [
@@ -444,7 +444,7 @@ class _ScanListPageState extends State<ScanListPage>
 
     return NeuContainer(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      borderRadius: 10,
+      borderRadius: NeuTokens.radiusSm,
       variant: NeuVariant.flat,
       borderColor: color.withValues(alpha: 0.3),
       borderWidth: 1,
@@ -528,7 +528,7 @@ class _ScanListPageState extends State<ScanListPage>
         content: Text('Using ${record.scanType.displayName} data...'),
         backgroundColor: ThemeColors.success(context),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
       ),
     );
   }
@@ -547,7 +547,7 @@ class _ScanTabBar extends StatelessWidget {
     return SizedBox(
       height: 56,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
         child: NeuContainer(
           variant: NeuVariant.flat,
           color: ThemeColors.background(context),
@@ -606,7 +606,7 @@ class _NeuEmptyState extends StatelessWidget {
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(24),
-                borderRadius: 24,
+                borderRadius: NeuTokens.radiusMd,
                 variant: NeuVariant.flat,
                 child: svgAsset != null
                     ? NeuSvgIcon(svgAsset!, size: 64)

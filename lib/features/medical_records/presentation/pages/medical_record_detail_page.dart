@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/medical_records/presentation/utils/medical_record_utils.dart';
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -87,7 +87,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
                 children: [
                   // Type badge
                   NeuContainer(
-                    borderRadius: 30,
+                    borderRadius: NeuTokens.radiusLg,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 22,
                       vertical: 12,
@@ -359,7 +359,7 @@ class _SectionCard extends StatelessWidget {
           Row(
             children: [
               NeuContainer(
-                borderRadius: 14,
+                borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(12),
                 variant: NeuVariant.flat,
                 color: color.withValues(alpha: 0.12),

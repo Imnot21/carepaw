@@ -185,7 +185,7 @@ class _PetListViewState extends State<PetListView> {
                       backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                       ),
                       margin: const EdgeInsets.all(16),
                     ),
@@ -197,7 +197,7 @@ class _PetListViewState extends State<PetListView> {
                       backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                       ),
                       margin: const EdgeInsets.all(16),
                     ),
@@ -367,7 +367,7 @@ class _PetCard extends StatelessWidget {
                             color: ThemeColors.warning(
                               context,
                             ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                             border: Border.all(
                               color: ThemeColors.warning(
                                 context,
@@ -649,7 +649,7 @@ class _StaffPetListViewState extends State<StaffPetListView> {
                       backgroundColor: ThemeColors.error(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                       ),
                       margin: const EdgeInsets.all(16),
                     ),
@@ -661,7 +661,7 @@ class _StaffPetListViewState extends State<StaffPetListView> {
                       backgroundColor: ThemeColors.success(context),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                       ),
                       margin: const EdgeInsets.all(16),
                     ),
@@ -783,7 +783,7 @@ class _StaffPetCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: NeuCard(
         onTap: onTap,
-        borderRadius: 20,
+        borderRadius: NeuTokens.radiusMd,
         borderColor: !pet.isActive
             ? AppColors.warning.withValues(alpha: 0.4)
             : null,
@@ -828,7 +828,7 @@ class _StaffPetCard extends StatelessWidget {
                             color: ThemeColors.warning(
                               context,
                             ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                             border: Border.all(
                               color: ThemeColors.warning(
                                 context,

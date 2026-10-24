@@ -71,7 +71,7 @@ class _QueuePageState extends State<QueuePage> {
                     backgroundColor: ThemeColors.success(context),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                     ),
                     margin: const EdgeInsets.all(16),
                   ),
@@ -83,7 +83,7 @@ class _QueuePageState extends State<QueuePage> {
                     backgroundColor: ThemeColors.error(context),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                     ),
                     margin: const EdgeInsets.all(16),
                   ),

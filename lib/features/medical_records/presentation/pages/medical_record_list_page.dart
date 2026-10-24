@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart';
@@ -21,7 +22,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
 /// Page showing the list of medical records for a pet with neumorphic design.
@@ -283,7 +283,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                   horizontal: 18,
                   vertical: 10,
                 ),
-                borderRadius: 20,
+                borderRadius: NeuTokens.radiusMd,
                 variant: NeuVariant.raised,
                 borderColor: speciesColor.withValues(alpha: 0.3),
                 borderWidth: 1,
@@ -530,7 +530,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     return Padding(
       padding: const EdgeInsets.only(right: 4, bottom: 4),
       child: NeuContainer(
-        borderRadius: 28,
+        borderRadius: NeuTokens.radiusLg,
         variant: NeuVariant.raised,
         // Darkened species tint so the white label/icon clear 4.5:1 on
         // every species (plain cat tint was the failure case).
@@ -543,7 +543,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         ),
         child: InkWell(
           onTap: () => _navigateToForm(context),
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(NeuTokens.radiusLg),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
@@ -663,7 +663,7 @@ class _MedicalRecordCard extends StatelessWidget {
         children: [
           // Type icon with background
           NeuContainer(
-            borderRadius: 18,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.raised,
             borderColor: typeInfo.color.withValues(alpha: 0.25),
             borderWidth: 1,
@@ -682,7 +682,7 @@ class _MedicalRecordCard extends StatelessWidget {
                 Row(
                   children: [
                     NeuContainer(
-                      borderRadius: 8,
+                      borderRadius: NeuTokens.radiusSm,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 4,
@@ -733,7 +733,7 @@ class _MedicalRecordCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   NeuContainer(
                     padding: const EdgeInsets.all(12),
-                    borderRadius: 12,
+                    borderRadius: NeuTokens.radiusSm,
                     variant: NeuVariant.raised,
                     borderColor: ThemeColors.primary(
                       context,
@@ -763,7 +763,7 @@ class _MedicalRecordCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   NeuContainer(
                     padding: const EdgeInsets.all(12),
-                    borderRadius: 12,
+                    borderRadius: NeuTokens.radiusSm,
                     variant: NeuVariant.raised,
                     borderColor: ThemeColors.primary(
                       context,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 import 'package:carepaw/features/medical_records/presentation/utils/medical_record_utils.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
@@ -59,7 +59,7 @@ class MedicalRecordPetHeader extends StatelessWidget {
           ),
         ),
         NeuContainer(
-          borderRadius: 16,
+          borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           variant: NeuVariant.flat,
           color: speciesColor.withValues(alpha: 0.12),
@@ -97,7 +97,7 @@ class MedicalRecordTypeSelector extends StatelessWidget {
     final types = MedicalRecordType.values;
 
     return NeuCard(
-      borderRadius: 20,
+      borderRadius: NeuTokens.radiusMd,
       padding: const EdgeInsets.all(20),
       borderColor: speciesColor.withValues(alpha: 0.2),
       borderWidth: 1,
@@ -107,7 +107,7 @@ class MedicalRecordTypeSelector extends StatelessWidget {
           Row(
             children: [
               NeuContainer(
-                borderRadius: 14,
+                borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(12),
                 variant: NeuVariant.flat,
                 color: speciesColor.withValues(alpha: 0.12),
@@ -168,7 +168,7 @@ class MedicalRecordFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      borderRadius: 20,
+      borderRadius: NeuTokens.radiusMd,
       padding: const EdgeInsets.all(22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

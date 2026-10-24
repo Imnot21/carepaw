@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/utils/formatters.dart';
 
@@ -51,7 +51,7 @@ class BatchCard extends StatelessWidget {
 
     return NeuCard(
       padding: const EdgeInsets.all(16),
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       borderColor: isExpired
           ? ThemeColors.error(context).withValues(alpha: 0.3)
           : isExpiringSoon || highlightExpiry
@@ -59,7 +59,7 @@ class BatchCard extends StatelessWidget {
           : categoryColor.withValues(alpha: 0.1),
       borderWidth: 1,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +69,7 @@ class BatchCard extends StatelessWidget {
               children: [
                 NeuContainer(
                   padding: const EdgeInsets.all(10),
-                  borderRadius: 12,
+                  borderRadius: NeuTokens.radiusSm,
                   color: categoryColor,
                   child: NeuSvgIcon(_getCategorySvg(item.category), size: 22),
                 ),
@@ -109,7 +109,7 @@ class BatchCard extends StatelessWidget {
                       PopupMenuButton<String>(
                         icon: NeuSvgIcon(SvgIcons.more, size: 24),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                         ),
                         onSelected: (value) {
                           if (value == 'edit') onEdit?.call();
@@ -217,7 +217,7 @@ class BatchCard extends StatelessWidget {
                   color: Theme.of(context).brightness == Brightness.dark
                       ? AppColors.surfaceContainerDark
                       : AppColors.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

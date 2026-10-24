@@ -473,7 +473,7 @@ class _PetDetailLoader extends StatelessWidget {
               children: [
                 NeuContainer(
                   padding: const EdgeInsets.all(20),
-                  borderRadius: 24,
+                  borderRadius: NeuTokens.radiusMd,
                   variant: NeuVariant.flat,
                   child: const NeuSvgIcon(SvgIcons.error, size: 64),
                 ),
@@ -560,7 +560,7 @@ class _PetFormLoader extends StatelessWidget {
               children: [
                 NeuContainer(
                   padding: const EdgeInsets.all(20),
-                  borderRadius: 24,
+                  borderRadius: NeuTokens.radiusMd,
                   variant: NeuVariant.flat,
                   child: const NeuSvgIcon(SvgIcons.error, size: 64),
                 ),

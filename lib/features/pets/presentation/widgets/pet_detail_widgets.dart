@@ -33,13 +33,13 @@ class MenuTile extends StatelessWidget {
     return NeuContainer(
       onTap: onTap,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      borderRadius: 14,
+      borderRadius: NeuTokens.radiusSm,
       variant: NeuVariant.flat,
       child: Row(
         children: [
           NeuContainer(
             padding: const EdgeInsets.all(8),
-            borderRadius: 10,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.flat,
             child: svgAsset != null
                 ? NeuSvgIcon(svgAsset!, size: 20)
@@ -232,7 +232,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           NeuContainer(
             padding: const EdgeInsets.all(10),
-            borderRadius: 10,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.flat,
             child: svgAsset != null
                 ? NeuSvgIcon(svgAsset!, size: 22)
@@ -283,7 +283,7 @@ class WeightTrackingCard extends StatelessWidget {
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(12),
-                borderRadius: 14,
+                borderRadius: NeuTokens.radiusSm,
                 variant: NeuVariant.flat,
                 child: const NeuSvgIcon(SvgIcons.weightScale, size: 26),
               ),
@@ -323,7 +323,7 @@ class WeightTrackingCard extends StatelessWidget {
               children: [
                 NeuContainer(
                   padding: const EdgeInsets.all(24),
-                  borderRadius: 24,
+                  borderRadius: NeuTokens.radiusMd,
                   variant: NeuVariant.flat,
                   child: const NeuSvgIcon(SvgIcons.weightScale, size: 56),
                 ),
@@ -431,13 +431,13 @@ class _ActionTile extends StatelessWidget {
     return NeuContainer(
       onTap: onTap,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      borderRadius: 14,
+      borderRadius: NeuTokens.radiusSm,
       variant: NeuVariant.flat,
       child: Row(
         children: [
           NeuContainer(
             padding: const EdgeInsets.all(8),
-            borderRadius: 10,
+            borderRadius: NeuTokens.radiusSm,
             variant: NeuVariant.flat,
             child: svgAsset != null
                 ? NeuSvgIcon(svgAsset!, size: 22)
@@ -486,7 +486,7 @@ class MedicalRecordsCard extends StatelessWidget {
           children: [
             NeuContainer(
               padding: const EdgeInsets.all(12),
-              borderRadius: 14,
+              borderRadius: NeuTokens.radiusSm,
               variant: NeuVariant.flat,
               child: const NeuSvgIcon(SvgIcons.visit, size: 26),
             ),
@@ -506,7 +506,7 @@ class MedicalRecordsCard extends StatelessWidget {
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(24),
-                borderRadius: 24,
+                borderRadius: NeuTokens.radiusMd,
                 variant: NeuVariant.flat,
                 child: const NeuSvgIcon(SvgIcons.folder, size: 56),
               ),

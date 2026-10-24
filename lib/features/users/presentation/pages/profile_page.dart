@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart'
     as auth_events;
@@ -10,7 +11,6 @@ import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
@@ -89,7 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: ThemeColors.success(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
           ),
           margin: const EdgeInsets.all(16),
         ),
@@ -103,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: ThemeColors.error(context),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
           ),
           margin: const EdgeInsets.all(16),
         ),
@@ -138,7 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
               backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -151,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
               backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -226,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 12),
           NeuContainer(
-            borderRadius: 12,
+            borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             variant: NeuVariant.flat,
             child: Text(
@@ -724,7 +724,7 @@ class _SettingTile extends StatelessWidget {
         child: Row(
           children: [
             NeuContainer(
-              borderRadius: 14,
+              borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(10),
               color: isDark
                   ? AppColors.primary.withValues(alpha: 0.16)

@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/utils/validators.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
@@ -161,7 +161,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
               backgroundColor: ThemeColors.success(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -173,7 +173,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
               backgroundColor: ThemeColors.error(context),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -256,7 +256,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           const SizedBox(height: 12),
 
           NeuCard(
-            borderRadius: 20,
+            borderRadius: NeuTokens.radiusMd,
             padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
@@ -375,7 +375,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
               const Spacer(),
               if (allUsers.isNotEmpty)
                 NeuContainer(
-                  borderRadius: 12,
+                  borderRadius: NeuTokens.radiusSm,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 4,
@@ -451,7 +451,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
 
           if (allUsers.isEmpty)
             NeuCard(
-              borderRadius: 16,
+              borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
@@ -468,7 +468,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
             )
           else if (filtered.isEmpty)
             NeuCard(
-              borderRadius: 16,
+              borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
@@ -610,7 +610,7 @@ class _UserManagementCard extends StatelessWidget {
         : ThemeColors.textSecondary(context);
 
     return NeuCard(
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       padding: const EdgeInsets.all(16),
       borderColor: primary.withValues(alpha: 0.3),
       borderWidth: 1.2,
@@ -621,7 +621,7 @@ class _UserManagementCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: roleColor(context, role).withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
             ),
             child: NeuSvgIcon(
               role == UserRole.ownerAdmin ? SvgIcons.visit : SvgIcons.person,

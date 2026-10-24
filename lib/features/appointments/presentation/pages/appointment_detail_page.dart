@@ -173,7 +173,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
 
   Widget _buildStatusBadge(_StatusInfo statusInfo) {
     return NeuContainer(
-      borderRadius: 30,
+      borderRadius: NeuTokens.radiusLg,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       color: statusInfo.color.withValues(alpha: 0.15),
       boxShadow: NeuShadow.none,
@@ -335,13 +335,13 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
     Color speciesColor,
   ) {
     return NeuCard(
-      borderRadius: 20,
+      borderRadius: NeuTokens.radiusMd,
       padding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: NeuShape.card),
       child: Row(
         children: [
           NeuContainer(
-            borderRadius: 16,
+            borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.all(12),
             variant: NeuVariant.flat,
             color: ThemeColors.primary(context).withValues(alpha: 0.15),
@@ -409,7 +409,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
     Color speciesColor,
   ) {
     return NeuCard(
-      borderRadius: 20,
+      borderRadius: NeuTokens.radiusMd,
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
@@ -470,7 +470,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       children: [
         NeuContainer(
           padding: const EdgeInsets.all(10),
-          borderRadius: 12,
+          borderRadius: NeuTokens.radiusSm,
           variant: NeuVariant.flat,
           color: iconColor.withValues(alpha: 0.15),
           child: svgAsset != null
@@ -512,7 +512,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
     Color iconColor,
   ) {
     return NeuCard(
-      borderRadius: 20,
+      borderRadius: NeuTokens.radiusMd,
       padding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: NeuShape.card),
       child: Column(
@@ -522,7 +522,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             children: [
               NeuContainer(
                 padding: const EdgeInsets.all(10),
-                borderRadius: 12,
+                borderRadius: NeuTokens.radiusSm,
                 variant: NeuVariant.flat,
                 color: iconColor.withValues(alpha: 0.15),
                 child: svgAsset != null

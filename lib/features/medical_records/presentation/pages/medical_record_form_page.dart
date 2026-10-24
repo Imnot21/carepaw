@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart';
@@ -9,7 +10,6 @@ import 'package:carepaw/features/medical_records/presentation/widgets/medical_re
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
-import 'package:carepaw/app/theme/app_colors.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
@@ -101,7 +101,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                   backgroundColor: ThemeColors.success(context),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                   ),
                 ),
               );
@@ -114,7 +114,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                   backgroundColor: ThemeColors.error(context),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
                   ),
                 ),
               );

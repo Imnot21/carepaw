@@ -193,13 +193,13 @@ class _AuditEmptyView extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: NeuCard(
-          borderRadius: 20,
+          borderRadius: NeuTokens.radiusMd,
           padding: const EdgeInsets.all(28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               NeuContainer(
-                borderRadius: 16,
+                borderRadius: NeuTokens.radiusSm,
                 padding: const EdgeInsets.all(16),
                 child: NeuSvgIcon(SvgIcons.receipt, size: 40),
               ),
@@ -338,7 +338,7 @@ class _AuditLogCard extends StatelessWidget {
     final actionColor = _actionColor(context, entry.action);
 
     return NeuCard(
-      borderRadius: 16,
+      borderRadius: NeuTokens.radiusSm,
       padding: const EdgeInsets.all(16),
       borderColor: actionColor.withValues(alpha: 0.25),
       borderWidth: 1,
@@ -350,7 +350,7 @@ class _AuditLogCard extends StatelessWidget {
             height: 42,
             decoration: BoxDecoration(
               color: actionColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
             ),
             child: NeuSvgIcon(
               _actionSvg(entry.action),
