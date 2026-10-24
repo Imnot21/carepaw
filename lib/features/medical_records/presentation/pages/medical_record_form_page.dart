@@ -15,7 +15,10 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 
-/// Page for creating/editing medical records with premium design.
+/// Page for creating a medical record, or correcting one.
+///
+/// With [existingRecord] the form opens prefilled and saves a correction: a
+/// new record that supersedes the original, with a required reason.
 class MedicalRecordFormPage extends StatefulWidget {
   final Pet pet;
   final MedicalRecord? existingRecord;
@@ -40,6 +43,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
   final _treatmentController = TextEditingController();
   final _medicationsController = TextEditingController();
   final _attachmentsController = TextEditingController();
+  final _reasonController = TextEditingController();
 
   MedicalRecordType _selectedType = MedicalRecordType.visit;
   bool _isLoading = false;
@@ -68,6 +72,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
     _treatmentController.dispose();
     _medicationsController.dispose();
     _attachmentsController.dispose();
+    _reasonController.dispose();
     super.dispose();
   }
 
@@ -96,7 +101,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
             } else if (state is MedicalRecordOperationSuccess) {
               setState(() => _isLoading = false);
               NeuToast.success(context, state.message);
-              context.pop();
+              context.pop(true);
             } else if (state is MedicalRecordError) {
               setState(() => _isLoading = false);
               NeuToast.error(context, state.failure.message);
@@ -108,7 +113,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
           child: Scaffold(
             appBar: AppBar(
               title: Text(
-                isEditing ? 'Edit Record' : 'New Record',
+                isEditing ? 'Correct Record' : 'New Record',
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -186,6 +191,26 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
   List<Widget> _getFields() {
     final fields = <Widget>[];
+
+    // A correction must say why, so the history explains itself.
+    if (widget.existingRecord != null) {
+      fields.add(
+        MedicalRecordFormField(
+          controller: _reasonController,
+          label: 'Reason for correction *',
+          hint: 'e.g., Wrong dosage entered, typo in diagnosis',
+          icon: Icons.edit_note_rounded,
+          svgAsset: SvgIcons.edit,
+          maxLines: 2,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Say what was wrong with the original';
+            }
+            return null;
+          },
+        ),
+      );
+    }
 
     // Title (required for all types)
     fields.add(
@@ -442,7 +467,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
 
   Widget _buildSubmitButton(BuildContext context, bool isEditing) {
     return NeuButton(
-      text: isEditing ? 'Update Record' : 'Create Record',
+      text: isEditing ? 'Save Correction' : 'Create Record',
       onPressed: _isLoading ? null : _submitForm,
       icon: isEditing ? Icons.save_rounded : Icons.add_rounded,
       svgAsset: isEditing ? SvgIcons.save : SvgIcons.add,
@@ -468,124 +493,39 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
       return;
     }
 
-    context.read<MedicalRecordBloc>().add(_createEvent(userId));
+    context.read<MedicalRecordBloc>().add(
+      CreateMedicalRecord(_buildRecord(userId)),
+    );
   }
 
-  MedicalRecordEvent _createEvent(int userId) {
-    switch (_selectedType) {
-      case MedicalRecordType.visit:
-        return CreateVisitRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          diagnosis: _diagnosisController.text.trim().isEmpty
-              ? null
-              : _diagnosisController.text.trim(),
-          treatment: _treatmentController.text.trim().isEmpty
-              ? null
-              : _treatmentController.text.trim(),
-          medications: _medicationsController.text.trim().isEmpty
-              ? null
-              : _medicationsController.text.trim(),
-          attachments: _attachmentsController.text.trim().isEmpty
-              ? null
-              : _attachmentsController.text.trim(),
-        );
+  String? _text(TextEditingController controller) {
+    final value = controller.text.trim();
+    return value.isEmpty ? null : value;
+  }
 
-      case MedicalRecordType.vaccination:
-        return CreateVaccinationRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          medications: _medicationsController.text.trim(),
-        );
-
-      case MedicalRecordType.deworming:
-        return CreateDewormingRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          medications: _medicationsController.text.trim(),
-        );
-
-      case MedicalRecordType.surgery:
-        return CreateVisitRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          diagnosis: _diagnosisController.text.trim(),
-          treatment: _treatmentController.text.trim().isEmpty
-              ? null
-              : _treatmentController.text.trim(),
-          medications: _medicationsController.text.trim().isEmpty
-              ? null
-              : _medicationsController.text.trim(),
-          attachments: _attachmentsController.text.trim().isEmpty
-              ? null
-              : _attachmentsController.text.trim(),
-        );
-
-      case MedicalRecordType.labResult:
-        return CreateLabResultRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim(),
-        );
-
-      case MedicalRecordType.prescription:
-        return CreateVisitRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          medications: _medicationsController.text.trim(),
-          treatment: _treatmentController.text.trim().isEmpty
-              ? null
-              : _treatmentController.text.trim(),
-        );
-
-      case MedicalRecordType.note:
-        return CreateVisitRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          appointmentId: null,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          diagnosis: _diagnosisController.text.trim(),
-        );
-
-      case MedicalRecordType.allergy:
-        return CreateAllergyRecord(
-          petId: widget.pet.id!,
-          veterinarianId: userId,
-          title: _titleController.text.trim(),
-          description:
-              '${_diagnosisController.text.trim()}\n\nReaction: ${_treatmentController.text.trim()}'
-                  .trim(),
-        );
-    }
+  /// The record to save, with the selected type and every filled field.
+  ///
+  /// A correction is a new record pointing back at the one it replaces; it
+  /// keeps the original's visit date and appointment so the history reads in
+  /// order. The original itself is never changed.
+  MedicalRecord _buildRecord(int userId) {
+    final original = widget.existingRecord;
+    final now = DateTime.now();
+    return MedicalRecord(
+      petId: widget.pet.id!,
+      veterinarianId: userId,
+      appointmentId: original?.appointmentId,
+      recordType: _selectedType,
+      title: _titleController.text.trim(),
+      description: _text(_descriptionController),
+      diagnosis: _text(_diagnosisController),
+      treatment: _text(_treatmentController),
+      medications: _text(_medicationsController),
+      attachments: _text(_attachmentsController),
+      recordedAt: original?.recordedAt ?? now,
+      createdAt: now,
+      supersedesId: original?.id,
+      correctionReason: original == null ? null : _text(_reasonController),
+    );
   }
 }

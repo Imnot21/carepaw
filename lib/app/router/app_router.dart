@@ -382,7 +382,13 @@ class AppRouter {
                       title: 'Medical Record Not Found',
                     );
                   }
-                  return MedicalRecordDetailPage(record: record, pet: pet);
+                  return MedicalRecordDetailPage(
+                    record: record,
+                    pet: pet,
+                    correctedBy: extra is Map
+                        ? extra['correctedBy'] as MedicalRecord?
+                        : null,
+                  );
                 },
               ),
             ],

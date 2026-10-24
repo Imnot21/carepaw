@@ -32,6 +32,8 @@ class MedicalRecordDocMapper {
       createdAt:
           DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
           DateTime.now(),
+      supersedesId: (data[FirestoreSchema.supersedesId] as num?)?.toInt(),
+      correctionReason: data[FirestoreSchema.correctionReason] as String?,
     );
   }
 
@@ -55,6 +57,8 @@ class MedicalRecordDocMapper {
       FirestoreSchema.createdAt: DateFieldCodec.toFirestoreDate(
         record.createdAt,
       ),
+      FirestoreSchema.supersedesId: record.supersedesId,
+      FirestoreSchema.correctionReason: record.correctionReason,
     };
   }
 }

@@ -40,6 +40,19 @@ class LoadMedicalRecordDetails extends MedicalRecordEvent {
   List<Object?> get props => [recordId];
 }
 
+/// Save a new record of any type, including a correction of an earlier one.
+///
+/// The record is written as-is, so its [MedicalRecord.recordType] and every
+/// filled field are kept.
+class CreateMedicalRecord extends MedicalRecordEvent {
+  final MedicalRecord record;
+
+  const CreateMedicalRecord(this.record);
+
+  @override
+  List<Object?> get props => [record];
+}
+
 /// Create a new visit record.
 class CreateVisitRecord extends MedicalRecordEvent {
   final int petId;

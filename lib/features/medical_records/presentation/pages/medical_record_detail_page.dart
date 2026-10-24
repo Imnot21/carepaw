@@ -14,18 +14,20 @@ import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 
 /// Page showing detailed view of a medical record with premium design.
 class MedicalRecordDetailPage extends StatelessWidget {
   final MedicalRecord record;
   final Pet pet;
 
+  /// The newer record that corrects this one, if any.
+  final MedicalRecord? correctedBy;
+
   const MedicalRecordDetailPage({
     super.key,
     required this.record,
     required this.pet,
+    this.correctedBy,
   });
 
   @override
@@ -61,8 +63,12 @@ class MedicalRecordDetailPage extends StatelessWidget {
           Builder(
             builder: (context) {
               final authState = context.watch<AuthBloc>().state;
+              // A record already corrected is fixed by correcting the
+              // newer entry, so only the latest version offers the pencil.
               final canEdit =
-                  authState is AuthAuthenticated && authState.user.isOwnerAdmin;
+                  authState is AuthAuthenticated &&
+                  authState.user.isOwnerAdmin &&
+                  correctedBy == null;
               if (!canEdit) return const SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -188,6 +194,41 @@ class MedicalRecordDetailPage extends StatelessWidget {
 
   List<_DetailSection> _getSections(BuildContext context) {
     final sections = <_DetailSection>[];
+    final labels = MedicalRecordUtils.fieldLabels(record.recordType);
+
+    if (correctedBy != null) {
+      final newer = correctedBy!;
+      final reason = newer.correctionReason;
+      sections.add(
+        _DetailSection(
+          title: 'Corrected',
+          icon: Icons.history_rounded,
+          svgAsset: SvgIcons.alert,
+          color: ThemeColors.warning(context),
+          content:
+              'This entry was corrected on '
+              '${_formatFullDate(newer.createdAt)}. It is kept unchanged for '
+              'the history; record #${newer.id} holds the current details.'
+              '${reason == null ? '' : '\n\nReason: $reason'}',
+        ),
+      );
+    }
+
+    if (record.isCorrection) {
+      final reason = record.correctionReason;
+      sections.add(
+        _DetailSection(
+          title: 'Correction',
+          icon: Icons.edit_note_rounded,
+          svgAsset: SvgIcons.edit,
+          color: ThemeColors.primaryText(context),
+          content:
+              'Replaces record #${record.supersedesId}, which is kept '
+              'unchanged in the history.'
+              '${reason == null ? '' : '\n\nReason: $reason'}',
+        ),
+      );
+    }
 
     if (record.description != null && record.description!.isNotEmpty) {
       sections.add(
@@ -204,7 +245,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
     if (record.diagnosis != null && record.diagnosis!.isNotEmpty) {
       sections.add(
         _DetailSection(
-          title: 'Diagnosis',
+          title: labels.diagnosis,
           icon: Icons.medical_services_outlined,
           svgAsset: SvgIcons.visit,
           color: ThemeColors.info(context),
@@ -216,7 +257,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
     if (record.treatment != null && record.treatment!.isNotEmpty) {
       sections.add(
         _DetailSection(
-          title: 'Treatment',
+          title: labels.treatment,
           icon: Icons.healing_outlined,
           svgAsset: SvgIcons.treatment,
           color: ThemeColors.progress(context),
@@ -228,7 +269,7 @@ class MedicalRecordDetailPage extends StatelessWidget {
     if (record.medications != null && record.medications!.isNotEmpty) {
       sections.add(
         _DetailSection(
-          title: 'Medications',
+          title: labels.medications,
           icon: Icons.medication_outlined,
           svgAsset: SvgIcons.medication,
           color: AppColors.quaternary,
@@ -293,42 +334,15 @@ class MedicalRecordDetailPage extends StatelessWidget {
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  void _navigateToEdit(BuildContext context) {
-    NeuBottomSheet.show(
-      context: context,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Correcting a Record',
-              style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Medical records can never be edited or deleted. Mistakes are '
-              'fixed by adding a correction note on top, so the full '
-              'history is always kept.',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            NeuButton(
-              text: 'Got it',
-              onPressed: () => context.pop(),
-              variant: NeuButtonVariant.primary,
-              icon: Icons.check_rounded,
-              svgAsset: SvgIcons.check,
-            ),
-          ],
-        ),
-      ),
+  /// Opens the form prefilled from this record. Saving there adds a new
+  /// record that supersedes this one; this one is never changed. Once it is
+  /// saved, go back to the list so it shows the correction.
+  Future<void> _navigateToEdit(BuildContext context) async {
+    final saved = await context.push<bool>(
+      '/medical-records/new',
+      extra: {'pet': pet, 'existingRecord': record},
     );
+    if (saved == true && context.mounted) context.pop();
   }
 }
 

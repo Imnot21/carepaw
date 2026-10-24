@@ -19,6 +19,14 @@ class MedicalRecord extends Equatable {
   final DateTime recordedAt;
   final DateTime createdAt;
 
+  /// Id of the earlier record this one corrects, or null for an original
+  /// entry. Records are append-only: a mistake is fixed by adding a new
+  /// record that points back here, never by editing the old one.
+  final int? supersedesId;
+
+  /// Why the earlier record was corrected. Set only on corrections.
+  final String? correctionReason;
+
   const MedicalRecord({
     this.id,
     required this.petId,
@@ -33,7 +41,12 @@ class MedicalRecord extends Equatable {
     this.attachments,
     required this.recordedAt,
     required this.createdAt,
+    this.supersedesId,
+    this.correctionReason,
   });
+
+  /// Whether this record corrects an earlier one.
+  bool get isCorrection => supersedesId != null;
 
   /// Check if this is a vaccination record
   bool get isVaccination => recordType == MedicalRecordType.vaccination;
@@ -62,6 +75,8 @@ class MedicalRecord extends Equatable {
     attachments,
     recordedAt,
     createdAt,
+    supersedesId,
+    correctionReason,
   ];
 
   MedicalRecord copyWith({
@@ -78,6 +93,8 @@ class MedicalRecord extends Equatable {
     String? attachments,
     DateTime? recordedAt,
     DateTime? createdAt,
+    int? supersedesId,
+    String? correctionReason,
   }) {
     return MedicalRecord(
       id: id ?? this.id,
@@ -93,6 +110,8 @@ class MedicalRecord extends Equatable {
       attachments: attachments ?? this.attachments,
       recordedAt: recordedAt ?? this.recordedAt,
       createdAt: createdAt ?? this.createdAt,
+      supersedesId: supersedesId ?? this.supersedesId,
+      correctionReason: correctionReason ?? this.correctionReason,
     );
   }
 }

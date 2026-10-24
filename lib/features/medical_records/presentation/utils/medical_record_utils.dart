@@ -81,6 +81,56 @@ class MedicalRecordUtils {
     }
   }
 
+  /// What the diagnosis, treatment and medications fields mean for [type].
+  ///
+  /// Every type stores its details in the same three fields; these are the
+  /// names the record form uses for them, so the detail view reads the same.
+  static ({String diagnosis, String treatment, String medications})
+  fieldLabels(MedicalRecordType type) {
+    return switch (type) {
+      MedicalRecordType.vaccination => (
+        diagnosis: 'Diagnosis',
+        treatment: 'Treatment',
+        medications: 'Vaccines Given',
+      ),
+      MedicalRecordType.deworming => (
+        diagnosis: 'Diagnosis',
+        treatment: 'Treatment',
+        medications: 'Deworming Product',
+      ),
+      MedicalRecordType.surgery => (
+        diagnosis: 'Procedure',
+        treatment: 'Post-op Care',
+        medications: 'Medications Prescribed',
+      ),
+      MedicalRecordType.labResult => (
+        diagnosis: 'Test Results',
+        treatment: 'Interpretation',
+        medications: 'Medications',
+      ),
+      MedicalRecordType.prescription => (
+        diagnosis: 'Diagnosis',
+        treatment: 'Instructions',
+        medications: 'Medications',
+      ),
+      MedicalRecordType.note => (
+        diagnosis: 'Clinical Notes',
+        treatment: 'Treatment',
+        medications: 'Medications',
+      ),
+      MedicalRecordType.allergy => (
+        diagnosis: 'Allergen',
+        treatment: 'Reaction',
+        medications: 'Management',
+      ),
+      MedicalRecordType.visit => (
+        diagnosis: 'Diagnosis',
+        treatment: 'Treatment',
+        medications: 'Medications',
+      ),
+    };
+  }
+
   /// Format date for display.
   static String formatDate(DateTime date) {
     final now = DateTime.now();

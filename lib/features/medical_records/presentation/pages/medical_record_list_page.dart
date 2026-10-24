@@ -378,6 +378,12 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       return _buildEmptyState(context, speciesColor);
     }
 
+    // Originals stay in the list; each one points to the record correcting it.
+    final correctionsByOriginal = {
+      for (final r in records)
+        if (r.supersedesId != null) r.supersedesId!: r,
+    };
+
     // Reload via pull-to-refresh instead of a manual refresh button.
     return RefreshIndicator(
       onRefresh: () async {
@@ -397,12 +403,14 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         separatorBuilder: (_, _) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
           final record = records[index];
+          final correctedBy = correctionsByOriginal[record.id];
           return NeuCard(
-            onTap: () => _navigateToDetail(context, record),
+            onTap: () => _navigateToDetail(context, record, correctedBy),
             padding: EdgeInsets.zero,
             child: _MedicalRecordCard(
               record: record,
               speciesColor: speciesColor,
+              correctedBy: correctedBy,
             ),
           );
         },
@@ -567,11 +575,32 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
     );
   }
 
-  void _navigateToDetail(BuildContext context, MedicalRecord record) {
-    context.push(
-      '/medical-records/${record.id}',
-      extra: {'record': record, 'pet': widget.pet},
-    );
+  void _navigateToDetail(
+    BuildContext context,
+    MedicalRecord record,
+    MedicalRecord? correctedBy,
+  ) {
+    final bloc = context.read<MedicalRecordBloc>();
+    context
+        .push(
+          '/medical-records/${record.id}',
+          extra: {
+            'record': record,
+            'pet': widget.pet,
+            'correctedBy': correctedBy,
+          },
+        )
+        .then((_) {
+          // The record may have been corrected from the detail page.
+          if (!mounted) return;
+          if (_selectedFilter != null) {
+            bloc.add(
+              LoadMedicalRecordsByType(widget.pet.id!, _selectedFilter!),
+            );
+          } else {
+            bloc.add(LoadMedicalRecords(widget.pet.id!));
+          }
+        });
   }
 
   void _navigateToForm(BuildContext context) {
@@ -650,12 +679,18 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
 class _MedicalRecordCard extends StatelessWidget {
   final MedicalRecord record;
   final Color speciesColor;
+  final MedicalRecord? correctedBy;
 
-  const _MedicalRecordCard({required this.record, required this.speciesColor});
+  const _MedicalRecordCard({
+    required this.record,
+    required this.speciesColor,
+    this.correctedBy,
+  });
 
   @override
   Widget build(BuildContext context) {
     final typeInfo = _getTypeInfo(context, record.recordType);
+    final labels = MedicalRecordUtils.fieldLabels(record.recordType);
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -686,6 +721,21 @@ class _MedicalRecordCard extends StatelessWidget {
                       label: record.recordType.displayName,
                       color: typeInfo.color,
                     ),
+                    if (correctedBy != null) ...[
+                      const SizedBox(width: NeuTokens.spaceXs),
+                      const NeuStatusBadge(
+                        label: 'Corrected',
+                        tone: NeuStatusTone.muted,
+                        compact: true,
+                      ),
+                    ] else if (record.isCorrection) ...[
+                      const SizedBox(width: NeuTokens.spaceXs),
+                      const NeuStatusBadge(
+                        label: 'Correction',
+                        tone: NeuStatusTone.accent,
+                        compact: true,
+                      ),
+                    ],
                     const Spacer(),
                     Text(
                       _formatDate(record.recordedAt),
@@ -734,7 +784,7 @@ class _MedicalRecordCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Diagnosis: ${record.diagnosis}',
+                            '${labels.diagnosis}: ${record.diagnosis}',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: ThemeColors.primaryText(context),
                               fontWeight: FontWeight.w500,
@@ -764,7 +814,7 @@ class _MedicalRecordCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Treatment: ${record.treatment}',
+                            '${labels.treatment}: ${record.treatment}',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: ThemeColors.primaryText(context),
                               fontWeight: FontWeight.w500,

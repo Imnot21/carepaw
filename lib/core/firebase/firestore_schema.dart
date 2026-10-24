@@ -83,6 +83,8 @@ class FirestoreSchema {
   static const String medications = 'medications';
   static const String attachments = 'attachments';
   static const String recordedAt = 'recordedAt';
+  static const String supersedesId = 'supersedesId';
+  static const String correctionReason = 'correctionReason';
 
   // Vaccinations fields
   static const String vaccineName = 'vaccineName';

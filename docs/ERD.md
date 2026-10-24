@@ -64,6 +64,8 @@ erDiagram
     string diagnosis
     string treatment
     datetime recordedAt "append-only, no edit/delete"
+    int supersedesId FK "nullable, the record this one corrects"
+    string correctionReason "nullable, set on corrections"
   }
   Vaccination {
     int id PK
@@ -138,6 +140,7 @@ erDiagram
   Appointment ||--o{ MedicalRecord : generates
   Pet ||--o{ Vaccination : receives
   MedicalRecord ||--o{ Prescription : includes
+  MedicalRecord |o--o| MedicalRecord : corrects
   InventoryItem ||--o{ InventoryBatch : stocks
   InventoryBatch ||--o{ InventoryTransaction : moves
   User ||--o{ ScanRecord : confirms

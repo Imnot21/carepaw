@@ -19,6 +19,7 @@ class MedicalRecordBloc
     on<events.LoadMedicalRecords>(_onLoadMedicalRecords);
     on<events.LoadMedicalRecordsByType>(_onLoadMedicalRecordsByType);
     on<events.LoadMedicalRecordDetails>(_onLoadMedicalRecordDetails);
+    on<events.CreateMedicalRecord>(_onCreateMedicalRecord);
     on<events.CreateVisitRecord>(_onCreateVisitRecord);
     on<events.CreateVaccinationRecord>(_onCreateVaccinationRecord);
     on<events.CreateDewormingRecord>(_onCreateDewormingRecord);
@@ -83,6 +84,32 @@ class MedicalRecordBloc
           ),
         );
       }
+    } on Failure catch (failure) {
+      emit(states.MedicalRecordError(failure));
+    } catch (e) {
+      debugPrint('[medical_record_bloc] unexpected: $e');
+      emit(states.MedicalRecordError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Create a record of any type, or a correction of an earlier one.
+  Future<void> _onCreateMedicalRecord(
+    events.CreateMedicalRecord event,
+    Emitter<states.MedicalRecordState> emit,
+  ) async {
+    emit(const states.MedicalRecordLoading());
+    try {
+      final record = event.record;
+      await _medicalRecordRepository.create(record);
+      emit(
+        states.MedicalRecordOperationSuccess(
+          record.isCorrection
+              ? 'Correction saved. The original stays in the history.'
+              : '${record.recordType.displayName} record saved',
+        ),
+      );
+      final records = await _medicalRecordRepository.findByPet(record.petId);
+      emit(states.MedicalRecordsLoaded(records));
     } on Failure catch (failure) {
       emit(states.MedicalRecordError(failure));
     } catch (e) {
