@@ -17,15 +17,15 @@ import 'package:carepaw/features/inventory/presentation/widgets/batch_card.dart'
 import 'package:carepaw/features/inventory/presentation/widgets/inventory_visuals.dart';
 
 /// The scrolling header of the inventory detail page: category medallion,
-/// item name, category + stock-status chips, back and delete actions.
+/// item name, category + stock-status chips, back and archive actions.
 class InventoryDetailHeader extends StatelessWidget {
   final InventoryItem item;
-  final VoidCallback onDelete;
+  final VoidCallback onArchive;
 
   const InventoryDetailHeader({
     super.key,
     required this.item,
-    required this.onDelete,
+    required this.onArchive,
   });
 
   @override
@@ -52,10 +52,10 @@ class InventoryDetailHeader extends StatelessWidget {
               const Spacer(),
               NeuIconButton(
                 plain: true,
-                icon: Icons.delete_outline_rounded,
-                svgAsset: SvgIcons.delete,
-                tooltip: 'Delete item',
-                onPressed: onDelete,
+                icon: Icons.archive_outlined,
+                svgAsset: SvgIcons.archive,
+                tooltip: 'Archive item',
+                onPressed: onArchive,
               ),
               const SizedBox(width: 8),
             ],
@@ -449,7 +449,6 @@ class InventoryDetailEmptyState extends StatelessWidget {
 class InventoryBatchesTab extends StatelessWidget {
   final InventoryItem item;
   final void Function(InventoryBatch batch) onBatchTap;
-  final void Function(InventoryBatch batch) onEditBatch;
   final void Function(InventoryBatch batch) onTransaction;
   final VoidCallback onAddBatch;
 
@@ -457,7 +456,6 @@ class InventoryBatchesTab extends StatelessWidget {
     super.key,
     required this.item,
     required this.onBatchTap,
-    required this.onEditBatch,
     required this.onTransaction,
     required this.onAddBatch,
   });
@@ -478,18 +476,35 @@ class InventoryBatchesTab extends StatelessWidget {
               onAction: onAddBatch,
             );
           }
+          // First row is the Add Batch action so new lots can be received
+          // once the item already has batches.
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: batches.length,
+            itemCount: batches.length + 1,
             itemBuilder: (context, index) {
-              final batch = batches[index];
+              if (index == 0) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: NeuButton(
+                    text: 'Add Batch',
+                    onPressed: onAddBatch,
+                    variant: NeuButtonVariant.outline,
+                    size: NeuButtonSize.medium,
+                    icon: Icons.add_rounded,
+                    svgAsset: SvgIcons.add,
+                    expanded: true,
+                  ),
+                );
+              }
+              final batch = batches[index - 1];
+              // No batch edit: quantities change only through transactions
+              // so every stock movement stays traceable.
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: BatchCard(
                   batch: batch,
                   item: item,
                   onTap: () => onBatchTap(batch),
-                  onEdit: () => onEditBatch(batch),
                   onTransaction: () => onTransaction(batch),
                 ),
               );

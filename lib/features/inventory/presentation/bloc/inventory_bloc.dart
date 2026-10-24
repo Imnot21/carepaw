@@ -31,6 +31,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     on<events.LoadExpiredBatches>(_onLoadExpiredBatches);
     on<events.CreateInventoryItem>(_onCreateInventoryItem);
     on<events.UpdateInventoryItem>(_onUpdateInventoryItem);
+    on<events.ArchiveInventoryItem>(_onArchiveInventoryItem);
     on<events.UpdateStock>(_onUpdateStock);
     on<events.AdjustStock>(_onAdjustStock);
     on<events.CreateBatch>(_onCreateBatch);
@@ -255,6 +256,25 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
           'Inventory item updated successfully',
         ),
       );
+      final items = await _itemRepository.findAll();
+      emit(states.InventoryItemsLoaded(items));
+    } on Failure catch (failure) {
+      emit(states.InventoryError(failure));
+    } catch (e) {
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Archive inventory item (soft delete; history is kept)
+  Future<void> _onArchiveInventoryItem(
+    events.ArchiveInventoryItem event,
+    Emitter<states.InventoryState> emit,
+  ) async {
+    emit(const states.InventoryLoading());
+    try {
+      await _itemRepository.softDelete(event.id);
+      emit(const states.InventoryOperationSuccess('Item archived'));
       final items = await _itemRepository.findAll();
       emit(states.InventoryItemsLoaded(items));
     } on Failure catch (failure) {

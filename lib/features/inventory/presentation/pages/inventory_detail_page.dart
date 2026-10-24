@@ -117,7 +117,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
           bottom: false,
           child: Column(
             children: [
-              InventoryDetailHeader(item: item, onDelete: _showDeleteDialog),
+              InventoryDetailHeader(item: item, onArchive: _showArchiveDialog),
               _buildStockOverview(item),
               _buildTabBar(),
               Expanded(child: _buildTabContent()),
@@ -194,7 +194,6 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         InventoryBatchesTab(
           item: _item,
           onBatchTap: _showBatchDetail,
-          onEditBatch: _editBatch,
           onTransaction: _showTransactionDialog,
           onAddBatch: _showAddBatchDialog,
         ),
@@ -221,11 +220,6 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
     showAddBatchSheet(context, item: _item);
   }
 
-  void _editBatch(InventoryBatch batch) {
-    // Similar to add batch but pre-filled
-    _showAddBatchDialog(); // Simplified for now
-  }
-
   void _navigateToForm() {
     // The form route needs the route-scoped InventoryBloc, which a pushed
     // route can't see on its own — pass it explicitly.
@@ -246,20 +240,22 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
         });
   }
 
-  void _showDeleteDialog() {
+  void _showArchiveDialog() {
     NeuConfirmDialog.show(
       context: context,
-      title: 'Delete Item',
+      title: 'Archive Item',
       message:
-          'Are you sure you want to delete "${_item.name}"? This action cannot be undone.',
-      confirmText: 'Delete',
+          'Archive "${_item.name}"? It will be hidden from the stock list. '
+          'Its batches and transaction history are kept.',
+      confirmText: 'Archive',
       cancelText: 'Cancel',
       confirmVariant: NeuButtonVariant.destructive,
     ).then((confirmed) {
       if (!mounted) return;
-      if (confirmed == true) {
+      final id = _item.id;
+      if (confirmed == true && id != null) {
+        context.read<InventoryBloc>().add(ArchiveInventoryItem(id));
         Navigator.pop(context);
-        // TODO: Implement delete
       }
     });
   }

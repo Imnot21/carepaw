@@ -156,6 +156,17 @@ class UpdateInventoryItem extends InventoryEvent {
   ];
 }
 
+/// Archive an inventory item (soft delete). Batches and transaction
+/// history are kept so stock changes stay traceable.
+class ArchiveInventoryItem extends InventoryEvent {
+  final int id;
+
+  const ArchiveInventoryItem(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
 /// Update stock level.
 class UpdateStock extends InventoryEvent {
   final int id;

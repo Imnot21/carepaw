@@ -70,10 +70,7 @@ class BatchCard extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   borderRadius: 12,
                   color: categoryColor,
-                  child: NeuSvgIcon(
-                    _getCategorySvg(item.category),
-                    size: 22,
-                  ),
+                  child: NeuSvgIcon(_getCategorySvg(item.category), size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -125,26 +122,28 @@ class BatchCard extends StatelessWidget {
                           if (value == 'transaction') onTransaction?.call();
                         },
                         itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'transaction',
-                            child: Row(
-                              children: [
-                                NeuSvgIcon(SvgIcons.add, size: 20),
-                                SizedBox(width: 8),
-                                Text('Add Transaction'),
-                              ],
+                          if (onTransaction != null)
+                            PopupMenuItem(
+                              value: 'transaction',
+                              child: Row(
+                                children: [
+                                  NeuSvgIcon(SvgIcons.add, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Add Transaction'),
+                                ],
+                              ),
                             ),
-                          ),
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                NeuSvgIcon(SvgIcons.edit, size: 20),
-                                SizedBox(width: 8),
-                                Text('Edit Batch'),
-                              ],
+                          if (onEdit != null)
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  NeuSvgIcon(SvgIcons.edit, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Edit Batch'),
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                   ],
@@ -361,5 +360,4 @@ class BatchCard extends StatelessWidget {
         return SvgIcons.foodBowl;
     }
   }
-
 }
