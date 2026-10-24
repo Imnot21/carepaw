@@ -8,11 +8,13 @@ screen-verified on the demo build (emulator, 1080×2424).
 1. Emulator at phone size — if it was resized for a tablet test, restore with
    `adb shell wm size reset` and `adb shell wm density reset`.
 2. Font scale at default: `adb shell settings put system font_scale 1.0`.
-3. Launch the app fresh. If the **Device Preview** frame is showing (mockup
-   bezel or a settings rail on the right), tap its toggle once — the app runs
-   full-screen. Release builds never show it.
-4. Accounts: `vet@carepaw.com` / `Carepaw123` (operator), or `admin@carepaw.com`
-   / `Carepaw123`. Owner accounts register from the sign-up screen.
+3. Launch the app fresh. Device Preview is off unless the build passes
+   `--dart-define=DEVICE_PREVIEW=true`; release builds never show it.
+4. Accounts (passwords are kept privately by the team, not in this repo):
+   - `vet@carepaw.com` — Owner/Admin (clinic operator).
+   - `admin@carepaw.com` — **Pet Owner** despite the name. It has no clinic
+     access; inventory reads are denied by Firestore rules by design.
+   - New owner accounts can register from the sign-up screen.
 
 ---
 
@@ -27,8 +29,9 @@ screen-verified on the demo build (emulator, 1080×2424).
 | 5 | **Records** | Per-pet, append-only health history + vaccinations. "Records are never deleted — only corrected." |
 | 6 | **Line tab** | Queue management: Waiting / In Room / Now Serving stats; check-in moves a pet into the queue. |
 | 7 | **Stock tab** | Inventory list with category filters; item detail shows batches and expiry tracking. Low stock ties back to the dashboard pulse. |
-| 8 | **Bell → Notifications** | Tap the bell (top-right of the dashboard). Create a test notification with the FAB — it persists and appears with an unread dot. Mark Read, open its detail page. |
-| 9 | **Profile tab** | Settings: notification settings, help, logout. |
+| 8 | **Scan tab** | Receipt / medicine-box scans with status tabs (All, Receipts, Medicine, Pending, Confirmed). "OCR output is never trusted blindly — every scan needs human confirmation." |
+| 9 | **Bell → Notifications** | Tap the bell (top-right of the dashboard). Create a test notification with the FAB — it persists and appears with an unread dot. Open its detail page; **View Appointment / View Queue** jumps to the related screen. |
+| 10 | **Profile tab** | Settings: notification settings, help, logout. |
 
 ## Owner flow (≈3 minutes)
 
@@ -48,7 +51,6 @@ screen-verified on the demo build (emulator, 1080×2424).
   the FAB on the notifications screen and create one live. It persists and
   shows "Just now".
 - **App looks off after a resize/rotation test** — force-stop and relaunch.
-  The preview frame defaults on at cold start; toggle it off (step 3 above).
 - **Dialog + keyboard** — the app lifts dialogs above the keyboard (show it —
   it's a verified behavior, not a workaround).
 - **Low stock shows 0** — that's live data. Add an item in Stock with quantity
@@ -56,6 +58,6 @@ screen-verified on the demo build (emulator, 1080×2424).
 
 ## Do not open (reserved surfaces)
 
-Staff/Vet/Admin dashboards, Scan, Audit log, and user management are
+Staff/Vet/Admin dashboards, Audit log, and user management are
 implemented but parked by design after the defense — keep the demo on the
 operator + owner flows above.
