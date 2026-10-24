@@ -37,8 +37,10 @@ inventory → records → notifications → settings) and the pet owner flow
   history, vaccinations, and prescriptions.
 - **Smart Medicine Inventory** — stock, batches, expiration tracking, and fully
   traceable inventory transactions.
-- **Scanning & OCR** — receipt and medicine-box scanning with human-in-the-loop
-  verification; OCR output is never blindly trusted.
+- **Scanning & OCR** — photograph a receipt or medicine box; Google ML Kit reads
+  the text on the phone (no upload) and suggests fields such as name, expiry,
+  and lot. Every scan is saved as pending until the clinic confirms or rejects
+  it; OCR output is never blindly trusted.
 - **Notifications** — appointment reminders, queue updates, prescription-ready,
   and low-inventory alerts, delivered in-app and via local notifications.
 - **Audit Logging** — security and sensitive-operation tracking across the
@@ -74,6 +76,23 @@ Pet owner accounts can be registered from the app's sign-up screen.
 | Media | Local file storage by design (Firebase Storage avoided — no cloud cost); files via `path_provider` |
 | Icons & type | Clay SVG pack (`flutter_svg`, 136 assets) + bundled Nunito (no runtime font fetching) |
 | Dev tooling | `device_preview` (debug builds only), `logger`, `permission_handler` |
+
+---
+
+## Install on Android
+
+CarePaw is distributed as an APK on this repository's **Releases** page, not
+through the Google Play Store.
+
+1. On the phone, open the latest release and download `app-release.apk`.
+2. Open the downloaded file. If Android blocks it, allow
+   **Install unknown apps** for your browser or file manager when prompted.
+3. Tap **Install**. If Play Protect warns about an unknown developer, choose
+   **Install anyway**. The app is signed by the CarePaw team, not Google Play.
+4. Open CarePaw and sign in, or register as a pet owner.
+
+Requires Android 7.0 or newer and an internet connection. To update, install
+the newer APK over the old one; your account and data stay in the cloud.
 
 ---
 
