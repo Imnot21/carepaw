@@ -1,13 +1,39 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:carepaw/core/di/dependency_injection.dart';
+import 'package:carepaw/features/scanning/domain/services/ocr_service.dart';
+import 'package:carepaw/features/scanning/domain/services/scan_text_parser.dart';
 import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
-/// Scan camera page with premium design
+/// What the camera page hands back when the user saves a scan. Every value
+/// is an OCR suggestion; the scan is stored as pending until confirmed.
+class ScanCapture {
+  final ScanType scanType;
+  final String imagePath;
+  final String rawText;
+  final ScanFields fields;
+
+  const ScanCapture({
+    required this.scanType,
+    required this.imagePath,
+    required this.rawText,
+    required this.fields,
+  });
+}
+
+/// Take or pick a photo, read its text on the device, and review the
+/// suggested fields before saving the scan for confirmation.
 class ScanCameraPage extends StatefulWidget {
-  const ScanCameraPage({super.key});
+  final OcrService? ocrService;
+
+  const ScanCameraPage({super.key, this.ocrService});
 
   @override
   State<ScanCameraPage> createState() => _ScanCameraPageState();
@@ -15,11 +41,15 @@ class ScanCameraPage extends StatefulWidget {
 
 class _ScanCameraPageState extends State<ScanCameraPage>
     with SingleTickerProviderStateMixin {
+  late final OcrService _ocr = widget.ocrService ?? getIt<OcrService>();
+  final _picker = ImagePicker();
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
   ScanType _selectedType = ScanType.medicineBox;
-  bool _isScanning = false;
-  String? _capturedImagePath;
+  bool _isReading = false;
+  String? _imagePath;
+  String _rawText = '';
+  ScanFields _fields = const ScanFields({}, 0);
 
   @override
   void initState() {
@@ -28,7 +58,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
@@ -59,15 +89,15 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   String _getTypeDescription(ScanType type) {
     switch (type) {
       case ScanType.receipt:
-        return 'Scan pharmacy receipts to track purchases and expenses';
+        return 'Read the store, date and total from a receipt';
       case ScanType.medicineBox:
-        return 'Scan medicine boxes to auto-fill inventory details';
+        return 'Read the name, expiry and lot from a medicine box';
       case ScanType.prescription:
-        return 'Scan prescriptions to create medication records';
+        return 'Read the title and date from a prescription';
       case ScanType.labReport:
-        return 'Scan lab reports to add to medical records';
+        return 'Read the title and date from a lab report';
       default:
-        return 'Scan any document';
+        return 'Read the text from any document';
     }
   }
 
@@ -76,9 +106,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     return Scaffold(
       backgroundColor: ThemeColors.background(context),
       body: SafeArea(
-        child: _capturedImagePath == null
-            ? _buildScannerView()
-            : _buildPreviewView(),
+        child: _imagePath == null ? _buildScannerView() : _buildPreviewView(),
       ),
     );
   }
@@ -86,16 +114,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   Widget _buildScannerView() {
     return Column(
       children: [
-        // Header
         _buildHeader(),
-
-        // Type Selector
         _buildTypeSelector(),
-
-        // Camera View
-        Expanded(child: _buildCameraView()),
-
-        // Bottom Controls
+        Expanded(child: _buildGuide()),
         _buildBottomControls(),
       ],
     );
@@ -192,222 +213,81 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     );
   }
 
-  Widget _buildCameraView() {
+  /// Framing tips shown before a photo is taken.
+  Widget _buildGuide() {
+    final color = _getTypeColor(_selectedType);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Camera placeholder — recessed surface
-          NeuContainer(
-            variant: NeuVariant.inset,
-            borderRadius: NeuTokens.radiusMd,
-            padding: EdgeInsets.zero,
-            borderColor: _getTypeColor(_selectedType).withValues(alpha: 0.3),
-            borderWidth: 2,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
-              child: _isScanning
-                  ? _buildScanningOverlay()
-                  : _buildCameraPlaceholder(),
-            ),
-          ),
-
-          // Scan frame guide
-          if (!_isScanning)
+      child: NeuContainer(
+        variant: NeuVariant.inset,
+        borderRadius: NeuTokens.radiusMd,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             AnimatedBuilder(
               animation: _pulseAnimation,
-              builder: (context, child) => Transform.scale(
-                scale: _pulseAnimation.value,
-                child: SizedBox(
-                  width: 280,
-                  height: 180,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: _FrameGuidePainter(
-                            _getTypeColor(_selectedType),
-                          ),
-                        ),
-                      ),
-
-                      // Center text
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            NeuSvgIcon(SvgIcons.camera, size: 48),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Position ${_selectedType.displayName} in frame',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: _getTypeColor(
-                                  _selectedType,
-                                ).withValues(alpha: 0.7),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+              builder: (context, child) =>
+                  Transform.scale(scale: _pulseAnimation.value, child: child),
+              child: SizedBox(
+                width: 240,
+                height: 150,
+                child: CustomPaint(
+                  painter: _FrameGuidePainter(color),
+                  child: Center(
+                    child: NeuSvgIcon(_getTypeSvg(_selectedType), size: 48),
                   ),
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCameraPlaceholder() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          NeuContainer(
-            padding: const EdgeInsets.all(24),
-            borderRadius: 90,
-            color: _getTypeColor(_selectedType),
-            child: NeuSvgIcon(SvgIcons.camera, size: 48),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Camera Preview',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w600,
-              color: ThemeColors.textSecondary(context),
+            const SizedBox(height: 24),
+            Text(
+              'Fill the frame, use good light, avoid glare',
+              style: AppTextStyles.titleSmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: ThemeColors.textPrimary(context),
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Camera integration would go here',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: ThemeColors.textTertiary(context),
+            const SizedBox(height: 8),
+            Text(
+              'Text is read on this phone. You check every value before '
+              'the scan is trusted.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScanningOverlay() {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Simulated camera feed
-        NeuContainer(
-          variant: NeuVariant.flat,
-          borderRadius: NeuTokens.radiusMd,
-          padding: EdgeInsets.zero,
-          boxShadow: NeuShadow.none,
-          color: _getTypeColor(_selectedType).withValues(alpha: 0.08),
-          child: const SizedBox.expand(),
+          ],
         ),
-
-        // Scanning animation
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Pulsing ring
-                  SizedBox(
-                    width: 120 + _animationController.value * 40,
-                    height: 120 + _animationController.value * 40,
-                    child: CustomPaint(
-                      painter: _RingPainter(
-                        _getTypeColor(_selectedType).withValues(
-                          alpha: 0.3 - _animationController.value * 0.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  NeuContainer(
-                    padding: const EdgeInsets.all(20),
-                    borderRadius: 60,
-                    color: _getTypeColor(_selectedType),
-                    child: NeuSvgIcon(SvgIcons.scan, size: 48),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Processing OCR...',
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: ThemeColors.textPrimary(context),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Extracting text from ${_selectedType.displayName.toLowerCase()}',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: 200,
-                child: NeuProgress(
-                  value: _animationController.value,
-                  height: 8,
-                  color: _getTypeColor(_selectedType),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildBottomControls() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
       child: Row(
         children: [
-          // Gallery button
           Expanded(
             child: NeuButton(
               text: 'Gallery',
               variant: NeuButtonVariant.secondary,
               icon: Icons.photo_library_rounded,
               svgAsset: SvgIcons.image,
-              onPressed: _pickFromGallery,
+              onPressed: () => _pick(ImageSource.gallery),
               expanded: true,
             ),
           ),
           const SizedBox(width: 16),
-
-          // Capture button
-          AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) => Transform.scale(
-              scale: _isScanning ? 1.0 : _pulseAnimation.value,
-              child: NeuIconButton(
-                icon: Icons.camera_alt_rounded,
-                svgAsset: SvgIcons.camera,
-                size: 28,
-                onPressed: _isScanning ? null : _capturePhoto,
-                isLoading: _isScanning,
-                color: AppColors.textOnPrimary,
-                backgroundColor: _getTypeColor(_selectedType),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Flash button
           Expanded(
+            flex: 2,
             child: NeuButton(
-              text: 'Flash',
-              variant: NeuButtonVariant.secondary,
-              icon: Icons.flash_on_rounded,
-              onPressed: _toggleFlash,
+              text: 'Take Photo',
+              variant: NeuButtonVariant.primary,
+              icon: Icons.camera_alt_rounded,
+              svgAsset: SvgIcons.camera,
+              onPressed: () => _pick(ImageSource.camera),
               expanded: true,
             ),
           ),
@@ -419,7 +299,6 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   Widget _buildPreviewView() {
     return Column(
       children: [
-        // Header
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
           child: Row(
@@ -428,7 +307,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 plain: true,
                 icon: Icons.close_rounded,
                 svgAsset: SvgIcons.close,
-                onPressed: () => setState(() => _capturedImagePath = null),
+                onPressed: _isReading ? null : _retake,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -436,7 +315,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Preview Scan',
+                      'Review Scan',
                       style: AppTextStyles.titleLarge.copyWith(
                         fontWeight: FontWeight.w800,
                         color: ThemeColors.textPrimary(context),
@@ -455,31 +334,38 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             ],
           ),
         ),
-
-        // Image Preview
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-            child: NeuCard(
-              padding: EdgeInsets.zero,
-              child: ClipRRect(
-                borderRadius: NeuShape.card,
-                child: _capturedImagePath != null
-                    ? Image.asset(
-                        _capturedImagePath!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (_, _, _) => _buildPreviewPlaceholder(),
-                      )
-                    : _buildPreviewPlaceholder(),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+            children: [
+              NeuCard(
+                padding: EdgeInsets.zero,
+                child: ClipRRect(
+                  borderRadius: NeuShape.card,
+                  child: SizedBox(
+                    height: 220,
+                    width: double.infinity,
+                    child: Image.file(
+                      File(_imagePath!),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Center(
+                        child: NeuSvgIcon(
+                          _getTypeSvg(_selectedType),
+                          size: 64,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+              _isReading ? _buildReading() : _buildFields(),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
-
-        // Actions
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
           child: Row(
             children: [
               Expanded(
@@ -488,7 +374,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   variant: NeuButtonVariant.secondary,
                   icon: Icons.refresh_rounded,
                   svgAsset: SvgIcons.refresh,
-                  onPressed: () => setState(() => _capturedImagePath = null),
+                  onPressed: _isReading ? null : _retake,
                   expanded: true,
                 ),
               ),
@@ -496,11 +382,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               Expanded(
                 flex: 2,
                 child: NeuButton(
-                  text: 'Use Scan',
+                  text: 'Save for Review',
                   variant: NeuButtonVariant.primary,
                   icon: Icons.check_rounded,
                   svgAsset: SvgIcons.check,
-                  onPressed: _useScan,
+                  isDisabled: _isReading || _rawText.isEmpty,
+                  onPressed: _save,
                   expanded: true,
                 ),
               ),
@@ -511,56 +398,235 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     );
   }
 
-  Widget _buildPreviewPlaceholder() {
-    return NeuContainer(
-      variant: NeuVariant.inset,
-      borderRadius: NeuTokens.radiusMd,
-      padding: EdgeInsets.zero,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuSvgIcon(_getTypeSvg(_selectedType), size: 64),
-            const SizedBox(height: 12),
-            Text(
-              'Captured Image Preview',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
+  Widget _buildReading() {
+    final color = _getTypeColor(_selectedType);
+    return NeuCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, _) => Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 96 + _animationController.value * 24,
+                  height: 96 + _animationController.value * 24,
+                  child: CustomPaint(
+                    painter: _RingPainter(
+                      color.withValues(
+                        alpha: 0.3 - _animationController.value * 0.2,
+                      ),
+                    ),
+                  ),
+                ),
+                NeuContainer(
+                  padding: const EdgeInsets.all(20),
+                  borderRadius: NeuTokens.radiusPill,
+                  color: color,
+                  child: NeuSvgIcon(SvgIcons.scan, size: 36),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Reading text…',
+            style: AppTextStyles.titleMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: ThemeColors.textPrimary(context),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _capturePhoto() async {
-    setState(() => _isScanning = true);
+  Widget _buildFields() {
+    if (_rawText.isEmpty) {
+      return NeuCard(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            NeuSvgIcon(SvgIcons.alert, size: 32),
+            const SizedBox(height: 12),
+            Text(
+              'No text found',
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                color: ThemeColors.textPrimary(context),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Retake the photo closer and in better light.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
 
-    // Simulate capture
-    await Future.delayed(const Duration(milliseconds: 500));
+    final found = _fields.values.length;
+    return NeuCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              NeuSvgIcon(SvgIcons.textField, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Suggested values',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ThemeColors.textPrimary(context),
+                  ),
+                ),
+              ),
+              NeuStatusBadge(
+                label: '$found found',
+                tone: _fields.confidence >= 0.8
+                    ? NeuStatusTone.success
+                    : NeuStatusTone.warning,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          for (final e in _fields.values.entries)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 96,
+                    child: Text(
+                      e.key,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: ThemeColors.textSecondary(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      e.value,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: ThemeColors.textPrimary(context),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (found == 0)
+            Text(
+              'Text was found but no fields matched. The full text is '
+              'saved so the clinic can still read it.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
+            ),
+          const SizedBox(height: 6),
+          Text(
+            'Suggestions only — confirm or reject the scan after saving.',
+            style: AppTextStyles.labelSmall.copyWith(
+              color: ThemeColors.textTertiary(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    // Mock captured image path
+  Future<void> _pick(ImageSource source) async {
+    XFile? picked;
+    try {
+      picked = await _picker.pickImage(
+        source: source,
+        maxWidth: 2000,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      debugPrint('[scan_camera] pick failed: $e');
+      if (mounted) {
+        NeuToast.error(
+          context,
+          source == ImageSource.camera
+              ? 'Could not open the camera'
+              : 'Could not open the gallery',
+        );
+      }
+      return;
+    }
+    if (picked == null || !mounted) return;
+
+    final path = await _keep(picked);
+    if (!mounted) return;
     setState(() {
-      _capturedImagePath = 'assets/images/scan_${_selectedType.name}.jpg';
-      _isScanning = false;
+      _imagePath = path;
+      _isReading = true;
+      _rawText = '';
+      _fields = const ScanFields({}, 0);
+    });
+
+    String text;
+    try {
+      text = await _ocr.readText(path);
+    } catch (e) {
+      debugPrint('[scan_camera] OCR failed: $e');
+      text = '';
+    }
+    if (!mounted) return;
+    setState(() {
+      _rawText = text;
+      _fields = ScanTextParser.parse(text, _selectedType);
+      _isReading = false;
     });
   }
 
-  void _pickFromGallery() {
-    NeuToast.info(context, 'Gallery picker would open here');
+  /// Copy the photo out of the picker's temp cache so the scan keeps it.
+  Future<String> _keep(XFile picked) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final scans = Directory('${dir.path}/scans');
+      await scans.create(recursive: true);
+      final dest =
+          '${scans.path}/scan_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await File(picked.path).copy(dest);
+      return dest;
+    } catch (e) {
+      debugPrint('[scan_camera] keep failed: $e');
+      return picked.path;
+    }
   }
 
-  void _toggleFlash() {
-    NeuToast.info(context, 'Flash toggled');
-  }
-
-  void _useScan() {
-    // Create scan record and navigate to detail
-    Navigator.pop(context, {
-      'scanType': _selectedType,
-      'imagePath': _capturedImagePath,
+  void _retake() {
+    setState(() {
+      _imagePath = null;
+      _rawText = '';
+      _fields = const ScanFields({}, 0);
     });
+  }
+
+  void _save() {
+    Navigator.pop(
+      context,
+      ScanCapture(
+        scanType: _selectedType,
+        imagePath: _imagePath!,
+        rawText: _rawText,
+        fields: _fields,
+      ),
+    );
   }
 }
 

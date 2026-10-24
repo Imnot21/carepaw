@@ -263,8 +263,8 @@ class _ScanListPageState extends State<ScanListPage>
     final isRejected = record.status == ScanStatus.rejected;
 
     return NeuCard(
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(20),
       borderColor: isPending && highlightPending
           ? ThemeColors.warning(context).withValues(alpha: 0.4)
           : isConfirmed
@@ -347,64 +347,26 @@ class _ScanListPageState extends State<ScanListPage>
             const SizedBox(height: 14),
           ],
 
-          // Action buttons for pending scans
+          // Pending scans need a person to check the OCR suggestions.
           if (isPending) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: NeuButton(
-                    text: 'Process OCR',
-                    variant: NeuButtonVariant.primary,
-                    icon: Icons.psychology_rounded,
-                    svgAsset: SvgIcons.scan,
-                    size: NeuButtonSize.medium,
-                    onPressed: () => context.read<ScanBloc>().add(
-                      ProcessScanOcr(record.id!),
-                    ),
-                    expanded: true,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: NeuButton(
-                    text: 'Review',
-                    variant: NeuButtonVariant.secondary,
-                    icon: Icons.visibility_rounded,
-                    svgAsset: SvgIcons.visibility,
-                    size: NeuButtonSize.medium,
-                    onPressed: () => _navigateToDetail(record),
-                    expanded: true,
-                  ),
-                ),
-              ],
+            NeuButton(
+              text: 'Review & Confirm',
+              variant: NeuButtonVariant.primary,
+              icon: Icons.fact_check_rounded,
+              svgAsset: SvgIcons.visibility,
+              size: NeuButtonSize.medium,
+              onPressed: () => _navigateToDetail(record),
+              expanded: true,
             ),
           ] else if (isConfirmed) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: NeuButton(
-                    text: 'View Details',
-                    variant: NeuButtonVariant.secondary,
-                    icon: Icons.visibility_rounded,
-                    svgAsset: SvgIcons.visibility,
-                    size: NeuButtonSize.medium,
-                    onPressed: () => _navigateToDetail(record),
-                    expanded: true,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: NeuButton(
-                    text: 'Use Data',
-                    variant: NeuButtonVariant.primary,
-                    icon: Icons.check_circle_rounded,
-                    svgAsset: SvgIcons.success,
-                    size: NeuButtonSize.medium,
-                    onPressed: () => _useScanData(record),
-                    expanded: true,
-                  ),
-                ),
-              ],
+            NeuButton(
+              text: 'View Details',
+              variant: NeuButtonVariant.secondary,
+              icon: Icons.visibility_rounded,
+              svgAsset: SvgIcons.visibility,
+              size: NeuButtonSize.medium,
+              onPressed: () => _navigateToDetail(record),
+              expanded: true,
             ),
           ] else if (isRejected) ...[
             NeuButton(
@@ -480,12 +442,28 @@ class _ScanListPageState extends State<ScanListPage>
     }
   }
 
-  void _navigateToCamera() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const ScanCameraPage())).then((_) {
-      if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
-    });
+  Future<void> _navigateToCamera() async {
+    final capture = await Navigator.of(context).push<ScanCapture>(
+      MaterialPageRoute(builder: (_) => const ScanCameraPage()),
+    );
+    if (!mounted) return;
+    if (capture == null) {
+      context.read<ScanBloc>().add(const LoadScanRecords());
+      return;
+    }
+    // Saved as pending: OCR values are suggestions until someone confirms.
+    context.read<ScanBloc>().add(
+      CreateScanRecord(
+        scanType: capture.scanType,
+        imagePath: capture.imagePath,
+        rawOcrText: capture.rawText,
+        extractedData: capture.fields.isEmpty
+            ? null
+            : capture.fields.toDisplay(),
+        confidenceScore: capture.fields.confidence,
+      ),
+    );
+    NeuToast.success(context, 'Scan saved — confirm it to finish');
   }
 
   void _navigateToDetail(ScanRecord record) {
@@ -504,11 +482,6 @@ class _ScanListPageState extends State<ScanListPage>
         .then((_) {
           if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
         });
-  }
-
-  void _useScanData(ScanRecord record) {
-    // Navigate to appropriate feature based on scan type
-    NeuToast.success(context, 'Using ${record.scanType.displayName} data...');
   }
 }
 

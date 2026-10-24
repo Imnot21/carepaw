@@ -116,13 +116,14 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
         id: null,
         scanType: event.scanType,
         imagePath: event.imagePath,
+        rawOcrText: event.rawOcrText,
+        extractedData: event.extractedData,
+        confidenceScore: event.confidenceScore,
         status: domain.ScanStatus.pending,
         createdAt: DateTime.now(),
       );
       await _scanRepository.save(record);
-      emit(
-        const states.ScanOperationSuccess('Scan record created successfully'),
-      );
+      emit(const states.ScanOperationSuccess('Scan saved for review'));
       final records = await _scanRepository.findAll();
       emit(states.ScanRecordsLoaded(records));
     } on Failure catch (failure) {

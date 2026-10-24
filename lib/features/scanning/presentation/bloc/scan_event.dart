@@ -45,15 +45,31 @@ class LoadScanRecordDetails extends ScanEvent {
   List<Object?> get props => [recordId];
 }
 
-/// Create a new scan record (from camera/gallery).
+/// Create a new scan record (from camera/gallery). The OCR fields are
+/// suggestions saved as pending until a person confirms them.
 class CreateScanRecord extends ScanEvent {
   final ScanType scanType;
   final String imagePath;
+  final String? rawOcrText;
+  final String? extractedData;
+  final double? confidenceScore;
 
-  const CreateScanRecord({required this.scanType, required this.imagePath});
+  const CreateScanRecord({
+    required this.scanType,
+    required this.imagePath,
+    this.rawOcrText,
+    this.extractedData,
+    this.confidenceScore,
+  });
 
   @override
-  List<Object?> get props => [scanType, imagePath];
+  List<Object?> get props => [
+    scanType,
+    imagePath,
+    rawOcrText,
+    extractedData,
+    confidenceScore,
+  ];
 }
 
 /// Process OCR for a scan record.

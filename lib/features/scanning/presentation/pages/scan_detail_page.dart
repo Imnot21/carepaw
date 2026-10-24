@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -184,7 +186,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                 NeuSvgIcon(SvgIcons.analytics, size: 20),
                 const SizedBox(width: 10),
                 Text(
-                  'Confidence: ${(record.confidenceScore! * 100).toStringAsFixed(1)}%',
+                  'Fields found: ${(record.confidenceScore! * 100).toStringAsFixed(0)}%',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: ThemeColors.textPrimary(context),
                     fontWeight: FontWeight.w500,
@@ -205,27 +207,40 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
             const SizedBox(height: 24),
           ],
 
-          // Image path
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              NeuSvgIcon(SvgIcons.image, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Image: ${record.imagePath}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                    fontFamily: 'monospace',
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+          _buildPhoto(record),
         ],
       ),
+    );
+  }
+
+  /// The scanned photo lives only on the phone that took it, so other
+  /// devices show a note instead.
+  Widget _buildPhoto(ScanRecord record) {
+    final file = File(record.imagePath);
+    if (record.imagePath.isNotEmpty && file.existsSync()) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+        child: Image.file(
+          file,
+          height: 200,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Row(
+      children: [
+        NeuSvgIcon(SvgIcons.image, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'Photo is kept on the phone that scanned it',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: ThemeColors.textSecondary(context),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -271,7 +286,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               NeuSvgIcon(SvgIcons.textField, size: 20),
               const SizedBox(width: 10),
               Text(
-                'Raw OCR Text',
+                'Text Read From Photo',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: ThemeColors.textPrimary(context),
@@ -311,7 +326,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               NeuSvgIcon(SvgIcons.textField, size: 20),
               const SizedBox(width: 10),
               Text(
-                'Extracted Data',
+                'Suggested Values',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: ThemeColors.textPrimary(context),

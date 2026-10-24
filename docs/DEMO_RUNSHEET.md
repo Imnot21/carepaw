@@ -29,7 +29,7 @@ screen-verified on the demo build (emulator, 1080×2424).
 | 5 | **Records** | Per-pet, append-only health history + vaccinations. "Records are never deleted — only corrected." |
 | 6 | **Line tab** | Queue management: Waiting / Being Served / Now Serving stats; check-in moves a pet into the queue. |
 | 7 | **Stock tab** | Inventory list with category filters; item detail shows batches and expiry tracking. Low stock ties back to the dashboard pulse. |
-| 8 | **Scan tab** | Receipt / medicine-box scans with status tabs (All, Receipts, Medicine, Pending, Confirmed). "OCR output is never trusted blindly — every scan needs human confirmation." |
+| 8 | **Scan tab** | Tap **New Scan** → pick *Medicine Box* → **Take Photo** of a real box (or Gallery). Text is read on the phone (Google ML Kit, no internet needed) and the app suggests Name / Expiry / Lot. **Save for Review** stores it as *Pending*; open it → **Confirm** or **Reject**. "OCR output is never trusted blindly — a person confirms every scan." |
 | 9 | **Bell → Notifications** | Tap the bell (top-right of the dashboard). Create a test notification with the FAB — it persists and appears with an unread dot. Open its detail page; **View Appointment / View Queue** jumps to the related screen. |
 | 10 | **Profile tab** | Settings: notification settings, Help & Support (clinic contact + app version), logout. |
 
@@ -53,6 +53,8 @@ screen-verified on the demo build (emulator, 1080×2424).
 - **App looks off after a resize/rotation test** — force-stop and relaunch.
 - **Dialog + keyboard** — the app lifts dialogs above the keyboard (show it —
   it's a verified behavior, not a workaround).
+- **Scan finds no text** — retake closer, flat, in good light; a printed
+  box label works best. Gallery works too if the camera is awkward on stage.
 - **Low stock shows 0** — that's live data. Add an item in Stock with quantity
   below its reorder threshold to light the pulse up.
 
