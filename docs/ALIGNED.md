@@ -57,6 +57,11 @@ adding a new correction note on top.
 keeping the full history*. Then the app matches the paper, and the safety
 rule stays.
 
+**Update (2026-10-25):** the app now does this on screen. The clinic taps
+the pencil on a record, fixes it, and must say why. A new entry marked
+*Correction* is saved; the old one stays, marked *Corrected*, with the date
+and reason. Only the paper paragraph below is left.
+
 ---
 
 ## Mismatch 3 (small): different words for the same statuses
