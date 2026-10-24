@@ -12,7 +12,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_colors.dart';
@@ -64,8 +63,27 @@ class _ScanListPageState extends State<ScanListPage>
 
         return Scaffold(
           backgroundColor: ThemeColors.background(context),
-          body: CustomScrollView(
-            slivers: [_buildAppBar(), _buildTabBar(), _buildTabContent()],
+          // Plain Column + Expanded TabBarView: the previous sliver layout
+          // (SliverFillRemaining around a TabBarView) painted a blank page.
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildHeader(),
+                _ScanTabBar(
+                  tabController: _tabController,
+                  tabs: const [
+                    'All',
+                    'Receipts',
+                    'Medicine',
+                    'Pending',
+                    'Confirmed',
+                  ],
+                ),
+                Expanded(child: _buildTabContent()),
+              ],
+            ),
           ),
           floatingActionButton: NeuButton(
             text: 'New Scan',
@@ -78,75 +96,41 @@ class _ScanListPageState extends State<ScanListPage>
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      surfaceTintColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Scan & OCR',
-              style: AppTextStyles.headlineMedium.copyWith(
-                fontWeight: FontWeight.w800,
-                color: ThemeColors.textPrimary(context),
-              ),
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Scan & OCR',
+            style: AppTextStyles.headlineMedium.copyWith(
+              fontWeight: FontWeight.w800,
+              color: ThemeColors.textPrimary(context),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Scan receipts, medicine boxes & more',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Scan receipts, medicine boxes & more',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: ThemeColors.textSecondary(context),
             ),
-          ],
-        ),
-      ),
-      actions: [
-        NeuIconButton(
-          plain: true,
-          icon: Icons.history_rounded,
-          svgAsset: SvgIcons.schedule,
-          tooltip: 'History',
-          onPressed: () {
-            // Show scan history
-          },
-        ),
-        const SizedBox(width: 12),
-      ],
-    );
-  }
-
-  Widget _buildTabBar() {
-    return SliverPersistentHeader(
-      pinned: true,
-      delegate: _ScanTabBarDelegate(
-        tabController: _tabController,
-        tabs: const ['All', 'Receipts', 'Medicine', 'Pending', 'Confirmed'],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTabContent() {
-    return SliverFillRemaining(
-      child: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildScanList(null),
-          _buildScanList(ScanType.receipt),
-          _buildScanList(ScanType.medicineBox),
-          _buildPendingScans(),
-          _buildScanListByStatus(ScanStatus.confirmed),
-        ],
-      ),
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        _buildScanList(null),
+        _buildScanList(ScanType.receipt),
+        _buildScanList(ScanType.medicineBox),
+        _buildPendingScans(),
+        _buildScanListByStatus(ScanStatus.confirmed),
+      ],
     );
   }
 
@@ -213,8 +197,15 @@ class _ScanListPageState extends State<ScanListPage>
   Widget _buildPendingScans() {
     return BlocBuilder<ScanBloc, ScanState>(
       builder: (context, state) {
-        if (state is PendingScansLoaded) {
-          final records = state.records;
+        // The page only dispatches LoadScanRecords, so derive the pending
+        // tab from the full list (like the Confirmed tab) instead of
+        // waiting for a PendingScansLoaded state that never arrives.
+        if (state is ScanRecordsLoaded || state is PendingScansLoaded) {
+          final records = state is PendingScansLoaded
+              ? state.records
+              : (state as ScanRecordsLoaded).records
+                    .where((r) => r.status == ScanStatus.pending)
+                    .toList();
           if (records.isEmpty) {
             return _NeuEmptyState(
               svgAsset: SvgIcons.pending,
@@ -552,8 +543,18 @@ class _ScanListPageState extends State<ScanListPage>
   }
 
   void _navigateToDetail(ScanRecord record) {
+    // The detail page dispatches confirm/reject/delete to the route-scoped
+    // ScanBloc, so hand the same instance to the pushed route.
+    final bloc = context.read<ScanBloc>();
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => ScanDetailPage(record: record)))
+        .push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: bloc,
+              child: ScanDetailPage(record: record),
+            ),
+          ),
+        )
         .then((_) {
           if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
         });
@@ -572,54 +573,47 @@ class _ScanListPageState extends State<ScanListPage>
   }
 }
 
-class _ScanTabBarDelegate extends SliverPersistentHeaderDelegate {
+/// Filter chips for the scan tabs; rebuilds with the controller so the
+/// selected chip follows swipes and taps.
+class _ScanTabBar extends StatelessWidget {
   final TabController tabController;
   final List<String> tabs;
 
-  _ScanTabBarDelegate({required this.tabController, required this.tabs});
+  const _ScanTabBar({required this.tabController, required this.tabs});
 
   @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: NeuContainer(
-        variant: NeuVariant.flat,
-        color: ThemeColors.background(context),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(tabs.length, (index) {
-              final isSelected = tabController.index == index;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: NeuChip(
-                  label: tabs[index],
-                  selected: isSelected,
-                  onTap: () => tabController.animateTo(index),
-                  selectedColor: ThemeColors.primary(context),
-                ),
-              );
-            }),
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 56,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: NeuContainer(
+          variant: NeuVariant.flat,
+          color: ThemeColors.background(context),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: AnimatedBuilder(
+            animation: tabController,
+            builder: (context, _) => SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(tabs.length, (index) {
+                  final isSelected = tabController.index == index;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: NeuChip(
+                      label: tabs[index],
+                      selected: isSelected,
+                      onTap: () => tabController.animateTo(index),
+                      selectedColor: ThemeColors.primary(context),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),
     );
-  }
-
-  @override
-  double get maxExtent => 56;
-
-  @override
-  double get minExtent => 56;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
   }
 }
 
