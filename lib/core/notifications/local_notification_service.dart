@@ -38,17 +38,44 @@ class LocalNotificationService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
+    // A tap that cold-launched the app does not hit the callback above;
+    // queue its payload so the tap handler replays it once registered.
+    final launch = await _notifications.getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp ?? false) {
+      _pendingPayload = launch!.notificationResponse?.payload;
+    }
+
     // Create notification channels (Android)
     await _createChannels();
 
     _initialized = true;
   }
 
-  /// Handle notification tap
+  static void Function(String? payload)? _tapHandler;
+  static String? _pendingPayload;
+
+  /// Register the app-level handler that navigates on notification tap.
+  ///
+  /// Kept as a callback so this core service stays free of routing/feature
+  /// imports. A tap that arrived before registration is replayed once.
+  static void setTapHandler(void Function(String? payload) handler) {
+    _tapHandler = handler;
+    final pending = _pendingPayload;
+    if (pending != null) {
+      _pendingPayload = null;
+      handler(pending);
+    }
+  }
+
+  /// Handle notification tap (payload format: `appointment:123`, `queue`).
   static void _onNotificationTapped(NotificationResponse response) {
-    // TODO: Navigate to relevant screen based on payload
-    // e.g., if payload is 'appointment:123', navigate to appointment detail
     debugPrint('Notification tapped: ${response.payload}');
+    final handler = _tapHandler;
+    if (handler == null) {
+      _pendingPayload = response.payload;
+      return;
+    }
+    handler(response.payload);
   }
 
   /// Create Android notification channels

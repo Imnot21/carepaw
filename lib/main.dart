@@ -10,6 +10,8 @@ import 'package:carepaw/core/firebase/firebase_init.dart';
 import 'package:carepaw/core/notifications/local_notification_service.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/notifications/presentation/notification_target.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
@@ -221,6 +223,17 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
     // can be read synchronously, so no delay/rebuild dance is needed.
     _authStateListenable.initialize(context.read<AuthBloc>());
     _router = AppRouter.buildRouter(_authStateListenable);
+    LocalNotificationService.setTapHandler(_openNotificationTarget);
+  }
+
+  /// Navigate to the screen a tapped notification refers to. Ignored when
+  /// signed out; the router's auth redirect owns that case.
+  void _openNotificationTarget(String? payload) {
+    if (!mounted) return;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+    final route = notificationTargetFromPayload(payload, authState.user.role);
+    if (route != null) _router.go(route);
   }
 
   @override

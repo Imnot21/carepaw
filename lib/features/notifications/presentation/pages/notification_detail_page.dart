@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/notifications/presentation/notification_target.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart'
     as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
@@ -44,6 +48,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             const SizedBox(height: 16),
             _buildMetaSection(notification),
             const SizedBox(height: 24),
+            _buildOpenTargetButton(notification),
             _buildActionButtons(notification),
           ],
         ),
@@ -288,6 +293,40 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Opens the appointment/queue screen this notification is about.
+  /// Renders nothing for types with no related screen.
+  Widget _buildOpenTargetButton(domain.Notification notification) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return const SizedBox.shrink();
+    final route = notificationTargetRoute(
+      notification.type,
+      referenceId: notification.referenceId,
+      role: authState.user.role,
+    );
+    if (route == null) return const SizedBox.shrink();
+
+    final isAppointment =
+        notification.type == domain.NotificationType.appointmentReminder;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: NeuButton(
+        text: isAppointment ? 'View Appointment' : 'View Queue',
+        variant: NeuButtonVariant.primary,
+        icon: isAppointment
+            ? Icons.event_rounded
+            : Icons.format_list_numbered_rounded,
+        svgAsset: isAppointment ? SvgIcons.calendar : SvgIcons.queue,
+        onPressed: () {
+          if (!notification.isRead && notification.id != null) {
+            context.read<NotificationBloc>().add(MarkAsRead(notification.id!));
+          }
+          context.go(route);
+        },
+        expanded: true,
       ),
     );
   }
