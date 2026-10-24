@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
@@ -551,10 +552,9 @@ class _AppointmentCard extends StatelessWidget {
                 ),
               ),
               // Status chip
-              NeuChip(
+              NeuStatusBadge.fromValue(
+                appointment.status.value,
                 label: appointment.status.displayName,
-                selected: true,
-                selectedColor: statusColor,
               ),
             ],
           ),

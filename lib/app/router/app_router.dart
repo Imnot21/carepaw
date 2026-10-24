@@ -37,6 +37,7 @@ import 'package:carepaw/features/audit/presentation/bloc/audit_log_bloc.dart';
 import 'package:carepaw/features/audit/presentation/bloc/audit_log_event.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:carepaw/features/audit/presentation/pages/admin_audit_page.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/features/home/presentation/pages/admin_settings_page.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
@@ -755,19 +756,17 @@ class ErrorPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
-              if (error != null) ...[
-                Text(
-                  error.toString(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
+              Text(
+                'That page could not be opened. Head back home and try again.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 16),
-              ],
-              ElevatedButton(
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              NeuButton(
+                text: 'Go Home',
                 onPressed: () => context.go(Routes.home),
-                child: const Text('Go Home'),
               ),
             ],
           ),

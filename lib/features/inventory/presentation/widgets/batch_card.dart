@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
@@ -97,18 +98,11 @@ class BatchCard extends StatelessWidget {
                 Row(
                   children: [
                     if (isExpired)
-                      _buildStatusBadge(
-                        'Expired',
-                        Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.errorOnDark
-                            : AppColors.error,
-                      )
+                      _buildStatusBadge('Expired', NeuStatusTone.danger)
                     else if (isExpiringSoon || highlightExpiry)
                       _buildStatusBadge(
                         isExpiringSoon ? 'Expiring Soon' : 'Track Expiry',
-                        Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.warningOnDark
-                            : AppColors.warning,
+                        NeuStatusTone.warning,
                       ),
                     const SizedBox(width: 8),
                     if (onEdit != null || onTransaction != null)
@@ -328,23 +322,10 @@ class BatchCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+  Widget _buildStatusBadge(String text, NeuStatusTone tone) {
+    return NeuStatusBadge(label: text, tone: tone, compact: true);
   }
+
 
   String _getCategorySvg(InventoryCategory category) {
     switch (category) {

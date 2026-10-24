@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -241,23 +242,9 @@ class StaffQueueEntryCard extends StatelessWidget {
               ],
 
               // Status chip
-              NeuContainer(
-                borderRadius: 20,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                variant: NeuVariant.flat,
-                color: statusColor.withValues(alpha: 0.12),
-                borderColor: statusColor.withValues(alpha: 0.3),
-                borderWidth: 1,
-                child: Text(
-                  entry.queueEntry.status.displayName,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              NeuStatusBadge.fromValue(
+                entry.queueEntry.status.value,
+                label: entry.queueEntry.status.displayName,
               ),
             ],
           ),

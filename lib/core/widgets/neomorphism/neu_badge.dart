@@ -29,6 +29,8 @@ abstract final class NeuStatusToneResolver {
     'PENDING': NeuStatusTone.warning,
     'PENDING_REVIEW': NeuStatusTone.warning,
     'AWAITING_CONFIRMATION': NeuStatusTone.warning,
+    'RESCHEDULED': NeuStatusTone.warning,
+    'WAITING': NeuStatusTone.warning,
 
     // Locked in and on the books.
     'CONFIRMED': NeuStatusTone.accent,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_bloc.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_event.dart';
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart';
@@ -624,24 +625,24 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
   }
 
   void _showAboutRecords(BuildContext context) {
-    showDialog(
+    NeuDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('About Medical Records'),
-        content: Text(
-          'Records are written by the clinic during visits and can never be '
-          'edited or deleted. Mistakes are fixed by adding a correction note '
-          'on top, so ${widget.pet.name}\u2019s full history is always kept.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it'),
-          ),
-        ],
+      title: 'About Medical Records',
+      content: Text(
+        'Records are written by the clinic during visits and can never be '
+        'edited or deleted. Mistakes are fixed by adding a correction note '
+        'on top, so ${widget.pet.name}’s full history is always kept.',
       ),
+      actions: [
+        NeuButton(
+          text: 'Got it',
+          variant: NeuButtonVariant.primary,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
+
 }
 
 /// Medical record card widget

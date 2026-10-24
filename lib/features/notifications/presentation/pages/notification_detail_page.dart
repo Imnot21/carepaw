@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/notifications/presentation/notification_target.dart';
@@ -378,36 +379,21 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     );
   }
 
-  void _showDeleteConfirmation() {
-    showDialog(
+  Future<void> _showDeleteConfirmation() async {
+    final confirmed = await NeuConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Notification'),
-        content: const Text(
+      title: 'Delete Notification',
+      message:
           'Are you sure you want to delete this notification? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<NotificationBloc>().add(
-                DeleteNotification(widget.notification.id!),
-              );
-              Navigator.pop(context, true);
-            },
-            child: Text(
-              'Delete',
-              style: TextStyle(color: ThemeColors.error(context)),
-            ),
-          ),
-        ],
-      ),
+      confirmText: 'Delete',
     );
+    if (confirmed != true || !mounted) return;
+    context.read<NotificationBloc>().add(
+      DeleteNotification(widget.notification.id!),
+    );
+    Navigator.pop(context, true);
   }
+
 
   Color _getTypeColor(domain.NotificationType type) {
     switch (type) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
@@ -162,22 +163,9 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    NeuContainer(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      borderRadius: 10,
-                      variant: NeuVariant.flat,
-                      borderColor: statusColor.withValues(alpha: 0.3),
-                      borderWidth: 1,
-                      child: Text(
-                        record.status.displayName,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: statusColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    NeuStatusBadge.fromValue(
+                      record.status.value,
+                      label: record.status.displayName,
                     ),
                   ],
                 ),

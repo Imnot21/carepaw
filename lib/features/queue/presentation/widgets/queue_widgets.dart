@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_bloc.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
@@ -420,23 +422,9 @@ class QueueEntryCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               // Status chip
-              NeuContainer(
-                borderRadius: 20,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                variant: NeuVariant.flat,
-                color: statusColor.withValues(alpha: 0.12),
-                borderColor: statusColor.withValues(alpha: 0.3),
-                borderWidth: 1,
-                child: Text(
-                  entry.queueEntry.status.displayName,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              NeuStatusBadge.fromValue(
+                entry.queueEntry.status.value,
+                label: entry.queueEntry.status.displayName,
               ),
             ],
           ),
@@ -588,36 +576,20 @@ class QueueEntryCard extends StatelessWidget {
     );
   }
 
-  void _confirmLeaveQueue(BuildContext context, int queueId) {
-    showDialog(
+  Future<void> _confirmLeaveQueue(BuildContext context, int queueId) async {
+    final bloc = context.read<QueueBloc>();
+    final confirmed = await NeuConfirmDialog.show(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Leave the queue?'),
-        content: const Text(
+      title: 'Leave the queue?',
+      message:
           'Your pet will be removed from the waiting line. '
           'You can check in again later if your visit is still upcoming.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Stay'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<QueueBloc>().add(
-                QueueCancelRequested(queueId),
-              );
-            },
-            child: Text(
-              'Leave',
-              style: TextStyle(color: ThemeColors.error(context)),
-            ),
-          ),
-        ],
-      ),
+      confirmText: 'Leave',
+      cancelText: 'Stay',
     );
+    if (confirmed == true) bloc.add(QueueCancelRequested(queueId));
   }
+
 
   Color _getStatusColor(BuildContext context, QueueStatus status) {
     switch (status) {

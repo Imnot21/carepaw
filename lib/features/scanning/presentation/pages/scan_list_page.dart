@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart';
@@ -423,50 +424,13 @@ class _ScanListPageState extends State<ScanListPage>
   }
 
   Widget _buildStatusBadge(ScanStatus status) {
-    Color color;
-    String text;
-    String svgAsset;
-
-    switch (status) {
-      case ScanStatus.pending:
-        color = ThemeColors.warning(context);
-        text = 'Pending';
-        svgAsset = SvgIcons.pending;
-        break;
-      case ScanStatus.confirmed:
-        color = ThemeColors.success(context);
-        text = 'Confirmed';
-        svgAsset = SvgIcons.success;
-        break;
-      case ScanStatus.rejected:
-        color = ThemeColors.error(context);
-        text = 'Rejected';
-        svgAsset = SvgIcons.error;
-        break;
-    }
-
-    return NeuContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      borderRadius: 10,
-      variant: NeuVariant.flat,
-      borderColor: color.withValues(alpha: 0.3),
-      borderWidth: 1,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NeuSvgIcon(svgAsset, size: 12),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+    return NeuStatusBadge.fromValue(
+      status.value,
+      label: status.displayName,
+      compact: true,
     );
   }
+
 
   Widget _buildConfidenceIndicator(double confidence) {
     Color color;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
@@ -111,16 +113,11 @@ class _InventoryListPageState extends State<InventoryListPage> {
           floatingActionButton: BlocBuilder<InventoryBloc, InventoryState>(
             builder: (context, state) => _isListEmpty(state)
                 ? const SizedBox.shrink()
-                : FloatingActionButton.extended(
+                : NeuFAB.extended(
                     onPressed: () => _navigateToForm(),
-                    icon: NeuSvgIcon(SvgIcons.add, size: 24),
-                    label: const Text('Add Item'),
-                    backgroundColor: ThemeColors.primary(context),
-                    foregroundColor: ThemeColors.onPrimary(context),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                    icon: Icons.add_rounded,
+                    svgAsset: SvgIcons.add,
+                    extendedText: 'Add Item',
                   ),
           ),
         );
@@ -367,17 +364,11 @@ class _InventoryListPageState extends State<InventoryListPage> {
                       ),
                     ),
                     if (isOutOfStock)
-                      _buildStatusBadge(
-                        'Out of Stock',
-                        ThemeColors.error(context),
-                      )
+                      _buildStatusBadge('Out of Stock', NeuStatusTone.danger)
                     else if (isLowStock)
-                      _buildStatusBadge(
-                        'Low Stock',
-                        ThemeColors.warning(context),
-                      )
+                      _buildStatusBadge('Low Stock', NeuStatusTone.warning)
                     else if (item.isAtMax)
-                      _buildStatusBadge('Full', ThemeColors.success(context)),
+                      _buildStatusBadge('Full', NeuStatusTone.success),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -472,23 +463,10 @@ class _InventoryListPageState extends State<InventoryListPage> {
     );
   }
 
-  Widget _buildStatusBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+  Widget _buildStatusBadge(String text, NeuStatusTone tone) {
+    return NeuStatusBadge(label: text, tone: tone, compact: true);
   }
+
 
   Color _getCategoryColor(InventoryCategory category) {
     switch (category) {

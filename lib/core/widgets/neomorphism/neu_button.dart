@@ -313,13 +313,9 @@ class _NeuButtonState extends State<NeuButton> {
     };
   }
 
-  double _getRadius() {
-    return switch (widget.size) {
-      NeuButtonSize.small => NeuTokens.radiusSm,
-      NeuButtonSize.medium => NeuTokens.radiusMd,
-      NeuButtonSize.large => NeuTokens.radiusMd,
-    };
-  }
+  /// Every size is a pill (DESIGN.md: buttons use `radiusPill`), so a small
+  /// row action and a full-width form action read as the same control.
+  double _getRadius() => NeuTokens.radiusPill;
 
   double _getIconSize() {
     return switch (widget.size) {
