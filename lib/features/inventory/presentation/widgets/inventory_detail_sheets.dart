@@ -11,6 +11,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
@@ -271,6 +273,19 @@ void showTransactionSheet(
                         );
                         return;
                       }
+                      final authState = context.read<AuthBloc>().state;
+                      final userId = authState is AuthAuthenticated
+                          ? authState.user.id
+                          : null;
+                      if (userId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Please log in again'),
+                            backgroundColor: ThemeColors.error(context),
+                          ),
+                        );
+                        return;
+                      }
                       Navigator.pop(context);
                       _recordTransaction(
                         bloc,
@@ -281,6 +296,7 @@ void showTransactionSheet(
                         notesController.text.trim().isEmpty
                             ? null
                             : notesController.text.trim(),
+                        userId,
                       );
                     },
                     expanded: true,
@@ -303,8 +319,8 @@ void _recordTransaction(
   double quantity,
   String reason,
   String? notes,
+  int userId,
 ) {
-  final userId = 1; // TODO: Get from auth state
   switch (type) {
     case TransactionType.in_:
       bloc.add(

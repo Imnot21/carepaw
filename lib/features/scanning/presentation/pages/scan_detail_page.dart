@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart'
@@ -394,8 +396,24 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
               icon: Icons.check_circle_rounded,
               svgAsset: SvgIcons.success,
               onPressed: () {
+                final authState = context.read<AuthBloc>().state;
+                final userId = authState is AuthAuthenticated
+                    ? authState.user.id
+                    : null;
+                if (userId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Please log in again'),
+                      backgroundColor: ThemeColors.error(context),
+                    ),
+                  );
+                  return;
+                }
                 context.read<ScanBloc>().add(
-                  scan_event.ConfirmScanRecord(recordId: record.id!),
+                  scan_event.ConfirmScanRecord(
+                    recordId: record.id!,
+                    confirmedBy: userId,
+                  ),
                 );
                 Navigator.pop(context, true);
               },

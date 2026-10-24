@@ -69,12 +69,17 @@ class ProcessScanOcr extends ScanEvent {
 /// Confirm a scan record (user verified OCR results).
 class ConfirmScanRecord extends ScanEvent {
   final int recordId;
+  final int confirmedBy;
   final String? corrections;
 
-  const ConfirmScanRecord({required this.recordId, this.corrections});
+  const ConfirmScanRecord({
+    required this.recordId,
+    required this.confirmedBy,
+    this.corrections,
+  });
 
   @override
-  List<Object?> get props => [recordId, corrections];
+  List<Object?> get props => [recordId, confirmedBy, corrections];
 }
 
 /// Reject a scan record.

@@ -187,7 +187,7 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
 
       final updatedRecord = record.copyWith(
         status: domain.ScanStatus.confirmed,
-        confirmedBy: 1, // TODO: Get from auth state
+        confirmedBy: event.confirmedBy,
         confirmedAt: DateTime.now(),
         corrections: event.corrections,
       );
