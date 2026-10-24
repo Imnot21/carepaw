@@ -197,10 +197,9 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   }
 
   _StatusInfo _getStatusInfo(AppointmentStatus status) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case AppointmentStatus.requested:
-        final color = isDark ? AppColors.warningOnDark : AppColors.warning;
+        final color = ThemeColors.warning(context);
         return _StatusInfo(
           label: 'Pending Approval',
           icon: Icons.pending_outlined,
@@ -209,7 +208,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           isActive: false,
         );
       case AppointmentStatus.confirmed:
-        final color = isDark ? AppColors.infoDark : AppColors.info;
+        final color = ThemeColors.info(context);
         return _StatusInfo(
           label: 'Approved',
           icon: Icons.check_circle_outline_rounded,
@@ -218,7 +217,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           isActive: true,
         );
       case AppointmentStatus.rescheduled:
-        final reschedColor = isDark ? AppColors.infoDark : AppColors.info;
+        final reschedColor = ThemeColors.info(context);
         return _StatusInfo(
           label: 'Rescheduled',
           icon: Icons.event_repeat_outlined,
@@ -245,7 +244,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           isActive: true,
         );
       case AppointmentStatus.completed:
-        final color = isDark ? AppColors.successOnDark : AppColors.success;
+        final color = ThemeColors.success(context);
         return _StatusInfo(
           label: 'Completed',
           icon: Icons.task_alt_outlined,
@@ -254,7 +253,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           isActive: false,
         );
       case AppointmentStatus.cancelled:
-        final color = isDark ? AppColors.errorOnDark : AppColors.error;
+        final color = ThemeColors.error(context);
         return _StatusInfo(
           label: 'Cancelled',
           icon: Icons.cancel_outlined,

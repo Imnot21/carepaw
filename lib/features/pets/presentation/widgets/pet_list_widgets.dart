@@ -39,10 +39,10 @@ class PetNotLoggedInView extends StatelessWidget {
                 child: NeuContainer(
                   borderRadius: 80,
                   variant: NeuVariant.raised,
-                  color: AppColors.primary,
+                  color: ThemeColors.primary(context),
                   boxShadow: NeuShadow.color(
                     context,
-                    AppColors.primary,
+                    ThemeColors.primary(context),
                     blur: 24,
                     opacity: 0.32,
                   ),

@@ -471,10 +471,7 @@ class _InventoryFormPageState extends State<InventoryFormPage> {
                                 'Max: ${_maxStockController.text}',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.infoDark
-                                      : AppColors.info,
+                                      ThemeColors.info(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

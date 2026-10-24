@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
@@ -465,20 +466,8 @@ class _ScanListPageState extends State<ScanListPage>
     );
   }
 
-  Color _getTypeColor(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return const Color(0xFF10B981);
-      case ScanType.medicineBox:
-        return AppColors.categoryMedicine;
-      case ScanType.prescription:
-        return AppColors.categorySupply;
-      case ScanType.labReport:
-        return const Color(0xFF06B6D4);
-      default:
-        return const Color(0xFF6B7280);
-    }
-  }
+  Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
+
 
   String _getTypeSvg(ScanType type) {
     switch (type) {
@@ -667,7 +656,7 @@ class _NotLoggedInView extends StatelessWidget {
                   NeuContainer(
                     padding: const EdgeInsets.all(24),
                     borderRadius: 80,
-                    color: AppColors.primary,
+                    color: ThemeColors.primary(context),
                     child: NeuSvgIcon(SvgIcons.camera, size: 80),
                   ),
                   const SizedBox(height: 28),
@@ -724,7 +713,7 @@ class _AccessDeniedView extends StatelessWidget {
                   NeuContainer(
                     padding: const EdgeInsets.all(24),
                     borderRadius: 80,
-                    color: AppColors.error,
+                    color: ThemeColors.error(context),
                     child: NeuSvgIcon(SvgIcons.block, size: 80),
                   ),
                   const SizedBox(height: 28),

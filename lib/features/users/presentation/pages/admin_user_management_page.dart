@@ -567,9 +567,8 @@ class _RoleChip extends StatelessWidget {
   });
 
   Color _color(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (role) {
-      UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
+      UserRole.petOwner => ThemeColors.info(context),
       UserRole.ownerAdmin => ThemeColors.primary(context),
     };
   }
@@ -720,9 +719,8 @@ class _UserManagementCard extends StatelessWidget {
 
 /// Role accent color shared by the page widgets.
 Color roleColor(BuildContext context, UserRole role) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
   return switch (role) {
-    UserRole.petOwner => isDark ? AppColors.infoDark : AppColors.info,
+    UserRole.petOwner => ThemeColors.info(context),
     UserRole.ownerAdmin => ThemeColors.primary(context),
   };
 }

@@ -156,7 +156,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               label: 'Minimum',
               value: formatNumber(item.minStock),
               unit: item.unit,
-              color: _isDark ? AppColors.warningOnDark : AppColors.warning,
+              color: ThemeColors.warning(context),
               icon: Icons.warning_amber_rounded,
               svgAsset: SvgIcons.alert,
             ),
@@ -167,9 +167,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage>
               label: item.maxStock != null ? 'Maximum' : 'No Max',
               value: item.maxStock != null ? formatNumber(item.maxStock!) : '-',
               unit: item.unit,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.infoDark
-                  : AppColors.info,
+              color: ThemeColors.info(context),
               icon: Icons.flag_rounded,
               svgAsset: SvgIcons.flag,
             ),

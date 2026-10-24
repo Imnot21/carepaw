@@ -127,7 +127,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           NeuAvatar(
             radius: 20,
             svgAsset: SvgIcons.notifications,
-            backgroundColor: AppColors.primary,
+            backgroundColor: ThemeColors.primary(context),
             foregroundColor: AppColors.textOnPrimary,
           ),
           const SizedBox(width: 16),
@@ -179,7 +179,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         title: 'Appointment Reminders',
         subtitle: 'Booking confirmations, reminders, changes',
         svgAsset: SvgIcons.calendar,
-        color: AppColors.primary,
+        color: ThemeColors.primary(context),
         enabled: preferences?.appointmentReminders ?? true,
       ),
       _CategorySetting(
@@ -187,7 +187,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         title: 'Queue Updates',
         subtitle: 'Position changes, your turn notifications',
         svgAsset: SvgIcons.queue,
-        color: AppColors.warning,
+        color: ThemeColors.warning(context),
         enabled: preferences?.queueUpdates ?? true,
       ),
       // PAPER-ONLY: inventory, prescription, and system categories stay in
@@ -397,7 +397,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           NeuAvatar(
             radius: 20,
             svgAsset: SvgIcons.moon,
-            backgroundColor: AppColors.primary,
+            backgroundColor: ThemeColors.primary(context),
             foregroundColor: AppColors.textOnPrimary,
           ),
           const SizedBox(width: 16),

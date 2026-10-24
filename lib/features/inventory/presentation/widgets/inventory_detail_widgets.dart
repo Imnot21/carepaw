@@ -134,23 +134,17 @@ class InventoryDetailHeader extends StatelessWidget {
                           if (isOutOfStock)
                             InventoryStatusChip(
                               text: 'Out of Stock',
-                              color: isDark
-                                  ? AppColors.errorOnDark
-                                  : AppColors.error,
+                              color: ThemeColors.error(context),
                             )
                           else if (isLowStock)
                             InventoryStatusChip(
                               text: 'Low Stock',
-                              color: isDark
-                                  ? AppColors.warningOnDark
-                                  : AppColors.warning,
+                              color: ThemeColors.warning(context),
                             )
                           else
                             InventoryStatusChip(
                               text: 'In Stock',
-                              color: isDark
-                                  ? AppColors.successOnDark
-                                  : AppColors.success,
+                              color: ThemeColors.success(context),
                             ),
                         ],
                       ),
@@ -394,10 +388,10 @@ class InventoryDetailEmptyState extends StatelessWidget {
               NeuContainer(
                 borderRadius: 90,
                 padding: const EdgeInsets.all(22),
-                color: AppColors.primary,
+                color: ThemeColors.primary(context),
                 boxShadow: NeuShadow.color(
                   context,
-                  AppColors.primary,
+                  ThemeColors.primary(context),
                   blur: 24,
                   opacity: 0.32,
                 ),

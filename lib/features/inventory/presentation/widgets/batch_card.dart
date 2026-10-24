@@ -166,9 +166,7 @@ class BatchCard extends StatelessWidget {
                     formatDate(batch.receivedAt),
                     SvgIcons.calendar,
                     Icons.calendar_today_rounded,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.infoDark
-                        : AppColors.info,
+                    ThemeColors.info(context),
                   ),
                 ),
                 if (batch.expiresAt != null)
@@ -180,16 +178,10 @@ class BatchCard extends StatelessWidget {
                       SvgIcons.calendar,
                       Icons.event_rounded,
                       isExpired
-                          ? (Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.errorOnDark
-                                : AppColors.error)
+                          ? ThemeColors.error(context)
                           : isExpiringSoon
-                          ? (Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.warningOnDark
-                                : AppColors.warning)
-                          : (Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.successOnDark
-                                : AppColors.success),
+                          ? ThemeColors.warning(context)
+                          : ThemeColors.success(context),
                     ),
                   )
                 else

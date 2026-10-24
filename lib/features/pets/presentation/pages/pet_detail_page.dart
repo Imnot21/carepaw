@@ -264,9 +264,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 icon: Icons.archive_outlined,
                 svgAsset: SvgIcons.archive,
                 title: 'Deactivate',
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.warningOnDark
-                    : AppColors.warning,
+                color: ThemeColors.warning(context),
                 onTap: () {
                   context.pop();
                   _showDeactivateDialog(context);
@@ -277,9 +275,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 icon: Icons.unarchive_outlined,
                 svgAsset: SvgIcons.unarchive,
                 title: 'Activate',
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.successOnDark
-                    : AppColors.success,
+                color: ThemeColors.success(context),
                 onTap: () {
                   context.pop();
                   _showActivateDialog(context);

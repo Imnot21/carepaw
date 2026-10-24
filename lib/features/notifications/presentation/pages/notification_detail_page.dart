@@ -400,11 +400,11 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       case domain.NotificationType.appointmentReminder:
         return ThemeColors.primary(context);
       case domain.NotificationType.queueUpdate:
-        return _isDark ? AppColors.warningOnDark : AppColors.warning;
+        return ThemeColors.warning(context);
       case domain.NotificationType.prescriptionReady:
         return AppColors.categorySupply;
       case domain.NotificationType.inventoryLow:
-        return _isDark ? AppColors.successOnDark : AppColors.success;
+        return ThemeColors.success(context);
       case domain.NotificationType.system:
         return _isDark
             ? AppColors.textSecondaryOnDark

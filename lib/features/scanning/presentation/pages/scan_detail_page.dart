@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -466,20 +467,8 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
     );
   }
 
-  Color _getTypeColor(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return const Color(0xFFF59E0B);
-      case ScanType.medicineBox:
-        return AppColors.categoryMedicine;
-      case ScanType.prescription:
-        return AppColors.categorySupply;
-      case ScanType.labReport:
-        return AppColors.categoryVaccine;
-      case ScanType.other:
-        return AppColors.secondary;
-    }
-  }
+  Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
+
 
   Color _getStatusColor(ScanStatus status) {
     switch (status) {

@@ -228,7 +228,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
       label: label,
       selected: isSelected,
       onTap: () => _onCategoryChanged(category),
-      selectedColor: AppColors.primary,
+      selectedColor: ThemeColors.primary(context),
     );
   }
 
@@ -439,13 +439,9 @@ class _InventoryListPageState extends State<InventoryListPage> {
                         style: AppTextStyles.titleSmall.copyWith(
                           fontWeight: FontWeight.w700,
                           color: isOutOfStock
-                              ? (_isDark
-                                    ? AppColors.errorOnDark
-                                    : AppColors.error)
+                              ? ThemeColors.error(context)
                               : isLowStock
-                              ? (_isDark
-                                    ? AppColors.warningOnDark
-                                    : AppColors.warning)
+                              ? ThemeColors.warning(context)
                               : ThemeColors.primaryText(context),
                         ),
                       ),
@@ -629,10 +625,10 @@ class _NotLoggedInView extends StatelessWidget {
                 child: NeuContainer(
                   borderRadius: 80,
                   variant: NeuVariant.raised,
-                  color: AppColors.primary,
+                  color: ThemeColors.primary(context),
                   boxShadow: NeuShadow.color(
                     context,
-                    AppColors.primary,
+                    ThemeColors.primary(context),
                     blur: 24,
                     opacity: 0.35,
                   ),
@@ -697,10 +693,10 @@ class _AccessDeniedView extends StatelessWidget {
                 child: NeuContainer(
                   borderRadius: 80,
                   variant: NeuVariant.raised,
-                  color: AppColors.error,
+                  color: ThemeColors.error(context),
                   boxShadow: NeuShadow.color(
                     context,
-                    AppColors.error,
+                    ThemeColors.error(context),
                     blur: 24,
                     opacity: 0.35,
                   ),

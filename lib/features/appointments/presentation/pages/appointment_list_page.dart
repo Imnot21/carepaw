@@ -176,7 +176,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             child: NeuChip(
               label: 'Upcoming',
               selected: _tabController.index == 0,
-              selectedColor: AppColors.primary,
+              selectedColor: ThemeColors.primary(context),
               onTap: () => _tabController.animateTo(0),
             ),
           ),
@@ -185,7 +185,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             child: NeuChip(
               label: 'Past',
               selected: _tabController.index == 1,
-              selectedColor: AppColors.primary,
+              selectedColor: ThemeColors.primary(context),
               onTap: () => _tabController.animateTo(1),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
@@ -38,20 +39,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     super.dispose();
   }
 
-  Color _getTypeColor(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return const Color(0xFF10B981);
-      case ScanType.medicineBox:
-        return AppColors.categoryMedicine;
-      case ScanType.prescription:
-        return AppColors.categorySupply;
-      case ScanType.labReport:
-        return AppColors.categoryVaccine;
-      default:
-        return const Color(0xFF6B7280);
-    }
-  }
+  Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
+
 
   String _getTypeSvg(ScanType type) {
     switch (type) {
@@ -572,7 +561,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Gallery picker would open here'),
-        backgroundColor: AppColors.primary,
+        backgroundColor: ThemeColors.primary(context),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
       ),
@@ -583,7 +572,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Flash toggled'),
-        backgroundColor: AppColors.primary,
+        backgroundColor: ThemeColors.primary(context),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusSm)),
       ),

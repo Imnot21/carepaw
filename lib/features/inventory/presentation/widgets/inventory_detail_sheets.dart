@@ -93,12 +93,12 @@ void showBatchDetailSheet(
               if (batch.isExpired)
                 InventoryStatusChip(
                   text: 'Expired',
-                  color: isDark ? AppColors.errorOnDark : AppColors.error,
+                  color: ThemeColors.error(context),
                 )
               else if (batch.isExpiringSoon)
                 InventoryStatusChip(
                   text: 'Expiring Soon',
-                  color: isDark ? AppColors.warningOnDark : AppColors.warning,
+                  color: ThemeColors.warning(context),
                 ),
             ],
           ),
