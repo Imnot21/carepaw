@@ -251,8 +251,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Text is read on this phone. You check every value before '
-              'the scan is trusted.',
+              'The photo is sent to Gemini to read the text. You check '
+              'every value before the scan is trusted.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: ThemeColors.textSecondary(context),
               ),
@@ -270,6 +270,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       child: Row(
         children: [
           Expanded(
+            flex: 2,
             child: NeuButton(
               text: 'Gallery',
               variant: NeuButtonVariant.secondary,
@@ -281,7 +282,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           ),
           const SizedBox(width: 16),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: NeuButton(
               text: 'Take Photo',
               variant: NeuButtonVariant.primary,
@@ -369,6 +370,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           child: Row(
             children: [
               Expanded(
+                flex: 2,
                 child: NeuButton(
                   text: 'Retake',
                   variant: NeuButtonVariant.secondary,
@@ -380,7 +382,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               ),
               const SizedBox(width: 16),
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: NeuButton(
                   text: 'Save for Review',
                   variant: NeuButtonVariant.primary,

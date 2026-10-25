@@ -37,9 +37,10 @@ inventory → records → notifications → settings) and the pet owner flow
   history, vaccinations, and prescriptions.
 - **Smart Medicine Inventory** — stock, batches, expiration tracking, and fully
   traceable inventory transactions.
-- **Scanning & OCR** — photograph a receipt or medicine box; Google ML Kit reads
-  the text on the phone (no upload) and suggests fields such as name, expiry,
-  and lot. Every scan is saved as pending until the clinic confirms or rejects
+- **Scanning & OCR** — photograph a receipt or medicine box; Gemini (Firebase AI
+  Logic) reads the text and suggests fields such as name, expiry, and lot. The
+  photo is sent to Google for that one read; when offline, on-device ML Kit
+  reads it instead. Every scan is saved as pending until the clinic confirms or rejects
   it; OCR output is never blindly trusted.
 - **Notifications** — appointment reminders, queue updates, prescription-ready,
   and low-inventory alerts, delivered in-app and via local notifications.
