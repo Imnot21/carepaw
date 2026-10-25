@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/core/utils/input_formatters.dart';
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
@@ -443,9 +443,7 @@ class _EditStockSheetState extends State<_EditStockSheet> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                  ],
+                  inputFormatters: [DecimalInputFormatter.stockQuantity],
                   onChanged: (_) => setState(() => _takeOutError = null),
                 ),
               ),

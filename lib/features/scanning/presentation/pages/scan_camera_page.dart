@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
+import 'package:carepaw/core/utils/input_formatters.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
@@ -528,6 +529,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [DecimalInputFormatter.stockQuantity],
                   onChanged: (_) => setState(() => line.quantityError = null),
                 ),
               ),
@@ -675,6 +677,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       line.nameError = name.isEmpty ? 'Enter the medicine name' : null;
       line.quantityError = quantity == null || quantity <= 0
           ? 'Enter a number above 0'
+          : quantity >= 100000
+          ? 'Enter at most 5 digits'
           : null;
       line.expiryError = expiryText.isNotEmpty && expiry == null
           ? 'Use MM/YYYY or YYYY-MM-DD'

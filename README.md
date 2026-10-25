@@ -55,8 +55,8 @@ inventory → records → notifications → settings) and the pet owner flow
 
 | Role | Email |
 |------|-------|
-| Clinic operator (Owner/Admin) | `vet@carepaw.com` |
-| Pet owner | `admin@carepaw.com` |
+| Clinic operator (Owner/Admin) | `admin@carepaw.com` |
+| Pet owner | `tester@carepaw.com` |
 
 Passwords are shared privately by the team and are not kept in this repo.
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -324,6 +325,10 @@ class _ProfilePageState extends State<ProfilePage> {
               label: 'Phone',
               hint: '09XX XXX XXXX',
               keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(11),
+              ],
               helper: 'Philippine mobile number (optional)',
             ),
             const SizedBox(height: 24),

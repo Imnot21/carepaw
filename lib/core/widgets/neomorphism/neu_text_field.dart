@@ -211,6 +211,9 @@ class _NeuTextFieldState extends State<NeuTextField> {
               decoration: InputDecoration(
                 hintText: widget.hint,
                 errorText: null,
+                // The validator's error is drawn below the surface, so the
+                // copy TextFormField would draw inside the field is hidden.
+                errorStyle: const TextStyle(fontSize: 0, height: 0),
                 // The helper is drawn below the surface, like the error,
                 // so it is not repeated inside the field.
                 counterText: '',

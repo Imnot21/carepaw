@@ -12,6 +12,8 @@ import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/presentation/widgets/pet_detail_widgets.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/core/utils/input_formatters.dart';
+import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
@@ -320,6 +322,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
               size: 20,
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [DecimalInputFormatter.weightKg],
             autofocus: true,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _saveWeight(context, weightController),
@@ -345,7 +348,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
 
   void _saveWeight(BuildContext context, TextEditingController controller) {
     final weight = double.tryParse(controller.text);
-    if (weight != null && weight > 0) {
+    if (weight != null && Validators.weight(controller.text) == null) {
       context.pop();
       final updatedPet = _pet.copyWith(
         weightKg: weight,

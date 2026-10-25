@@ -279,6 +279,9 @@ class Validators {
 
   // ============ Weight Validation ============
 
+  /// Heaviest pet weight the clinic accepts, in kg.
+  static const double maxPetWeightKg = 200;
+
   /// Validates pet weight (in kg)
   static String? weight(String? value) {
     if (value == null || value.isEmpty) return null;
@@ -292,8 +295,8 @@ class Validators {
       return 'Weight must be greater than 0';
     }
 
-    if (weight > 500) {
-      return 'Weight seems too large. Please verify.';
+    if (weight > maxPetWeightKg) {
+      return 'Weight must be ${maxPetWeightKg.toInt()} kg or less';
     }
 
     return null;

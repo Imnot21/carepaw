@@ -6,6 +6,7 @@ import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/presentation/widgets/pet_form_widgets.dart';
+import 'package:carepaw/core/utils/input_formatters.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
@@ -337,14 +338,10 @@ class _PetFormPageState extends State<PetFormPage> {
               fallback: Icons.monitor_weight_outlined,
               size: 20,
             ),
-            validator: (value) {
-              if (value != null && value.isNotEmpty) {
-                return Validators.positiveNumber(value);
-              }
-              return null;
-            },
+            validator: Validators.weight,
             textInputAction: TextInputAction.next,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [DecimalInputFormatter.weightKg],
           ),
           const SizedBox(height: 16),
           // Microchip

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -288,6 +289,10 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                     label: 'Phone (Optional)',
                     hint: '09XX XXX XXXX',
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(11),
+                    ],
                     helper: 'Philippine mobile number (optional)',
                   ),
                   const SizedBox(height: 16),

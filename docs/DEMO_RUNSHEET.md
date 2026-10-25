@@ -11,9 +11,9 @@ screen-verified on the demo build (emulator, 1080×2424).
 3. Launch the app fresh. Device Preview is off unless the build passes
    `--dart-define=DEVICE_PREVIEW=true`; release builds never show it.
 4. Accounts (passwords are kept privately by the team, not in this repo):
-   - `vet@carepaw.com` — Owner/Admin (clinic operator).
-   - `admin@carepaw.com` — **Pet Owner** despite the name. It has no clinic
-     access; inventory reads are denied by Firestore rules by design.
+   - `admin@carepaw.com` — Owner/Admin (clinic operator).
+   - `tester@carepaw.com` — Pet Owner. It has no clinic access; inventory
+     reads are denied by Firestore rules by design.
    - New owner accounts can register from the sign-up screen.
 
 ---
@@ -22,7 +22,7 @@ screen-verified on the demo build (emulator, 1080×2424).
 
 | # | Screen | What to show / say |
 |---|--------|--------------------|
-| 1 | **Login** | Email + password auth; the app routes by role automatically. Sign in as `vet@carepaw.com`. |
+| 1 | **Login** | Email + password auth; the app routes by role automatically. Sign in as `admin@carepaw.com`. |
 | 2 | **Clinic dashboard** | The pulse strip — waiting / today's bookings / low stock. "Clinic work" grid is the operator's launchpad for every module. |
 | 3 | **Booking tab** | Appointment list with Upcoming / Past. Open a *Pending Approval* booking → tap **Approve Booking** (clinic only). Then Check In → Start → Complete. Status words: Pending Approval, Approved, Checked In, In Progress, Completed. |
 | 4 | **Patients tab** | Pet cards; open one → pet profile with owner, species, age, and a Records entry point. |
