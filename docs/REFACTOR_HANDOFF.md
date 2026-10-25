@@ -1,23 +1,23 @@
-# Refactor sweep — handoff doc (continue on the laptop)
+# Refactor sweep — handoff doc (continue on either machine)
 
-Last updated: 2026-10-19 · Branch: `feature/neumorphism-design` · Head: `d3edee5`
+Last updated: 2026-10-20 · Branch: `feature/neumorphism-design`
 Repo: https://github.com/Imnot21/carepaw
 
 This doc is the continuation package for the ">800-line file sweep" (P2 maintainability work).
-Read this first on the laptop, then continue from **Next target**.
+Read this first on either machine, then continue from **Next target**.
 
 ---
 
 ## 1. Current state
 
-- `feature/neumorphism-design` == `master` == `d3edee5` (8/15 splits shipped; doc-update
-  commits may follow — check `git log --oneline -3` on the laptop for the true head).
+- `feature/neumorphism-design` == `master` (10/15 splits shipped; doc-update
+  commits may follow — check `git log --oneline -3` for the true head).
 - Working tree clean. `flutter analyze` clean. `flutter test` green (9/9).
 - Sweep canon (locked): **zero behavior change**, one file per commit, analyze + test each,
   live spot-check on the emulator before push, push = branch + fast-forward `master`.
 - `carepawdemo` mirror branch intentionally **not** pushed.
 
-### Resume on the laptop (quick start)
+### Resume on a new machine (quick start)
 
 ```powershell
 git fetch origin
@@ -26,7 +26,7 @@ git pull
 flutter pub get
 flutter analyze                           # expect: No issues found!
 flutter test                              # expect: 9/9 passed
-# next: §3 next target = pet_form_page.dart (876); use §4 recipe + §5 gate checklist
+# next: §3 next target = inventory_list_page.dart (853); use §4 recipe + §5 gate checklist
 ```
 
 ## 2. What was changed in the sweep (so far)
@@ -43,8 +43,33 @@ Each split = one commit. Numbers are line counts at split time.
 | 6 | `pet_list_page.dart` 1024 | page 46 + `widgets/pet_list_widgets.dart` 983 | `89d8d30` |
 | 7 | `notification_list_page.dart` 925 | page 509 + `widgets/notification_list_widgets.dart` 475 | `7817377` |
 | 8 | `medical_record_form_page.dart` 902 | page 625 + `widgets/medical_record_form_widgets.dart` 330 | `121fc2c` |
+| 9 | `pet_form_page.dart` 876 | page 391 + `widgets/pet_form_widgets.dart` 501 | `33a47b0` |
+| 10 | `appointment_list_page.dart` 813 | page 451 + `widgets/appointment_list_widgets.dart` 375 | `a0d55da` |
 
-Latest split (#8) details:
+Latest split (#10) details:
+- Pure mechanical tail move: `_AppointmentCard` → `widgets/appointment_list_widgets.dart`,
+  renamed public `AppointmentCard` with `super.key` added; one call site updated.
+- Zero-drift verified: moved block is byte-identical to HEAD after reverting the rename and
+  the `super.key` insertion. 5 imports pruned from the page (`intl`, `neu_card`,
+  `neu_container`, `neu_shapes`, `pet_utils`), none added.
+
+Previous split (#9) details:
+- Mechanical move of the five form widgets — `PetSpeciesSelector`, `PetSexSelector`,
+  `PetBreedSelector`, `PetBirthDateField`, `PetActiveSwitch` — plus the private
+  `_commonBreedsBySpecies` map into `widgets/pet_form_widgets.dart`.
+- `_FormSection` stayed private in the page (only the page builds/renders sections).
+- State classes (`_PetBirthDateFieldState`, `_PetBreedSelectorState`) stayed file-private and
+  moved with their widgets; `super.key` added to the five public constructors.
+- Zero-drift verified with two block checks: both the page body and the moved widget body are
+  byte-identical to HEAD after reverting renames + `super.key` insertions. 2 unused imports
+  pruned (`neu_chip`, `neu_switch`).
+- Live spot-check: this machine has no Android emulator, so the form was verified on
+  Flutter web instead (Chrome, 500×805 viewport): species chips switch + avatar updates,
+  sex selector, breed dropdown shows the correct per-species list (Cat → shorthair/longhair/
+  Persian/Maine Coon/…), birth-date picker opens, lower sections and submit render. Debug APK
+  build also passed.
+
+Previous split (#8) details:
 - Mixed split: 3 builder methods extracted into widgets (`MedicalRecordPetHeader` from
   `_buildPetHeader`, `MedicalRecordTypeSelector` from `_buildTypeSelector` with an `onChanged`
   callback, `MedicalRecordFormField` from `_buildField` — 18 call sites renamed, `context:`
@@ -111,15 +136,13 @@ Re-derive the list at session start, then continue top-down:
 Get-ChildItem -Recurse lib -Filter *.dart | ForEach-Object { $n=(Get-Content $_.FullName).Count; if($n -gt 800){ '{0,5}  {1}' -f $n, $_.FullName } } | Sort-Object -Descending
 ```
 
-Remaining >800 files (as of `121fc2c`):
+Remaining >800 files (as of `a0d55da`):
 
 | File | Lines | Status |
 |---|---|---|
 | `features/pets/presentation/widgets/pet_list_widgets.dart` | 983 | second pass (widgets file) |
-| `features/pets/presentation/pages/pet_form_page.dart` | 876 | **next** |
-| `features/appointments/presentation/pages/appointment_list_page.dart` | 860 | pending |
 | `features/queue/presentation/widgets/queue_widgets.dart` | 858 | maybe second pass |
-| `features/inventory/presentation/pages/inventory_list_page.dart` | 853 | pending |
+| `features/inventory/presentation/pages/inventory_list_page.dart` | 853 | **next** |
 | `core/widgets/neomorphism/neu_icon_system.dart` | 853 | pending (shared widget — extra care) |
 | `features/medical_records/presentation/pages/medical_record_list_page.dart` | 821 | pending |
 | `features/home/presentation/pages/staff_dashboard_page.dart` | 832 | **reserve — after defense** |
@@ -228,9 +251,9 @@ remote refs equal local HEAD.
 
 - [ ] **claude-mem observer signed out** (`claude auth login` needed) — automatic memory
       capture is off until re-authenticated; manual `save_memory` + work-state still work.
-- [ ] **Memory KG MCP path**: on the desktop `MEMORY_FILE_PATH` points at
-      `C:\Users\six6six\...` which does not exist there → KG writes fail (ENOENT).
-      Fix per machine (user's own config commit `65e875a`).
+- [x] **Memory KG MCP path**: fixed in `opencode.json` / `.mcp.json` — the project config
+      now points at `C:\Users\six6six\...` and the machine-specific Flutter SDK path
+      (update the two paths if a machine uses different locations).
 - [ ] `docs/DEMO_RUNSHEET.md` line ~51 is stale (Device Preview note — now opt-in, defaults
       off since `6d3efc7`). Optional doc fix after defense.
 - [ ] "Add Batch" is only reachable from the Batches-tab empty state (UI affordance note).
@@ -247,5 +270,5 @@ remote refs equal local HEAD.
 
 ---
 
-*Continue with §3 "next target": `pet_form_page.dart` (876 lines) — recon first.
+*Continue with §3 "next target": `inventory_list_page.dart` (853 lines) — recon first.
 Keep one commit per file and the §5 gate.*
