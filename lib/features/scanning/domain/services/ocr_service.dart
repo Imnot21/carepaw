@@ -1,7 +1,7 @@
-/// Reads printed text from a photo.
+/// Reads printed text from a photo on the device.
 ///
-/// The app reads with Gemini through Firebase AI Logic and falls back to
-/// on-device ML Kit when that fails. The text is a suggestion only: a
+/// Used as the fallback when the Gemini read in `FirebaseAiScanReader`
+/// fails, for example without a network. The text is a suggestion only: a
 /// person confirms every scan before it is trusted (CLAUDE.md rule 2).
 abstract class OcrService {
   /// Returns all text found in the image at [imagePath], line by line.

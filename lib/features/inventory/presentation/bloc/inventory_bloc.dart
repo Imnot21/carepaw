@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
 import 'package:carepaw/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:carepaw/features/inventory/domain/services/stock_intake_service.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart'
     as events;
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart'
@@ -15,6 +16,11 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
   final InventoryItemRepository _itemRepository;
   final InventoryBatchRepository _batchRepository;
   final InventoryTransactionRepository _transactionRepository;
+  late final StockIntakeService _intake = StockIntakeService(
+    itemRepository: _itemRepository,
+    batchRepository: _batchRepository,
+    transactionRepository: _transactionRepository,
+  );
 
   InventoryBloc({
     required this._itemRepository,
@@ -39,6 +45,9 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     on<events.CreateStockOutTransaction>(_onCreateStockOutTransaction);
     on<events.CreateAdjustmentTransaction>(_onCreateAdjustmentTransaction);
     on<events.LoadBatchTransactions>(_onLoadBatchTransactions);
+    on<events.ReceiveStock>(_onReceiveStock);
+    on<events.EditStockItem>(_onEditStockItem);
+    on<events.MarkOutOfStock>(_onMarkOutOfStock);
   }
 
   /// Load all inventory items
@@ -569,6 +578,103 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         event.batchId,
       );
       emit(states.BatchTransactionsLoaded(transactions, event.batchId));
+    } on Failure catch (failure) {
+      emit(states.InventoryError(failure));
+    } catch (e) {
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Receive reviewed scan lines into stock
+  Future<void> _onReceiveStock(
+    events.ReceiveStock event,
+    Emitter<states.InventoryState> emit,
+  ) async {
+    emit(const states.InventoryLoading());
+    try {
+      final added = await _intake.receive(
+        lines: event.lines,
+        performedBy: event.performedBy,
+        supplier: event.supplier,
+        referenceType: event.scanRecordId == null ? null : 'SCAN',
+        referenceId: event.scanRecordId,
+      );
+      emit(
+        states.InventoryOperationSuccess(
+          added == 1
+              ? 'Added 1 medicine to inventory'
+              : 'Added $added medicines to inventory',
+        ),
+      );
+      final items = await _itemRepository.findAll();
+      emit(states.InventoryItemsLoaded(items));
+    } on Failure catch (failure) {
+      emit(states.InventoryError(failure));
+    } catch (e) {
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Rename an item and take stock out of it, from the edit sheet
+  Future<void> _onEditStockItem(
+    events.EditStockItem event,
+    Emitter<states.InventoryState> emit,
+  ) async {
+    final name = event.name.trim();
+    if (name.isEmpty) {
+      emit(
+        const states.InventoryError(
+          RequiredFieldFailure(message: 'Enter a medicine name.'),
+        ),
+      );
+      return;
+    }
+    emit(const states.InventoryLoading());
+    try {
+      // Take out first: a refused take-out leaves the name unchanged too.
+      if (event.takeOut > 0) {
+        await _intake.takeOut(
+          item: event.item,
+          quantity: event.takeOut,
+          performedBy: event.performedBy,
+        );
+      }
+      if (name != event.item.name) {
+        final current =
+            await _itemRepository.findById(event.item.id!) ?? event.item;
+        await _itemRepository.save(
+          current.copyWith(name: name, updatedAt: DateTime.now()),
+        );
+      }
+      emit(const states.InventoryOperationSuccess('Inventory updated'));
+      final items = await _itemRepository.findAll();
+      emit(states.InventoryItemsLoaded(items));
+    } on Failure catch (failure) {
+      emit(states.InventoryError(failure));
+    } catch (e) {
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Take everything left out of an item
+  Future<void> _onMarkOutOfStock(
+    events.MarkOutOfStock event,
+    Emitter<states.InventoryState> emit,
+  ) async {
+    emit(const states.InventoryLoading());
+    try {
+      await _intake.markOutOfStock(
+        item: event.item,
+        performedBy: event.performedBy,
+      );
+      emit(
+        states.InventoryOperationSuccess('${event.item.name} is out of stock'),
+      );
+      final items = await _itemRepository.findAll();
+      emit(states.InventoryItemsLoaded(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {

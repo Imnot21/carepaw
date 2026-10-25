@@ -111,6 +111,16 @@ class ScanOperationSuccess extends ScanState {
   List<Object?> get props => [message];
 }
 
+/// A reviewed scan was saved; [record] carries its new id.
+class ScanRecordSaved extends ScanState {
+  final ScanRecord record;
+
+  const ScanRecordSaved(this.record);
+
+  @override
+  List<Object?> get props => [record];
+}
+
 /// Error state.
 class ScanError extends ScanState {
   final Failure failure;

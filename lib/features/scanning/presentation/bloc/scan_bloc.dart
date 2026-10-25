@@ -20,6 +20,7 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
     on<events.LoadPendingScans>(_onLoadPendingScans);
     on<events.LoadScanRecordDetails>(_onLoadScanRecordDetails);
     on<events.CreateScanRecord>(_onCreateScanRecord);
+    on<events.SaveReviewedScan>(_onSaveReviewedScan);
     on<events.ProcessScanOcr>(_onProcessScanOcr);
     on<events.ConfirmScanRecord>(_onConfirmScanRecord);
     on<events.RejectScanRecord>(_onRejectScanRecord);
@@ -124,6 +125,37 @@ class ScanBloc extends Bloc<events.ScanEvent, states.ScanState> {
       );
       await _scanRepository.save(record);
       emit(const states.ScanOperationSuccess('Scan saved for review'));
+      final records = await _scanRepository.findAll();
+      emit(states.ScanRecordsLoaded(records));
+    } on Failure catch (failure) {
+      emit(states.ScanError(failure));
+    } catch (e) {
+      debugPrint('[scan_bloc] unexpected: $e');
+      emit(states.ScanError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Save a reviewed scan as confirmed
+  Future<void> _onSaveReviewedScan(
+    events.SaveReviewedScan event,
+    Emitter<states.ScanState> emit,
+  ) async {
+    emit(const states.ScanLoading());
+    try {
+      final now = DateTime.now();
+      final saved = await _scanRepository.save(
+        domain.ScanRecord(
+          scanType: event.scanType,
+          imagePath: event.imagePath,
+          rawOcrText: event.rawOcrText,
+          extractedData: event.extractedData,
+          status: domain.ScanStatus.confirmed,
+          confirmedBy: event.confirmedBy,
+          confirmedAt: now,
+          createdAt: now,
+        ),
+      );
+      emit(states.ScanRecordSaved(saved));
       final records = await _scanRepository.findAll();
       emit(states.ScanRecordsLoaded(records));
     } on Failure catch (failure) {

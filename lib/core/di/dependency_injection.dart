@@ -19,8 +19,8 @@ import 'package:carepaw/features/inventory/data/repositories/firestore_inventory
 import 'package:carepaw/features/inventory/data/repositories/firestore_inventory_transaction_repository.dart';
 import 'package:carepaw/features/scanning/domain/repositories/scan_repository.dart';
 import 'package:carepaw/features/scanning/data/repositories/firestore_scan_record_repository.dart';
-import 'package:carepaw/features/scanning/domain/services/ocr_service.dart';
-import 'package:carepaw/features/scanning/data/services/firebase_ai_ocr_service.dart';
+import 'package:carepaw/features/scanning/domain/services/scan_reader.dart';
+import 'package:carepaw/features/scanning/data/services/firebase_ai_scan_reader.dart';
 import 'package:carepaw/features/scanning/data/services/mlkit_ocr_service.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
 import 'package:carepaw/features/notifications/data/repositories/firestore_notification_repository.dart';
@@ -190,8 +190,8 @@ Future<void> configureDependencies() async {
       ),
     ),
   );
-  getIt.registerLazySingleton<OcrService>(
-    () => FirebaseAiOcrService(fallback: MlKitOcrService()),
+  getIt.registerLazySingleton<ScanReader>(
+    () => FirebaseAiScanReader(fallback: MlKitOcrService()),
   );
 
   // Notifications

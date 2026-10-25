@@ -1,55 +1,96 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
-import 'package:carepaw/features/scanning/domain/services/ocr_service.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
+import 'package:carepaw/features/inventory/domain/services/stock_intake_service.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
+import 'package:carepaw/features/scanning/domain/services/scan_reader.dart';
 import 'package:carepaw/features/scanning/domain/services/scan_text_parser.dart';
+import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
+import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart';
+import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart';
 import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 
-/// What the camera page hands back when the user saves a scan. Every value
-/// is an OCR suggestion; the scan is stored as pending until confirmed.
-class ScanCapture {
-  final ScanType scanType;
-  final String imagePath;
-  final String rawText;
-  final ScanFields fields;
-
-  const ScanCapture({
-    required this.scanType,
-    required this.imagePath,
-    required this.rawText,
-    required this.fields,
-  });
-}
-
-/// Take or pick a photo, read its text on the device, and review the
-/// suggested fields before saving the scan for confirmation.
+/// Take or pick a photo of a medicine box or supplier receipt, let the AI
+/// read it, then review and edit every value before adding it to stock.
+///
+/// Needs a [ScanBloc] and an [InventoryBloc] above it. Pops with `true`
+/// once the medicines are in the inventory.
 class ScanCameraPage extends StatefulWidget {
-  final OcrService? ocrService;
+  /// [ScanType.medicineBox] or [ScanType.receipt].
+  final ScanType type;
+  final ScanReader? reader;
 
-  const ScanCameraPage({super.key, this.ocrService});
+  const ScanCameraPage({super.key, required this.type, this.reader});
 
   @override
   State<ScanCameraPage> createState() => _ScanCameraPageState();
 }
 
+/// One editable row on the review screen.
+class _LineDraft {
+  final name = TextEditingController();
+  final quantity = TextEditingController();
+  final unit = TextEditingController();
+  final lot = TextEditingController();
+  final expiry = TextEditingController();
+  String? nameError;
+  String? quantityError;
+  String? expiryError;
+
+  _LineDraft({ScannedLine? from, required String defaultUnit}) {
+    name.text = from?.name ?? '';
+    final q = from?.quantity;
+    quantity.text = q == null
+        ? '1'
+        : q == q.roundToDouble()
+        ? q.toInt().toString()
+        : q.toString();
+    unit.text = from?.unit ?? defaultUnit;
+    lot.text = from?.lot ?? '';
+    expiry.text = from?.expiry ?? '';
+  }
+
+  void dispose() {
+    for (final c in [name, quantity, unit, lot, expiry]) {
+      c.dispose();
+    }
+  }
+}
+
 class _ScanCameraPageState extends State<ScanCameraPage>
     with SingleTickerProviderStateMixin {
-  late final OcrService _ocr = widget.ocrService ?? getIt<OcrService>();
+  late final ScanReader _reader = widget.reader ?? getIt<ScanReader>();
   final _picker = ImagePicker();
+  final _supplier = TextEditingController();
+  final _lines = <_LineDraft>[];
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
-  ScanType _selectedType = ScanType.medicineBox;
   bool _isReading = false;
+  bool _isSaving = false;
   String? _imagePath;
   String _rawText = '';
-  ScanFields _fields = const ScanFields({}, 0);
+
+  /// Set once the scan record is saved, so a retry after a failed stock
+  /// write does not save the scan twice.
+  int? _savedScanId;
+  List<StockLine> _pendingLines = const [];
+
+  ScanType get _type => widget.type;
+  bool get _isReceipt => _type == ScanType.receipt;
+  String get _defaultUnit => _isReceipt ? 'pcs' : 'box';
 
   @override
   void initState() {
@@ -66,63 +107,63 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   @override
   void dispose() {
     _animationController.dispose();
+    _supplier.dispose();
+    for (final line in _lines) {
+      line.dispose();
+    }
     super.dispose();
   }
 
-  Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
+  Color get _typeColor => scanTypeColor(context, _type);
+  String get _typeSvg => _isReceipt ? SvgIcons.receipt : SvgIcons.medication;
 
-  String _getTypeSvg(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return SvgIcons.receipt;
-      case ScanType.medicineBox:
-        return SvgIcons.medication;
-      case ScanType.prescription:
-        return SvgIcons.note;
-      case ScanType.labReport:
-        return SvgIcons.lab;
-      default:
-        return SvgIcons.note;
-    }
-  }
-
-  String _getTypeDescription(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return 'Read the store, date and total from a receipt';
-      case ScanType.medicineBox:
-        return 'Read the name, expiry and lot from a medicine box';
-      case ScanType.prescription:
-        return 'Read the title and date from a prescription';
-      case ScanType.labReport:
-        return 'Read the title and date from a lab report';
-      default:
-        return 'Read the text from any document';
-    }
+  /// Medicines already in stock, used to show what each row adds to.
+  List<InventoryItem> get _stocked {
+    final state = context.read<InventoryBloc>().state;
+    return state is InventoryItemsLoaded ? state.items : const [];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeColors.background(context),
-      body: SafeArea(
-        child: _imagePath == null ? _buildScannerView() : _buildPreviewView(),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ScanBloc, ScanState>(listener: _onScanState),
+        BlocListener<InventoryBloc, InventoryState>(
+          listener: _onInventoryState,
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: ThemeColors.background(context),
+        body: SafeArea(
+          child: _imagePath == null ? _buildScannerView() : _buildReview(),
+        ),
       ),
     );
   }
 
+  // ── Before the photo ───────────────────────────────────────
+
   Widget _buildScannerView() {
     return Column(
       children: [
-        _buildHeader(),
-        _buildTypeSelector(),
+        _buildHeader(
+          title: 'Scan ${_isReceipt ? 'Supplier Receipt' : 'Medicine Box'}',
+          subtitle: _isReceipt
+              ? 'The AI lists every medicine on the receipt'
+              : 'The AI reads the name, lot and expiry',
+          onClose: () => Navigator.pop(context),
+        ),
         Expanded(child: _buildGuide()),
         _buildBottomControls(),
       ],
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader({
+    required String title,
+    required String subtitle,
+    required VoidCallback? onClose,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
       child: Row(
@@ -131,7 +172,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             plain: true,
             icon: Icons.close_rounded,
             svgAsset: SvgIcons.close,
-            onPressed: () => Navigator.pop(context),
+            onPressed: onClose,
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -139,7 +180,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Scan ${_selectedType.displayName}',
+                  title,
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w800,
                     color: ThemeColors.textPrimary(context),
@@ -147,7 +188,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _getTypeDescription(_selectedType),
+                  subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: ThemeColors.textSecondary(context),
                   ),
@@ -159,63 +200,16 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           NeuContainer(
             padding: const EdgeInsets.all(12),
             borderRadius: NeuTokens.radiusSm,
-            color: _getTypeColor(_selectedType).withValues(alpha: 0.12),
-            child: NeuSvgIcon(_getTypeSvg(_selectedType), size: 28),
+            color: _typeColor.withValues(alpha: 0.12),
+            child: NeuSvgIcon(_typeSvg, size: 28),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTypeSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: NeuCard(
-        padding: const EdgeInsets.all(4),
-        child: Row(
-          children: ScanType.values.map((type) {
-            final isSelected = _selectedType == type;
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedType = type),
-                child: NeuContainer(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  borderRadius: NeuTokens.radiusSm,
-                  variant: isSelected
-                      ? NeuVariant.pressed
-                      : NeuVariant.transparent,
-                  color: isSelected
-                      ? _getTypeColor(_selectedType).withValues(alpha: 0.18)
-                      : null,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NeuSvgIcon(_getTypeSvg(type), size: 20),
-                      const SizedBox(height: 4),
-                      Text(
-                        type.displayName,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? _getTypeColor(type)
-                              : ThemeColors.textSecondary(context),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
   /// Framing tips shown before a photo is taken.
   Widget _buildGuide() {
-    final color = _getTypeColor(_selectedType);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: NeuContainer(
@@ -230,19 +224,19 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               builder: (context, child) =>
                   Transform.scale(scale: _pulseAnimation.value, child: child),
               child: SizedBox(
-                width: 240,
-                height: 150,
+                width: _isReceipt ? 150 : 240,
+                height: _isReceipt ? 220 : 150,
                 child: CustomPaint(
-                  painter: _FrameGuidePainter(color),
-                  child: Center(
-                    child: NeuSvgIcon(_getTypeSvg(_selectedType), size: 48),
-                  ),
+                  painter: _FrameGuidePainter(_typeColor),
+                  child: Center(child: NeuSvgIcon(_typeSvg, size: 48)),
                 ),
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Fill the frame, use good light, avoid glare',
+              _isReceipt
+                  ? 'Lay the receipt flat and fit the whole page'
+                  : 'Fill the frame, use good light, avoid glare',
               style: AppTextStyles.titleSmall.copyWith(
                 fontWeight: FontWeight.w600,
                 color: ThemeColors.textPrimary(context),
@@ -251,8 +245,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             ),
             const SizedBox(height: 8),
             Text(
-              'The photo is sent to Gemini to read the text. You check '
-              'every value before the scan is trusted.',
+              'The photo is sent to Gemini to read it. You can fix '
+              'anything it gets wrong before it is added to the inventory.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: ThemeColors.textSecondary(context),
               ),
@@ -297,71 +291,39 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     );
   }
 
-  Widget _buildPreviewView() {
+  // ── Review ─────────────────────────────────────────────────
+
+  Widget _buildReview() {
+    final busy = _isReading || _isSaving;
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-          child: Row(
-            children: [
-              NeuIconButton(
-                plain: true,
-                icon: Icons.close_rounded,
-                svgAsset: SvgIcons.close,
-                onPressed: _isReading ? null : _retake,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Review Scan',
-                      style: AppTextStyles.titleLarge.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: ThemeColors.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _selectedType.displayName,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: ThemeColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        _buildHeader(
+          title: 'Review Scan',
+          subtitle: 'Check every value and fix what the AI misread',
+          onClose: busy ? null : _retake,
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
             children: [
               NeuCard(
                 padding: EdgeInsets.zero,
                 child: ClipRRect(
                   borderRadius: NeuShape.card,
                   child: SizedBox(
-                    height: 220,
+                    height: 160,
                     width: double.infinity,
                     child: Image.file(
                       File(_imagePath!),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Center(
-                        child: NeuSvgIcon(
-                          _getTypeSvg(_selectedType),
-                          size: 64,
-                        ),
-                      ),
+                      errorBuilder: (_, _, _) =>
+                          Center(child: NeuSvgIcon(_typeSvg, size: 64)),
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              _isReading ? _buildReading() : _buildFields(),
-              const SizedBox(height: 16),
+              if (_isReading) _buildReading() else ..._buildForm(),
             ],
           ),
         ),
@@ -376,7 +338,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   variant: NeuButtonVariant.secondary,
                   icon: Icons.refresh_rounded,
                   svgAsset: SvgIcons.refresh,
-                  onPressed: _isReading ? null : _retake,
+                  onPressed: busy ? null : _retake,
                   expanded: true,
                 ),
               ),
@@ -384,12 +346,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               Expanded(
                 flex: 3,
                 child: NeuButton(
-                  text: 'Save for Review',
+                  text: _isSaving ? 'Adding…' : 'Add to Inventory',
                   variant: NeuButtonVariant.primary,
-                  icon: Icons.check_rounded,
-                  svgAsset: SvgIcons.check,
-                  isDisabled: _isReading || _rawText.isEmpty,
-                  onPressed: _save,
+                  icon: Icons.inventory_2_rounded,
+                  svgAsset: SvgIcons.inventory,
+                  isDisabled: busy || _lines.isEmpty,
+                  onPressed: _submit,
                   expanded: true,
                 ),
               ),
@@ -401,7 +363,6 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   }
 
   Widget _buildReading() {
-    final color = _getTypeColor(_selectedType);
     return NeuCard(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -416,7 +377,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   height: 96 + _animationController.value * 24,
                   child: CustomPaint(
                     painter: _RingPainter(
-                      color.withValues(
+                      _typeColor.withValues(
                         alpha: 0.3 - _animationController.value * 0.2,
                       ),
                     ),
@@ -425,7 +386,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 NeuContainer(
                   padding: const EdgeInsets.all(20),
                   borderRadius: NeuTokens.radiusPill,
-                  color: color,
+                  color: _typeColor,
                   child: NeuSvgIcon(SvgIcons.scan, size: 36),
                 ),
               ],
@@ -433,7 +394,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           ),
           const SizedBox(height: 16),
           Text(
-            'Reading text…',
+            _isReceipt ? 'Reading the receipt…' : 'Reading the label…',
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w600,
               color: ThemeColors.textPrimary(context),
@@ -444,110 +405,175 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     );
   }
 
-  Widget _buildFields() {
-    if (_rawText.isEmpty) {
-      return NeuCard(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            NeuSvgIcon(SvgIcons.alert, size: 32),
-            const SizedBox(height: 12),
-            Text(
-              'No text found',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w700,
-                color: ThemeColors.textPrimary(context),
-              ),
+  List<Widget> _buildForm() {
+    return [
+      if (_rawText.isEmpty && _lines.every((l) => l.name.text.isEmpty))
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Text(
+            'Nothing could be read from this photo. Type the details in, '
+            'or retake it closer and in better light.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: ThemeColors.warning(context),
             ),
-            const SizedBox(height: 6),
-            Text(
-              'Retake the photo closer and in better light.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+          ),
         ),
-      );
-    }
+      if (_isReceipt) ...[
+        NeuTextField(
+          label: 'Supplier',
+          hint: 'Who sold the medicines',
+          controller: _supplier,
+          enabled: !_isSaving,
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 20),
+      ],
+      for (var i = 0; i < _lines.length; i++) _buildLine(i),
+      NeuButton(
+        text: 'Add another medicine',
+        variant: NeuButtonVariant.outline,
+        icon: Icons.add_rounded,
+        svgAsset: SvgIcons.add,
+        size: NeuButtonSize.medium,
+        onPressed: _isSaving
+            ? null
+            : () => setState(
+                () => _lines.add(_LineDraft(defaultUnit: _defaultUnit)),
+              ),
+        expanded: true,
+      ),
+    ];
+  }
 
-    final found = _fields.values.length;
+  Widget _buildLine(int index) {
+    final line = _lines[index];
+    final match = StockIntakeService.match(_stocked, line.name.text);
+    // Stock is counted in the item's own unit, so 20 "box" would be added
+    // as 20 "tablets". Flag it so the owner converts the quantity first.
+    final unit = line.unit.text.trim();
+    final unitDiffers =
+        match != null &&
+        unit.isNotEmpty &&
+        unit.toLowerCase() != match.unit.trim().toLowerCase();
+    final hint = line.name.text.trim().isEmpty
+        ? null
+        : match == null
+        ? 'New medicine'
+        : unitDiffers
+        ? 'Adds to ${match.name}, counted in ${match.unit}. '
+              'Enter the quantity in ${match.unit}.'
+        : 'Adds to ${match.name} (${_amount(match.currentStock)} '
+              '${match.unit} in stock)';
+
     return NeuCard(
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              NeuSvgIcon(SvgIcons.textField, size: 20),
-              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Suggested values',
-                  style: AppTextStyles.titleMedium.copyWith(
+                  'Medicine ${index + 1}',
+                  style: AppTextStyles.titleSmall.copyWith(
                     fontWeight: FontWeight.w700,
                     color: ThemeColors.textPrimary(context),
                   ),
                 ),
               ),
-              NeuStatusBadge(
-                label: '$found found',
-                tone: _fields.confidence >= 0.8
-                    ? NeuStatusTone.success
-                    : NeuStatusTone.warning,
+              NeuIconButton(
+                plain: true,
+                icon: Icons.delete_outline_rounded,
+                svgAsset: SvgIcons.delete,
+                onPressed: _isSaving
+                    ? null
+                    : () => setState(() => _lines.removeAt(index).dispose()),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          for (final e in _fields.values.entries)
+          const SizedBox(height: 8),
+          NeuTextField(
+            label: 'Name',
+            hint: 'e.g. Amoxicillin 250mg',
+            controller: line.name,
+            error: line.nameError,
+            enabled: !_isSaving,
+            onChanged: (_) => setState(() => line.nameError = null),
+          ),
+          if (hint != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 96,
-                    child: Text(
-                      e.key,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: ThemeColors.textSecondary(context),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      e.value,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: ThemeColors.textPrimary(context),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(
+                hint,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: match == null
+                      ? ThemeColors.textTertiary(context)
+                      : unitDiffers
+                      ? ThemeColors.warning(context)
+                      : ThemeColors.success(context),
+                ),
               ),
             ),
-          if (found == 0)
-            Text(
-              'Text was found but no fields matched. The full text is '
-              'saved so the clinic can still read it.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: ThemeColors.textSecondary(context),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: NeuTextField(
+                  label: 'Quantity',
+                  controller: line.quantity,
+                  error: line.quantityError,
+                  enabled: !_isSaving,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  onChanged: (_) => setState(() => line.quantityError = null),
+                ),
               ),
-            ),
-          const SizedBox(height: 6),
-          Text(
-            'Suggestions only — confirm or reject the scan after saving.',
-            style: AppTextStyles.labelSmall.copyWith(
-              color: ThemeColors.textTertiary(context),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: NeuTextField(
+                  label: 'Unit',
+                  hint: _defaultUnit,
+                  controller: line.unit,
+                  enabled: !_isSaving,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: NeuTextField(
+                  label: 'Lot',
+                  hint: 'Optional',
+                  controller: line.lot,
+                  enabled: !_isSaving,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: NeuTextField(
+                  label: 'Expiry',
+                  hint: 'MM/YYYY',
+                  controller: line.expiry,
+                  error: line.expiryError,
+                  enabled: !_isSaving,
+                  onChanged: (_) => setState(() => line.expiryError = null),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+  // ── Actions ────────────────────────────────────────────────
 
   Future<void> _pick(ImageSource source) async {
     XFile? picked;
@@ -576,21 +602,28 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     setState(() {
       _imagePath = path;
       _isReading = true;
-      _rawText = '';
-      _fields = const ScanFields({}, 0);
+      _clearForm();
     });
 
-    String text;
+    ScanReading reading;
     try {
-      text = await _ocr.readText(path);
+      reading = await _reader.read(path, _type);
     } catch (e) {
-      debugPrint('[scan_camera] OCR failed: $e');
-      text = '';
+      debugPrint('[scan_camera] read failed: $e');
+      reading = const ScanReading();
     }
     if (!mounted) return;
     setState(() {
-      _rawText = text;
-      _fields = ScanTextParser.parse(text, _selectedType);
+      _rawText = reading.rawText;
+      // Only a receipt shows the supplier field, so only a receipt keeps
+      // what the AI read there.
+      _supplier.text = _isReceipt ? reading.supplier ?? '' : '';
+      _lines.addAll(
+        reading.lines.map(
+          (l) => _LineDraft(from: l, defaultUnit: _defaultUnit),
+        ),
+      );
+      if (_lines.isEmpty) _lines.add(_LineDraft(defaultUnit: _defaultUnit));
       _isReading = false;
     });
   }
@@ -611,25 +644,151 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     }
   }
 
-  void _retake() {
-    setState(() {
-      _imagePath = null;
-      _rawText = '';
-      _fields = const ScanFields({}, 0);
-    });
+  void _clearForm() {
+    _rawText = '';
+    _supplier.clear();
+    _savedScanId = null;
+    for (final line in _lines) {
+      line.dispose();
+    }
+    _lines.clear();
   }
 
-  void _save() {
-    Navigator.pop(
-      context,
-      ScanCapture(
-        scanType: _selectedType,
+  void _retake() => setState(() {
+    _imagePath = null;
+    _clearForm();
+  });
+
+  /// Checks every row and returns the lines to add, or null when a row
+  /// needs fixing (its errors are shown under the fields).
+  List<StockLine>? _validate() {
+    var ok = true;
+    final out = <StockLine>[];
+    for (final line in _lines) {
+      final name = line.name.text.trim();
+      final quantity = double.tryParse(line.quantity.text.trim());
+      final expiryText = line.expiry.text.trim();
+      final expiry = expiryText.isEmpty
+          ? null
+          : ScanTextParser.parseDate(expiryText);
+
+      line.nameError = name.isEmpty ? 'Enter the medicine name' : null;
+      line.quantityError = quantity == null || quantity <= 0
+          ? 'Enter a number above 0'
+          : null;
+      line.expiryError = expiryText.isNotEmpty && expiry == null
+          ? 'Use MM/YYYY or YYYY-MM-DD'
+          : null;
+      if (line.nameError != null ||
+          line.quantityError != null ||
+          line.expiryError != null) {
+        ok = false;
+        continue;
+      }
+      out.add(
+        StockLine(
+          name: name,
+          quantity: quantity!,
+          unit: line.unit.text.trim(),
+          lot: line.lot.text.trim(),
+          expiresAt: expiry,
+        ),
+      );
+    }
+    setState(() {});
+    return ok ? out : null;
+  }
+
+  void _submit() {
+    FocusScope.of(context).unfocus();
+    final lines = _validate();
+    if (lines == null) {
+      NeuToast.error(context, 'Fix the highlighted fields first');
+      return;
+    }
+    final auth = context.read<AuthBloc>().state;
+    final userId = auth is AuthAuthenticated ? auth.user.id : null;
+    if (userId == null) {
+      NeuToast.error(context, 'Sign in again to add stock');
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _pendingLines = lines;
+    });
+    if (_savedScanId != null) {
+      _receive(userId);
+      return;
+    }
+    context.read<ScanBloc>().add(
+      SaveReviewedScan(
+        scanType: _type,
         imagePath: _imagePath!,
-        rawText: _rawText,
-        fields: _fields,
+        rawOcrText: _rawText.isEmpty ? null : _rawText,
+        extractedData: _summary(lines),
+        confirmedBy: userId,
       ),
     );
   }
+
+  void _receive(int userId) {
+    final supplier = _supplier.text.trim();
+    context.read<InventoryBloc>().add(
+      ReceiveStock(
+        lines: _pendingLines,
+        performedBy: userId,
+        supplier: supplier.isEmpty ? null : supplier,
+        scanRecordId: _savedScanId,
+      ),
+    );
+  }
+
+  void _onScanState(BuildContext context, ScanState state) {
+    if (!_isSaving) return;
+    if (state is ScanRecordSaved) {
+      _savedScanId = state.record.id;
+      final auth = context.read<AuthBloc>().state;
+      if (auth is AuthAuthenticated && auth.user.id != null) {
+        _receive(auth.user.id!);
+      }
+    } else if (state is ScanError) {
+      setState(() => _isSaving = false);
+      NeuToast.error(context, state.failure.message);
+    }
+  }
+
+  void _onInventoryState(BuildContext context, InventoryState state) {
+    if (!_isSaving) return;
+    if (state is InventoryOperationSuccess) {
+      NeuToast.success(context, state.message);
+      Navigator.pop(context, true);
+    } else if (state is InventoryError) {
+      setState(() => _isSaving = false);
+      NeuToast.error(context, state.failure.message);
+    }
+  }
+
+  /// What was added, kept on the scan record in a readable form.
+  String _summary(List<StockLine> lines) {
+    final supplier = _supplier.text.trim();
+    return [
+      if (supplier.isNotEmpty) 'Supplier: $supplier',
+      for (final l in lines)
+        '${l.name}: ${_amount(l.quantity)} '
+            '${l.unit.isEmpty ? _defaultUnit : l.unit}'
+            '${l.lot == null || l.lot!.isEmpty ? '' : ', lot ${l.lot}'}'
+            '${l.expiresAt == null ? '' : ', exp ${_date(l.expiresAt!)}'}',
+    ].join('\n');
+  }
+
+  static String _date(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  static String _amount(double value) => value == value.roundToDouble()
+      ? value.toInt().toString()
+      : value.toStringAsFixed(2);
 }
 
 /// Draws the viewfinder frame — a rounded border with accentuated corners.
@@ -686,7 +845,7 @@ class _FrameGuidePainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-/// Draws the pulsing ring around the OCR indicator.
+/// Draws the pulsing ring around the reading indicator.
 class _RingPainter extends CustomPainter {
   final Color color;
 

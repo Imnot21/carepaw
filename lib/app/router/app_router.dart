@@ -452,10 +452,24 @@ class AppRouter {
               GoRoute(
                 path: 'scanning',
                 name: RouteNames.staffScanning,
-                builder: (context, state) => BlocProvider(
-                  create: (context) =>
-                      ScanBloc(scanRepository: getIt<ScanRecordRepository>())
-                        ..add(const LoadScanRecords()),
+                // The inventory bloc lets a reviewed scan add its
+                // medicines to stock.
+                builder: (context, state) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context) => ScanBloc(
+                        scanRepository: getIt<ScanRecordRepository>(),
+                      )..add(const LoadScanRecords()),
+                    ),
+                    BlocProvider(
+                      create: (context) => InventoryBloc(
+                        itemRepository: getIt<InventoryItemRepository>(),
+                        batchRepository: getIt<InventoryBatchRepository>(),
+                        transactionRepository:
+                            getIt<InventoryTransactionRepository>(),
+                      )..add(const LoadInventoryItems()),
+                    ),
+                  ],
                   child: const ScanListPage(),
                 ),
               ),

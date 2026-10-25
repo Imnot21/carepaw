@@ -72,6 +72,33 @@ class CreateScanRecord extends ScanEvent {
   ];
 }
 
+/// Save a scan a person has reviewed and edited. It is stored as
+/// confirmed, since the person checked every value before saving.
+class SaveReviewedScan extends ScanEvent {
+  final ScanType scanType;
+  final String imagePath;
+  final String? rawOcrText;
+  final String? extractedData;
+  final int confirmedBy;
+
+  const SaveReviewedScan({
+    required this.scanType,
+    required this.imagePath,
+    this.rawOcrText,
+    this.extractedData,
+    required this.confirmedBy,
+  });
+
+  @override
+  List<Object?> get props => [
+    scanType,
+    imagePath,
+    rawOcrText,
+    extractedData,
+    confirmedBy,
+  ];
+}
+
 /// Process OCR for a scan record.
 class ProcessScanOcr extends ScanEvent {
   final int recordId;

@@ -28,8 +28,8 @@ screen-verified on the demo build (emulator, 1080×2424).
 | 4 | **Patients tab** | Pet cards; open one → pet profile with owner, species, age, and a Records entry point. |
 | 5 | **Records** | Per-pet, append-only health history + vaccinations. Open a record → tap the pencil → **Correct Record**: the form opens prefilled and asks for a reason. **Save Correction** adds a new entry marked *Correction*; the original stays, marked *Corrected*, and its page shows when and why. "Records are never deleted — only corrected." |
 | 6 | **Line tab** | Queue management: Waiting / Being Served / Now Serving stats; check-in moves a pet into the queue. |
-| 7 | **Stock tab** | Inventory list with category filters; item detail shows batches and expiry tracking. Low stock ties back to the dashboard pulse. |
-| 8 | **Scan tab** | Tap **New Scan** → pick *Medicine Box* → **Take Photo** of a real box (or Gallery). Gemini reads the text through Firebase AI Logic (about 5–10 s; offline it falls back to on-device ML Kit) and the app suggests Name / Expiry / Lot. **Save for Review** stores it as *Pending*; open it → **Confirm** or **Reject**. After Confirm, **Add to Stock** → pick the medicine → the batch form opens with lot and expiry filled in; enter the quantity and save (it appears in Stock with a stock-in history entry). "OCR output is never trusted blindly — a person confirms every scan." |
+| 7 | **Scan tab** | Tap **Scan Supplier Receipt** (or **Scan Medicine Box**) → **Take Photo** (or Gallery). Gemini reads it through Firebase AI Logic (about 5–10 s; offline it falls back to on-device ML Kit) and fills one row per medicine: name, quantity, unit, lot, expiry. Fix anything it misread — each row says whether it is a new medicine or adds to one in stock, and warns when the unit differs from the stock's unit. **Add to Inventory** stocks it in; the scan appears under *Recent scans*. "OCR output is never trusted blindly — a person checks every value first." |
+| 8 | **Stock tab** | Type in the search bar to find a medicine. Tap **Edit** → use − / + to take stock out → **Save**; the count drops. **Mark out of stock** sets it to 0 and it shows on the dashboard's low-stock pulse. |
 | 9 | **Bell → Notifications** | Tap the bell (top-right of the dashboard). Create a test notification with the FAB — it persists and appears with an unread dot. Open its detail page; **View Appointment / View Queue** jumps to the related screen. |
 | 10 | **Profile tab** | Settings: notification settings, Help & Support (clinic contact + app version), logout. |
 
@@ -55,8 +55,8 @@ screen-verified on the demo build (emulator, 1080×2424).
   it's a verified behavior, not a workaround).
 - **Scan finds no text** — retake closer, flat, in good light; a printed
   box label works best. Gallery works too if the camera is awkward on stage.
-- **Low stock shows 0** — that's live data. Add an item in Stock with quantity
-  below its reorder threshold to light the pulse up.
+- **Low stock shows 0** — that's live data. Stock → Edit → **Mark out of
+  stock** on any medicine to light the pulse up.
 
 ## Do not open (reserved surfaces)
 

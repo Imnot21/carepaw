@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
+import 'package:carepaw/features/inventory/domain/services/stock_intake_service.dart';
 
 /// Base class for all inventory events.
 abstract class InventoryEvent extends Equatable {
@@ -332,4 +333,53 @@ class LoadBatchTransactions extends InventoryEvent {
 
   @override
   List<Object?> get props => [batchId];
+}
+
+/// Receive the medicines checked on a scan review into stock.
+class ReceiveStock extends InventoryEvent {
+  final List<StockLine> lines;
+  final int performedBy;
+  final String? supplier;
+
+  /// The scan the stock was read from, kept on each stock-in transaction.
+  final int? scanRecordId;
+
+  const ReceiveStock({
+    required this.lines,
+    required this.performedBy,
+    this.supplier,
+    this.scanRecordId,
+  });
+
+  @override
+  List<Object?> get props => [lines, performedBy, supplier, scanRecordId];
+}
+
+/// Save the edit sheet: rename the item and take stock out of it.
+class EditStockItem extends InventoryEvent {
+  final InventoryItem item;
+  final String name;
+  final double takeOut;
+  final int performedBy;
+
+  const EditStockItem({
+    required this.item,
+    required this.name,
+    required this.performedBy,
+    this.takeOut = 0,
+  });
+
+  @override
+  List<Object?> get props => [item, name, takeOut, performedBy];
+}
+
+/// Take everything left out of an item.
+class MarkOutOfStock extends InventoryEvent {
+  final InventoryItem item;
+  final int performedBy;
+
+  const MarkOutOfStock({required this.item, required this.performedBy});
+
+  @override
+  List<Object?> get props => [item, performedBy];
 }

@@ -146,6 +146,8 @@ class NeuSkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuShimmer(
       child: ListView.separated(
+        // Sized to its cards so it also fits inside a scrolling page.
+        shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: padding,
         itemCount: itemCount,

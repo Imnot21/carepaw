@@ -211,8 +211,8 @@ class _NeuTextFieldState extends State<NeuTextField> {
               decoration: InputDecoration(
                 hintText: widget.hint,
                 errorText: null,
-                helperText: widget.helper,
-                helperMaxLines: 2,
+                // The helper is drawn below the surface, like the error,
+                // so it is not repeated inside the field.
                 counterText: '',
                 contentPadding: resolvedContentPadding,
                 prefixIcon: widget.prefixIcon != null

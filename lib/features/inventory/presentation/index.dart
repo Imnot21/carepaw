@@ -7,9 +7,3 @@ export 'bloc/inventory_state.dart';
 
 // Pages
 export 'pages/inventory_list_page.dart';
-export 'pages/inventory_detail_page.dart';
-export 'pages/inventory_form_page.dart';
-
-// Widgets
-export 'widgets/batch_card.dart';
-export 'widgets/transaction_card.dart';

@@ -1,53 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
+import 'package:carepaw/app/router/routes.dart';
+import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
+import 'package:carepaw/core/utils/formatters.dart';
+import 'package:carepaw/core/widgets/neomorphism/index.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_bloc.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_event.dart';
 import 'package:carepaw/features/scanning/presentation/bloc/scan_state.dart';
-import 'package:carepaw/features/scanning/presentation/pages/scan_detail_page.dart';
 import 'package:carepaw/features/scanning/presentation/pages/scan_camera_page.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/app/router/routes.dart';
-import 'package:carepaw/app/theme/app_text_styles.dart';
-import 'package:carepaw/core/utils/formatters.dart';
-import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
-import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/scanning/presentation/utils/scan_type_colors.dart';
 
-/// Scan list page with the CarePaw surface system
-class ScanListPage extends StatefulWidget {
+/// Scan tab: scan a medicine box or a supplier receipt, then see what
+/// recent scans added to the inventory.
+class ScanListPage extends StatelessWidget {
   const ScanListPage({super.key});
-
-  @override
-  State<ScanListPage> createState() => _ScanListPageState();
-}
-
-class _ScanListPageState extends State<ScanListPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 5, vsync: this);
-    context.read<ScanBloc>().add(const LoadScanRecords());
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,525 +28,260 @@ class _ScanListPageState extends State<ScanListPage>
         if (authState is! AuthAuthenticated) {
           return const _NotLoggedInView();
         }
-
-        // Check if user is vet, staff, or admin - only these roles can scan/process OCR
-        final user = authState.user;
-        final isVetOrStaff = user.isOwnerAdmin;
-
-        if (!isVetOrStaff) {
+        // Only the clinic owner/admin scans stock in.
+        if (!authState.user.isOwnerAdmin) {
           return const _AccessDeniedView();
         }
 
         return Scaffold(
           backgroundColor: ThemeColors.background(context),
-          // Plain Column + Expanded TabBarView: the previous sliver layout
-          // (SliverFillRemaining around a TabBarView) painted a blank page.
           body: SafeArea(
             bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(),
-                _ScanTabBar(
-                  tabController: _tabController,
-                  tabs: const [
-                    'All',
-                    'Receipts',
-                    'Medicine',
-                    'Pending',
-                    'Confirmed',
-                  ],
-                ),
-                Expanded(child: _buildTabContent()),
-              ],
-            ),
-          ),
-          floatingActionButton: NeuFAB.extended(
-            extendedText: 'New Scan',
-            icon: Icons.camera_alt_rounded,
-            svgAsset: SvgIcons.camera,
-            onPressed: _navigateToCamera,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Scan & OCR',
-            style: AppTextStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.w800,
-              color: ThemeColors.textPrimary(context),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Scan receipts, medicine boxes & more',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: ThemeColors.textSecondary(context),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabContent() {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        _buildScanList(null),
-        _buildScanList(ScanType.receipt),
-        _buildScanList(ScanType.medicineBox),
-        _buildPendingScans(),
-        _buildScanListByStatus(ScanStatus.confirmed),
-      ],
-    );
-  }
-
-  Widget _buildScanList(ScanType? type) {
-    return BlocBuilder<ScanBloc, ScanState>(
-      builder: (context, state) {
-        if (state is ScanLoading) {
-          return const NeuSkeletonList();
-        }
-
-        if (state is ScanError) {
-          return _NeuEmptyState(
-            svgAsset: SvgIcons.error,
-            title: 'Error Loading Scans',
-            message: state.failure.message,
-            actionLabel: 'Retry',
-            onAction: () {
-              if (type == null) {
-                context.read<ScanBloc>().add(const LoadScanRecords());
-              } else {
-                context.read<ScanBloc>().add(LoadScanRecordsByType(type));
-              }
-            },
-          );
-        }
-
-        List<ScanRecord> records = [];
-        if (state is ScanRecordsLoaded) {
-          records = state.records;
-        } else if (state is ScanRecordsByTypeLoaded) {
-          records = state.records;
-        }
-
-        if (type != null) {
-          records = records.where((r) => r.scanType == type).toList();
-        }
-
-        if (records.isEmpty) {
-          return _NeuEmptyState(
-            svgAsset: _getTypeSvg(type ?? ScanType.other),
-            title: type != null
-                ? 'No ${type.displayName} Scans'
-                : 'No Scans Yet',
-            message: type != null
-                ? 'Scan your first ${type.displayName.toLowerCase()}'
-                : 'Tap New Scan to scan a document',
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 110),
-          itemCount: records.length,
-          itemBuilder: (context, index) {
-            final record = records[index];
-            return _buildScanCard(record);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildPendingScans() {
-    return BlocBuilder<ScanBloc, ScanState>(
-      builder: (context, state) {
-        // The page only dispatches LoadScanRecords, so derive the pending
-        // tab from the full list (like the Confirmed tab) instead of
-        // waiting for a PendingScansLoaded state that never arrives.
-        if (state is ScanRecordsLoaded || state is PendingScansLoaded) {
-          final records = state is PendingScansLoaded
-              ? state.records
-              : (state as ScanRecordsLoaded).records
-                    .where((r) => r.status == ScanStatus.pending)
-                    .toList();
-          if (records.isEmpty) {
-            return _NeuEmptyState(
-              svgAsset: SvgIcons.pending,
-              title: 'No Pending Scans',
-              message: 'All scans have been processed',
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 110),
-            itemCount: records.length,
-            itemBuilder: (context, index) {
-              final record = records[index];
-              return _buildScanCard(record, highlightPending: true);
-            },
-          );
-        }
-        return const NeuSkeletonList();
-      },
-    );
-  }
-
-  Widget _buildScanListByStatus(ScanStatus status) {
-    return BlocBuilder<ScanBloc, ScanState>(
-      builder: (context, state) {
-        if (state is ScanRecordsLoaded) {
-          final records = state.records
-              .where((r) => r.status == status)
-              .toList();
-          if (records.isEmpty) {
-            return _NeuEmptyState(
-              svgAsset: SvgIcons.success,
-              title: 'No Confirmed Scans',
-              message: 'Confirmed scans will appear here',
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 110),
-            itemCount: records.length,
-            itemBuilder: (context, index) {
-              final record = records[index];
-              return _buildScanCard(record);
-            },
-          );
-        }
-        return const NeuSkeletonList();
-      },
-    );
-  }
-
-  Widget _buildScanCard(ScanRecord record, {bool highlightPending = false}) {
-    final isPending = record.status == ScanStatus.pending;
-    final isConfirmed = record.status == ScanStatus.confirmed;
-    final isRejected = record.status == ScanStatus.rejected;
-
-    return NeuCard(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      borderColor: isPending && highlightPending
-          ? ThemeColors.warning(context).withValues(alpha: 0.4)
-          : isConfirmed
-          ? ThemeColors.success(context).withValues(alpha: 0.3)
-          : isRejected
-          ? ThemeColors.error(context).withValues(alpha: 0.3)
-          : _getTypeColor(record.scanType).withValues(alpha: 0.15),
-      borderWidth: 1,
-      onTap: () => _navigateToDetail(record),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(12),
-                borderRadius: NeuTokens.radiusSm,
-                color: _getTypeColor(record.scanType),
-                child: NeuSvgIcon(_getTypeSvg(record.scanType), size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      record.scanType.displayName,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: ThemeColors.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatDateTime(record.createdAt),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: ThemeColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Status badge
-              _buildStatusBadge(record.status),
-              const SizedBox(width: 8),
-              // Confidence indicator
-              if (record.confidenceScore != null)
-                _buildConfidenceIndicator(record.confidenceScore!),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // OCR preview
-          if (record.rawOcrText != null && record.rawOcrText!.isNotEmpty) ...[
-            NeuContainer(
-              padding: const EdgeInsets.all(14),
-              borderRadius: NeuTokens.radiusSm,
-              variant: NeuVariant.inset,
-              child: Row(
+            child: RefreshIndicator(
+              onRefresh: () async =>
+                  context.read<ScanBloc>().add(const LoadScanRecords()),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
                 children: [
-                  NeuSvgIcon(SvgIcons.textField, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      record.rawOcrText!.length > 80
-                          ? '${record.rawOcrText!.substring(0, 80)}...'
-                          : record.rawOcrText!,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: ThemeColors.textSecondary(context),
-                        fontFamily: 'monospace',
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    'Scan',
+                    style: AppTextStyles.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: ThemeColors.textPrimary(context),
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'The AI reads the photo, you check it, and it is '
+                    'added to the inventory',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _ScanAction(
+                    type: ScanType.medicineBox,
+                    title: 'Scan Medicine Box',
+                    subtitle: 'One medicine: name, lot and expiry',
+                    svgAsset: SvgIcons.medication,
+                  ),
+                  const SizedBox(height: 16),
+                  _ScanAction(
+                    type: ScanType.receipt,
+                    title: 'Scan Supplier Receipt',
+                    subtitle: 'Every medicine on the delivery',
+                    svgAsset: SvgIcons.receipt,
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Recent scans',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: ThemeColors.textPrimary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const _RecentScans(),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-          ],
-
-          // Pending scans need a person to check the OCR suggestions.
-          if (isPending) ...[
-            NeuButton(
-              text: 'Review & Confirm',
-              variant: NeuButtonVariant.primary,
-              icon: Icons.fact_check_rounded,
-              svgAsset: SvgIcons.visibility,
-              size: NeuButtonSize.medium,
-              onPressed: () => _navigateToDetail(record),
-              expanded: true,
-            ),
-          ] else if (isConfirmed) ...[
-            NeuButton(
-              text: 'View Details',
-              variant: NeuButtonVariant.secondary,
-              icon: Icons.visibility_rounded,
-              svgAsset: SvgIcons.visibility,
-              size: NeuButtonSize.medium,
-              onPressed: () => _navigateToDetail(record),
-              expanded: true,
-            ),
-          ] else if (isRejected) ...[
-            NeuButton(
-              text: 'Retry Scan',
-              variant: NeuButtonVariant.outline,
-              icon: Icons.refresh_rounded,
-              svgAsset: SvgIcons.refresh,
-              size: NeuButtonSize.medium,
-              onPressed: () => _navigateToCamera(),
-              expanded: true,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(ScanStatus status) {
-    return NeuStatusBadge.fromValue(
-      status.value,
-      label: status.displayName,
-      compact: true,
-    );
-  }
-
-  Widget _buildConfidenceIndicator(double confidence) {
-    final tone = confidence >= 0.8
-        ? NeuStatusTone.success
-        : confidence >= 0.6
-        ? NeuStatusTone.warning
-        : NeuStatusTone.danger;
-
-    return NeuStatusBadge(
-      label: '${(confidence * 100).toInt()}%',
-      tone: tone,
-      icon: Icons.bolt_rounded,
-      compact: true,
-    );
-  }
-
-  Color _getTypeColor(ScanType type) => scanTypeColor(context, type);
-
-  String _getTypeSvg(ScanType type) {
-    switch (type) {
-      case ScanType.receipt:
-        return SvgIcons.receipt;
-      case ScanType.medicineBox:
-        return SvgIcons.medication;
-      case ScanType.prescription:
-        return SvgIcons.note;
-      case ScanType.labReport:
-        return SvgIcons.lab;
-      default:
-        return SvgIcons.note;
-    }
-  }
-
-  Future<void> _navigateToCamera() async {
-    final capture = await Navigator.of(context).push<ScanCapture>(
-      MaterialPageRoute(builder: (_) => const ScanCameraPage()),
-    );
-    if (!mounted) return;
-    if (capture == null) {
-      context.read<ScanBloc>().add(const LoadScanRecords());
-      return;
-    }
-    // Saved as pending: OCR values are suggestions until someone confirms.
-    context.read<ScanBloc>().add(
-      CreateScanRecord(
-        scanType: capture.scanType,
-        imagePath: capture.imagePath,
-        rawOcrText: capture.rawText,
-        extractedData: capture.fields.isEmpty
-            ? null
-            : capture.fields.toDisplay(),
-        confidenceScore: capture.fields.confidence,
-      ),
-    );
-    NeuToast.success(context, 'Scan saved — confirm it to finish');
-  }
-
-  void _navigateToDetail(ScanRecord record) {
-    // The detail page dispatches confirm/reject/delete to the route-scoped
-    // ScanBloc, so hand the same instance to the pushed route.
-    final bloc = context.read<ScanBloc>();
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(
-            builder: (_) => BlocProvider.value(
-              value: bloc,
-              child: ScanDetailPage(record: record),
-            ),
           ),
-        )
-        .then((_) {
-          if (mounted) context.read<ScanBloc>().add(const LoadScanRecords());
-        });
-  }
-}
-
-/// Filter chips for the scan tabs; rebuilds with the controller so the
-/// selected chip follows swipes and taps.
-class _ScanTabBar extends StatelessWidget {
-  final TabController tabController;
-  final List<String> tabs;
-
-  const _ScanTabBar({required this.tabController, required this.tabs});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
-        child: NeuContainer(
-          variant: NeuVariant.flat,
-          color: ThemeColors.background(context),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: AnimatedBuilder(
-            animation: tabController,
-            builder: (context, _) => SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(tabs.length, (index) {
-                  final isSelected = tabController.index == index;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: NeuChip(
-                      label: tabs[index],
-                      selected: isSelected,
-                      onTap: () => tabController.animateTo(index),
-                      selectedColor: ThemeColors.primary(context),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
-/// Empty state used across the scan list tabs.
-class _NeuEmptyState extends StatelessWidget {
-  final String? svgAsset;
+/// A large button that opens the camera for one kind of scan.
+class _ScanAction extends StatelessWidget {
+  final ScanType type;
   final String title;
-  final String message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
+  final String subtitle;
+  final String svgAsset;
 
-  const _NeuEmptyState({
-    this.svgAsset,
+  const _ScanAction({
+    required this.type,
     required this.title,
-    required this.message,
-    this.actionLabel,
-    this.onAction,
+    required this.subtitle,
+    required this.svgAsset,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: NeuCard(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(24),
-                borderRadius: NeuTokens.radiusMd,
-                variant: NeuVariant.flat,
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset!, size: 64)
-                    : const SizedBox(width: 64, height: 64),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                title,
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: ThemeColors.textPrimary(context),
+    final color = scanTypeColor(context, type);
+    return NeuCard(
+      padding: const EdgeInsets.all(20),
+      borderColor: color.withValues(alpha: 0.2),
+      borderWidth: 1,
+      onTap: () => _open(context),
+      child: Row(
+        children: [
+          NeuContainer(
+            padding: const EdgeInsets.all(14),
+            borderRadius: NeuTokens.radiusSm,
+            color: color.withValues(alpha: 0.12),
+            child: NeuSvgIcon(svgAsset, size: 32),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ThemeColors.textPrimary(context),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 24),
-                NeuButton(
-                  text: actionLabel!,
-                  onPressed: onAction,
-                  icon: Icons.add_rounded,
-                  svgAsset: SvgIcons.add,
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: ThemeColors.textSecondary(context),
+                  ),
                 ),
               ],
-            ],
+            ),
           ),
+          NeuSvgIcon(SvgIcons.camera, size: 24),
+        ],
+      ),
+    );
+  }
+
+  /// The camera page saves the scan and the stock through the blocs of
+  /// this route, so hand both over.
+  void _open(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<ScanBloc>()),
+            BlocProvider.value(value: context.read<InventoryBloc>()),
+          ],
+          child: ScanCameraPage(type: type),
         ),
+      ),
+    );
+  }
+}
+
+/// Read-only list of the latest scans and what each one added.
+class _RecentScans extends StatelessWidget {
+  const _RecentScans();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ScanBloc, ScanState>(
+      // Keep the list while a new scan is saving.
+      buildWhen: (_, state) =>
+          state is ScanRecordsLoaded ||
+          state is ScanError ||
+          state is ScanInitial,
+      builder: (context, state) {
+        if (state is ScanError) {
+          return NeuEmptyState(
+            icon: Icons.error_outline_rounded,
+            svgAsset: SvgIcons.error,
+            title: 'Could not load scans',
+            message: state.failure.message,
+            actionLabel: 'Retry',
+            onAction: () =>
+                context.read<ScanBloc>().add(const LoadScanRecords()),
+          );
+        }
+        if (state is! ScanRecordsLoaded) {
+          return const NeuSkeletonList(itemCount: 3, padding: EdgeInsets.zero);
+        }
+        final records = [...state.records]
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        if (records.isEmpty) {
+          return NeuEmptyState(
+            icon: Icons.document_scanner_rounded,
+            svgAsset: SvgIcons.scan,
+            title: 'No scans yet',
+            message:
+                'Scan a medicine box or a supplier receipt to add '
+                'stock.',
+          );
+        }
+        return Column(
+          children: [
+            for (final record in records.take(20)) _ScanTile(record: record),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ScanTile extends StatelessWidget {
+  final ScanRecord record;
+
+  const _ScanTile({required this.record});
+
+  @override
+  Widget build(BuildContext context) {
+    final isReceipt = record.scanType == ScanType.receipt;
+    final summary = (record.extractedData ?? '')
+        .split('\n')
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
+
+    return NeuCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NeuContainer(
+            padding: const EdgeInsets.all(10),
+            borderRadius: NeuTokens.radiusSm,
+            color: scanTypeColor(
+              context,
+              record.scanType,
+            ).withValues(alpha: 0.12),
+            child: NeuSvgIcon(
+              isReceipt ? SvgIcons.receipt : SvgIcons.medication,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  record.scanType.displayName,
+                  style: AppTextStyles.titleSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ThemeColors.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  formatDateTime(record.createdAt),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: ThemeColors.textTertiary(context),
+                  ),
+                ),
+                if (summary.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    summary.take(3).join('\n') +
+                        (summary.length > 3
+                            ? '\n+${summary.length - 3} more'
+                            : ''),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

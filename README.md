@@ -35,13 +35,15 @@ inventory → records → notifications → settings) and the pet owner flow
   call-next, and position tracking.
 - **Digital Medical Records** — append-only, authorization-protected pet health
   history, vaccinations, and prescriptions.
-- **Smart Medicine Inventory** — stock, batches, expiration tracking, and fully
-  traceable inventory transactions.
-- **Scanning & OCR** — photograph a receipt or medicine box; Gemini (Firebase AI
-  Logic) reads the text and suggests fields such as name, expiry, and lot. The
-  photo is sent to Google for that one read; when offline, on-device ML Kit
-  reads it instead. Every scan is saved as pending until the clinic confirms or rejects
-  it; OCR output is never blindly trusted.
+- **Smart Medicine Inventory** — one searchable list of medicines; each has an
+  Edit button to take stock out, mark it out of stock, rename it, or remove it.
+  Every change is a traceable inventory transaction.
+- **Scanning & OCR** — photograph a supplier receipt or a medicine box; Gemini
+  (Firebase AI Logic) reads every medicine with its quantity, unit, lot, and
+  expiry. The photo is sent to Google for that one read; when offline,
+  on-device ML Kit reads it instead. The clinic reviews and edits every value
+  before **Add to Inventory** stocks it in, so OCR output is never blindly
+  trusted.
 - **Notifications** — appointment reminders, queue updates, prescription-ready,
   and low-inventory alerts, delivered in-app and via local notifications.
 - **Audit Logging** — security and sensitive-operation tracking across the
@@ -197,7 +199,7 @@ canon.
 | Pet owner flow (home → pets → appointments → queue) | ✅ Complete — screen-verified on device |
 | Authentication (login, register, password reset) | ✅ Complete |
 | Notifications (in-app + local) | ✅ Complete |
-| Scanning, audit log, staff/vet/admin views | 🔒 Implemented — reserved for post-defense enablement |
+| Audit log, staff/vet/admin views | 🔒 Implemented — reserved for post-defense enablement |
 | Test suites | 🚧 Unit/widget tests in place, expanding |
 
 ---
