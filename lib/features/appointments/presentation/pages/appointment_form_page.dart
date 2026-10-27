@@ -44,6 +44,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _reasonController = TextEditingController();
   final _notesController = TextEditingController();
+  final _addressController = TextEditingController();
   DateTime? _selectedDateTime;
   int _durationMinutes = 30;
   int? _selectedPetId;
@@ -87,6 +88,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   void dispose() {
     _reasonController.dispose();
     _notesController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -230,8 +232,8 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         case 3:
           return ServiceSelectionSection(
             selectedService: _selectedService,
-            onServiceChanged: (value) =>
-                setState(() => _selectedService = value),
+            onServiceChanged: _onServiceChanged,
+            addressController: _addressController,
           );
         case 4:
           return DurationSelectionSection(
@@ -264,8 +266,8 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         case 2:
           return ServiceSelectionSection(
             selectedService: _selectedService,
-            onServiceChanged: (value) =>
-                setState(() => _selectedService = value),
+            onServiceChanged: _onServiceChanged,
+            addressController: _addressController,
           );
         case 3:
           return ReasonSection(reasonController: _reasonController);
@@ -275,6 +277,20 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           return const SizedBox.shrink();
       }
     }
+  }
+
+  void _onServiceChanged(String? value) {
+    // Prefill a home visit with the owner's saved address; the clinic books
+    // for other owners, so it types the address in.
+    if (value == homeServiceLabel &&
+        !_isVetOrStaff &&
+        _addressController.text.trim().isEmpty) {
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        _addressController.text = authState.user.address ?? '';
+      }
+    }
+    setState(() => _selectedService = value);
   }
 
   Future<void> _pickDateTime() async {
@@ -348,6 +364,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           ? AppointmentStatus.rescheduled
           : AppointmentStatus.requested,
       service: _selectedService,
+      serviceAddress: _selectedService == homeServiceLabel
+          ? _addressController.text.trim()
+          : null,
       reason: _reasonController.text.trim(),
       notes: _notesController.text.trim().isEmpty
           ? null

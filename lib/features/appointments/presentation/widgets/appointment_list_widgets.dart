@@ -81,11 +81,16 @@ class AppointmentCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // Status chip
-              NeuStatusBadge.fromValue(
-                appointment.status.value,
-                label: appointment.status.displayName,
-              ),
+              // Status chip; a late arrival reads as Late until resolved.
+              appointment.isLate
+                  ? const NeuStatusBadge(
+                      label: 'Late',
+                      tone: NeuStatusTone.warning,
+                    )
+                  : NeuStatusBadge.fromValue(
+                      appointment.status.value,
+                      label: appointment.status.displayName,
+                    ),
             ],
           ),
 

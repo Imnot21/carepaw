@@ -40,6 +40,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _editing = false;
   bool _saving = false;
@@ -52,6 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (authState is AuthAuthenticated) {
       _nameController.text = authState.user.fullName;
       _phoneController.text = authState.user.phone ?? '';
+      _addressController.text = authState.user.address ?? '';
     }
   }
 
@@ -59,6 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -77,6 +80,9 @@ class _ProfilePageState extends State<ProfilePage> {
         phone: _phoneController.text.trim().isEmpty
             ? null
             : _phoneController.text.trim(),
+        address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
       );
       if (!mounted) return;
       setState(() {
@@ -100,6 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (authState is AuthAuthenticated) {
       _nameController.text = authState.user.fullName;
       _phoneController.text = authState.user.phone ?? '';
+      _addressController.text = authState.user.address ?? '';
     }
     setState(() => _editing = false);
     FocusScope.of(context).unfocus();
@@ -245,6 +252,8 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 14),
               _infoRow(context, 'Phone', user.phone ?? 'Not set'),
               const SizedBox(height: 14),
+              _infoRow(context, 'Address', user.address ?? 'Not set'),
+              const SizedBox(height: 14),
               _infoRow(context, 'Role', user.role.displayName),
               const SizedBox(height: 14),
               _infoRow(
@@ -330,6 +339,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 LengthLimitingTextInputFormatter(11),
               ],
               helper: 'Philippine mobile number (optional)',
+            ),
+            const SizedBox(height: 18),
+            NeuTextField(
+              controller: _addressController,
+              label: 'Address',
+              hint: 'Street, barangay, town',
+              keyboardType: TextInputType.streetAddress,
+              inputFormatters: [LengthLimitingTextInputFormatter(150)],
+              helper: 'Used for home service visits (optional)',
             ),
             const SizedBox(height: 24),
             Row(

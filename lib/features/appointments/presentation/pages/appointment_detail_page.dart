@@ -1,3 +1,4 @@
+import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -289,10 +290,14 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         return _buildDetailCard(context, appointment.appointment, speciesColor);
       case 2:
         if ((appointment.appointment.service?.isNotEmpty ?? false)) {
+          final visit = appointment.appointment;
+          final address = visit.serviceAddress;
           return _buildInfoCard(
             context,
             'Service',
-            appointment.appointment.service!,
+            visit.isHomeService && address != null && address.isNotEmpty
+                ? '${visit.service!}\nAddress: $address'
+                : visit.service!,
             Icons.medical_services_rounded,
             SvgIcons.visit,
             ThemeColors.primaryText(context),
@@ -564,9 +569,24 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
     final canCancel =
         !appointment.isTerminal &&
         appointment.status != AppointmentStatus.cancelled;
+    // A late owner can still be checked in; the clinic may instead release
+    // the slot by marking the visit a no-show.
+    final canMarkNoShow = isClinic && appointment.isLate;
 
     return Column(
       children: [
+        if (appointment.isLate) ...[
+          Text(
+            'Late: not checked in ${AppConstants.lateArrivalMinutes} minutes '
+            'after the scheduled time.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: ThemeColors.warning(context),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
         if (canApprove) ...[
           NeuButton(
             text: 'Approve Booking',
@@ -598,6 +618,18 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             expanded: true,
             icon: Icons.login_rounded,
             svgAsset: SvgIcons.login,
+            variant: NeuButtonVariant.secondary,
+            size: NeuButtonSize.medium,
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (canMarkNoShow) ...[
+          NeuButton(
+            text: 'Mark as No-Show',
+            onPressed: () => _updateStatus(AppointmentStatus.noShow),
+            expanded: true,
+            icon: Icons.person_off_rounded,
+            svgAsset: SvgIcons.error,
             variant: NeuButtonVariant.secondary,
             size: NeuButtonSize.medium,
           ),

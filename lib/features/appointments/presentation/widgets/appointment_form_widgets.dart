@@ -485,10 +485,14 @@ class ServiceSelectionSection extends StatelessWidget {
   final String? selectedService;
   final ValueChanged<String?> onServiceChanged;
 
+  /// Visit address, shown only when [homeServiceLabel] is selected.
+  final TextEditingController addressController;
+
   const ServiceSelectionSection({
     super.key,
     required this.selectedService,
     required this.onServiceChanged,
+    required this.addressController,
   });
 
   @override
@@ -500,18 +504,43 @@ class ServiceSelectionSection extends StatelessWidget {
       svgAsset: SvgIcons.visit,
       iconColor: ThemeColors.primaryText(context),
       isRequired: true,
-      child: DropdownButtonFormField<String>(
-        initialValue: selectedService,
-        isExpanded: true,
-        decoration: const InputDecoration(border: InputBorder.none),
-        hint: const Text('Select a service'),
-        items: [
-          for (final service in clinicServices)
-            DropdownMenuItem(value: service, child: Text(service)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DropdownButtonFormField<String>(
+            initialValue: selectedService,
+            isExpanded: true,
+            decoration: const InputDecoration(border: InputBorder.none),
+            hint: const Text('Select a service'),
+            items: [
+              for (final service in clinicServices)
+                DropdownMenuItem(value: service, child: Text(service)),
+            ],
+            onChanged: (value) => onServiceChanged(value),
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please select a service'
+                : null,
+          ),
+          if (selectedService == homeServiceLabel) ...[
+            const SizedBox(height: 12),
+            NeuTextField(
+              controller: addressController,
+              label: 'Home address *',
+              hint: 'Street, barangay, town',
+              validator: (value) =>
+                  Validators.required(value, 'Home address') ??
+                  Validators.maxLength(value, 150, 'Home address'),
+              maxLines: 2,
+              minLines: 1,
+              prefixIcon: ClayIconOrMaterial(
+                'location_on_rounded',
+                fallback: Icons.location_on_rounded,
+                size: 20,
+                color: ThemeColors.textSecondary(context),
+              ),
+            ),
+          ],
         ],
-        onChanged: (value) => onServiceChanged(value),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Please select a service' : null,
       ),
     );
   }

@@ -13,6 +13,7 @@ class Pet extends Equatable {
   final DateTime? birthDate;
   final double? weightKg;
   final String? color;
+  final String? markings;
   final String? microchipId;
   final String? avatarUrl;
   final bool isActive;
@@ -29,6 +30,7 @@ class Pet extends Equatable {
     this.birthDate,
     this.weightKg,
     this.color,
+    this.markings,
     this.microchipId,
     this.avatarUrl,
     this.isActive = true,
@@ -69,6 +71,7 @@ class Pet extends Equatable {
     birthDate,
     weightKg,
     color,
+    markings,
     microchipId,
     avatarUrl,
     isActive,
@@ -86,6 +89,7 @@ class Pet extends Equatable {
     DateTime? birthDate,
     double? weightKg,
     String? color,
+    String? markings,
     String? microchipId,
     String? avatarUrl,
     bool? isActive,
@@ -102,6 +106,7 @@ class Pet extends Equatable {
       birthDate: birthDate ?? this.birthDate,
       weightKg: weightKg ?? this.weightKg,
       color: color ?? this.color,
+      markings: markings ?? this.markings,
       microchipId: microchipId ?? this.microchipId,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isActive: isActive ?? this.isActive,
@@ -148,6 +153,16 @@ enum PetSpecies {
 
   final String value;
   const PetSpecies(this.value);
+
+  /// Species the clinic treats: dogs and cats only. The other values stay so
+  /// older documents still parse; [current] is kept in the list so editing such
+  /// a pet does not silently change its species.
+  static List<PetSpecies> clinicSupported([PetSpecies? current]) => [
+    PetSpecies.dog,
+    PetSpecies.cat,
+    if (current != null && current != PetSpecies.dog && current != PetSpecies.cat)
+      current,
+  ];
 
   static PetSpecies fromString(String value) {
     return PetSpecies.values.firstWhere(

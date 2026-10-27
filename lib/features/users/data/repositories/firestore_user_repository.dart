@@ -232,6 +232,7 @@ class FirestoreUserRepository implements UserRepository {
     int userId, {
     String? fullName,
     String? phone,
+    String? address,
     String? avatarUrl,
   }) async {
     final existing = await findById(userId);
@@ -241,6 +242,7 @@ class FirestoreUserRepository implements UserRepository {
     final updated = existing.copyWith(
       fullName: fullName ?? existing.fullName,
       phone: phone ?? existing.phone,
+      address: address ?? existing.address,
       avatarUrl: avatarUrl ?? existing.avatarUrl,
       updatedAt: DateTime.now(),
     );
@@ -525,10 +527,7 @@ class FirestoreUserRepository implements UserRepository {
         message: message.isEmpty ? 'Could not create the account.' : message,
       );
     }
-    return (
-      uid: body['localId'] as String,
-      idToken: body['idToken'] as String,
-    );
+    return (uid: body['localId'] as String, idToken: body['idToken'] as String);
   }
 
   /// Best-effort removal of a just-created Auth account after a failed

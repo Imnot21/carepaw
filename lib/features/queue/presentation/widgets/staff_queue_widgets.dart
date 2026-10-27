@@ -512,7 +512,7 @@ class _PriorityControl extends StatelessWidget {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: QueuePriority.values.map((p) {
+      children: QueuePriority.selectable(priority).map((p) {
         final isSelected = priority == p;
         final color = _priorityColor(context, p);
         return NeuChip(

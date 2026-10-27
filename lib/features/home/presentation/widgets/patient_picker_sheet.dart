@@ -12,6 +12,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
@@ -19,6 +20,7 @@ import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
+import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 
 /// Shows the patient picker for the records entry point.
 ///
@@ -70,6 +72,45 @@ class _PatientPickerSheet extends StatefulWidget {
 class _PatientPickerSheetState extends State<_PatientPickerSheet> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+
+  /// Owner names by user id, so pets that share a name can be told apart.
+  /// Only loaded for the clinic operator, who sees every owner's pets.
+  Map<int, String> _ownerNames = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.seesAllPatients) _loadOwnerNames();
+  }
+
+  Future<void> _loadOwnerNames() async {
+    try {
+      final owners = await getIt<UserRepository>().findByRole(
+        UserRole.petOwner,
+      );
+      if (!mounted) return;
+      setState(() {
+        _ownerNames = {
+          for (final owner in owners)
+            if (owner.id != null) owner.id!: owner.fullName,
+        };
+      });
+    } catch (e) {
+      // The list still works without owner names; search falls back to pets.
+      debugPrint('[patient_picker] owner names unavailable: $e');
+    }
+  }
+
+  /// Operator search matches the pet's name, its owner's name, or markings.
+  bool _matches(Pet pet) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return true;
+    final owner = _ownerNames[pet.ownerId] ?? '';
+    final markings = pet.markings ?? '';
+    return pet.name.toLowerCase().contains(query) ||
+        owner.toLowerCase().contains(query) ||
+        markings.toLowerCase().contains(query);
+  }
 
   void _reloadPatients() {
     context.read<PetBloc>().add(
@@ -125,7 +166,9 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
             const SizedBox(height: 20),
             NeuTextField(
               controller: _searchController,
-              hint: 'Search patients...',
+              hint: widget.seesAllPatients
+                  ? 'Search pet or owner name...'
+                  : 'Search patients...',
               prefixIcon: ClayIconOrMaterial(
                 'search_rounded',
                 fallback: Icons.search_rounded,
@@ -145,6 +188,8 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
                   : null,
               onChanged: (value) {
                 setState(() => _searchQuery = value);
+                // The operator list is filtered locally so owner names match.
+                if (widget.seesAllPatients) return;
                 if (value.isEmpty) {
                   _reloadPatients();
                 } else {
@@ -158,7 +203,9 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
               child: BlocBuilder<PetBloc, PetState>(
                 builder: (context, state) {
                   if (state is PetsLoaded) {
-                    final pets = state.pets;
+                    final pets = widget.seesAllPatients
+                        ? state.pets.where(_matches).toList()
+                        : state.pets;
                     if (pets.isEmpty) {
                       return _PickerMessage(
                         title: _searchQuery.isEmpty
@@ -166,6 +213,8 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
                             : 'No matches',
                         detail: _searchQuery.isEmpty
                             ? 'Patients you add will appear here.'
+                            : widget.seesAllPatients
+                            ? 'Try a pet name or an owner name.'
                             : 'Try a different name.',
                       );
                     }
@@ -177,6 +226,7 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
                         final pet = pets[index];
                         return _PatientRow(
                           pet: pet,
+                          ownerName: _ownerNames[pet.ownerId],
                           onTap: () => Navigator.of(context).pop(pet.id),
                         );
                       },
@@ -261,9 +311,12 @@ class _PickerMessage extends StatelessWidget {
 
 class _PatientRow extends StatelessWidget {
   final Pet pet;
+
+  /// Shown under the pet so same-name patients are distinguishable.
+  final String? ownerName;
   final VoidCallback onTap;
 
-  const _PatientRow({required this.pet, required this.onTap});
+  const _PatientRow({required this.pet, this.ownerName, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -271,6 +324,8 @@ class _PatientRow extends StatelessWidget {
     final subtitle = breed == null || breed.isEmpty
         ? PetUtils.formatSpecies(pet.species)
         : '${PetUtils.formatSpecies(pet.species)} • $breed';
+    final owner = ownerName;
+    final ownerLine = owner == null || owner.isEmpty ? null : 'Owner: $owner';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: NeuTokens.tightGap),
@@ -310,6 +365,15 @@ class _PatientRow extends StatelessWidget {
                       Theme.of(context).brightness,
                     ),
                   ),
+                  if (ownerLine != null)
+                    Text(
+                      ownerLine,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodySmall.subtleOf(
+                        Theme.of(context).brightness,
+                      ),
+                    ),
                 ],
               ),
             ),

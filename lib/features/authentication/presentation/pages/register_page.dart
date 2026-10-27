@@ -29,6 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
 
   @override
   void dispose() {
@@ -37,6 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _confirmPasswordController.dispose();
     _fullNameController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -51,6 +53,9 @@ class _RegisterPageState extends State<RegisterPage> {
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
+          address: _addressController.text.trim().isEmpty
+              ? null
+              : _addressController.text.trim(),
           role: UserRole.petOwner,
         ),
       );
@@ -139,6 +144,22 @@ class _RegisterPageState extends State<RegisterPage> {
                         LengthLimitingTextInputFormatter(11),
                       ],
                       textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: NeuTokens.spaceMd),
+                    NeuTextField(
+                      controller: _addressController,
+                      label: 'Address (optional)',
+                      hint: 'Street, barangay, town',
+                      keyboardType: TextInputType.streetAddress,
+                      prefixIcon: ClayIconOrMaterial(
+                        'location_on_rounded',
+                        fallback: Icons.location_on_rounded,
+                        size: 20,
+                      ),
+                      inputFormatters: [LengthLimitingTextInputFormatter(150)],
+                      textInputAction: TextInputAction.next,
+                      validator: (value) =>
+                          Validators.maxLength(value, 150, 'Address'),
                     ),
                     const SizedBox(height: NeuTokens.spaceMd),
                     NeuTextField(

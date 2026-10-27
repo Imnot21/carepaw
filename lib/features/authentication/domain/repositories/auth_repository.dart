@@ -22,6 +22,7 @@ abstract class AuthRepository {
     required String password,
     required String fullName,
     String? phone,
+    String? address,
     UserRole role = UserRole.petOwner,
   });
 

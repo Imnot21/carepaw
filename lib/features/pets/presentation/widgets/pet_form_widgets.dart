@@ -122,7 +122,7 @@ class PetSpeciesSelector extends StatelessWidget {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: PetSpecies.values.map((species) {
+          children: PetSpecies.clinicSupported(selectedSpecies).map((species) {
             final isSelected = species == selectedSpecies;
             final color = PetUtils.getSpeciesColor(species);
             return NeuChip(

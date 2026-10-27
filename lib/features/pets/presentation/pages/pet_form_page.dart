@@ -36,6 +36,7 @@ class _PetFormPageState extends State<PetFormPage> {
   final _nameController = TextEditingController();
   final _breedController = TextEditingController();
   final _colorController = TextEditingController();
+  final _markingsController = TextEditingController();
   final _microchipController = TextEditingController();
   final _weightController = TextEditingController();
 
@@ -57,6 +58,7 @@ class _PetFormPageState extends State<PetFormPage> {
     _nameController.dispose();
     _breedController.dispose();
     _colorController.dispose();
+    _markingsController.dispose();
     _microchipController.dispose();
     _weightController.dispose();
     super.dispose();
@@ -68,6 +70,7 @@ class _PetFormPageState extends State<PetFormPage> {
     _selectedSex = pet.sex;
     _breedController.text = pet.breed ?? '';
     _colorController.text = pet.color ?? '';
+    _markingsController.text = pet.markings ?? '';
     _microchipController.text = pet.microchipId ?? '';
     _weightController.text = pet.weightKg?.toStringAsFixed(1) ?? '';
     _selectedBirthDate = pet.birthDate;
@@ -240,6 +243,9 @@ class _PetFormPageState extends State<PetFormPage> {
         color: _colorController.text.trim().isEmpty
             ? null
             : _colorController.text.trim(),
+        markings: _markingsController.text.trim().isEmpty
+            ? null
+            : _markingsController.text.trim(),
         microchipId: _microchipController.text.trim().isEmpty
             ? null
             : _microchipController.text.trim(),
@@ -311,6 +317,21 @@ class _PetFormPageState extends State<PetFormPage> {
               size: 20,
             ),
             validator: (value) => Validators.maxLength(value, 30, 'Color'),
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 16),
+          // Markings
+          NeuTextField(
+            controller: _markingsController,
+            label: 'Markings',
+            hint: 'e.g. white patch on left ear',
+            maxLines: 2,
+            prefixIcon: ClayIconOrMaterial(
+              'brush_outlined',
+              fallback: Icons.brush_outlined,
+              size: 20,
+            ),
+            validator: (value) => Validators.maxLength(value, 100, 'Markings'),
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 16),

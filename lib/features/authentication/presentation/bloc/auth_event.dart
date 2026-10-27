@@ -26,6 +26,7 @@ class AuthRegisterRequested extends AuthEvent {
   final String password;
   final String fullName;
   final String? phone;
+  final String? address;
   final UserRole role;
 
   const AuthRegisterRequested({
@@ -33,11 +34,12 @@ class AuthRegisterRequested extends AuthEvent {
     required this.password,
     required this.fullName,
     this.phone,
+    this.address,
     this.role = UserRole.petOwner,
   });
 
   @override
-  List<Object?> get props => [email, password, fullName, phone, role];
+  List<Object?> get props => [email, password, fullName, phone, address, role];
 }
 
 /// Request logout.

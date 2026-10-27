@@ -271,6 +271,14 @@ enum QueuePriority {
     );
   }
 
+  /// Priorities staff can pick. The clinic does not take emergency cases, so
+  /// Emergency is offered only when [current] already holds it (older data).
+  static List<QueuePriority> selectable([QueuePriority? current]) => [
+    if (current == QueuePriority.emergency) QueuePriority.emergency,
+    QueuePriority.urgent,
+    QueuePriority.routine,
+  ];
+
   /// Sort rank: lower sorts first (emergency = 0 … routine = 2).
   int get rank {
     switch (this) {

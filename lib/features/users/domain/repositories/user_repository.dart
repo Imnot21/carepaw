@@ -36,6 +36,7 @@ abstract class UserRepository extends SoftDeleteRepository<User, int>
     int userId, {
     String? fullName,
     String? phone,
+    String? address,
     String? avatarUrl,
   });
 

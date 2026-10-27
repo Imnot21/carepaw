@@ -70,6 +70,7 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
         password: event.password,
         fullName: event.fullName.trim(),
         phone: event.phone?.trim(),
+        address: event.address?.trim(),
         role: event.role,
       );
       emit(states.AuthAuthenticated(authResult));

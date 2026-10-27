@@ -9,6 +9,7 @@ class User extends Equatable {
   final String email;
   final String fullName;
   final String? phone;
+  final String? address;
   final UserRole role;
   final String? avatarUrl;
   final bool isActive;
@@ -21,6 +22,7 @@ class User extends Equatable {
     required this.email,
     required this.fullName,
     this.phone,
+    this.address,
     required this.role,
     this.avatarUrl,
     this.isActive = true,
@@ -44,6 +46,7 @@ class User extends Equatable {
     email,
     fullName,
     phone,
+    address,
     role,
     avatarUrl,
     isActive,
@@ -57,6 +60,7 @@ class User extends Equatable {
     String? email,
     String? fullName,
     String? phone,
+    String? address,
     UserRole? role,
     String? avatarUrl,
     bool? isActive,
@@ -69,6 +73,7 @@ class User extends Equatable {
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
+      address: address ?? this.address,
       role: role ?? this.role,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isActive: isActive ?? this.isActive,

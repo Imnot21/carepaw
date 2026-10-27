@@ -106,6 +106,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String fullName,
     String? phone,
+    String? address,
     UserRole role = UserRole.petOwner,
   }) async {
     try {
@@ -135,6 +136,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         fullName: fullName.trim(),
         phone: phone,
+        address: address,
         role: role,
         isActive: true,
         createdAt: now,

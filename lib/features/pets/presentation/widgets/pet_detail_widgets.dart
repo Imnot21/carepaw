@@ -164,6 +164,13 @@ class BasicInfoCard extends StatelessWidget {
             label: 'Color',
             value: pet.color!,
           ),
+        if (pet.markings != null)
+          _InfoRow(
+            icon: Icons.brush_outlined,
+            svgAsset: SvgIcons.brush,
+            label: 'Markings',
+            value: pet.markings!,
+          ),
         if (pet.birthDate != null)
           _InfoRow(
             icon: Icons.cake_outlined,

@@ -41,6 +41,7 @@ class FirestoreSchema {
   static const String passwordHash = 'passwordHash';
   static const String fullName = 'fullName';
   static const String phone = 'phone';
+  static const String address = 'address';
   static const String role = 'role';
   static const String avatarUrl = 'avatarUrl';
   static const String isActive = 'isActive';
@@ -58,6 +59,7 @@ class FirestoreSchema {
   static const String weightKg = 'weightKg';
   static const String color = 'color';
   static const String microchipId = 'microchipId';
+  static const String markings = 'markings';
 
   // Appointments fields
   static const String petId = 'petId';
@@ -66,6 +68,8 @@ class FirestoreSchema {
   static const String durationMinutes = 'durationMinutes';
   static const String status = 'status';
   static const String service = 'service';
+  // Where a home-service visit takes place; null for in-clinic visits.
+  static const String serviceAddress = 'serviceAddress';
   static const String reason = 'reason';
   static const String notes = 'notes';
   static const String checkInAt = 'checkInAt';

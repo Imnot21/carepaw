@@ -1,3 +1,4 @@
+import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:equatable/equatable.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -15,6 +16,9 @@ class Appointment extends Equatable {
   /// Clinic service for this visit (thesis: owner selects the service).
   /// Examples: Consultation, Vaccination, Deworming — see [clinicServices].
   final String? service;
+
+  /// Where a [homeServiceLabel] visit takes place; null for clinic visits.
+  final String? serviceAddress;
   final String? reason;
   final String? notes;
   final DateTime? checkInAt;
@@ -34,6 +38,7 @@ class Appointment extends Equatable {
     this.durationMinutes = 30,
     this.status = AppointmentStatus.requested,
     this.service,
+    this.serviceAddress,
     this.reason,
     this.notes,
     this.checkInAt,
@@ -82,6 +87,20 @@ class Appointment extends Equatable {
   /// Check if appointment is upcoming
   bool get isUpcoming => scheduledAt.isAfter(DateTime.now()) && !isTerminal;
 
+  /// Whether this visit happens at the owner's home rather than the clinic.
+  bool get isHomeService => service == homeServiceLabel;
+
+  /// The owner has not checked in [AppConstants.lateArrivalMinutes] after the
+  /// scheduled time. Clinic visits only: home visits have no arrival.
+  bool get isLate =>
+      canCheckIn &&
+      !isHomeService &&
+      DateTime.now().isAfter(
+        scheduledAt.add(
+          const Duration(minutes: AppConstants.lateArrivalMinutes),
+        ),
+      );
+
   /// Check if appointment is overdue
   bool get isOverdue =>
       scheduledAt.isBefore(DateTime.now()) &&
@@ -98,6 +117,7 @@ class Appointment extends Equatable {
     durationMinutes,
     status,
     service,
+    serviceAddress,
     reason,
     notes,
     checkInAt,
@@ -118,6 +138,7 @@ class Appointment extends Equatable {
     int? durationMinutes,
     AppointmentStatus? status,
     String? service,
+    String? serviceAddress,
     String? reason,
     String? notes,
     DateTime? checkInAt,
@@ -137,6 +158,7 @@ class Appointment extends Equatable {
       durationMinutes: durationMinutes ?? this.durationMinutes,
       status: status ?? this.status,
       service: service ?? this.service,
+      serviceAddress: serviceAddress ?? this.serviceAddress,
       reason: reason ?? this.reason,
       notes: notes ?? this.notes,
       checkInAt: checkInAt ?? this.checkInAt,
@@ -196,10 +218,14 @@ enum AppointmentStatus {
   }
 }
 
+/// The service the vet performs at the owner's address.
+const String homeServiceLabel = 'Home Service';
+
 /// Clinic services offered (DocMyk's PILA VET HUB service list).
 /// Used as the service picker when requesting an appointment.
 const List<String> clinicServices = [
   'Consultation',
+  homeServiceLabel,
   'Vaccination',
   'Deworming',
   'Dental Care',
