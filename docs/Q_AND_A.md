@@ -1,6 +1,6 @@
 # CarePaw — Panelist Questions & Answers (Defense Prep)
 
-> I read Chapter 1 (`g-chapter-1.docx`) and the built app, then asked the
+> I read Chapter 1 (`Chapter 1 draft.lara (corrected).docx`) and the built app, then asked the
 > hard questions a panelist would ask. Each answer is short enough to say
 > out loud in under a minute.
 
@@ -35,13 +35,14 @@ later, but version 1 fits Pila Vet Hub exactly.
 ## About the users and roles
 
 ### 4. "Your paper says Pet Owner and Owner/Admin. Does the app match?"
-Yes — exactly. The app has the same 2 sides: one owner login, one
-Owner/Admin login running the whole clinic (bookings, line, records,
-vaccines, deworming, medicine instructions, stock, scanning). Earlier builds
-had extra Staff/Vet/Admin roles; those were removed to match Chapter 1 (a
-backup copy is kept). The paper's own org chart shows one owner/boss above
-front desk, vet staff, and clinic staff — our Owner/Admin covers all three
-duties.
+Yes — exactly. The app has the same 2 sides: the pet owner, and the Clinic
+Owner/Admin running the whole clinic (bookings, line, records, vaccines,
+deworming, medicine instructions, stock, scanning). Figure 1's
+Owner/Veterinarian and Co-Manager both use the Owner/Admin role; the Owner
+creates the Co-Manager's account from Accounts on the clinic dashboard.
+Earlier builds had separate Staff/Vet/Admin screens. Their code is still in
+the project, but no menu or login reaches them, so the running app has only
+the 2 roles the paper describes.
 
 ### 5. "If one Owner/Admin does everything, where is your security?"
 Doing everything is not seeing everything blindly. Owners only see their own
