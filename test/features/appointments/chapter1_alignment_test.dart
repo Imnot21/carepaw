@@ -60,6 +60,16 @@ void main() {
     });
   });
 
+  test('the service list matches Chapter 1 Scope', () {
+    expect(clinicServices, [
+      'Consultation',
+      homeServiceLabel,
+      'Vaccination',
+      'Deworming',
+      'Medicine Dispensing',
+    ]);
+  });
+
   test('Home Service is a bookable service', () {
     expect(clinicServices, contains(homeServiceLabel));
     expect(

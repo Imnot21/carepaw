@@ -24,10 +24,28 @@ class InventoryLoading extends InventoryState {
 class InventoryItemsLoaded extends InventoryState {
   final List<InventoryItem> items;
 
-  const InventoryItemsLoaded(this.items);
+  /// The batches that still hold stock, so the page can show expiry dates
+  /// and the expiring and expired lists. Empty when they could not load.
+  final List<InventoryBatch> batches;
+
+  const InventoryItemsLoaded(this.items, {this.batches = const []});
+
+  /// Stocked batches of [itemId], the one expiring soonest first. Batches
+  /// without an expiry go last.
+  List<InventoryBatch> batchesOf(int? itemId) {
+    final list = batches.where((b) => b.inventoryId == itemId).toList();
+    list.sort((a, b) {
+      final ea = a.expiresAt, eb = b.expiresAt;
+      if (ea != null && eb != null) return ea.compareTo(eb);
+      if (ea == null && eb != null) return 1;
+      if (ea != null && eb == null) return -1;
+      return a.receivedAt.compareTo(b.receivedAt);
+    });
+    return list;
+  }
 
   @override
-  List<Object?> get props => [items];
+  List<Object?> get props => [items, batches];
 }
 
 /// Inventory items by category loaded state.

@@ -222,4 +222,50 @@ void main() {
       verify(() => items.updateStock(7, 0)).called(2);
     });
   });
+
+  group('changeExpiry', () {
+    test('saves the new date and logs a zero-change adjustment', () async {
+      final batch = batchOf(1, 6, expires: DateTime(2027, 1, 1));
+
+      await service.changeExpiry(
+        batch: batch,
+        expiresAt: DateTime(2028, 3, 15, 14, 30),
+        performedBy: 3,
+      );
+
+      final saved =
+          verify(() => batches.update(captureAny())).captured.single
+              as InventoryBatch;
+      expect(saved.id, 1);
+      expect(saved.quantity, 6);
+      expect(saved.expiresAt, DateTime(2028, 3, 15));
+      final tx =
+          verify(() => transactions.create(captureAny())).captured.single
+              as InventoryTransaction;
+      expect(tx.type, TransactionType.adjustment);
+      expect(tx.quantityChange, 0);
+      expect(tx.quantityBefore, 6);
+      expect(tx.quantityAfter, 6);
+      expect(tx.performedBy, 3);
+      expect(tx.notes, 'Expiry: 2027-01-01 to 2028-03-15');
+      verifyNever(() => items.updateStock(any(), any()));
+    });
+
+    test('null clears a wrong date', () async {
+      await service.changeExpiry(
+        batch: batchOf(1, 6, expires: DateTime(2027, 1, 1)),
+        expiresAt: null,
+        performedBy: 3,
+      );
+
+      final saved =
+          verify(() => batches.update(captureAny())).captured.single
+              as InventoryBatch;
+      expect(saved.expiresAt, isNull);
+      final tx =
+          verify(() => transactions.create(captureAny())).captured.single
+              as InventoryTransaction;
+      expect(tx.notes, 'Expiry: 2027-01-01 to none');
+    });
+  });
 }

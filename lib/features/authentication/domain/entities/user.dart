@@ -106,7 +106,10 @@ enum UserRole {
       case UserRole.petOwner:
         return 'Pet Owner';
       case UserRole.ownerAdmin:
-        return 'Owner/Admin';
+        // Chapter 1 (Figure 1): the clinic side is the Owner/Veterinarian
+        // and the Co-Manager. Both use this role; the Owner creates the
+        // Co-Manager's account from Accounts on the clinic dashboard.
+        return 'Owner / Co-Manager';
     }
   }
 }

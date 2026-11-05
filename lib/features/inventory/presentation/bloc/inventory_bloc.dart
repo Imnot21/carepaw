@@ -48,6 +48,24 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     on<events.ReceiveStock>(_onReceiveStock);
     on<events.EditStockItem>(_onEditStockItem);
     on<events.MarkOutOfStock>(_onMarkOutOfStock);
+    on<events.UpdateBatchExpiry>(_onUpdateBatchExpiry);
+  }
+
+  /// The loaded state for [items], with their stocked batches attached so
+  /// expiry dates can be shown. A failed batch read still shows the items.
+  Future<states.InventoryItemsLoaded> _withBatches(
+    List<InventoryItem> items,
+  ) async {
+    try {
+      final batches = await _batchRepository.findAll();
+      return states.InventoryItemsLoaded(
+        items,
+        batches: batches.where((b) => b.quantity > 0).toList(),
+      );
+    } catch (e) {
+      debugPrint('[inventory_bloc] batches unavailable: $e');
+      return states.InventoryItemsLoaded(items);
+    }
   }
 
   /// Load all inventory items
@@ -58,7 +76,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     emit(const states.InventoryLoading());
     try {
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -223,7 +241,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       );
       // Reload items
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -266,7 +284,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         ),
       );
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -285,7 +303,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       await _itemRepository.softDelete(event.id);
       emit(const states.InventoryOperationSuccess('Item archived'));
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -306,7 +324,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         const states.InventoryOperationSuccess('Stock updated successfully'),
       );
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -327,7 +345,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         const states.InventoryOperationSuccess('Stock adjusted successfully'),
       );
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -608,7 +626,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         ),
       );
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -650,7 +668,7 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
       }
       emit(const states.InventoryOperationSuccess('Inventory updated'));
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {
@@ -674,7 +692,30 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
         states.InventoryOperationSuccess('${event.item.name} is out of stock'),
       );
       final items = await _itemRepository.findAll();
-      emit(states.InventoryItemsLoaded(items));
+      emit(await _withBatches(items));
+    } on Failure catch (failure) {
+      emit(states.InventoryError(failure));
+    } catch (e) {
+      debugPrint('[inventory_bloc] unexpected: $e');
+      emit(states.InventoryError(const UnexpectedFailure()));
+    }
+  }
+
+  /// Correct the expiry date of one batch
+  Future<void> _onUpdateBatchExpiry(
+    events.UpdateBatchExpiry event,
+    Emitter<states.InventoryState> emit,
+  ) async {
+    emit(const states.InventoryLoading());
+    try {
+      await _intake.changeExpiry(
+        batch: event.batch,
+        expiresAt: event.expiresAt,
+        performedBy: event.performedBy,
+      );
+      emit(const states.InventoryOperationSuccess('Expiry date updated'));
+      final items = await _itemRepository.findAll();
+      emit(await _withBatches(items));
     } on Failure catch (failure) {
       emit(states.InventoryError(failure));
     } catch (e) {

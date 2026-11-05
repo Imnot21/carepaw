@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/firebase/caller_scope.dart';
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/repositories/base_repository.dart';
@@ -41,7 +42,7 @@ class FirestorePetRepository implements PetRepository {
 
   @override
   Future<List<Pet>> findAll() async {
-    final snapshot = await _pets.get();
+    final snapshot = await _scoped.get();
     return snapshot.docs
         .where((doc) => !_isDeleted(doc))
         .map((doc) => PetDocMapper.fromData(doc.data()))
@@ -88,7 +89,7 @@ class FirestorePetRepository implements PetRepository {
 
   @override
   Future<List<Pet>> findAllIncludingDeleted() async {
-    final snapshot = await _pets.get();
+    final snapshot = await _scoped.get();
     return snapshot.docs
         .map((doc) => PetDocMapper.fromData(doc.data()))
         .toList();
@@ -98,8 +99,10 @@ class FirestorePetRepository implements PetRepository {
 
   @override
   Stream<Pet?> watchById(int id) {
-    return _pets
-        .where(FirestoreSchema.id, isEqualTo: id)
+    return CallerScope.forOwner(
+          _pets.where(FirestoreSchema.id, isEqualTo: id),
+          ownerField: FirestoreSchema.ownerId,
+        )
         .limit(1)
         .snapshots()
         .map((snapshot) {
@@ -112,7 +115,7 @@ class FirestorePetRepository implements PetRepository {
 
   @override
   Stream<List<Pet>> watchAll() {
-    return _pets.snapshots().map(
+    return _scoped.snapshots().map(
       (snapshot) => snapshot.docs
           .where((doc) => !_isDeleted(doc))
           .map((doc) => PetDocMapper.fromData(doc.data()))
@@ -222,15 +225,35 @@ class FirestorePetRepository implements PetRepository {
   bool _isDeleted(DocumentSnapshot<Map<String, dynamic>> doc) =>
       (doc.data() ?? const {})[_deletedField] == true;
 
+  /// All pets for the clinic; only the caller's own pets for a pet owner.
+  ///
+  /// `firestore.rules` lets a pet owner read only pets whose `ownerId` is
+  /// theirs, and Firestore denies a list query that does not prove it.
+  Query<Map<String, dynamic>> get _scoped =>
+      CallerScope.forOwner(_pets, ownerField: FirestoreSchema.ownerId);
+
+  /// Locate a pet by its app-facing int id.
+  ///
+  /// Pets are saved at `pets/{id}`, so a direct document read is tried first:
+  /// the rules check it against the real document. Older documents stored
+  /// under another key fall back to an owner-scoped `id` query. A pet the
+  /// caller may not read resolves to `null` instead of an error.
   Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
     int id,
   ) async {
-    final snapshot = await _pets
-        .where(FirestoreSchema.id, isEqualTo: id)
-        .limit(1)
-        .get();
-    if (snapshot.docs.isEmpty) return null;
-    return snapshot.docs.first;
+    try {
+      final direct = await _pets.doc('$id').get();
+      if (direct.exists) return direct;
+      final snapshot = await CallerScope.forOwner(
+        _pets.where(FirestoreSchema.id, isEqualTo: id),
+        ownerField: FirestoreSchema.ownerId,
+      ).limit(1).get();
+      if (snapshot.docs.isEmpty) return null;
+      return snapshot.docs.first;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') return null;
+      rethrow;
+    }
   }
 
   PaginatedResult<T> _paginate<T>(List<T> all, PaginationParams params) {

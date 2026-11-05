@@ -201,6 +201,56 @@ class StockIntakeService {
     await _itemRepository.updateStock(item.id!, 0);
   }
 
+  /// Corrects the expiry date of [batch], or clears it when [expiresAt] is
+  /// null.
+  ///
+  /// Expiry dates come from a scan or a typed form, so the clinic must be
+  /// able to fix a wrong one. The quantity does not change, but an
+  /// adjustment transaction records the old and new date so the change
+  /// stays traceable.
+  Future<InventoryBatch> changeExpiry({
+    required InventoryBatch batch,
+    required DateTime? expiresAt,
+    required int performedBy,
+  }) async {
+    final day = expiresAt == null
+        ? null
+        : DateTime(expiresAt.year, expiresAt.month, expiresAt.day);
+    final updated = await _batchRepository.update(
+      InventoryBatch(
+        id: batch.id,
+        inventoryId: batch.inventoryId,
+        batchNumber: batch.batchNumber,
+        quantity: batch.quantity,
+        receivedAt: batch.receivedAt,
+        expiresAt: day,
+        costPerUnit: batch.costPerUnit,
+        supplier: batch.supplier,
+        createdAt: batch.createdAt,
+      ),
+    );
+    await _transactionRepository.create(
+      InventoryTransaction(
+        batchId: batch.id!,
+        type: TransactionType.adjustment,
+        quantityChange: 0,
+        quantityBefore: batch.quantity,
+        quantityAfter: batch.quantity,
+        reason: 'Expiry date changed',
+        referenceType: 'MANUAL',
+        performedBy: performedBy,
+        notes: 'Expiry: ${_date(batch.expiresAt)} to ${_date(day)}',
+        createdAt: DateTime.now(),
+      ),
+    );
+    return updated;
+  }
+
+  static String _date(DateTime? value) => value == null
+      ? 'none'
+      : '${value.year}-${value.month.toString().padLeft(2, '0')}-'
+            '${value.day.toString().padLeft(2, '0')}';
+
   /// Batches that still hold stock, the one expiring soonest first.
   /// Batches without an expiry go last, oldest received first.
   Future<List<InventoryBatch>> _stockedBatches(int itemId) async {

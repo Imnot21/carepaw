@@ -1,63 +1,51 @@
 # Chapter 1 vs. System Alignment
 
-Source: `Chapter 1 draft.lara.docx`, checked against the codebase on branch `feature/neumorphism-design` (2026-10-26).
+Source: `Chapter 1 draft.lara.docx`, checked against the codebase on branch `feature/neumorphism-design` (v1.0.3).
+Updated: 2026-11-05. Every system change the paper needed is now built. What is left is listed under "Still open".
 
-**Verdict:** Mostly aligned. All four core objectives (1.1–1.4) are built. The gaps are field-level details, scope wording, and claims in the paper that the app does not yet back.
+**Paper corrections applied** as tracked changes in `Chapter 1 draft.lara (corrected).docx`: #8, #9, #11, #14, #17, #19–#24.
 
-## Aligned
+Already aligned, no action: login with roles, date and time booking, home service with address, dogs and cats only, no emergency intake, real-time queue for owners, owners viewing health records, owner address, pet markings, scan review before saving, role lock on health records and inventory.
 
-| Paper | System |
-|---|---|
-| 1.1 Appointment request and scheduling | `Appointment` entity: requested → confirmed → checked-in → completed, plus reschedule, cancel and no-show |
-| 1.2 Records: history, consultation, diagnosis, treatment, vaccination, procedure | `MedicalRecord` (diagnosis, treatment, medications); types visit, vaccination, deworming, surgery, lab, prescription; separate `Vaccination` entity with next-due date; records are append-only |
-| 1.3 Real-time queue | Firestore queue with position, estimated wait, and called / being served / done |
-| 1.4 Inventory with scanning | Items, batches with expiry, stock transactions, ML Kit OCR that reads the expiry date, human confirmation before saving |
-| Services: consultation, vaccination, deworming | All three are in `clinicServices` |
-| Two users: pet owner and clinic | Roles `PET_OWNER` and `OWNER_ADMIN` |
+## Still open
 
-## Mismatches
+| # | Owner | What | Why it is open |
+|---|---|---|---|
+| 16 | You | Deploy the new Firestore rules and the v1.0.3 web build: `flutter build web --release`, then `firebase deploy --only firestore:rules,hosting` | The rules are written and pass 19 emulator checks, but the live project still runs the old, open rules until this deploy runs. Claude Code's auto mode blocks production deploys, so you run it. Old v1.0.2 phones must update to v1.0.3 after the deploy, because their pet-owner lookups do not pass the new rules |
+| 7 | Client | Confirm that "Medicine Dispensing" is what the paper calls "pet medicines" | The picker now lists exactly the paper's services. Only the label needs the client's yes |
+| 9a | Group | Queue priority: keep Urgent / Routine, or require a priority on every entry | Your note: "can we force the client to have the queue priority since it handles the life of the pets taken to them" |
+| 18 | Group | Web version | A web build is deployed, but the paper says mobile. Scanning uses `dart:io` and is not expected to work on the web. Android matches the paper |
+| — | You | Release v1.0.3 on GitHub: `gh auth login`, tag `v1.0.3`, attach `build/app/outputs/flutter-apk/app-release.apk` | Needs your GitHub login |
 
-Mark each item: **P** = change the paper, **S** = change the system, **B** = change both, **X** = skip.
+## Done in v1.0.3 (system changes for the paper)
 
-| # | Decision | Issue | Paper says | System has |
-|---|---|---|---|---|
-| 1 | **S** ✅ | Owner address | Index cards record the owner's address | `User` has name, email and phone only; no address |
-| 2 | **S** ✅ | Pet markings | Records include markings | `Pet` has `color` and `microchipId`; no markings field |
-| 3 | **S** ✅ | Same-name pets | The client's main interview complaint: pets with the same name are hard to find | Patient search shows species and breed, not the owner name, so same-name pets still look alike |
-| 4 | **S** ✅ | Late arrivals | Observation: clients arrive late and the vet waits | `AppConstants.lateArrivalMinutes = 15` exists, but no logic uses it |
-| 5 | **S** ✅ | Home service | Home servicing is a core part of the business | No "Home Service" option and no address capture for it |
-| 6 | **S** ✅ | Species | Dogs and cats only | `PetSpecies` also allows bird, rabbit, reptile, other |
-| 7 | **P** (confirm with client) | Service list | Consultation, vaccination, deworming | Also Dental Care, Minor Surgery, Diagnostic Test, Medicine Dispensing, Follow-up Checkup (confirm with the client) |
-| 8 | **P** | "Clinic staff / personnel" | Refers to staff throughout | Demo has only Owner/Admin; vet and staff dashboards are hidden. The clinic is the vet and her husband, so the paper should say "clinic owner/admin" |
-| 9 | **P** | Features built but not in the paper | Not mentioned | Notifications and reminders, queue priority (emergency/urgent), receipt and prescription scanning, low-stock and expiry alerts |
-| 9a | **S** ✅ | Emergency queue priority | The clinic does not accept emergency cases | `QueuePriority.emergency` exists; rename or hide it |
-| 10 | **P** | Empty sections | Scope and Delimitations, Project Significance, Conceptual Framework, Project Framework, Definition of Terms have headings only | Settle items 5–9 in Scope and Delimitations |
+| # | Paper says | System now |
+|---|---|---|
+| 7 | Services: consultation, vaccination, deworming, home service, pet medicines | The service picker lists Consultation, Home Service, Vaccination, Deworming and Medicine Dispensing. Older bookings keep their saved service |
+| 8 | Owner/Veterinarian and Co-Manager share the Clinic Owner/Admin role | The role is shown as "Owner / Co-Manager". The clinic dashboard has **Accounts**, where the Owner creates the Co-Manager's account (the role choice starts on Owner / Co-Manager) |
+| 12 | Clinic can view, monitor and update expiry dates | Each medicine on the Stock page shows its nearest expiry, marked Expired or Expires soon (30 days). The **Expiring soon** and **Expired** filters list what needs attention. The edit sheet lists every batch, and a wrong expiry date can be changed or removed. Each change is saved as a stock adjustment with the old and new date |
+| 13 | Clinic can add and update medicine records | **Add stock** on the Stock page adds a medicine by hand: name, amount, unit, lot, supplier, expiry. A name already in stock is restocked as a new batch. The edit sheet also has **Add stock (restock)** |
+| 14 | Pet Profile Management: pet owners create and update their pets; the clinic views and searches them (corrected paper) | The Patients tab has no Add Pet, so no pet is filed under the clinic's account. When the clinic opens a booking form (for example from a pet's page), the pet list holds every client's pets with the owner's name and a search box, nothing is picked automatically, and the booking is saved under the pet owner |
+| 15 | Pets with the same name are hard to find | The Patients tab shows "Owner: name" on each pet, and search matches pet name, owner name, breed or markings |
+| 16 | Objective 2.5: protect user and clinic information | `firestore.rules`: a pet owner reads only their own profile, the clinic's profiles and their own pets. Other clients' email, phone, address and pets are hidden. The Owner/Admin still reads everything. The repositories add the filters the rules need. Also fixed: creating an account no longer turns anyone on the first user's email domain (such as gmail.com) into an Owner/Admin |
 
-## Paper housekeeping
+Emulator check: `build/rules_test/rules.test.mjs`, run with `firebase emulators:exec --only firestore --project demo-carepaw "node build/rules_test/rules.test.mjs"`. 19 of 19 pass.
 
-- [ ] The TOC puts Objectives before Client Profile, but the body has them the other way round.
-- [ ] Figure labels are inconsistent: "Figure 1" (organizational structure) and "Figure B" (workflow).
-- [ ] Table labels are inconsistent: List of Tables uses A/B/C, but the body uses "Table 1".
-- [ ] The TOC page numbers for Chapters 2–3 overlap Chapter 1's (for example, Foreign Literature is on page 7).
+## Paper items (already applied as tracked changes)
 
-## Done in the system (v1.0.2)
+| # | Issue | Paper fix |
+|---|---|---|
+| 11 | Database | Table 2 said MySQL; the system uses Cloud Firestore (Firebase) |
+| 17 | "Update" health records | Records are append-only; the wording is "add and correct" |
+| 19 | Wrong caption | "Figure B: Workflow of CAREPAW" shows the current manual process |
+| 20 | Methodology | Waterfall, Figure 4. `docs/Q_AND_A.md` #14 is now rewritten for Waterfall. Check that the List of Figures no longer says "Agile SDLC Phases" |
+| 21 | Technology note | Flutter and Dart, Firebase (Firestore, Auth, Cloud Messaging), Gemini. ML Kit is left out on purpose |
+| 22 | Empty sections | Definition of Terms, IPO and Project Framework |
+| 23 | Table of Contents and lists | Headings, table and figure numbers, page numbers |
+| 24 | Small wording | Schedule vs. pending approval, Visit / Surgery record types, Sex, birth date only |
 
-| # | Change |
-|---|---|
-| 1 | Pet owners can enter an optional **address** when they register and edit it on their Profile (`User.address`). |
-| 2 | Pets have an optional **Markings** field on the pet form and pet detail page (`Pet.markings`). |
-| 3 | The clinic's patient picker shows **Owner: name** under each pet. Search matches the pet name, the owner name or the markings. |
-| 4 | A confirmed visit that has not checked in **15 minutes** after its time shows as **Late**. The detail page has a late notice and a **Mark as No-Show** button for the clinic. |
-| 5 | **Home Service** is a bookable service. Picking it asks for a home address, prefilled from the owner's profile. The address shows on the appointment detail page. Home visits are never flagged late. |
-| 6 | New pets can be **Dog** or **Cat** only. Older pets of another species keep their species when edited. |
-| 9a | Queue triage offers **Urgent / Routine** only. Emergency appears only on entries that already have it. |
+## B. Built, and added to the paper (#9)
 
-Tests: `test/features/appointments/chapter1_alignment_test.dart`.
+Notifications and reminders, pet profile management, owners viewing health records, owner cancelling appointments, queue priority (Urgent / Routine), late and no-show handling, supplier receipt scanning, AI reading (Gemini; the ML Kit fallback stays out of the paper), and the low-stock count on the clinic dashboard.
 
-## Still to do in the paper (team)
-
-- 7: Confirm the extra services (Dental Care, Minor Surgery, Diagnostic Test, Medicine Dispensing, Follow-up Checkup) with the client, then list them in the paper or remove them from the app.
-- 8: Replace "clinic staff / personnel" with "clinic owner/admin".
-- 9: Add notifications, queue priority, receipt and prescription scanning, low-stock and expiry alerts, home service, and late / no-show handling to the scope.
-- 10: Fill Scope and Delimitations, Significance, Conceptual Framework, Project Framework and Definition of Terms.
-- The four paper housekeeping items above.
+Prescription scanning is still not reachable in the app, so it stays out of the paper. Expiry monitoring is now built (#12).

@@ -383,3 +383,21 @@ class MarkOutOfStock extends InventoryEvent {
   @override
   List<Object?> get props => [item, performedBy];
 }
+
+/// Correct (or clear) the expiry date of one batch.
+class UpdateBatchExpiry extends InventoryEvent {
+  final InventoryBatch batch;
+
+  /// The new expiry date; null clears it.
+  final DateTime? expiresAt;
+  final int performedBy;
+
+  const UpdateBatchExpiry({
+    required this.batch,
+    required this.expiresAt,
+    required this.performedBy,
+  });
+
+  @override
+  List<Object?> get props => [batch, expiresAt, performedBy];
+}

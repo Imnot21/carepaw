@@ -21,26 +21,60 @@ import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 
-class PetSelectionSection extends StatelessWidget {
+class PetSelectionSection extends StatefulWidget {
   final int? selectedPetId;
   final ValueChanged<int?> onPetSelected;
   final ValueChanged<int?> onAutoSelect;
+
+  /// Owner names by user id. Set when the clinic books for a client: the
+  /// list then holds every client's pets, so each chip shows its owner,
+  /// a search box narrows the list, and no pet is picked automatically.
+  final Map<int, String>? ownerNames;
 
   const PetSelectionSection({
     super.key,
     required this.selectedPetId,
     required this.onPetSelected,
     required this.onAutoSelect,
+    this.ownerNames,
   });
 
   @override
+  State<PetSelectionSection> createState() => _PetSelectionSectionState();
+}
+
+class _PetSelectionSectionState extends State<PetSelectionSection> {
+  String _query = '';
+
+  bool get _forClinic => widget.ownerNames != null;
+
+  String _label(Pet pet) {
+    final owner = widget.ownerNames?[pet.ownerId];
+    return owner == null || owner.isEmpty ? pet.name : '${pet.name} · $owner';
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final selectedPetId = widget.selectedPetId;
+    final onPetSelected = widget.onPetSelected;
+    final onAutoSelect = widget.onAutoSelect;
     return BlocBuilder<PetBloc, PetState>(
       builder: (context, state) {
         List<Pet> pets = [];
         var effectiveSelectedId = selectedPetId;
         if (state is PetsLoaded) {
-          pets = state.pets;
+          pets = state.pets.where((p) => p.isActive).toList();
+          if (_forClinic) {
+            final q = _query.trim().toLowerCase();
+            pets = pets
+                .where(
+                  (p) =>
+                      p.id == selectedPetId ||
+                      q.isEmpty ||
+                      _label(p).toLowerCase().contains(q),
+                )
+                .toList();
+          }
         } else if (state is PetLoading) {
           return _SectionCard(
             title: 'Select Pet',
@@ -51,20 +85,26 @@ class PetSelectionSection extends StatelessWidget {
           );
         }
 
-        if (effectiveSelectedId != null && pets.isNotEmpty) {
-          final hasPet = pets.any((p) => p.id == effectiveSelectedId);
-          if (!hasPet) {
-            effectiveSelectedId = pets.isNotEmpty ? pets.first.id : null;
+        // A pet owner's own pets: pick the first one for them. The clinic's
+        // list holds every client's pets, so it must choose on purpose.
+        if (!_forClinic) {
+          if (effectiveSelectedId != null && pets.isNotEmpty) {
+            final hasPet = pets.any((p) => p.id == effectiveSelectedId);
+            if (!hasPet) {
+              effectiveSelectedId = pets.isNotEmpty ? pets.first.id : null;
+              onAutoSelect(effectiveSelectedId);
+            }
+          } else if (pets.isNotEmpty && effectiveSelectedId == null) {
+            effectiveSelectedId = pets.first.id;
             onAutoSelect(effectiveSelectedId);
           }
-        } else if (pets.isNotEmpty && effectiveSelectedId == null) {
-          effectiveSelectedId = pets.first.id;
-          onAutoSelect(effectiveSelectedId);
         }
 
         return _SectionCard(
           title: 'Select Pet',
-          subtitle: 'Choose which pet is visiting',
+          subtitle: _forClinic
+              ? 'Choose the client\'s pet that is visiting'
+              : 'Choose which pet is visiting',
           icon: Icons.pets_rounded,
           svgAsset: SvgIcons.paw,
           iconColor: ThemeColors.primaryText(context),
@@ -72,6 +112,13 @@ class PetSelectionSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_forClinic) ...[
+                NeuTextField(
+                  hint: 'Search pet or owner name',
+                  onChanged: (value) => setState(() => _query = value),
+                ),
+                const SizedBox(height: 12),
+              ],
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -79,7 +126,7 @@ class PetSelectionSection extends StatelessWidget {
                   final isSelected = effectiveSelectedId == pet.id;
                   final speciesColor = PetUtils.getSpeciesColor(pet.species);
                   return NeuChip(
-                    label: pet.name,
+                    label: _label(pet),
                     svgAsset: PetUtils.getSpeciesSvg(pet.species),
                     selected: isSelected,
                     selectedColor: speciesColor,
@@ -515,6 +562,15 @@ class ServiceSelectionSection extends StatelessWidget {
             items: [
               for (final service in clinicServices)
                 DropdownMenuItem(value: service, child: Text(service)),
+              // A booking saved with a since-removed service keeps its label,
+              // and the dropdown needs a matching item or it throws.
+              if (selectedService != null &&
+                  selectedService!.isNotEmpty &&
+                  !clinicServices.contains(selectedService))
+                DropdownMenuItem(
+                  value: selectedService,
+                  child: Text(selectedService!),
+                ),
             ],
             onChanged: (value) => onServiceChanged(value),
             validator: (value) => value == null || value.isEmpty

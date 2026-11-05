@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:carepaw/core/errors/error_handler.dart';
 import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/firebase/caller_scope.dart';
 import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/firebase/user_doc_mapper.dart';
@@ -46,14 +47,8 @@ class FirestoreUserRepository implements UserRepository {
 
   @override
   Future<domain.User?> findById(int id) async {
-    final snapshot = await _users
-        .where(FirestoreSchema.id, isEqualTo: id)
-        .limit(1)
-        .get();
-    if (snapshot.docs.isEmpty) {
-      return null;
-    }
-    return _docToUser(snapshot.docs.first);
+    final doc = await _findDocByIntId(id);
+    return doc == null ? null : _docToUser(doc);
   }
 
   @override
@@ -114,6 +109,11 @@ class FirestoreUserRepository implements UserRepository {
 
   @override
   Stream<domain.User?> watchById(int id) {
+    if (CallerScope.isPetOwner) {
+      // A pet owner may only watch a profile the rules let them read; resolve
+      // it once through the owner-safe lookup instead of an unprovable query.
+      return Stream.fromFuture(findById(id));
+    }
     return _users
         .where(FirestoreSchema.id, isEqualTo: id)
         .limit(1)
@@ -426,12 +426,10 @@ class FirestoreUserRepository implements UserRepository {
       // admin's session.
       final createdAuth = await _createAuthUserViaRest(email, password);
       try {
-        // Check if this user should be an Owner/Admin (first user or email
-        // domain match with first user)
-        final bool shouldBeAdmin = await _shouldBeAdmin(email);
-        final domain.UserRole effectiveRole = shouldBeAdmin
-            ? domain.UserRole.ownerAdmin
-            : role;
+        // The operator's chosen role is final. (An earlier email-domain rule
+        // promoted any account sharing the first user's domain, such as
+        // gmail.com, to Owner/Admin. That handed out clinic access.)
+        final domain.UserRole effectiveRole = role;
 
         final newId = await _userIdSequence.next();
         final now = DateTime.now();
@@ -554,68 +552,37 @@ class FirestoreUserRepository implements UserRepository {
   }
 
   /// Find the first Firestore document whose app-facing int `id` matches.
+  ///
+  /// The Owner/Admin may query any profile. A pet owner may read only their
+  /// own profile and the clinic's Owner/Admin profiles (`firestore.rules`),
+  /// and Firestore denies a query whose filters do not prove that. So for a
+  /// pet owner the lookup adds a `role` filter (clinic profile, e.g. a
+  /// veterinarian name) and then a `firebaseUid` filter (their own profile).
   Future<DocumentSnapshot<Map<String, dynamic>>?> _findDocByIntId(
     int id,
   ) async {
-    final snapshot = await _users
-        .where(FirestoreSchema.id, isEqualTo: id)
+    final byId = _users.where(FirestoreSchema.id, isEqualTo: id);
+    if (!CallerScope.isPetOwner) {
+      final snapshot = await byId.limit(1).get();
+      return snapshot.docs.isEmpty ? null : snapshot.docs.first;
+    }
+
+    final clinic = await byId
+        .where(
+          FirestoreSchema.role,
+          isEqualTo: domain.UserRole.ownerAdmin.value,
+        )
         .limit(1)
         .get();
-    if (snapshot.docs.isEmpty) return null;
-    return snapshot.docs.first;
-  }
+    if (clinic.docs.isNotEmpty) return clinic.docs.first;
 
-  /// Check if this is the first user being created in the system.
-  /// Returns true if no users exist yet in the Firestore users collection.
-  Future<bool> _isFirstUser() async {
-    final snapshot = await _users.limit(1).get();
-    return snapshot.docs.isEmpty;
-  }
-
-  /// Check if a user should be an admin based on email domain matching
-  /// with the first user in the system. Returns true if:
-  /// 1. The user is the first user in the system
-  /// 2. OR there is at least one user in the system AND
-  ///    the user's email domain matches the first user's email domain
-  Future<bool> _shouldBeAdmin(String email) async {
-    if (email.isEmpty || !email.contains('@')) {
-      // Invalid email, can't determine domain - fall back to first user check
-      return await _isFirstUser();
-    }
-
-    // Check if this is the first user
-    final bool isFirstUser = await _isFirstUser();
-    if (isFirstUser) {
-      return true;
-    }
-
-    // Not first user - check if email domain matches the first user's domain
-    // Get the first user (by lowest ID, assuming they were created first)
-    final firstUserSnapshot = await _users
-        .orderBy(FirestoreSchema.id, descending: false)
+    final uid = _firebaseAuth.currentUser?.uid;
+    if (uid == null) return null;
+    final own = await byId
+        .where(FirestoreSchema.firebaseUid, isEqualTo: uid)
         .limit(1)
         .get();
-
-    if (firstUserSnapshot.docs.isEmpty) {
-      // No users found - should not happen if !isFirstUser, but handle gracefully
-      return false;
-    }
-
-    final firstUserData = firstUserSnapshot.docs.first.data();
-    final firstUserEmail = firstUserData[FirestoreSchema.email] as String?;
-
-    if (firstUserEmail == null ||
-        firstUserEmail.isEmpty ||
-        !firstUserEmail.contains('@')) {
-      // First user has no valid email
-      return false;
-    }
-
-    // Extract domains
-    final firstUserDomain = firstUserEmail.split('@').last.toLowerCase();
-    final userDomain = email.split('@').last.toLowerCase();
-
-    return firstUserDomain == userDomain;
+    return own.docs.isEmpty ? null : own.docs.first;
   }
 
   /// Map a non-2xx `deleteUser` HTTP status to a user-friendly [Failure].

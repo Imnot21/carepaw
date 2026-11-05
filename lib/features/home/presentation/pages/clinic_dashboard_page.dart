@@ -207,6 +207,14 @@ class _ClinicDashboardContent extends StatelessWidget {
                             label: 'Scan',
                             onTap: () => context.push(Routes.staffScanning),
                           ),
+                          // Chapter 1 (Figure 1): the Owner/Veterinarian and
+                          // the Co-Manager share the Owner/Admin role. The
+                          // Owner creates the Co-Manager's account here.
+                          _ClinicActionCard(
+                            svgAsset: SvgIcons.person,
+                            label: 'Accounts',
+                            onTap: () => context.push(Routes.adminUsers),
+                          ),
                         ],
                       );
                     },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -9,13 +10,19 @@ import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/inventory/domain/entities/inventory.dart';
+import 'package:carepaw/features/inventory/domain/services/stock_intake_service.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dart';
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart';
 
-/// Inventory tab: search the medicines in stock and edit any of them.
+/// Inventory tab: search the medicines in stock, add or restock them,
+/// check expiry dates, and take stock out.
 ///
-/// Stock comes in through the Scan tab; this page takes it out.
+/// Stock comes in through the Scan tab or the Add stock form. Chapter 1
+/// (Medicine Inventory) asks the clinic to view, monitor and update expiry
+/// dates, so every medicine shows its nearest expiry, the Expiring and
+/// Expired filters list what needs attention, and a wrong date can be
+/// corrected from the edit sheet.
 class InventoryListPage extends StatefulWidget {
   const InventoryListPage({super.key});
 
@@ -31,6 +38,21 @@ class _InventoryListPageState extends State<InventoryListPage> {
   /// blank the page.
   List<InventoryItem>? _items;
 
+  /// Batches that still hold stock, from the same load as [_items].
+  List<InventoryBatch> _batches = const [];
+
+  _ExpiryFilter _filter = _ExpiryFilter.all;
+
+  List<InventoryBatch> _batchesOf(InventoryItem item) =>
+      InventoryItemsLoaded(const [], batches: _batches).batchesOf(item.id);
+
+  _ExpiryStatus _statusOf(InventoryItem item) =>
+      _expiryStatus(_batchesOf(item));
+
+  int _count(_ExpiryStatus status) => (_items ?? const <InventoryItem>[])
+      .where((item) => _statusOf(item) == status)
+      .length;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -42,7 +64,12 @@ class _InventoryListPageState extends State<InventoryListPage> {
       ..removeWhere((w) => w.isEmpty);
     final items = (_items ?? const <InventoryItem>[]).where((item) {
       final name = item.name.toLowerCase();
-      return words.every(name.contains);
+      if (!words.every(name.contains)) return false;
+      return switch (_filter) {
+        _ExpiryFilter.all => true,
+        _ExpiryFilter.expiring => _statusOf(item) == _ExpiryStatus.soon,
+        _ExpiryFilter.expired => _statusOf(item) == _ExpiryStatus.expired,
+      };
     }).toList();
     return items
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -87,7 +114,10 @@ class _InventoryListPageState extends State<InventoryListPage> {
 
   void _onState(BuildContext context, InventoryState state) {
     if (state is InventoryItemsLoaded) {
-      setState(() => _items = state.items);
+      setState(() {
+        _items = state.items;
+        _batches = state.batches;
+      });
     } else if (state is InventoryOperationSuccess) {
       NeuToast.success(context, state.message);
     } else if (state is InventoryError && _items != null) {
@@ -101,16 +131,29 @@ class _InventoryListPageState extends State<InventoryListPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Inventory',
-            style: AppTextStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.w800,
-              color: ThemeColors.textPrimary(context),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Inventory',
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: ThemeColors.textPrimary(context),
+                  ),
+                ),
+              ),
+              NeuButton(
+                text: 'Add stock',
+                icon: Icons.add_rounded,
+                svgAsset: SvgIcons.add,
+                size: NeuButtonSize.medium,
+                onPressed: () => _addStock(),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(
-            'Search a medicine, then tap Edit to take stock out',
+            'Add or restock medicines, check expiry dates, take stock out',
             style: AppTextStyles.bodySmall.copyWith(
               color: ThemeColors.textSecondary(context),
             ),
@@ -137,6 +180,30 @@ class _InventoryListPageState extends State<InventoryListPage> {
             textInputAction: TextInputAction.search,
             onChanged: (value) => setState(() => _query = value.trim()),
           ),
+          const SizedBox(height: 12),
+          NeuChipRow(
+            padding: EdgeInsets.zero,
+            chips: [
+              NeuChip(
+                label: 'All',
+                selected: _filter == _ExpiryFilter.all,
+                onTap: () => setState(() => _filter = _ExpiryFilter.all),
+              ),
+              NeuChip(
+                label: 'Expiring soon (${_count(_ExpiryStatus.soon)})',
+                selected: _filter == _ExpiryFilter.expiring,
+                selectedColor: ThemeColors.warning(context),
+                onTap: () =>
+                    setState(() => _filter = _ExpiryFilter.expiring),
+              ),
+              NeuChip(
+                label: 'Expired (${_count(_ExpiryStatus.expired)})',
+                selected: _filter == _ExpiryFilter.expired,
+                selectedColor: ThemeColors.error(context),
+                onTap: () => setState(() => _filter = _ExpiryFilter.expired),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -158,20 +225,31 @@ class _InventoryListPageState extends State<InventoryListPage> {
     }
 
     final items = _visible;
+    if (items.isEmpty && _filter != _ExpiryFilter.all) {
+      return NeuEmptyState(
+        icon: Icons.event_available_rounded,
+        svgAsset: SvgIcons.inventory,
+        title: _filter == _ExpiryFilter.expired
+            ? 'No expired medicines'
+            : 'Nothing expires in the next $_soonDays days',
+        message: 'Medicines without an expiry date are not listed here.',
+      );
+    }
     if (items.isEmpty) {
       return _query.isNotEmpty
           ? NeuEmptyState(
               icon: Icons.search_off_rounded,
               svgAsset: SvgIcons.searchOff,
               title: 'No match for "$_query"',
-              message: 'Check the spelling, or scan the medicine to add it.',
+              message: 'Check the spelling, or tap Add stock to add it.',
             )
           : NeuEmptyState(
               icon: Icons.inventory_2_rounded,
               svgAsset: SvgIcons.inventory,
               title: 'No medicines yet',
               message:
-                  'Scan a medicine box or a supplier receipt to add stock.',
+                  'Tap Add stock, or scan a medicine box or a supplier '
+                  'receipt.',
               actionLabel: 'Go to Scan',
               onAction: () => context.go(Routes.staffScanning),
             );
@@ -185,6 +263,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
         separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) => _StockCard(
           item: items[index],
+          batches: _batchesOf(items[index]),
           onEdit: () => _edit(items[index]),
         ),
       ),
@@ -194,12 +273,37 @@ class _InventoryListPageState extends State<InventoryListPage> {
   void _reload() =>
       context.read<InventoryBloc>().add(const LoadInventoryItems());
 
+  /// Opens the Add stock form; [item] prefills it for a restock.
+  Future<void> _addStock([InventoryItem? item]) async {
+    final result = await NeuBottomSheet.show<_AddStockResult>(
+      context: context,
+      child: _AddStockSheet(item: item),
+    );
+    if (result == null || !mounted) return;
+    final userId = _userId;
+    if (userId == null) {
+      NeuToast.error(context, 'Sign in again to add stock');
+      return;
+    }
+    context.read<InventoryBloc>().add(
+      ReceiveStock(
+        lines: [result.line],
+        performedBy: userId,
+        supplier: result.supplier,
+      ),
+    );
+  }
+
   Future<void> _edit(InventoryItem item) async {
     final result = await NeuBottomSheet.show<_EditResult>(
       context: context,
-      child: _EditStockSheet(item: item),
+      child: _EditStockSheet(item: item, batches: _batchesOf(item)),
     );
     if (result == null || !mounted) return;
+    if (result.action == _EditAction.addStock) {
+      await _addStock(item);
+      return;
+    }
 
     final userId = _userId;
     if (userId == null) {
@@ -219,6 +323,16 @@ class _InventoryListPageState extends State<InventoryListPage> {
         );
       case _EditAction.outOfStock:
         bloc.add(MarkOutOfStock(item: item, performedBy: userId));
+      case _EditAction.changeExpiry:
+        bloc.add(
+          UpdateBatchExpiry(
+            batch: result.batch!,
+            expiresAt: result.expiresAt,
+            performedBy: userId,
+          ),
+        );
+      case _EditAction.addStock:
+        break;
       case _EditAction.remove:
         final confirmed = await NeuConfirmDialog.show(
           context: context,
@@ -235,12 +349,19 @@ class _InventoryListPageState extends State<InventoryListPage> {
   }
 }
 
-/// One medicine: name, what is left, and an Edit button.
+/// One medicine: name, what is left, its nearest expiry, and an Edit button.
 class _StockCard extends StatelessWidget {
   final InventoryItem item;
+
+  /// Stocked batches, the one expiring soonest first.
+  final List<InventoryBatch> batches;
   final VoidCallback onEdit;
 
-  const _StockCard({required this.item, required this.onEdit});
+  const _StockCard({
+    required this.item,
+    required this.batches,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +417,8 @@ class _StockCard extends StatelessWidget {
                     ],
                   ],
                 ),
+                const SizedBox(height: 4),
+                _ExpiryLine(batches: batches),
               ],
             ),
           ),
@@ -314,7 +437,7 @@ class _StockCard extends StatelessWidget {
   }
 }
 
-enum _EditAction { save, outOfStock, remove }
+enum _EditAction { save, outOfStock, remove, changeExpiry, addStock }
 
 /// What the edit sheet asked for; the page sends it to the bloc.
 class _EditResult {
@@ -322,14 +445,29 @@ class _EditResult {
   final String name;
   final double takeOut;
 
-  const _EditResult(this.action, {this.name = '', this.takeOut = 0});
+  /// For [_EditAction.changeExpiry]: the batch and its new date (null
+  /// clears the date).
+  final InventoryBatch? batch;
+  final DateTime? expiresAt;
+
+  const _EditResult(
+    this.action, {
+    this.name = '',
+    this.takeOut = 0,
+    this.batch,
+    this.expiresAt,
+  });
 }
 
-/// Rename a medicine, take some out, or mark it out of stock.
+/// Rename a medicine, take some out, restock it, correct a batch's expiry
+/// date, or mark it out of stock.
 class _EditStockSheet extends StatefulWidget {
   final InventoryItem item;
 
-  const _EditStockSheet({required this.item});
+  /// Stocked batches, the one expiring soonest first.
+  final List<InventoryBatch> batches;
+
+  const _EditStockSheet({required this.item, required this.batches});
 
   @override
   State<_EditStockSheet> createState() => _EditStockSheetState();
@@ -358,6 +496,19 @@ class _EditStockSheetState extends State<_EditStockSheet> {
       _takeOut.text = _qty(next);
       _takeOutError = null;
     });
+  }
+
+  Future<void> _changeExpiry(InventoryBatch batch) async {
+    final picked = await _pickExpiryDate(context, batch.expiresAt);
+    if (picked == null || !mounted) return;
+    Navigator.pop(
+      context,
+      _EditResult(
+        _EditAction.changeExpiry,
+        batch: batch,
+        expiresAt: picked.clear ? null : picked.date,
+      ),
+    );
   }
 
   void _save() {
@@ -463,6 +614,40 @@ class _EditStockSheetState extends State<_EditStockSheet> {
             onPressed: _save,
             expanded: true,
           ),
+          const SizedBox(height: 20),
+          Text(
+            'Batches and expiry dates',
+            style: AppTextStyles.labelLarge.copyWith(
+              fontWeight: FontWeight.w600,
+              color: ThemeColors.textPrimary(context),
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (widget.batches.isEmpty)
+            Text(
+              'No stock left. Add stock to record a new batch.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: ThemeColors.textSecondary(context),
+              ),
+            ),
+          for (final batch in widget.batches)
+            _BatchRow(
+              batch: batch,
+              unit: _item.unit,
+              onChangeExpiry: () => _changeExpiry(batch),
+            ),
+          const SizedBox(height: 12),
+          NeuButton(
+            text: 'Add stock (restock)',
+            variant: NeuButtonVariant.secondary,
+            icon: Icons.add_rounded,
+            svgAsset: SvgIcons.add,
+            onPressed: () => Navigator.pop(
+              context,
+              const _EditResult(_EditAction.addStock),
+            ),
+            expanded: true,
+          ),
           const SizedBox(height: 12),
           NeuButton(
             text: 'Mark out of stock',
@@ -484,6 +669,300 @@ class _EditStockSheetState extends State<_EditStockSheet> {
             svgAsset: SvgIcons.delete,
             onPressed: () =>
                 Navigator.pop(context, const _EditResult(_EditAction.remove)),
+            expanded: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One stocked batch in the edit sheet: lot, amount, expiry, and a
+/// button to correct the expiry date.
+class _BatchRow extends StatelessWidget {
+  final InventoryBatch batch;
+  final String unit;
+  final VoidCallback onChangeExpiry;
+
+  const _BatchRow({
+    required this.batch,
+    required this.unit,
+    required this.onChangeExpiry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Lot ${batch.batchNumber} · ${_qty(batch.quantity)} $unit',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: ThemeColors.textPrimary(context),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                _ExpiryLine(batches: [batch]),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          NeuButton(
+            text: batch.expiresAt == null ? 'Set expiry' : 'Change',
+            variant: NeuButtonVariant.outline,
+            size: NeuButtonSize.small,
+            onPressed: onChangeExpiry,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The nearest expiry of [batches] (sorted soonest first), coloured by how
+/// close it is.
+class _ExpiryLine extends StatelessWidget {
+  final List<InventoryBatch> batches;
+
+  const _ExpiryLine({required this.batches});
+
+  @override
+  Widget build(BuildContext context) {
+    final dated = batches.where((b) => b.expiresAt != null).toList();
+    final status = _expiryStatus(batches);
+    final color = switch (status) {
+      _ExpiryStatus.expired => ThemeColors.error(context),
+      _ExpiryStatus.soon => ThemeColors.warning(context),
+      _ => ThemeColors.textSecondary(context),
+    };
+    final label = dated.isEmpty
+        ? 'No expiry date recorded'
+        : switch (status) {
+            _ExpiryStatus.expired =>
+              'Expired ${_dateLabel(dated.first.expiresAt!)}',
+            _ => 'Expires ${_dateLabel(dated.first.expiresAt!)}',
+          };
+    return Row(
+      children: [
+        Icon(Icons.event_rounded, size: 14, color: color),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: color,
+              fontWeight: status == _ExpiryStatus.ok
+                  ? FontWeight.w400
+                  : FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (status == _ExpiryStatus.soon || status == _ExpiryStatus.expired)
+          Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: NeuStatusBadge(
+              label: status == _ExpiryStatus.expired
+                  ? 'Expired'
+                  : 'Expires soon',
+              tone: status == _ExpiryStatus.expired
+                  ? NeuStatusTone.danger
+                  : NeuStatusTone.warning,
+              compact: true,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// What the Add stock form returns.
+class _AddStockResult {
+  final StockLine line;
+  final String? supplier;
+
+  const _AddStockResult(this.line, this.supplier);
+}
+
+/// Add a new medicine, or restock one, by hand: name, amount, unit, lot,
+/// expiry date and supplier. A name that matches a stocked medicine adds a
+/// new batch to it instead of creating a second item.
+class _AddStockSheet extends StatefulWidget {
+  /// The medicine being restocked, or null for a new one.
+  final InventoryItem? item;
+
+  const _AddStockSheet({this.item});
+
+  @override
+  State<_AddStockSheet> createState() => _AddStockSheetState();
+}
+
+class _AddStockSheetState extends State<_AddStockSheet> {
+  late final _name = TextEditingController(text: widget.item?.name ?? '');
+  final _quantity = TextEditingController();
+  late final _unit = TextEditingController(text: widget.item?.unit ?? 'pcs');
+  final _lot = TextEditingController();
+  late final _supplier = TextEditingController(
+    text: widget.item?.supplier ?? '',
+  );
+  DateTime? _expiresAt;
+  String? _nameError;
+  String? _quantityError;
+  String? _unitError;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _quantity.dispose();
+    _unit.dispose();
+    _lot.dispose();
+    _supplier.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickExpiry() async {
+    final picked = await _pickExpiryDate(context, _expiresAt);
+    if (picked == null || !mounted) return;
+    setState(() => _expiresAt = picked.clear ? null : picked.date);
+  }
+
+  void _save() {
+    final name = _name.text.trim();
+    final quantity = double.tryParse(_quantity.text.trim());
+    final unit = _unit.text.trim();
+    setState(() {
+      _nameError = name.isEmpty ? 'Enter the medicine name' : null;
+      _quantityError = quantity == null || quantity <= 0
+          ? 'Enter an amount more than 0'
+          : null;
+      _unitError = unit.isEmpty ? 'Enter a unit, for example pcs' : null;
+    });
+    if (_nameError != null || _quantityError != null || _unitError != null) {
+      return;
+    }
+    final lot = _lot.text.trim();
+    final supplier = _supplier.text.trim();
+    Navigator.pop(
+      context,
+      _AddStockResult(
+        StockLine(
+          name: name,
+          quantity: quantity!,
+          unit: unit,
+          lot: lot.isEmpty ? null : lot,
+          expiresAt: _expiresAt,
+        ),
+        supplier.isEmpty ? null : supplier,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final restock = widget.item != null;
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            restock ? 'Restock ${widget.item!.name}' : 'Add stock',
+            style: AppTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.w800,
+              color: ThemeColors.textPrimary(context),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            restock
+                ? 'In stock: ${_qty(widget.item!.currentStock)} '
+                      '${widget.item!.unit}. The new amount is added as a '
+                      'new batch.'
+                : 'A name that is already in stock is restocked, not added '
+                      'twice.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: ThemeColors.textSecondary(context),
+            ),
+          ),
+          const SizedBox(height: 20),
+          NeuTextField(
+            label: 'Medicine name',
+            controller: _name,
+            error: _nameError,
+            enabled: !restock,
+            textInputAction: TextInputAction.next,
+            onChanged: (_) => setState(() => _nameError = null),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: NeuTextField(
+                  label: 'Amount',
+                  controller: _quantity,
+                  error: _quantityError,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [DecimalInputFormatter.stockQuantity],
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => setState(() => _quantityError = null),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: NeuTextField(
+                  label: 'Unit',
+                  controller: _unit,
+                  error: _unitError,
+                  enabled: !restock,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => setState(() => _unitError = null),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          NeuTextField(
+            label: 'Lot / batch number (optional)',
+            controller: _lot,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 16),
+          NeuTextField(
+            label: 'Supplier (optional)',
+            controller: _supplier,
+            textInputAction: TextInputAction.done,
+          ),
+          const SizedBox(height: 16),
+          NeuButton(
+            text: _expiresAt == null
+                ? 'Set expiry date'
+                : 'Expiry: ${_dateLabel(_expiresAt!)}',
+            variant: NeuButtonVariant.outline,
+            icon: Icons.event_rounded,
+            onPressed: _pickExpiry,
+            expanded: true,
+          ),
+          const SizedBox(height: 24),
+          NeuButton(
+            text: restock ? 'Add to stock' : 'Save medicine',
+            icon: Icons.save_rounded,
+            svgAsset: SvgIcons.save,
+            onPressed: _save,
             expanded: true,
           ),
         ],
@@ -632,3 +1111,66 @@ class _AccessDeniedView extends StatelessWidget {
 String _qty(double value) => value == value.roundToDouble()
     ? value.toInt().toString()
     : value.toStringAsFixed(2).replaceFirst(RegExp(r'0$'), '');
+
+/// How many days ahead counts as "expiring soon".
+const int _soonDays = 30;
+
+enum _ExpiryFilter { all, expiring, expired }
+
+enum _ExpiryStatus { none, ok, soon, expired }
+
+/// The most urgent expiry state among [batches]: expired beats expiring
+/// soon beats a later date. Batches without a date are ignored.
+_ExpiryStatus _expiryStatus(List<InventoryBatch> batches) {
+  final today = DateUtils.dateOnly(DateTime.now());
+  final horizon = today.add(const Duration(days: _soonDays));
+  var status = _ExpiryStatus.none;
+  for (final batch in batches) {
+    final date = batch.expiresAt;
+    if (date == null) continue;
+    final day = DateUtils.dateOnly(date);
+    if (day.isBefore(today)) return _ExpiryStatus.expired;
+    if (!day.isAfter(horizon)) {
+      status = _ExpiryStatus.soon;
+    } else if (status == _ExpiryStatus.none) {
+      status = _ExpiryStatus.ok;
+    }
+  }
+  return status;
+}
+
+String _dateLabel(DateTime date) => DateFormat('MMM d, y').format(date);
+
+/// Result of the expiry picker: a date, or a request to clear it.
+typedef _PickedExpiry = ({DateTime? date, bool clear});
+
+/// Asks for an expiry date. Returns null when cancelled. When [current] is
+/// set, a "No expiry date" choice lets the clinic clear a wrong date.
+Future<_PickedExpiry?> _pickExpiryDate(
+  BuildContext context,
+  DateTime? current,
+) async {
+  if (current != null) {
+    final clear = await NeuConfirmDialog.show(
+      context: context,
+      title: 'Change expiry date',
+      message: 'Current expiry: ${_dateLabel(current)}.',
+      confirmText: 'Pick a new date',
+      cancelText: 'Remove the date',
+      confirmVariant: NeuButtonVariant.primary,
+    );
+    if (clear == false) return (date: null, clear: true);
+    if (clear == null) return null;
+    if (!context.mounted) return null;
+  }
+  final now = DateTime.now();
+  final date = await showDatePicker(
+    context: context,
+    initialDate: current ?? now.add(const Duration(days: 365)),
+    firstDate: DateTime(now.year - 5),
+    lastDate: DateTime(now.year + 15),
+    helpText: 'Expiry date',
+  );
+  if (date == null) return null;
+  return (date: date, clear: false);
+}

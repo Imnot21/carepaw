@@ -44,7 +44,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   final _confirmPasswordController = TextEditingController();
   final _searchController = TextEditingController();
 
-  UserRole _selectedRole = UserRole.petOwner;
+  UserRole _selectedRole = UserRole.ownerAdmin;
   String _searchQuery = '';
   UserRole? _roleFilter;
   int _visibleCount = AppConstants.defaultPageSize;
@@ -197,7 +197,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                 ? AppColors.backgroundDark
                 : AppColors.background,
             appBar: AppBar(
-              title: const Text('User Management'),
+              title: const Text('Accounts'),
               centerTitle: true,
               elevation: 0,
               scrolledUnderElevation: 0,
@@ -249,7 +249,9 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Add staff, veterinarians, or pet owners. Each account signs in with these credentials.',
+            'Create the Co-Manager\'s account with the Owner / Co-Manager '
+            'role. Pet owners register in the app themselves. Each account '
+            'signs in with these details.',
             style: AppTextStyles.bodySmall.subtleOf(
               Theme.of(context).brightness,
             ),

@@ -221,18 +221,17 @@ enum AppointmentStatus {
 /// The service the vet performs at the owner's address.
 const String homeServiceLabel = 'Home Service';
 
-/// Clinic services offered (DocMyk's PILA VET HUB service list).
-/// Used as the service picker when requesting an appointment.
+/// Clinic services offered, matching Chapter 1 (Scope): consultation,
+/// vaccination, deworming, home service and pet medicines. "Medicine
+/// Dispensing" is the app label for the paper's "pet medicines".
+/// Used as the service picker when requesting an appointment. Bookings saved
+/// with a removed service keep their stored label.
 const List<String> clinicServices = [
   'Consultation',
   homeServiceLabel,
   'Vaccination',
   'Deworming',
-  'Dental Care',
-  'Minor Surgery',
-  'Diagnostic Test',
   'Medicine Dispensing',
-  'Follow-up Checkup',
 ];
 
 /// Appointment with related details

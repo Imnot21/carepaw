@@ -5,9 +5,9 @@ service cloud.firestore {
     // CarePaw — PRODUCTION Firestore Rules
     // ----------------------------------------------------------
     // These rules enforce:
-    //   • Users can read profiles (directory needed for vet names/lists)
-    //     but only create/update their own; admins manage all users
-    //   • Pet owners can read pets and create/update their own pets
+    //   • Users read their own profile and the clinic's Owner/Admin
+    //     profiles, and create/update only their own; admins manage all users
+    //   • Pet owners read, create and update only their own pets
     //   • Appointments: owners manage their own, the Owner/Admin manages all
     //   • Medical records: append-only, clinic creates, owners/vets read
     //   • Queue entries: readable by any signed-in user (the owner screen
@@ -89,10 +89,19 @@ service cloud.firestore {
                         ? request.resource.data.role in ['PET_OWNER', 'OWNER_ADMIN']
                         : (request.auth.uid == uid
                            && request.resource.data.role == 'PET_OWNER'));
-      // Read is open to signed-in users: appointment forms need the
-      // veterinarian directory, and detail views resolve clinician names by
-      // int id (a query that cannot prove ownership). Writes stay locked.
-      allow read: if isAuthenticated();
+      // Read (Objective 2.5, data protection): the Owner/Admin reads every
+      // profile; a pet owner reads only their own profile and the clinic's
+      // Owner/Admin profiles (the veterinarian directory and clinician
+      // names). Other clients' email, phone and address stay private.
+      // `request.auth.uid == uid` also covers reading one's own profile
+      // before it exists (first sign-in), where `resource` is null.
+      // Owner-side queries add a `role` or `firebaseUid` filter in
+      // FirestoreUserRepository so Firestore can prove this rule.
+      allow read: if isOwnerAdmin() ||
+        (isAuthenticated() &&
+         (request.auth.uid == uid ||
+          resource.data.firebaseUid == request.auth.uid ||
+          resource.data.role == 'OWNER_ADMIN'));
       // Users edit their own profile but never their role or identity keys.
       allow update: if isOwnerAdmin() ||
         (isAuthenticated() && request.auth.uid == uid &&
@@ -105,10 +114,12 @@ service cloud.firestore {
 
     // ---- Pets collection ----
     match /pets/{petId} {
-      // Readable by any signed-in user: pet detail screens look pets up by
-      // their integer id, which a query cannot prove ownership from, and pet
-      // documents carry no owner PII beyond the owner's int id.
-      allow read: if isAuthenticated();
+      // Read (Objective 2.5, data protection): the Owner/Admin reads every
+      // pet; a pet owner reads only their own pets. Lookups by int id read
+      // the pets/{id} document directly (or add an ownerId filter for
+      // owner callers), so Firestore can prove ownership.
+      allow read: if isClinicStaff() ||
+        (isAuthenticated() && resource.data.ownerId == getCurrentUserId());
       // Create: `resource` is null for creates, so ownership must be checked
       // against `request.resource` instead — using `resource.data` here
       // would deny every owner-side pet creation.

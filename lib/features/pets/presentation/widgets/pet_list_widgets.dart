@@ -3,6 +3,9 @@ import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/app/router/routes.dart';
+import 'package:carepaw/core/di/dependency_injection.dart';
+import 'package:carepaw/features/authentication/domain/entities/user.dart';
+import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
@@ -497,7 +500,11 @@ class _EmptyPetsView extends StatelessWidget {
             ),
             const SizedBox(height: NeuTokens.spaceXs),
             Text(
-              'Add your first pet to get started with CarePaw.\nYou\u2019ll be able to book appointments, track health,\nand manage their medical records.',
+              // Without an add action this is the clinic's list, which
+              // fills as pet owners add their pets in the app.
+              onAddPet == null
+                  ? 'Patients appear here once pet owners\nadd their pets in the app.'
+                  : 'Add your first pet to get started with CarePaw.\nYou\u2019ll be able to book appointments, track health,\nand manage their medical records.',
               style: AppTextStyles.bodyLarge
                   .subtleOf(Theme.of(context).brightness)
                   .copyWith(height: 1.5),
@@ -533,6 +540,47 @@ class _StaffPetListViewState extends State<StaffPetListView> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
 
+  /// Owner names by user id, so pets that share a name can be told apart
+  /// (the client's main complaint in Chapter 1).
+  Map<int, String> _ownerNames = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOwnerNames();
+  }
+
+  Future<void> _loadOwnerNames() async {
+    try {
+      final repo = getIt<UserRepository>();
+      final results = await Future.wait([
+        repo.findByRole(UserRole.petOwner),
+        repo.findByRole(UserRole.ownerAdmin),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _ownerNames = {
+          for (final user in results.expand((users) => users))
+            if (user.id != null) user.id!: user.fullName,
+        };
+      });
+    } catch (e) {
+      // The list still works without owner names; search falls back to pets.
+      debugPrint('[staff_pet_list] owner names unavailable: $e');
+    }
+  }
+
+  /// Search matches the pet's name, its owner's name, breed or markings.
+  bool _matches(Pet pet) {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return true;
+    final owner = _ownerNames[pet.ownerId] ?? '';
+    return pet.name.toLowerCase().contains(query) ||
+        owner.toLowerCase().contains(query) ||
+        (pet.breed ?? '').toLowerCase().contains(query) ||
+        (pet.markings ?? '').toLowerCase().contains(query);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -550,19 +598,8 @@ class _StaffPetListViewState extends State<StaffPetListView> {
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: NeuIconButton(
-              plain: true,
-              icon: Icons.add,
-              svgAsset: SvgIcons.add,
-              onPressed: () => _navigateToAddPet(context),
-              tooltip: 'Add Pet',
-              size: 22,
-            ),
-          ),
-        ],
+        // No Add Pet here: Chapter 1 (Pet Profile Management) has pet owners
+        // create their pets; the clinic views and searches them.
       ),
       body: Column(
         children: [
@@ -571,7 +608,7 @@ class _StaffPetListViewState extends State<StaffPetListView> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: NeuTextField(
               controller: _searchController,
-              hint: 'Search pets...',
+              hint: 'Search pet or owner name...',
               prefixIcon: ClayIconOrMaterial(
                 'search_rounded',
                 fallback: Icons.search_rounded,
@@ -584,19 +621,12 @@ class _StaffPetListViewState extends State<StaffPetListView> {
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
-                        context.read<PetBloc>().add(const LoadAllPets());
                       },
                       tooltip: 'Clear search',
                     )
                   : null,
-              onChanged: (value) {
-                setState(() => _searchQuery = value);
-                if (value.isEmpty) {
-                  context.read<PetBloc>().add(const LoadAllPets());
-                } else {
-                  context.read<PetBloc>().add(SearchAllPets(query: value));
-                }
-              },
+              // Filtered locally over the loaded list so owner names match.
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
 
@@ -616,11 +646,24 @@ class _StaffPetListViewState extends State<StaffPetListView> {
                 }
 
                 if (state is PetsLoaded) {
-                  final pets = state.pets;
+                  final pets = state.pets.where(_matches).toList();
+
+                  if (state.pets.isEmpty) {
+                    return const _EmptyPetsView();
+                  }
 
                   if (pets.isEmpty) {
-                    return _EmptyPetsView(
-                      onAddPet: () => _navigateToAddPet(context),
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'No pet or owner matches "${_searchQuery.trim()}".',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: ThemeColors.textSecondary(context),
+                          ),
+                        ),
+                      ),
                     );
                   }
 
@@ -635,6 +678,7 @@ class _StaffPetListViewState extends State<StaffPetListView> {
                         final pet = pets[index];
                         return _StaffPetCard(
                           pet: pet,
+                          ownerName: _ownerNames[pet.ownerId],
                           onTap: () => _navigateToPetDetail(context, pet),
                           onEdit: () => _navigateToEditPet(context, pet),
                           onDelete: () => _showDeleteConfirmation(context, pet),
@@ -649,26 +693,13 @@ class _StaffPetListViewState extends State<StaffPetListView> {
                   return const NeuSkeletonList();
                 }
 
-                return _EmptyPetsView(
-                  onAddPet: () => _navigateToAddPet(context),
-                );
+                return const _EmptyPetsView();
               },
             ),
           ),
         ],
       ),
     );
-  }
-
-  void _navigateToAddPet(BuildContext context) {
-    final petBloc = context.read<PetBloc>();
-    // Router route wraps PetFormPage in a BlocProvider<PetBloc>; pushing the
-    // form directly would crash with ProviderNotFoundException.
-    context.push(Routes.petAdd).then((_) {
-      if (mounted) {
-        petBloc.add(const LoadAllPets());
-      }
-    });
   }
 
   void _navigateToPetDetail(BuildContext context, Pet pet) {
@@ -705,12 +736,16 @@ class _StaffPetListViewState extends State<StaffPetListView> {
 /// Staff pet card with owner info
 class _StaffPetCard extends StatelessWidget {
   final Pet pet;
+
+  /// The owner's full name, or null while names load or when unknown.
+  final String? ownerName;
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _StaffPetCard({
     required this.pet,
+    this.ownerName,
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
@@ -785,17 +820,22 @@ class _StaffPetCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  // Owner ID
+                  // Owner name, so same-name pets can be told apart
                   Row(
                     children: [
                       const NeuSvgIcon(SvgIcons.person, size: 16),
                       const SizedBox(width: 4),
-                      Text(
-                        'Owner ID: ${pet.ownerId}',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: isDark
-                              ? AppColors.textSecondaryOnDark
-                              : AppColors.textSecondary,
+                      Expanded(
+                        child: Text(
+                          ownerName != null && ownerName!.isNotEmpty
+                              ? 'Owner: $ownerName'
+                              : 'Owner: unknown',
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: isDark
+                                ? AppColors.textSecondaryOnDark
+                                : AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ],

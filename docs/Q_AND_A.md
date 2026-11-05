@@ -113,11 +113,15 @@ decision, not a system requirement.
 
 ## About method and evaluation
 
-### 14. "Why Agile Scrum for a fixed-scope capstone?"
-Because the client could react. Sprints (users+pets → bookings+queue →
-records → stock+scan) each ended with something the owner could tap and
-correct early. Fixed scope set the *destination*; Scrum set the *route* —
-and the sprint review/client feedback loop is documented in our framework.
+### 14. "Why Waterfall for a capstone?"
+Because the scope was fixed before we built anything. The clinic's needs
+came from the interview and observation, and Chapter 1 sets the modules and
+requirements. With the requirements settled, Waterfall gives a clear order:
+requirements, design, implementation, testing, then deployment and
+maintenance (Figure 4). Each phase ends with a document the panel can check,
+so testing can be traced back to a written requirement. Changes found during
+testing, such as the owner-name search for same-name pets, went back through
+the requirements and design before they were built.
 
 ### 15. "How will you prove the system is 'acceptable' (Objective 2)?"
 By the paper's own 5 measures: functionality (does each requirement work),

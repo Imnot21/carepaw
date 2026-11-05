@@ -67,7 +67,13 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final ownerId = authState.user.id!;
-      context.read<PetBloc>().add(LoadPets(ownerId: ownerId));
+      // Chapter 1: clients book by phone or Facebook, so the clinic books
+      // for any client's pet. The booking takes the pet owner's id (the
+      // repository stamps it from the pet), not the clinic's.
+      context.read<PetBloc>().add(
+        _isVetOrStaff ? const LoadAllPets() : LoadPets(ownerId: ownerId),
+      );
+      if (_isVetOrStaff) _loadOwnerNames();
       _veterinariansFuture = getIt<UserRepository>().findVeterinarians();
       if (!_isVetOrStaff) {
         _veterinariansFuture
@@ -81,6 +87,31 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       }
     } else {
       _veterinariansFuture = Future.value(const <User>[]);
+    }
+  }
+
+  /// Owner names by user id, shown on each pet when the clinic books.
+  /// Empty (not null) for the clinic until loaded, so the pet list already
+  /// works in clinic mode; null for a pet owner.
+  Map<int, String>? _ownerNames;
+
+  Future<void> _loadOwnerNames() async {
+    setState(() => _ownerNames = const {});
+    try {
+      final repo = getIt<UserRepository>();
+      final results = await Future.wait([
+        repo.findByRole(UserRole.petOwner),
+        repo.findByRole(UserRole.ownerAdmin),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _ownerNames = {
+          for (final user in results.expand((users) => users))
+            if (user.id != null) user.id!: user.fullName,
+        };
+      });
+    } catch (e) {
+      debugPrint('[appointment_form] owner names unavailable: $e');
     }
   }
 
@@ -103,7 +134,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             if (state is AppointmentCreated || state is AppointmentUpdated) {
               _isLoading = false;
               if (mounted) {
-                context.go(Routes.appointments);
+                context.go(
+                  _isVetOrStaff
+                      ? Routes.staffAppointments
+                      : Routes.appointments,
+                );
                 NeuToast.success(
                   context,
                   isEditing ? 'Appointment updated' : 'Appointment requested',
@@ -213,6 +248,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             selectedPetId: _selectedPetId,
             onPetSelected: (id) => setState(() => _selectedPetId = id),
             onAutoSelect: (id) => _selectedPetId = id,
+            ownerNames: _ownerNames,
           );
         case 1:
           return VeterinarianSelectionSection(
@@ -255,6 +291,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             selectedPetId: _selectedPetId,
             onPetSelected: (id) => setState(() => _selectedPetId = id),
             onAutoSelect: (id) => _selectedPetId = id,
+            ownerNames: _ownerNames,
           );
         case 1:
           return DateTimeSelectionSection(
