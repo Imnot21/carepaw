@@ -59,7 +59,7 @@ The system connects:
 | Framework | Flutter 3.12+ |
 | Language | Dart 3.12+ |
 | State Management | BLoC (`flutter_bloc`) |
-| Backend / Database | Firebase — Cloud Firestore, Auth, Cloud Functions, FCM, App Check |
+| Backend / Database | Firebase on the free Spark plan — Cloud Firestore, Auth, App Check, AI Logic (Gemini). No Cloud Functions or FCM: notifications are Firestore docs shown by `flutter_local_notifications` |
 | Routing / DI | GoRouter, GetIt + Injectable |
 | Local storage / notifs | `shared_preferences`, `flutter_secure_storage`, `flutter_local_notifications` |
 | Icons / Assets | Clay SVG set (`assets/icons/`, `flutter_svg`) — see `docs/SVG_CATALOG.md` |

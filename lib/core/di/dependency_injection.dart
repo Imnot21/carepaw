@@ -24,6 +24,9 @@ import 'package:carepaw/features/scanning/data/services/firebase_ai_scan_reader.
 import 'package:carepaw/features/scanning/data/services/mlkit_ocr_service.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
 import 'package:carepaw/features/notifications/data/repositories/firestore_notification_repository.dart';
+import 'package:carepaw/features/notifications/domain/services/clinic_notifier.dart';
+import 'package:carepaw/features/notifications/data/services/firestore_clinic_notifier.dart';
+import 'package:carepaw/features/notifications/presentation/notification_alerts.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
@@ -204,6 +207,19 @@ Future<void> configureDependencies() async {
         counterDoc: 'notificationIds',
       ),
     ),
+  );
+
+  // Automatic appointment and queue notifications (FR-22, FR-23)
+  getIt.registerLazySingleton<ClinicNotifier>(
+    () => FirestoreClinicNotifier(
+      notifications: getIt<NotificationRepository>(),
+      users: getIt<UserRepository>(),
+      pets: getIt<PetRepository>(),
+      appointments: getIt<AppointmentRepository>(),
+    ),
+  );
+  getIt.registerLazySingleton<NotificationAlerts>(
+    () => NotificationAlerts(getIt<NotificationRepository>()),
   );
 
   // Audit logs (append-only)

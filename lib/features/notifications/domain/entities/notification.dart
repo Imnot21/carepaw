@@ -14,6 +14,11 @@ class Notification extends Equatable {
   final DateTime createdAt;
   final DateTime? scheduledFor;
 
+  /// Firebase UID of the receiving account. Set when a pet owner alerts the
+  /// clinic, so the security rules can check that the receiver is an
+  /// Owner/Admin account.
+  final String? recipientUid;
+
   const Notification({
     this.id,
     required this.userId,
@@ -26,6 +31,7 @@ class Notification extends Equatable {
     this.readAt,
     required this.createdAt,
     this.scheduledFor,
+    this.recipientUid,
   });
 
   /// Check if notification is unread
@@ -48,6 +54,7 @@ class Notification extends Equatable {
     readAt,
     createdAt,
     scheduledFor,
+    recipientUid,
   ];
 
   Notification copyWith({
@@ -62,6 +69,7 @@ class Notification extends Equatable {
     DateTime? readAt,
     DateTime? createdAt,
     DateTime? scheduledFor,
+    String? recipientUid,
   }) {
     return Notification(
       id: id ?? this.id,
@@ -75,6 +83,7 @@ class Notification extends Equatable {
       readAt: readAt ?? this.readAt,
       createdAt: createdAt ?? this.createdAt,
       scheduledFor: scheduledFor ?? this.scheduledFor,
+      recipientUid: recipientUid ?? this.recipientUid,
     );
   }
 }

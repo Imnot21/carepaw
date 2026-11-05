@@ -12,6 +12,10 @@ class NotificationDocMapper {
   /// Field stored on the document for a scheduled (delayed) notification.
   static const String scheduledForField = 'scheduledFor';
 
+  /// Firebase UID of the receiver, checked by the security rules when a
+  /// pet owner sends a notification to the clinic.
+  static const String recipientUidField = 'recipientUid';
+
   /// Build a domain [Notification] from Firestore document data.
   static Notification fromData(Map<String, dynamic> data) {
     return Notification(
@@ -30,6 +34,7 @@ class NotificationDocMapper {
           DateFieldCodec.fromFirestoreDate(data[FirestoreSchema.createdAt]) ??
           DateTime.now(),
       scheduledFor: DateFieldCodec.fromFirestoreDate(data[scheduledForField]),
+      recipientUid: data[recipientUidField] as String?,
     );
   }
 
@@ -53,6 +58,8 @@ class NotificationDocMapper {
       scheduledForField: DateFieldCodec.toFirestoreDate(
         notification.scheduledFor,
       ),
+      if (notification.recipientUid != null)
+        recipientUidField: notification.recipientUid,
     };
   }
 }

@@ -25,7 +25,6 @@ class UserManagementBloc
     on<events.UserManagementCreateRequested>(_onCreateRequested);
     on<events.UserManagementChangeRoleRequested>(_onChangeRoleRequested);
     on<events.UserManagementToggleActiveRequested>(_onToggleActiveRequested);
-    on<events.UserManagementDeleteRequested>(_onDeleteRequested);
   }
 
   /// Load Owner/Admin + pet-owner accounts for management.
@@ -35,9 +34,7 @@ class UserManagementBloc
   ) async {
     emit(const states.UserManagementLoading());
     try {
-      final operators = await _userRepository.findByRole(
-        UserRole.ownerAdmin,
-      );
+      final operators = await _userRepository.findByRole(UserRole.ownerAdmin);
       final owners = await _userRepository.findByRole(UserRole.petOwner);
       emit(states.UserManagementLoaded([...operators, ...owners]));
     } on Failure catch (failure) {
@@ -86,10 +83,7 @@ class UserManagementBloc
     } catch (e) {
       debugPrint('[user_management_bloc] unexpected: $e');
       emit(
-        states.UserManagementError(
-          const UnexpectedFailure(),
-          _currentUsers(),
-        ),
+        states.UserManagementError(const UnexpectedFailure(), _currentUsers()),
       );
     }
   }
@@ -115,12 +109,7 @@ class UserManagementBloc
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
       debugPrint('[user_management_bloc] unexpected: $e');
-      emit(
-        states.UserManagementError(
-          const UnexpectedFailure(),
-          prev,
-        ),
-      );
+      emit(states.UserManagementError(const UnexpectedFailure(), prev));
     }
   }
 
@@ -145,42 +134,7 @@ class UserManagementBloc
       emit(states.UserManagementError(failure, prev));
     } catch (e) {
       debugPrint('[user_management_bloc] unexpected: $e');
-      emit(
-        states.UserManagementError(
-          const UnexpectedFailure(),
-          prev,
-        ),
-      );
-    }
-  }
-
-  /// Permanently delete a user account.
-  Future<void> _onDeleteRequested(
-    events.UserManagementDeleteRequested event,
-    Emitter<states.UserManagementState> emit,
-  ) async {
-    final prev = _currentUsers();
-    if (prev.isNotEmpty) {
-      emit(states.UserManagementMutating(prev));
-    }
-    try {
-      await _userRepository.deleteUser(event.userId);
-      emit(
-        const states.UserManagementActionSuccess(
-          'Account permanently deleted. The email is now free to be re-created.',
-        ),
-      );
-      add(const events.UserManagementLoadRequested());
-    } on Failure catch (failure) {
-      emit(states.UserManagementError(failure, prev));
-    } catch (e) {
-      debugPrint('[user_management_bloc] unexpected: $e');
-      emit(
-        states.UserManagementError(
-          const UnexpectedFailure(),
-          prev,
-        ),
-      );
+      emit(states.UserManagementError(const UnexpectedFailure(), prev));
     }
   }
 }

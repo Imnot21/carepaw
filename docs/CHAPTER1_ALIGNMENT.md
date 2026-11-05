@@ -1,6 +1,6 @@
 # Chapter 1 vs. System Alignment
 
-Source: `Chapter 1 draft.lara.docx`, checked against the codebase on branch `feature/neumorphism-design` (v1.0.3).
+Source: `Chapter 1 draft.lara.docx`, checked against the codebase on branch `feature/neumorphism-design` (v1.0.4).
 Updated: 2026-11-05. Every system change the paper needed is now built. What is left is listed under "Still open".
 
 **Paper corrections applied** as tracked changes in `Chapter 1 draft.lara (corrected).docx`: #8, #9, #11, #14, #17, #19–#24.
@@ -11,11 +11,21 @@ Already aligned, no action: login with roles, date and time booking, home servic
 
 | # | Owner | What | Why it is open |
 |---|---|---|---|
-| 16 | You | Deploy the new Firestore rules and the v1.0.3 web build: `flutter build web --release`, then `firebase deploy --only firestore:rules,hosting` | The rules are written and pass 19 emulator checks, but the live project still runs the old, open rules until this deploy runs. Claude Code's auto mode blocks production deploys, so you run it. Old v1.0.2 phones must update to v1.0.3 after the deploy, because their pet-owner lookups do not pass the new rules |
+| 16 | You | Deploy the new Firestore rules and the v1.0.4 web build: `flutter build web --release`, then `firebase deploy --only firestore:rules,hosting` | The rules are written and pass 30 emulator checks, but the live project still runs the old, open rules until this deploy runs. Claude Code's auto mode blocks production deploys, so you run it. Older phones must update to v1.0.4 after the deploy: their pet-owner lookups do not pass the new rules, and pet owners need the new notification rule to alert the clinic |
 | 7 | Client | Confirm that "Medicine Dispensing" is what the paper calls "pet medicines" | The picker now lists exactly the paper's services. Only the label needs the client's yes |
 | 9a | Group | Queue priority: keep Urgent / Routine, or require a priority on every entry | Your note: "can we force the client to have the queue priority since it handles the life of the pets taken to them" |
 | 18 | Group | Web version | A web build is deployed, but the paper says mobile. Scanning uses `dart:io` and is not expected to work on the web. Android matches the paper |
-| — | You | Release v1.0.3 on GitHub: `gh auth login`, tag `v1.0.3`, attach `build/app/outputs/flutter-apk/app-release.apk` | Needs your GitHub login |
+| — | You | Release v1.0.4 on GitHub: `gh auth login`, tag `v1.0.4`, attach `build/app/outputs/flutter-apk/app-release.apk` | Needs your GitHub login |
+
+## Done in v1.0.4
+
+| Paper says | System now |
+|---|---|
+| FR-22 and FR-23: notify users of appointment and queue updates | The pet owner gets a notification when the clinic books, confirms, reschedules, cancels or marks a no-show, and when their pet is called from the queue. Every active Owner/Admin account gets one when a pet owner books, changes or cancels. New notifications pop up on the phone while the app is open or in the background (`NotificationAlerts`, Flutter Local Notifications) |
+| Delimitations: accounts are deactivated, and the developer removes them permanently | The Accounts page has no Delete button. Switching an account off asks for confirmation; a deactivated account cannot sign in, and the rules stop users from switching themselves back on |
+| No Cloud Functions or Cloud Messaging (free Spark plan) | The `deleteUser` Cloud Function, its HTTP call and the `functions/` folder are removed |
+
+Emulator check: 30 of 30 pass (11 new cases for notifications and deactivation).
 
 ## Done in v1.0.3 (system changes for the paper)
 
@@ -29,7 +39,7 @@ Already aligned, no action: login with roles, date and time booking, home servic
 | 15 | Pets with the same name are hard to find | The Patients tab shows "Owner: name" on each pet, and search matches pet name, owner name, breed or markings |
 | 16 | Objective 2.5: protect user and clinic information | `firestore.rules`: a pet owner reads only their own profile, the clinic's profiles and their own pets. Other clients' email, phone, address and pets are hidden. The Owner/Admin still reads everything. The repositories add the filters the rules need. Also fixed: creating an account no longer turns anyone on the first user's email domain (such as gmail.com) into an Owner/Admin |
 
-Emulator check: `build/rules_test/rules.test.mjs`, run with `firebase emulators:exec --only firestore --project demo-carepaw "node build/rules_test/rules.test.mjs"`. 19 of 19 pass.
+Emulator check: `build/rules_test/rules.test.mjs`, run with `firebase emulators:exec --only firestore --project demo-carepaw "node build/rules_test/rules.test.mjs"`. 19 of 19 passed in v1.0.3; 30 of 30 pass in v1.0.4.
 
 ## Paper items (already applied as tracked changes)
 

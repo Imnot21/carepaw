@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -290,109 +289,6 @@ class FirestoreUserRepository implements UserRepository {
   }
 
   @override
-  Future<void> deleteUser(int userId) async {
-    final existing = await findById(userId);
-    if (existing == null) {
-      throw Exception('User not found');
-    }
-    final uid = existing.firebaseUid;
-    if (uid == null || uid.isEmpty) {
-      throw Exception('User has no Firebase UID and cannot be deleted.');
-    }
-
-    // The client SDK cannot revoke another user's Auth credential, so the
-    // actual deletion (Auth revocation + Firestore doc removal + audit) is
-    // performed by the backend `deleteUser` Cloud Function under the Admin SDK.
-    try {
-      final currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        throw const UnauthorizedFailure(
-          message: 'Sign in to delete this user.',
-        );
-      }
-
-      final idToken = await currentUser.getIdToken();
-      if (idToken == null || idToken.isEmpty) {
-        throw const UnauthorizedFailure(
-          message: 'Failed to get authentication token. Please try again.',
-        );
-      }
-
-      // Post the raw HTTPS callable protocol. This is deliberately a plain
-      // HTTP POST rather than the FlutterFire `httpsCallable` client: the
-      // pinned `firebase_functions` package is the Dart *authoring* SDK, which
-      // exposes no runtime callable API, and pinning an extra wrapper here would
-      // add a redundant web-affecting dependency just for one call.
-      final projectId = _firestore.app.options.projectId;
-      final uri = Uri.parse(
-        'https://deleteuser-$projectId.uc.r.appspot.com/deleteUser',
-      );
-
-      try {
-        final http.Response response = await http
-            .post(
-              uri,
-              headers: <String, String>{
-                HttpHeaders.contentTypeHeader: 'application/json',
-                HttpHeaders.authorizationHeader: 'Bearer $idToken',
-              },
-              body: jsonEncode(<String, Object>{'uid': uid}),
-            )
-            .timeout(const Duration(seconds: 30));
-
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-          throw _mapDeleteUserHttpError(response.statusCode);
-        }
-
-        // VERIFICATION: Confirm the user was actually deleted from Firestore
-        // with retries to account for potential propagation delays
-        bool firestoreDeleted = false;
-        for (int i = 0; i < 3; i++) {
-          final deletedUser = await findById(userId);
-          if (deletedUser == null) {
-            firestoreDeleted = true;
-            break;
-          }
-          if (i < 2) {
-            // Don't wait after the last attempt
-            await Future.delayed(const Duration(milliseconds: 500));
-          }
-        }
-
-        if (!firestoreDeleted) {
-          throw ServerFailure(
-            message:
-                'Deletion failed - user still exists in Firestore after verification',
-          );
-        }
-
-        // NOTE: Auth verification cannot be performed from the client SDK.
-        // The Cloud Function is responsible for deleting the user from Auth.
-      } on SocketException {
-        throw const NoConnectionFailure(
-          message:
-              'Could not reach the server. Check your connection and try again.',
-        );
-      } on TimeoutException {
-        throw const TimeoutFailure(
-          message:
-              'Request timed out. Please check your connection and try again.',
-        );
-      } on HttpException catch (e) {
-        throw ServerFailure(message: 'Network error: ${e.message}');
-      } catch (e) {
-        throw ServerFailure(
-          message: 'Unexpected error during deletion: ${e.toString()}',
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      throw mapFirebaseAuthException(e);
-    } catch (e) {
-      throw ErrorHandler.handleException(e);
-    }
-  }
-
-  @override
   Future<int> countByRole(domain.UserRole role) async {
     final snapshot = await _users
         .where(FirestoreSchema.role, isEqualTo: role.value)
@@ -583,33 +479,5 @@ class FirestoreUserRepository implements UserRepository {
         .limit(1)
         .get();
     return own.docs.isEmpty ? null : own.docs.first;
-  }
-
-  /// Map a non-2xx `deleteUser` HTTP status to a user-friendly [Failure].
-  ///
-  /// The Cloud Function reports each failure mode with a distinct status
-  /// code (mirroring its own guard checks), so we surface the right message
-  /// without leaking server internals.
-  Failure _mapDeleteUserHttpError(int status) {
-    switch (status) {
-      case HttpStatus.unauthorized:
-        return const UnauthorizedFailure(
-          message: 'Your session has expired. Please log in again.',
-        );
-      case HttpStatus.forbidden:
-        return const UnauthorizedFailure(
-          message: 'Only administrators can delete accounts.',
-        );
-      case HttpStatus.notFound:
-        return const NotFoundFailure(message: 'User not found.');
-      case HttpStatus.conflict:
-        return const UnexpectedFailure(
-          message:
-              'Cannot delete this account. It may be your own account '
-              'or the last administrator.',
-        );
-      default:
-        return ServerFailure(message: 'Server error. Please try again later.');
-    }
   }
 }

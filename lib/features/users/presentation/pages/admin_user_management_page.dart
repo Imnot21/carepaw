@@ -14,7 +14,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -87,39 +86,38 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
     }
   }
 
-  /// Confirm and dispatch a permanent account deletion.
+  /// Turn an account on or off. Switching off asks first.
   ///
-  /// Deleting revokes the target's Firebase Auth credential (freeing the
-  /// email so it can be re-created) and removes their Firestore document.
-  /// Because this is irreversible, we require an explicit confirmation that
-  /// names the account before dispatching the delete event.
-  Future<void> _confirmDelete(BuildContext context, User user) async {
-    // Capture the bloc before the async gap; the post-gap dispatch
-    // uses the captured bloc, so nothing here reads across the gap.
+  /// Accounts are deactivated, never deleted from the app: a deactivated
+  /// account cannot sign in, and its pets and records stay intact. When the
+  /// clinic wants an account gone for good, the developer deletes it in the
+  /// Firebase console (permanent deletion needs a server, which the free
+  /// Firebase plan does not provide).
+  Future<void> _confirmToggle(
+    BuildContext context,
+    User user,
+    bool active,
+  ) async {
+    // Capture the bloc before the async gap.
     final bloc = context.read<UserManagementBloc>();
-    final confirmed = await NeuConfirmDialog.show(
-      context: context,
-      title: 'Confirm Deletion',
-      message:
-          'You are about to permanently delete the following account:\n\n'
-          'Name: ${user.fullName}\n'
-          'Email: ${user.email}\n'
-          'Role: ${user.role.displayName}\n\n'
-          'This action will:\n'
-          '• Permanently delete this user account from the system\n'
-          '• Revoke the user\'s authentication access\n'
-          '• Free the email address for potential reuse\n'
-          '• Leave associated pets, appointments, and medical records intact\n\n'
-          'This action CANNOT be undone.',
-      confirmText: 'Delete Permanently',
-      cancelText: 'Cancel',
-      confirmVariant: NeuButtonVariant.destructive,
-    );
-    if (confirmed != true || !mounted) return;
-
     final id = user.id;
     if (id == null) return;
-    bloc.add(UserManagementDeleteRequested(userId: id));
+    if (!active) {
+      final confirmed = await NeuConfirmDialog.show(
+        context: context,
+        title: 'Deactivate account?',
+        message:
+            '${user.fullName} (${user.email}) will no longer be able to sign in.\n\n'
+            'Their pets, appointments and records stay saved. You can switch '
+            'the account back on at any time.\n\n'
+            'To delete an account permanently, ask the developer.',
+        confirmText: 'Deactivate',
+        cancelText: 'Cancel',
+        confirmVariant: NeuButtonVariant.destructive,
+      );
+      if (confirmed != true || !mounted) return;
+    }
+    bloc.add(UserManagementToggleActiveRequested(userId: id, isActive: active));
   }
 
   void _onSearchChanged(String raw) {
@@ -334,10 +332,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: const [
-                      UserRole.petOwner,
-                      UserRole.ownerAdmin,
-                    ]
+                    children: const [UserRole.petOwner, UserRole.ownerAdmin]
                         .map(
                           (role) => _RoleChip(
                             role: role,
@@ -491,7 +486,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                   const SizedBox(height: 12),
                   NeuButton(
                     text: 'Clear filters',
-                variant: NeuButtonVariant.text,
+                    variant: NeuButtonVariant.text,
                     size: NeuButtonSize.small,
                     onPressed: () {
                       _searchDebounce?.cancel();
@@ -523,19 +518,8 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
                       );
                     }
                   },
-                  onToggleActive: (active) {
-                    if (user.id != null) {
-                      context.read<UserManagementBloc>().add(
-                        UserManagementToggleActiveRequested(
-                          userId: user.id!,
-                          isActive: active,
-                        ),
-                      );
-                    }
-                  },
-                  onDelete: () {
-                    if (user.id != null) _confirmDelete(context, user);
-                  },
+                  onToggleActive: (active) =>
+                      _confirmToggle(context, user, active),
                 ),
               ),
             ),
@@ -598,14 +582,12 @@ class _UserManagementCard extends StatelessWidget {
   final bool busy;
   final ValueChanged<UserRole> onRoleChanged;
   final ValueChanged<bool> onToggleActive;
-  final VoidCallback onDelete;
 
   const _UserManagementCard({
     required this.user,
     this.busy = false,
     required this.onRoleChanged,
     required this.onToggleActive,
-    required this.onDelete,
   });
 
   @override
@@ -675,39 +657,23 @@ class _UserManagementCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Permanent delete (admin). Requires the explicit confirm
-                  // dialog wired in the page; disabled while a mutation runs.
-                  NeuIconButton(
-                    icon: Icons.delete_outline_rounded,
-                    svgAsset: SvgIcons.delete,
-                    tooltip: 'Delete account',
-                    color: ThemeColors.error(context),
-                    size: 20,
-                    onPressed: busy ? null : onDelete,
-                    isDisabled: busy,
-                  ),
-                  const SizedBox(width: 8),
                   // Role selector using NeuChip for consistent styling
                   Wrap(
                     spacing: 6,
-                    children:
-                        [
-                              UserRole.ownerAdmin,
-                              UserRole.petOwner,
-                            ]
-                            .map(
-                              (r) => NeuChip(
-                                label: r.displayName,
-                                selected: user.role == r,
-                                onTap: (!user.isActive || busy)
-                                    ? null
-                                    : () {
-                                        if (r != user.role) onRoleChanged(r);
-                                      },
-                                selectedColor: roleColor(context, r),
-                              ),
-                            )
-                            .toList(),
+                    children: [UserRole.ownerAdmin, UserRole.petOwner]
+                        .map(
+                          (r) => NeuChip(
+                            label: r.displayName,
+                            selected: user.role == r,
+                            onTap: (!user.isActive || busy)
+                                ? null
+                                : () {
+                                    if (r != user.role) onRoleChanged(r);
+                                  },
+                            selectedColor: roleColor(context, r),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ],
               ),

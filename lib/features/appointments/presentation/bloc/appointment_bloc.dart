@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/core/errors/error_handler.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
@@ -6,17 +9,25 @@ import 'package:carepaw/features/appointments/presentation/bloc/appointment_even
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/notifications/domain/services/clinic_notifier.dart';
 
 /// Appointment BLoC - manages appointment state and business logic
 class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
   final AppointmentRepository _repository;
   final AuthBloc _authBloc;
+  final ClinicNotifier? _notifier;
   int? _currentPetId;
 
   AppointmentBloc({
     required this._repository,
     required this._authBloc,
-  }) : super(AppointmentInitial()) {
+    ClinicNotifier? notifier,
+  }) : _notifier =
+           notifier ??
+           (getIt.isRegistered<ClinicNotifier>()
+               ? getIt<ClinicNotifier>()
+               : null),
+       super(AppointmentInitial()) {
     on<AppointmentLoadRequested>(_onLoadRequested);
     on<AppointmentUpcomingLoadRequested>(_onUpcomingLoadRequested);
     on<AppointmentDetailLoadRequested>(_onDetailLoadRequested);
@@ -31,6 +42,29 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     on<AppointmentDeleteRequested>(_onDeleteRequested);
     on<AppointmentErrorCleared>(_onErrorCleared);
     on<AppointmentRefreshRequested>(_onRefreshRequested);
+  }
+
+  /// True when the signed-in user is on the clinic side.
+  bool get _byClinic {
+    final auth = _authBloc.state;
+    return auth is AuthAuthenticated && auth.user.isOwnerAdmin;
+  }
+
+  /// Send the matching notification without delaying the screen.
+  void _notify(Appointment appointment, AppointmentNotice notice) {
+    final notifier = _notifier;
+    if (notifier == null) return;
+    unawaited(notifier.appointment(appointment, notice, byClinic: _byClinic));
+  }
+
+  static AppointmentNotice? _noticeFor(AppointmentStatus status) {
+    return switch (status) {
+      AppointmentStatus.confirmed => AppointmentNotice.confirmed,
+      AppointmentStatus.rescheduled => AppointmentNotice.rescheduled,
+      AppointmentStatus.cancelled => AppointmentNotice.cancelled,
+      AppointmentStatus.noShow => AppointmentNotice.noShow,
+      _ => null,
+    };
   }
 
   /// Load all appointments for the authenticated user's pets (optionally filtered by pet)
@@ -215,6 +249,7 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     try {
       final appointment = await _repository.save(event.appointment);
       emit(AppointmentCreated(appointment));
+      _notify(appointment, AppointmentNotice.booked);
 
       // Reload appointments to show updated list
       if (_currentPetId != null) {
@@ -235,8 +270,13 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     emit(const AppointmentLoading());
 
     try {
+      final id = event.appointment.id;
+      final before = id == null ? null : await _repository.findById(id);
       final appointment = await _repository.save(event.appointment);
       emit(AppointmentUpdated(appointment));
+      if (before != null && before.scheduledAt != appointment.scheduledAt) {
+        _notify(appointment, AppointmentNotice.rescheduled);
+      }
 
       // Reload appointments
       if (_currentPetId != null) {
@@ -263,6 +303,8 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
         cancellationReason: event.cancellationReason,
       );
       emit(AppointmentStatusUpdated(appointment));
+      final notice = _noticeFor(event.status);
+      if (notice != null) _notify(appointment, notice);
 
       // Reload appointments
       if (_currentPetId != null) {
@@ -354,6 +396,7 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
         event.reason,
       );
       emit(AppointmentStatusUpdated(appointment));
+      _notify(appointment, AppointmentNotice.cancelled);
 
       // Reload appointments
       if (_currentPetId != null) {
@@ -379,6 +422,7 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
         event.newTime,
       );
       emit(AppointmentUpdated(appointment));
+      _notify(appointment, AppointmentNotice.rescheduled);
 
       // Reload appointments
       if (_currentPetId != null) {

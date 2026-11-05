@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/notifications/presentation/notification_target.dart';
+import 'package:carepaw/features/notifications/presentation/notification_alerts.dart';
 import 'package:carepaw/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
@@ -214,6 +217,7 @@ class _CarePawAppRouter extends StatefulWidget {
 class _CarePawAppRouterState extends State<_CarePawAppRouter> {
   late final AuthStateListenable _authStateListenable;
   late final GoRouter _router;
+  StreamSubscription<AuthState>? _alertsAuthSub;
 
   @override
   void initState() {
@@ -225,6 +229,20 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
     _authStateListenable.initialize(context.read<AuthBloc>());
     _router = AppRouter.buildRouter(_authStateListenable);
     LocalNotificationService.setTapHandler(_openNotificationTarget);
+    final authBloc = context.read<AuthBloc>();
+    _syncAlerts(authBloc.state);
+    _alertsAuthSub = authBloc.stream.listen(_syncAlerts);
+  }
+
+  /// Show new notifications as phone alerts while someone is signed in.
+  void _syncAlerts(AuthState state) {
+    final alerts = getIt<NotificationAlerts>();
+    final id = state is AuthAuthenticated ? state.user.id : null;
+    if (id != null) {
+      alerts.start(id);
+    } else {
+      alerts.stop();
+    }
   }
 
   /// Navigate to the screen a tapped notification refers to. Ignored when
@@ -239,6 +257,8 @@ class _CarePawAppRouterState extends State<_CarePawAppRouter> {
 
   @override
   void dispose() {
+    _alertsAuthSub?.cancel();
+    getIt<NotificationAlerts>().stop();
     _authStateListenable.dispose();
     super.dispose();
   }
@@ -308,7 +328,9 @@ class _InitializationErrorScreen extends StatelessWidget {
                         height: 94,
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            NeuTokens.radiusMd,
+                          ),
                         ),
                         child: NeuSvgIcon(SvgIcons.error, size: 52),
                       ),

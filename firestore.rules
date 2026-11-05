@@ -69,6 +69,15 @@ service cloud.firestore {
         : -1;
     }
 
+    // True when a new notification is addressed to an Owner/Admin account.
+    function isClinicRecipient(data) {
+      return data.keys().hasAll(['recipientUid', 'userId']) &&
+        data.recipientUid is string &&
+        exists(/databases/$(database)/documents/users/$(data.recipientUid)) &&
+        get(/databases/$(database)/documents/users/$(data.recipientUid)).data.role == 'OWNER_ADMIN' &&
+        get(/databases/$(database)/documents/users/$(data.recipientUid)).data.id == data.userId;
+    }
+
     function getCurrentFirebaseUid() {
       return request.auth.uid;
     }
@@ -102,13 +111,14 @@ service cloud.firestore {
          (request.auth.uid == uid ||
           resource.data.firebaseUid == request.auth.uid ||
           resource.data.role == 'OWNER_ADMIN'));
-      // Users edit their own profile but never their role or identity keys.
+      // Users edit their own profile but never their role, identity keys,
+      // or active flag (a deactivated user must not switch themselves back on).
       allow update: if isOwnerAdmin() ||
         (isAuthenticated() && request.auth.uid == uid &&
          !request.resource.data.diff(resource.data).affectedKeys()
-           .hasAny(['role', 'id', 'firebaseUid']));
-      // Hard deletion happens only via the deleteUser Cloud Function
-      // (Admin SDK bypasses these rules).
+           .hasAny(['role', 'id', 'firebaseUid', 'isActive']));
+      // Accounts are deactivated in the app, never deleted. Permanent
+      // deletion is done by the developer in the Firebase console.
       allow delete: if false;
     }
 
@@ -221,10 +231,15 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow read: if isAuthenticated() &&
         (resource.data.userId == getCurrentUserId() || isClinicStaff());
-      // Clinic staff target any user; users may send one only to themselves
-      // (the in-app "Test Notification" action).
+      // Clinic staff target any user; users may send one to themselves
+      // (the in-app "Test Notification" action) or to a clinic account
+      // (appointment requests and cancellations). For the clinic case the
+      // document names the receiver's Firebase UID, and that profile must be
+      // an Owner/Admin whose int id matches userId.
       allow create: if isAuthenticated() &&
-        (isClinicStaff() || request.resource.data.userId == getCurrentUserId());
+        (isClinicStaff() ||
+         request.resource.data.userId == getCurrentUserId() ||
+         isClinicRecipient(request.resource.data));
       allow update, delete: if isAuthenticated() &&
         (resource.data.userId == getCurrentUserId() || isClinicStaff());
     }

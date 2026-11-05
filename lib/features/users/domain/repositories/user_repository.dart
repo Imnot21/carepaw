@@ -46,15 +46,6 @@ abstract class UserRepository extends SoftDeleteRepository<User, int>
   /// Activate/Deactivate user (Owner/Admin only)
   Future<User> setActive(int userId, bool isActive);
 
-  /// Permanently delete a user account (Owner/Admin only).
-  ///
-  /// Revokes the target's Firebase Auth credential via a backend Cloud
-  /// Function — this frees the account's email so it can be re-created — and
-  /// removes the Firestore `users/{uid}` document. Guards against self- and
-  /// last-admin deletion are enforced server-side. Related domain records
-  /// (pets, appointments, medical records) are intentionally left intact.
-  Future<void> deleteUser(int userId);
-
   /// Get user count by role
   Future<int> countByRole(UserRole role);
 
