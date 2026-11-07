@@ -94,7 +94,7 @@ class MedicalRecordTypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final types = MedicalRecordType.values;
+    final types = MedicalRecordType.selectable(selectedType);
 
     return NeuCard(
       borderRadius: NeuTokens.radiusMd,

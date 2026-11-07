@@ -56,7 +56,7 @@ class ThemeColors {
       _isDark(context) ? AppColors.progressOnDark : AppColors.progress;
 
   /// Text/glyph colour **on** a full-strength status-tone fill: white on the
-  /// deep light-mode tones, warm ink on their lightened dark-mode versions.
+  /// deep light-mode tones, dark ink on their lightened dark-mode versions.
   static Color onStatus(BuildContext context) =>
       _isDark(context) ? AppColors.primaryInk : AppColors.textOnPrimary;
 
@@ -104,8 +104,8 @@ class ThemeColors {
 
   /// Text/glyph colour **on** an accent fill.
   ///
-  /// Both modes use the warm near-black: white fails on the terracotta fill
-  /// (2.9:1 light) and on the lightened dark-mode fill (2.3:1), while the
-  /// ink clears 5.5:1 and 6.8:1 respectively.
-  static Color onPrimary(BuildContext context) => AppColors.primaryInk;
+  /// White on the deep indigo fill in light mode (10.7:1); the cool
+  /// near-black on the lightened dark-mode fill (6.3:1).
+  static Color onPrimary(BuildContext context) =>
+      _isDark(context) ? AppColors.primaryInk : AppColors.textOnPrimary;
 }

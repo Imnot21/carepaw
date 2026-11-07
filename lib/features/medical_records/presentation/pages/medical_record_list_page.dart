@@ -321,7 +321,6 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       (MedicalRecordType.visit, 'Visits'),
       (MedicalRecordType.vaccination, 'Vaccinations'),
       (MedicalRecordType.deworming, 'Deworming'),
-      (MedicalRecordType.surgery, 'Surgeries'),
       (MedicalRecordType.labResult, 'Lab Results'),
       (MedicalRecordType.prescription, 'Prescriptions'),
       (MedicalRecordType.allergy, 'Allergies'),

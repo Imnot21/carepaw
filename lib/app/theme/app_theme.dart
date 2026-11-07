@@ -18,7 +18,7 @@ class AppTheme {
     const brightness = Brightness.light;
     const scheme = ColorScheme.light(
       primary: AppColors.primary,
-      onPrimary: AppColors.primaryInk,
+      onPrimary: AppColors.textOnPrimary,
       primaryContainer: AppColors.primaryTint,
       onPrimaryContainer: AppColors.primaryText,
       secondary: AppColors.textSecondary,
@@ -80,7 +80,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.primaryInk,
+          foregroundColor: AppColors.textOnPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -243,8 +243,8 @@ class AppTheme {
       onSurface: AppColors.textPrimaryOnDark,
       surfaceContainerLowest: AppColors.backgroundDark,
       surfaceContainer: AppColors.surfaceContainerDark,
-      surfaceContainerHigh: Color(0xFF3A3532),
-      surfaceContainerHighest: Color(0xFF3D3937),
+      surfaceContainerHigh: Color(0xFF2E3243),
+      surfaceContainerHighest: Color(0xFF333849),
       outline: AppColors.borderDark,
       outlineVariant: AppColors.dividerDark,
       shadow: AppColors.shadowDepthDark,

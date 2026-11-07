@@ -24,6 +24,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
+import 'package:carepaw/core/widgets/clinic_logo.dart';
 
 /// Profile page - shows the authenticated user's info with name/phone editing.
 ///
@@ -528,10 +529,17 @@ class _ProfilePageState extends State<ProfilePage> {
     NeuDialog.show(
       context: context,
       title: 'Help & Support',
-      content: Text(
-        'For bookings, records, or account help, please contact or visit '
-        '${AppConstants.clinicName}, ${AppConstants.clinicLocation}.\n\n'
-        '${AppConstants.appName} v${AppConstants.appVersion}',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ClinicLogo(size: 88),
+          const SizedBox(height: 16),
+          Text(
+            'For bookings, records, or account help, please contact or visit '
+            '${AppConstants.clinicName}, ${AppConstants.clinicLocation}.\n\n'
+            '${AppConstants.appName} v${AppConstants.appVersion}',
+          ),
+        ],
       ),
       actions: [
         NeuButton(

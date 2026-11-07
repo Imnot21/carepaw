@@ -69,6 +69,7 @@ import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/shell/app_shell.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/clinic_logo.dart';
 
 /// Application router configuration using GoRouter.
 ///
@@ -686,15 +687,7 @@ class _SplashPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: NeuSvgIcon(SvgIcons.paw, size: 60),
-            ),
+            const ClinicLogo(size: 112),
             const SizedBox(height: 24),
             Text(
               'CarePaw',

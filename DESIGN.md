@@ -1,35 +1,37 @@
 ---
 name: CarePaw
-description: Soft-3D clinic calm — a warm bone canvas where every surface is extruded, one terracotta accent carries action, and clay icons give the app its voice.
+description: Soft-3D clinic calm — a cool clinic canvas where every surface is extruded, the PILA VET HUB indigo carries action, and clay icons give the app its voice.
 colors:
-  warm-bone: "#F8F5F0"
+  clinic-mist: "#F4F6FB"
   chalk: "#FFFFFF"
-  recessed-bone: "#F1ECE3"
-  bone-mist: "#FAF7F2"
-  warm-charcoal: "#1A1A1A"
-  charcoal-card: "#262423"
-  charcoal-well: "#1F1E1D"
-  ash-rim: "#3A3735"
-  terracotta: "#E27D60"
-  terracotta-on-dark: "#F0927A"
-  deep-terracotta: "#A8472C"
-  umber-ink: "#2B2118"
-  terracotta-tint: "#F5E8E0"
-  terracotta-deep: "#C86A4E"
-  terracotta-bright: "#F4A988"
+  recessed-mist: "#E9EDF5"
+  mist: "#F7F9FC"
+  deep-slate: "#15171F"
+  slate-card: "#1F2230"
+  slate-well: "#191B25"
+  slate-rim: "#2E3243"
+  pila-indigo: "#2E3192"
+  indigo-on-dark: "#8C93E8"
+  indigo-ink: "#15172B"
+  indigo-tint: "#E6E7F6"
+  slate-tint: "#262A4A"
+  indigo-deep: "#23267A"
+  caduceus-cyan: "#0098C8"
+  deep-cyan: "#00739A"
+  cyan-on-dark: "#4CC9F0"
   light-source: "#FFFFFF"
-  bone-depth: "#B8AE9E"
-  deep-bone: "#7A6E5E"
+  mist-depth: "#A9B1C7"
+  deep-mist: "#5E6782"
   ink: "#111111"
   ink-secondary: "#2B2B2B"
   ink-soft: "#4A4A4A"
   ink-on-dark: "#FFFFFF"
   ink-secondary-dark: "#E5E7EB"
-  hairline: "#E7E0D5"
-  hairline-strong: "#D6CCBD"
-  divider: "#EDE7DC"
-  skeleton: "#EDE7DC"
-  skeleton-dark: "#322F2E"
+  hairline: "#DDE2EC"
+  hairline-strong: "#C9D0DE"
+  divider: "#E6EAF1"
+  skeleton: "#E6EAF1"
+  skeleton-dark: "#272A38"
   brick: "#B91C1C"
   brick-on-dark: "#F87171"
   forest: "#15803D"
@@ -38,8 +40,8 @@ colors:
   amber-on-dark: "#FBBF24"
   steel-blue: "#4A6FA5"
   steel-blue-on-dark: "#93B4E4"
-  deep-teal: "#0F766E"
-  teal-on-dark: "#5EEAD4"
+  deep-cyan-progress: "#00739A"
+  cyan-progress-on-dark: "#4CC9F0"
   species-cat: "#8B7D5B"
   species-dog: "#7A6C5D"
   species-bird: "#4A8B6E"
@@ -102,15 +104,15 @@ spacing:
   tight-gap: "12px"
 components:
   button-primary:
-    backgroundColor: "{colors.terracotta}"
-    textColor: "{colors.umber-ink}"
+    backgroundColor: "{colors.pila-indigo}"
+    textColor: "{colors.chalk}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
     height: "50px"
     padding: "0 24px"
   button-secondary:
     backgroundColor: "{colors.chalk}"
-    textColor: "{colors.deep-terracotta}"
+    textColor: "{colors.pila-indigo}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
     height: "50px"
@@ -126,7 +128,7 @@ components:
     rounded: "{rounded.md}"
     padding: "20px"
   input:
-    backgroundColor: "{colors.recessed-bone}"
+    backgroundColor: "{colors.recessed-mist}"
     textColor: "{colors.ink}"
     rounded: "{rounded.md}"
     padding: "16px"
@@ -153,7 +155,7 @@ components:
 
 **Creative North Star: "The Clay Counter"**
 
-CarePaw looks like a surface you could press with a fingertip — soft, warm, and continuous. The whole app is one clay plane lit from the top-left: cards stand proud of a warm bone canvas, input wells sink into it, and nothing floats without casting depth. The visual world is built on two layers that must never fight: **organic neumorphism** owns surfaces, depth, and controls (dual light/depth extrusion on every plane, wells carved into the canvas), while **clinic clarity** owns layout, type, and colour (warm bone canvas, generous whitespace, exactly one terracotta accent, data-first density).
+CarePaw looks like a surface you could press with a fingertip — soft, warm, and continuous. The whole app is one clay plane lit from the top-left: cards stand proud of a cool clinic canvas, input wells sink into it, and nothing floats without casting depth. The visual world is built on two layers that must never fight: **organic neumorphism** owns surfaces, depth, and controls (dual light/depth extrusion on every plane, wells carved into the canvas), while **clinic clarity** owns layout, type, and colour (cool clinic canvas, generous whitespace, exactly one PILA VET HUB indigo accent, data-first density).
 
 This system is a deliberate revival, re-executed at full strength. An earlier neumorphic attempt failed on dense clinical screens — edges dissolved, contrast turned to mush. That is treated as a calibration problem, not a direction problem: every shadow value is now a token rather than a per-call-site guess, the depth pair is tinted to the canvas hue instead of left neutral grey, and blur runs at roughly twice the distance so highlights fall off like light rather than like a bevel. Contrast is non-negotiable on top of the effect: accent *fills* and accent *ink* are separate tokens, and every text role clears AA in both modes.
 
@@ -161,7 +163,7 @@ The audience is a busy single-clinic operator and pet owners in transit. Screens
 
 **Key Characteristics:**
 - Dual extrusion on every plane — a top-left light and a bottom-right tinted depth shadow, always as a pair
-- Warm bone canvas, terracotta as the only accent, warm charcoal dark mode (never a quick invert)
+- Cool clinic canvas, PILA VET HUB indigo as the only accent, deep slate dark mode (never a quick invert)
 - Nunito for display/headlines/numerals, the system face for body and controls
 - Token-driven: spacing, radius, depth, and motion come from `NeuTokens`; colors resolve through `ThemeColors`
 - Clay SVG icons as the single icon voice, with Material fallbacks only where the pack has no art
@@ -170,39 +172,46 @@ The audience is a busy single-clinic operator and pet owners in transit. Screens
 
 ## Colors
 
-A warm, low-chroma bone world with a single terracotta accent and functional status hues — nothing cool, nothing grey-leaning, nothing second-accent.
+A cool, low-chroma clinic world built from the DocMyk's PILA VET HUB logo: one indigo accent, the logo's caduceus cyan for progress, and functional status hues.
+
+### Brand logo
+- **PILA VET HUB logo** (`assets/images/pilavethub_logo.png`, transparent cut-out of the clinic's logo) is shown through `ClinicLogo` (`lib/core/widgets/clinic_logo.dart`) on the login/register screens, both splash screens, and Help & Support.
+- The logo always sits on a **white plate**, in both modes. Its indigo strokes fall to 1.6:1 on the dark canvas, so on dark the plate reads as a deliberate badge.
+- The Android launcher icon, adaptive icon, native splash, and web favicon/manifest icons are the full logo on white (`#FFFFFF` launcher and splash background).
 
 ### Primary
-- **Terracotta** (#E27D60): the one accent. Fills for primary buttons, FABs, selection, and tint washes; on dark grounds it lightens to **Terracotta on Dark** (#F0927A). Never used for large background areas — one warm accent per screen; everything else stays quiet.
-- **Deep Terracotta** (#A8472C): the readable accent. Wherever the accent must be *read* on the canvas (labels, links, icon glyphs, stat accents), this ink replaces the fill value. Clears 4.5:1 on the bone canvas, white cards, and accent tints.
-- **Umber Ink** (#2B2118): text and glyphs *on* accent fills, both modes. 5.5:1 on terracotta, 6.8:1 on the dark-mode accent.
-- **Terracotta Tint** (#F5E8E0) / **Charcoal Tint** (#3A2A26): quiet accent-washed planes (selected chips, highlight cards) in light / dark mode.
+- **PILA Indigo** (#2E3192): the one accent, sampled from the logo. Fills for primary buttons, FABs, selection, and tint washes; also the readable accent for labels, links, and glyphs (9.9:1 on the canvas, 8.7:1 on its tint). On dark grounds it lightens to **Indigo on Dark** (#8C93E8, 6.4:1 on the dark canvas). Never used for large background areas — one accent per screen; everything else stays quiet.
+- **Text on accent**: white on the indigo fill in light mode (10.7:1); **Indigo Ink** (#15172B) on the dark-mode fill (6.3:1). Resolved by `ThemeColors.onPrimary`.
+- **Indigo Tint** (#E6E7F6) / **Slate Tint** (#262A4A): quiet accent-washed planes (selected chips, highlight cards) in light / dark mode.
+
+### Secondary
+- **Caduceus Cyan** (#0098C8): the logo's second colour, for icons and large shapes only — 3.0:1 on white, too faint for small text. **Deep Cyan** (#00739A, 5.4:1 on white) is the readable version and the `progress` tone; **Cyan on Dark** (#4CC9F0) on dark grounds.
 
 ### Neutral
-- **Warm Bone** (#F8F5F0): the canvas. Every screen sits on it.
+- **Clinic Mist** (#F4F6FB): the canvas. Every screen sits on it.
 - **Chalk** (#FFFFFF): the top plane — cards, sheets, dialogs. The brightest surface in light mode.
-- **Bone Mist** (#FAF7F2): quiet groupings and table headers; the `flat` and `pressed` fill.
-- **Recessed Bone** (#F1ECE3): wells — fields, progress tracks. One step *below* the canvas, always filled, never outlined.
-- **Warm Charcoal** (#1A1A1A): the dark canvas; **Charcoal Card** (#262423), **Charcoal Well** (#1F1E1D), and **Ash Rim** (#3A3735) complete the family.
+- **Mist** (#F7F9FC): quiet groupings and table headers; the `flat` and `pressed` fill.
+- **Recessed Mist** (#E9EDF5): wells — fields, progress tracks. One step *below* the canvas, always filled, never outlined.
+- **Deep Slate** (#15171F): the dark canvas; **Slate Card** (#1F2230), **Slate Well** (#191B25), and **Slate Rim** (#2E3243) complete the family.
 - **Ink scale**: #111111 / #2B2B2B / #4A4A4A primary→tertiary in light mode; #FFFFFF / #E5E7EB / #D1D5DB on dark.
-- **Hairlines**: Hairline (#E7E0D5), Hairline Strong (#D6CCBD), Divider (#EDE7DC), with dark counterparts in the same warm family. Baked to the canvas hue, never neutral grey.
+- **Hairlines**: Hairline (#DDE2EC), Hairline Strong (#C9D0DE), Divider (#E6EAF1), with dark counterparts in the same cool family. Baked to the canvas hue, never neutral grey.
 
 ### Status
 - **Brick** (#B91C1C / #F87171 on dark): errors and destructive actions; deep enough to serve as both a text color on light planes and a fill under white text.
 - **Forest** (#15803D / #4ADE80 on dark): success and confirmations.
 - **Amber Bark** (#B45309 / #FBBF24 on dark): warnings — waiting patients, low stock, expiring batches.
 - **Steel Blue** (#4A6FA5 / #93B4E4 on dark): informational status, timestamps, neutral badges.
-- **Deep Teal** (#0F766E / #5EEAD4 on dark): progress tones — scans, in-progress visits.
+- **Deep Cyan** (#00739A / #4CC9F0 on dark): progress tones — scans, in-progress visits.
 
 ### Species
 Muted species hues — cat (#8B7D5B), dog (#7A6C5D), bird (#4A8B6E), rabbit (#9C7BA8), reptile (#5C8A6E), other (#5B8BC0) — confined to avatar discs and record-type chips. Under this system they tint the disc's light/depth pair rather than outline it, so a cat disc is lit in cat tones.
 
 ### Named Rules
-**The Text Beats Effect Rule.** The effect never gets to hurt the words. Accent read on the canvas uses Deep Terracotta; accent fills carry Umber Ink; status fills carry white in light mode and ink in dark mode; body text steps down the ink scale, never greys invented per screen.
+**The Text Beats Effect Rule.** The effect never gets to hurt the words. Accent read on the canvas uses PILA Indigo (Indigo on Dark in dark mode); accent fills carry white in light mode and Indigo Ink in dark mode; status fills carry white in light mode and ink in dark mode; body text steps down the ink scale, never greys invented per screen.
 
 **The Tinted Depth Rule.** Shadows are the canvas hue darkened — Bone Depth (#B8AE9E) and Deep Bone (#7A6E5E) — never neutral grey. A grey shadow on bone reads as dirt.
 
-**The One Warm Accent Rule.** Terracotta appears on ≤10% of any given screen. Its rarity is what makes it point.
+**The One Accent Rule.** PILA Indigo appears on ≤10% of any given screen. Its rarity is what makes it point.
 
 ## Typography
 
@@ -247,7 +256,7 @@ Depth is the system. Every raised plane is lit from the top-left and casts depth
 | `flat` | none | none | quiet grouping, table header — a deliberate plane, flush with its parent |
 | `floating` | none | single offset(0,10) blur 28, #7A6E5E 0.32 | nav bar, FAB, dialog, sheet — casts straight down; corner light would be a lie |
 
-Dark mode drops the light source entirely: a white highlight on charcoal describes a light that is not there, so the top-left half becomes a faint #3A3735 rim in the surface's own hue and the depth shadow (near-black, higher alpha, slightly tighter distance) carries the volume.
+Dark mode drops the light source entirely: a white highlight on slate describes a light that is not there, so the top-left half becomes a faint #2E3243 rim in the surface's own hue and the depth shadow (near-black, higher alpha, slightly tighter distance) carries the volume.
 
 ### Shadow Vocabulary
 - **Raised** (`−6 −6 14 rgba(255,255,255,0.85)` + `6 6 14 rgba(184,174,158,0.55)`): the default plane for anything interactive or card-like.
@@ -320,7 +329,7 @@ The operator home opens with `NeuStatGrid` — three `NeuStatTile`s (waiting lin
 
 ### Do:
 - **Do** resolve every colour through `ThemeColors` (or `*Of(context)` style helpers) and every gap, radius, and duration through `NeuTokens`; the tokens are the system.
-- **Do** use Deep Terracotta (#A8472C) for accent text/icons on the canvas and Umber Ink (#2B2118) on terracotta fills; verify each new pairing against the Text Beats Effect Rule.
+- **Do** use PILA Indigo (#2E3192) for accent text/icons on the canvas, white on indigo fills, and Indigo Ink (#15172B) on the dark-mode fill; verify each new pairing against the Text Beats Effect Rule.
 - **Do** pair the light and depth shadows on every extruded plane, with blur ≥ 2× distance.
 - **Do** keep interactive surfaces `raised` and input surfaces `inset`; press feedback is the shadow swap (+0.97 scale on buttons/chips only).
 - **Do** give every async surface its three honest states: skeleton, empty state with an action, friendly error with retry — never a dead end or a raw exception string.

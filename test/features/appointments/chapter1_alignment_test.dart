@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
+import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/queue/domain/entities/queue_entry.dart';
 
@@ -110,5 +111,28 @@ void main() {
         contains(QueuePriority.emergency),
       );
     });
+  });
+
+  group('MedicalRecordType.selectable', () {
+    test('hides Surgery because the clinic offers no surgery', () {
+      expect(
+        MedicalRecordType.selectable(MedicalRecordType.visit),
+        isNot(contains(MedicalRecordType.surgery)),
+      );
+    });
+
+    test('keeps Surgery on a record that already has it', () {
+      expect(
+        MedicalRecordType.selectable(MedicalRecordType.surgery),
+        contains(MedicalRecordType.surgery),
+      );
+    });
+  });
+
+  test('no surgery or confinement service can be booked', () {
+    for (final s in clinicServices) {
+      expect(s.toLowerCase(), isNot(contains('surg')));
+      expect(s.toLowerCase(), isNot(contains('confine')));
+    }
   });
 }

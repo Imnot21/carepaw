@@ -4,7 +4,7 @@ import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
+import 'package:carepaw/core/widgets/clinic_logo.dart';
 
 /// The shell every authentication screen sits in.
 ///
@@ -116,22 +116,20 @@ class AuthScaffold extends StatelessWidget {
   }
 }
 
-/// The brand mark: a paw recessed into an extruded disc.
+/// The brand mark: the clinic's PILA VET HUB logo on its white plate.
 ///
-/// Recessed, not raised. This is the one object on the auth screens that is not
-/// asking to be touched, and a cavity reads as "insignia" where a raised plate
-/// would read as "button" — and on a login screen a large button-shaped object
-/// with no label is a trap.
+/// An [icon] swaps the logo for a glyph recessed into an extruded disc — a
+/// cavity reads as "insignia" where a raised plate would read as "button".
 class AuthBrandMark extends StatelessWidget {
   final double radius;
   final IconData? icon;
 
-  const AuthBrandMark({super.key, this.radius = 40, this.icon});
+  const AuthBrandMark({super.key, this.radius = 56, this.icon});
 
   @override
   Widget build(BuildContext context) {
-    final accent = ThemeColors.primaryText(context);
     final size = radius * 2;
+    if (icon == null) return ClinicLogo(size: size);
 
     return NeuContainer(
       variant: NeuVariant.inset,
@@ -140,34 +138,10 @@ class AuthBrandMark extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: icon != null
-            ? Icon(icon, size: radius, color: accent)
-            : CustomPaint(
-                painter: _PawPainter(color: accent),
-                size: Size.square(size * 0.62),
-              ),
+        child: Icon(icon, size: radius, color: ThemeColors.primaryText(context)),
       ),
     );
   }
-}
-
-class _PawPainter extends CustomPainter {
-  final Color color;
-
-  const _PawPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      NeuShape.pawPrint(size),
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.fill,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_PawPainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// A heading and its supporting line, centred above a form.

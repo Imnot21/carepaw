@@ -217,7 +217,7 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
       MedicalRecordFormField(
         controller: _titleController,
         label: 'Title *',
-        hint: 'e.g., Annual checkup, Vaccination, Surgery follow-up',
+        hint: 'e.g., Annual checkup, Vaccination, Deworming',
         icon: Icons.title_outlined,
         svgAsset: SvgIcons.note,
         validator: (value) {

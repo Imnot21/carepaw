@@ -1,7 +1,7 @@
 name: carepaw
 description: "Smart Veterinary Patient Management System"
 publish_to: 'none'
-version: 1.0.4+5
+version: 1.0.5+6
 
 environment:
   sdk: ^3.12.2
@@ -73,6 +73,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+    - assets/images/
   fonts:
     # Bundled Nunito (display/headline face) — no runtime font fetching.
     - family: Nunito

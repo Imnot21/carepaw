@@ -140,6 +140,15 @@ enum MedicalRecordType {
     );
   }
 
+  /// Types the clinic can record. The clinic does not offer surgery (minor
+  /// or major) or confinement, so [surgery] is offered only when [current]
+  /// already holds it (older data). Stored surgery records still display,
+  /// because medical records are append-only.
+  static List<MedicalRecordType> selectable([MedicalRecordType? current]) => [
+    for (final type in MedicalRecordType.values)
+      if (type != MedicalRecordType.surgery || current == type) type,
+  ];
+
   String get displayName {
     switch (this) {
       case MedicalRecordType.visit:

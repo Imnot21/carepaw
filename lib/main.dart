@@ -29,6 +29,7 @@ import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'app/router/app_router.dart';
 import 'app/theme/app_theme.dart';
 import 'app/theme/design_tokens.dart';
+import 'package:carepaw/core/widgets/clinic_logo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -408,31 +409,7 @@ class _InitializingScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 104,
-                height: 104,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primaryContainer,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withAlpha((255 * 0.22).round()),
-                      blurRadius: 28,
-                      offset: const Offset(0, 14),
-                    ),
-                  ],
-                ),
-                child: NeuSvgIcon(SvgIcons.paw, size: 58),
-              ),
+              const ClinicLogo(size: 112),
               const SizedBox(height: 24),
               Text(
                 'CarePaw',
