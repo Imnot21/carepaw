@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
-import 'package:carepaw/core/storage/local_storage.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_motion.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_row.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_section.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/features/notifications/domain/entities/notification.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
+import 'package:carepaw/features/notifications/presentation/bloc/notification_preferences_cubit.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
-import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/features/notifications/presentation/notification_alerts.dart';
 
-/// Notification settings page with the CarePaw surface system
+/// Notification settings: which device alerts the signed-in user gets.
+///
+/// Needs a [NotificationPreferencesCubit] (the switches) and a
+/// [NotificationBloc] (the clear action) above it.
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
 
@@ -27,47 +36,64 @@ class NotificationSettingsPage extends StatefulWidget {
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<NotificationBloc>().add(const LoadNotificationPreferences());
-  }
-
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  /// True from the moment the user confirms the clear action until the bloc
+  /// reports how it went.
+  bool _clearing = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDark
-          ? AppColors.backgroundDark
-          : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-        child: BlocBuilder<NotificationBloc, NotificationState>(
-          builder: (context, state) {
-            if (state is NotificationLoading) {
-              return const NeuSkeletonDetail();
-            }
-
-            NotificationPreferences? preferences;
-            if (state is NotificationPreferencesLoaded) {
-              preferences = state.preferences;
-            }
-
-            return Column(
-              children: [
-                _buildMasterToggle(preferences),
-                const SizedBox(height: 20),
-                _buildCategoryToggles(preferences),
-                const SizedBox(height: 20),
-                _buildDeliverySettings(preferences),
-                const SizedBox(height: 20),
-                _buildDataManagement(),
-              ],
-            );
-          },
-        ),
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<
+            NotificationPreferencesCubit,
+            NotificationPreferencesState
+          >(
+            listenWhen: (previous, current) =>
+                current.saveFailures > previous.saveFailures,
+            listener: (context, _) => NeuToast.error(
+              context,
+              "Couldn't save that change. Check your connection and try again.",
+            ),
+          ),
+          BlocListener<NotificationBloc, NotificationState>(
+            listenWhen: (_, _) => _clearing,
+            listener: _onClearResult,
+          ),
+        ],
+        child:
+            BlocBuilder<
+              NotificationPreferencesCubit,
+              NotificationPreferencesState
+            >(
+              builder: (context, state) {
+                final preferences = state.preferences;
+                if (state.status == NotificationPreferencesStatus.loadFailed ||
+                    (preferences == null &&
+                        state.status !=
+                            NotificationPreferencesStatus.loading)) {
+                  return Padding(
+                    padding: const EdgeInsets.all(NeuTokens.pagePadding),
+                    child: NeuErrorState(
+                      message:
+                          "Your notification settings didn't load. "
+                          'Check your connection and try again.',
+                      onRetry: context
+                          .read<NotificationPreferencesCubit>()
+                          .load,
+                    ),
+                  );
+                }
+                if (preferences == null) {
+                  return const NeuSkeletonDetail(
+                    padding: EdgeInsets.all(NeuTokens.pagePadding),
+                  );
+                }
+                return _buildSettings(preferences);
+              },
+            ),
       ),
     );
   }
@@ -96,18 +122,14 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             'Notification Settings',
             style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w800,
-              color: _isDark
-                  ? AppColors.textPrimaryOnDark
-                  : AppColors.textPrimary,
+              color: ThemeColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 2),
           Text(
-            'Customize how you receive alerts',
+            'Choose which alerts reach this device',
             style: AppTextStyles.bodySmall.copyWith(
-              color: _isDark
-                  ? AppColors.textSecondaryOnDark
-                  : AppColors.textSecondary,
+              color: ThemeColors.textSecondary(context),
             ),
           ),
         ],
@@ -115,453 +137,299 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
-  Widget _buildMasterToggle(NotificationPreferences? preferences) {
-    final isEnabled = preferences?.inAppEnabled ?? true;
+  Widget _buildSettings(NotificationPreferences preferences) {
+    final cubit = context.read<NotificationPreferencesCubit>();
+    final alertsOn = NotificationAlerts.alertsEnabled(preferences);
 
-    return NeuCard(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          NeuAvatar(
-            radius: 20,
-            svgAsset: SvgIcons.notifications,
-            backgroundColor: ThemeColors.primary(context),
-            foregroundColor: AppColors.textOnPrimary,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'All Notifications',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: _isDark
-                        ? AppColors.textPrimaryOnDark
-                        : AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  'Enable or disable all notifications',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: _isDark
-                        ? AppColors.textSecondaryOnDark
-                        : AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          NeuSwitch(
-            value: isEnabled,
-            onChanged: (value) => _updatePreference(
-              preferences?.copyWith(inAppEnabled: value) ??
-                  NotificationPreferences(
-                    userId: 0,
-                    inAppEnabled: value,
-                    createdAt: DateTime.now(),
-                    updatedAt: DateTime.now(),
-                  ),
-            ),
-          ),
-        ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+        NeuTokens.pagePadding,
+        NeuTokens.spaceMd,
+        NeuTokens.pagePadding,
+        120,
       ),
-    );
-  }
-
-  Widget _buildCategoryToggles(NotificationPreferences? preferences) {
-    final categories = [
-      _CategorySetting(
-        type: NotificationType.appointmentReminder,
-        title: 'Appointment Reminders',
-        subtitle: 'Booking confirmations, reminders, changes',
-        svgAsset: SvgIcons.calendar,
-        color: ThemeColors.primary(context),
-        enabled: preferences?.appointmentReminders ?? true,
-      ),
-      _CategorySetting(
-        type: NotificationType.queueUpdate,
-        title: 'Queue Updates',
-        subtitle: 'Position changes, your turn notifications',
-        svgAsset: SvgIcons.queue,
-        color: ThemeColors.warning(context),
-        enabled: preferences?.queueUpdates ?? true,
-      ),
-      // PAPER-ONLY: inventory, prescription, and system categories stay in
-      // code/back-end but are hidden from the thesis demo UI.
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Notification Categories',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w700,
-            color: _isDark
-                ? AppColors.textPrimaryOnDark
-                : AppColors.textPrimary,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: NeuTokens.maxContentWidth,
           ),
-        ),
-        const SizedBox(height: 12),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: categories.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return NeuCard(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  NeuAvatar(
-                    radius: 18,
-                    svgAsset: category.svgAsset,
-                    backgroundColor: category.color,
-                    foregroundColor: AppColors.textOnPrimary,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          category.title,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: _isDark
-                                ? AppColors.textPrimaryOnDark
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          category.subtitle,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: _isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  NeuSwitch(
-                    value: category.enabled,
-                    onChanged: (value) => _updateTypePreference(
-                      category.type,
-                      value,
-                      preferences,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDeliverySettings(NotificationPreferences? preferences) {
-    final settings = [
-      _DeliverySetting(
-        title: 'Push Notifications',
-        subtitle: 'Receive push notifications on this device',
-        svgAsset: SvgIcons.phone,
-        value: preferences?.pushEnabled ?? true,
-        onChanged: (value) => _updatePreference(
-          preferences?.copyWith(pushEnabled: value) ??
-              NotificationPreferences(
-                userId: 0,
-                pushEnabled: value,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
-        ),
-      ),
-      _DeliverySetting(
-        title: 'Email Notifications',
-        subtitle: 'Receive email copies of important notifications',
-        svgAsset: SvgIcons.email,
-        value: preferences?.emailEnabled ?? false,
-        onChanged: (value) => _updatePreference(
-          preferences?.copyWith(emailEnabled: value) ??
-              NotificationPreferences(
-                userId: 0,
-                emailEnabled: value,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
-        ),
-      ),
-      _DeliverySetting(
-        title: 'In-App Notifications',
-        subtitle: 'Show notifications within the app',
-        svgAsset: SvgIcons.badge,
-        value: preferences?.inAppEnabled ?? true,
-        onChanged: (value) => _updatePreference(
-          preferences?.copyWith(inAppEnabled: value) ??
-              NotificationPreferences(
-                userId: 0,
-                inAppEnabled: value,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
-        ),
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Delivery Methods',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w700,
-            color: _isDark
-                ? AppColors.textPrimaryOnDark
-                : AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Choose how you receive notifications',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: _isDark
-                ? AppColors.textSecondaryOnDark
-                : AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: settings.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final setting = settings[index];
-            return NeuCard(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  NeuAvatar(
-                    radius: 18,
-                    svgAsset: setting.svgAsset,
-                    backgroundColor: ThemeColors.surfaceVariant(context),
-                    foregroundColor: ThemeColors.primary(context),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          setting.title,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: _isDark
-                                ? AppColors.textPrimaryOnDark
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          setting.subtitle,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: _isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  NeuSwitch(value: setting.value, onChanged: setting.onChanged),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDataManagement() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Data Management',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w700,
-            color: _isDark
-                ? AppColors.textPrimaryOnDark
-                : AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 12),
-        NeuCard(
-          padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildDataAction(
-                svgAsset: SvgIcons.delete,
-                title: 'Clear All Read Notifications',
-                subtitle: 'Permanently delete all read notifications',
-                color: ThemeColors.warning(context),
-                onTap: _clearReadNotifications,
+              NeuListGroup(
+                children: [
+                  _SwitchRow(
+                    svgAsset: SvgIcons.notifications,
+                    avatarColor: ThemeColors.primary(context),
+                    avatarForeground: ThemeColors.onPrimary(context),
+                    title: 'Device Alerts',
+                    subtitle: 'Show a banner when something new arrives',
+                    value: alertsOn,
+                    // The master switch writes both stored flags, so they
+                    // cannot disagree.
+                    onChanged: (value) => cubit.change(
+                      (current) => current.copyWith(
+                        inAppEnabled: value,
+                        pushEnabled: value,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              NeuSection(
+                title: 'Notification Categories',
+                child: NeuListGroup(
+                  children: [
+                    _SwitchRow(
+                      svgAsset: SvgIcons.calendar,
+                      title: 'Appointment Reminders',
+                      subtitle: 'Booking confirmations, reminders, and changes',
+                      value: preferences.appointmentReminders,
+                      enabled: alertsOn,
+                      showDivider: true,
+                      onChanged: (value) => cubit.change(
+                        (current) =>
+                            current.copyWith(appointmentReminders: value),
+                      ),
+                    ),
+                    _SwitchRow(
+                      svgAsset: SvgIcons.queue,
+                      title: 'Queue Updates',
+                      subtitle: 'Position changes and your turn',
+                      value: preferences.queueUpdates,
+                      enabled: alertsOn,
+                      onChanged: (value) => cubit.change(
+                        (current) => current.copyWith(queueUpdates: value),
+                      ),
+                    ),
+                    // PAPER-ONLY: inventory, prescription, and system
+                    // categories stay in code/back-end but are hidden from
+                    // the thesis demo UI.
+                  ],
+                ),
+              ),
+              const SizedBox(height: NeuTokens.tightGap),
+              Text(
+                alertsOn
+                    ? 'A muted category still appears in your notification '
+                          'list.'
+                    : 'Device alerts are off. New notifications still appear '
+                          'in your notification list.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: ThemeColors.textSecondary(context),
+                ),
+              ),
+              NeuSection(
+                title: 'Data Management',
+                child: Semantics(
+                  button: true,
+                  child: NeuCard(
+                    padding: EdgeInsets.zero,
+                    onTap: _confirmClearOld,
+                    child: _RowBody(
+                      svgAsset: SvgIcons.delete,
+                      avatarColor: ThemeColors.warning(
+                        context,
+                      ).withValues(alpha: 0.12),
+                      avatarForeground: ThemeColors.warning(context),
+                      title: 'Clear Old Notifications',
+                      subtitle: 'Delete notifications older than 30 days',
+                      trailing: NeuSvgIcon(SvgIcons.chevronRight, size: 20),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildDataAction({
-    String? svgAsset,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+  Future<void> _confirmClearOld() async {
+    final confirmed = await NeuConfirmDialog.show(
+      context: context,
+      title: 'Clear Old Notifications',
+      message:
+          'Delete every notification older than 30 days? '
+          'You cannot undo this.',
+      confirmText: 'Clear',
+      confirmVariant: NeuButtonVariant.destructive,
+    );
+    if (!mounted || confirmed != true) return;
+    _clearing = true;
+    context.read<NotificationBloc>().add(const DeleteAllReadNotifications());
+  }
+
+  /// Report the clear action only after the bloc says how it went.
+  void _onClearResult(BuildContext context, NotificationState state) {
+    if (state is AllReadNotificationsDeleted) {
+      _clearing = false;
+      NeuToast.success(context, 'Old notifications cleared');
+    } else if (state is NotificationError) {
+      _clearing = false;
+      NeuToast.error(
+        context,
+        "Couldn't clear old notifications. Check your connection and try "
+        'again.',
+      );
+    }
+  }
+}
+
+/// A settings row with a switch. A tap anywhere on the row flips it.
+class _SwitchRow extends StatelessWidget {
+  final String svgAsset;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  /// False when a switch above this one makes it irrelevant. The row keeps its
+  /// saved value and shows it dimmed.
+  final bool enabled;
+  final bool showDivider;
+  final Color? avatarColor;
+  final Color? avatarForeground;
+
+  const _SwitchRow({
+    required this.svgAsset,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.enabled = true,
+    this.showDivider = false,
+    this.avatarColor,
+    this.avatarForeground,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final VoidCallback? toggle = enabled
+        ? () {
+            HapticFeedback.selectionClick();
+            onChanged(!value);
+          }
+        : null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Semantics(
+          container: true,
+          toggled: value,
+          enabled: enabled,
+          label: '$title. $subtitle',
+          onTap: toggle,
+          excludeSemantics: true,
+          child: GestureDetector(
+            onTap: toggle,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedOpacity(
+              opacity: enabled ? 1 : NeuTokens.opacityDisabled,
+              duration: NeuMotion.duration(context, NeuTokens.durationMedium),
+              curve: NeuTokens.curveDefault,
+              child: _RowBody(
+                svgAsset: svgAsset,
+                avatarColor: avatarColor,
+                avatarForeground: avatarForeground,
+                title: title,
+                subtitle: subtitle,
+                // The row owns the dimming, so the switch is only made inert.
+                trailing: NeuSwitch(
+                  value: value,
+                  onChanged: enabled ? onChanged : null,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: _RowBody.textIndent,
+            color: ThemeColors.divider(context),
+          ),
+      ],
+    );
+  }
+}
+
+/// Icon disc, title, subtitle, and a trailing control: the shape every row on
+/// this screen shares.
+class _RowBody extends StatelessWidget {
+  static const double _avatarRadius = 18;
+
+  /// Where the text starts, so a divider can line up with it.
+  static const double textIndent =
+      NeuTokens.spaceMd + _avatarRadius * 2 + NeuTokens.tightGap;
+
+  final String svgAsset;
+  final String title;
+  final String subtitle;
+  final Widget trailing;
+  final Color? avatarColor;
+  final Color? avatarForeground;
+
+  const _RowBody({
+    required this.svgAsset,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    this.avatarColor,
+    this.avatarForeground,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 64),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: NeuTokens.spaceMd,
+          vertical: NeuTokens.spaceSm,
+        ),
         child: Row(
           children: [
             NeuAvatar(
-              radius: 16,
+              radius: _avatarRadius,
               svgAsset: svgAsset,
-              backgroundColor: color.withValues(alpha: 0.12),
-              foregroundColor: color,
+              backgroundColor:
+                  avatarColor ?? ThemeColors.surfaceVariant(context),
+              foregroundColor:
+                  avatarForeground ?? ThemeColors.primary(context),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: NeuTokens.tightGap),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     title,
                     style: AppTextStyles.titleSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDestructive
-                          ? color
-                          : (_isDark
-                                ? AppColors.textPrimaryOnDark
-                                : AppColors.textPrimary),
+                      color: ThemeColors.textPrimary(context),
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: _isDark
-                          ? AppColors.textSecondaryOnDark
-                          : AppColors.textSecondary,
+                      color: ThemeColors.textSecondary(context),
                     ),
                   ),
                 ],
               ),
             ),
-            NeuSvgIcon(SvgIcons.chevronRight, size: 20),
+            const SizedBox(width: NeuTokens.spaceXs),
+            trailing,
           ],
         ),
       ),
     );
   }
-
-  void _updatePreference(NotificationPreferences preferences) {
-    context.read<NotificationBloc>().add(
-      UpdateNotificationPreferences(preferences),
-    );
-  }
-
-  void _updateTypePreference(
-    NotificationType type,
-    bool enabled,
-    NotificationPreferences? current,
-  ) {
-    final updated =
-        (current ??
-                NotificationPreferences(
-                  userId: LocalStorage.getUserId() ?? 0,
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                ))
-            .copyWith(
-              appointmentReminders: type == NotificationType.appointmentReminder
-                  ? enabled
-                  : (current?.appointmentReminders ?? true),
-              queueUpdates: type == NotificationType.queueUpdate
-                  ? enabled
-                  : (current?.queueUpdates ?? true),
-              inventoryAlerts: type == NotificationType.inventoryLow
-                  ? enabled
-                  : (current?.inventoryAlerts ?? true),
-              prescriptionReady: type == NotificationType.prescriptionReady
-                  ? enabled
-                  : (current?.prescriptionReady ?? true),
-              systemAnnouncements: type == NotificationType.system
-                  ? enabled
-                  : (current?.systemAnnouncements ?? true),
-            );
-    _updatePreference(updated);
-  }
-
-  void _clearReadNotifications() {
-    NeuConfirmDialog.show(
-      context: context,
-      title: 'Clear Read Notifications',
-      message:
-          'Are you sure you want to delete all read notifications? This action cannot be undone.',
-      confirmText: 'Clear',
-      confirmVariant: NeuButtonVariant.destructive,
-    ).then((confirmed) {
-      if (!mounted) return;
-      if (confirmed == true) {
-        context.read<NotificationBloc>().add(
-          const DeleteAllReadNotifications(),
-        );
-        NeuToast.success(context, 'Read notifications cleared');
-      }
-    });
-  }
-}
-
-class _CategorySetting {
-  final NotificationType type;
-  final String title;
-  final String subtitle;
-  final String svgAsset;
-  final Color color;
-  final bool enabled;
-
-  _CategorySetting({
-    required this.type,
-    required this.title,
-    required this.subtitle,
-    required this.svgAsset,
-    required this.color,
-    required this.enabled,
-  });
-}
-
-class _DeliverySetting {
-  final String title;
-  final String subtitle;
-  final String svgAsset;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  _DeliverySetting({
-    required this.title,
-    required this.subtitle,
-    required this.svgAsset,
-    required this.value,
-    required this.onChanged,
-  });
 }

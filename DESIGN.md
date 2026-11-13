@@ -85,9 +85,9 @@ typography:
 rounded:
   xs: "12px"
   sm: "16px"
-  md: "24px"
-  lg: "28px"
-  xl: "36px"
+  md: "18px"
+  lg: "22px"
+  xl: "26px"
   pill: "999px"
 spacing:
   xxs: "4px"

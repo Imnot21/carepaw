@@ -52,8 +52,8 @@ class ScanListPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'The AI reads the photo, you check it, and it is '
-                    'added to the inventory',
+                    'Take a photo. Check what was read, then save it '
+                    'to stock.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.textSecondary(context),
                     ),
@@ -61,14 +61,14 @@ class ScanListPage extends StatelessWidget {
                   const SizedBox(height: 24),
                   _ScanAction(
                     type: ScanType.medicineBox,
-                    title: 'Scan Medicine Box',
+                    title: 'Medicine box',
                     subtitle: 'One medicine: name, lot and expiry',
                     svgAsset: SvgIcons.medication,
                   ),
                   const SizedBox(height: 16),
                   _ScanAction(
                     type: ScanType.receipt,
-                    title: 'Scan Supplier Receipt',
+                    title: 'Supplier receipt',
                     subtitle: 'Every medicine on the delivery',
                     svgAsset: SvgIcons.receipt,
                   ),
@@ -108,21 +108,13 @@ class _ScanAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = scanTypeColor(context, type);
     return NeuCard(
-      padding: const EdgeInsets.all(20),
-      borderColor: color.withValues(alpha: 0.2),
-      borderWidth: 1,
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       onTap: () => _open(context),
       child: Row(
         children: [
-          NeuContainer(
-            padding: const EdgeInsets.all(14),
-            borderRadius: NeuTokens.radiusSm,
-            color: color.withValues(alpha: 0.12),
-            child: NeuSvgIcon(svgAsset, size: 32),
-          ),
-          const SizedBox(width: 16),
+          NeuSvgIcon(svgAsset, size: 36),
+          const SizedBox(width: NeuTokens.spaceMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

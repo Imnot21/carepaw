@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/router/routes.dart';
+import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -192,6 +195,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _onRegisterPressed(),
                     ),
+                    const SizedBox(height: NeuTokens.spaceMd),
+                    const _PrivacyConsentField(),
                     const SizedBox(height: NeuTokens.spaceLg),
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
@@ -209,23 +214,92 @@ class _RegisterPageState extends State<RegisterPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: NeuTokens.spaceXl),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: NeuTokens.spaceMd,
-                ),
-                child: Text(
-                  'By creating an account, you agree to our Terms of Service and Privacy Policy.',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: ThemeColors.textTertiary(context),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Required consent to the privacy notice (Data Privacy Act, RA 10173).
+///
+/// A [FormField] so the form's own validate() blocks sign-up until it is
+/// ticked; the error only shows after the person tries to submit. The
+/// repository then stamps the accepted notice version on the new profile.
+class _PrivacyConsentField extends StatelessWidget {
+  const _PrivacyConsentField();
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<bool>(
+      initialValue: false,
+      validator: (value) => value == true
+          ? null
+          : 'Tick the box to agree before creating your account.',
+      builder: (field) {
+        final error = field.errorText;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MergeSemantics(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+                onTap: () => field.didChange(!(field.value ?? false)),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: field.value ?? false,
+                      onChanged: (v) => field.didChange(v ?? false),
+                      activeColor: ThemeColors.primary(context),
+                      side: BorderSide(
+                        color: error != null
+                            ? ThemeColors.error(context)
+                            : ThemeColors.textTertiary(context),
+                        width: 1.5,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          'I have read the privacy notice and agree that the '
+                          'clinic keeps my and my pet\u2019s information to '
+                          'provide care.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: ThemeColors.textSecondary(context),
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              // TextButton adds 12px inner padding; 28 + 12 lines its label
+              // up with the sentence above (checkbox column is 40 wide).
+              padding: const EdgeInsets.only(left: 28),
+              child: TextButton(
+                onPressed: () => context.push(Routes.privacy),
+                child: const Text('Read the privacy notice'),
+              ),
+            ),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 40),
+                child: Text(
+                  error,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: ThemeColors.error(context),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,11 +1,14 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import '../../firebase_options.dart' as firebase_options;
 
 /// Firebase initialization and configuration.
 ///
 /// Handles:
 /// - Firebase Core initialization
-/// - App Check configuration (debug provider for dev, Play Integrity/DeviceCheck for prod)
+/// - App Check configuration (reCAPTCHA v3 on web, Play Integrity or debug on
+///   Android; off unless enabled with --dart-define)
 /// - Firestore settings (offline persistence enabled by default)
 class FirebaseInit {
   FirebaseInit._();
@@ -63,21 +66,48 @@ class FirebaseInit {
     }
   }
 
-  /// Configure App Check for security.
+  /// reCAPTCHA v3 site key for the web build. Pass it at build time:
+  /// `--dart-define=APP_CHECK_WEB_KEY=<site key>`. Empty keeps App Check off
+  /// on web (a wrong key breaks every Auth and Firestore call).
+  static const String _webSiteKey = String.fromEnvironment('APP_CHECK_WEB_KEY');
+
+  /// Android provider: `playIntegrity` (needs the app linked in Google Play
+  /// Console) or `debug` (each test phone prints a debug token to logcat
+  /// that must be added in Firebase console > App Check). Empty keeps it off.
+  static const String _androidMode = String.fromEnvironment('APP_CHECK_ANDROID');
+
+  /// Whether this build sends App Check tokens.
+  static bool get appCheckEnabled => kIsWeb
+      ? _webSiteKey.isNotEmpty
+      : defaultTargetPlatform == TargetPlatform.android &&
+          (_androidMode == 'playIntegrity' || _androidMode == 'debug');
+
+  /// Configure App Check (proves requests come from the real CarePaw app).
   ///
-  /// - Debug: Skipped — the App Check API is not enabled for the Firebase
-  ///   project, so the debug provider only 403s and rate-limits local runs.
-  ///   Re-enable once `firebaseappcheck.googleapis.com` is enabled and the
-  ///   debug token is registered in the console.
-  /// - Release Android: Play Integrity
-  /// - Release iOS: DeviceCheck
+  /// Off unless the build passes a provider through `--dart-define` (see the
+  /// two constants above), so a plain `flutter run` keeps working. Keep
+  /// enforcement OFF in the Firebase console until the metrics there show
+  /// verified requests from every platform you ship, or that platform is
+  /// locked out.
   static Future<void> _configureAppCheck() async {
-    // App Check fully disabled until real providers are provisioned.
-    // The placeholder reCAPTCHA key broke web release (recaptcha-error on
-    // every Auth/Firestore call, appointments never save), and the App Check
-    // API is not enabled for this project. Re-enable per-platform with real
-    // keys before prod/defense.
-    return;
+    if (!appCheckEnabled) return;
+    try {
+      if (kIsWeb) {
+        await FirebaseAppCheck.instance.activate(
+          webProvider: ReCaptchaV3Provider(_webSiteKey),
+        );
+      } else {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: _androidMode == 'debug'
+              ? AndroidProvider.debug
+              : AndroidProvider.playIntegrity,
+        );
+      }
+    } catch (e) {
+      // While unenforced, a failed token only means "unverified" in the
+      // console. Never block start-up over it.
+      debugPrint('App Check activation failed: $e');
+    }
   }
 
   /// Configure Firestore settings.

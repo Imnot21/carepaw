@@ -86,7 +86,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           // Header with avatar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 8, NeuTokens.pagePadding, 16),
               child: Column(
                 children: [
                   NeuCard(
@@ -139,7 +139,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+            padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 0, NeuTokens.pagePadding, 40),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // Basic info section

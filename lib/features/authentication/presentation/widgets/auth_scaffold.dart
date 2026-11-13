@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+import 'package:carepaw/app/router/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -5,6 +7,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/clinic_logo.dart';
+import 'package:carepaw/core/constants/app_constants.dart';
 
 /// The shell every authentication screen sits in.
 ///
@@ -248,10 +251,27 @@ class AuthLegalLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quiet = ThemeColors.textTertiary(context).withValues(alpha: 0.7);
-    return Text(
-      'CarePaw 1.0.0',
-      textAlign: TextAlign.center,
-      style: AppTextStyles.labelSmall.copyWith(color: quiet),
+    final style = AppTextStyles.labelSmall.copyWith(color: quiet);
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text('CarePaw ${AppConstants.appVersion}  \u00b7', style: style),
+        TextButton(
+          onPressed: () => context.push(Routes.privacy),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            minimumSize: const Size(0, 36),
+          ),
+          child: Text(
+            'Privacy notice',
+            style: style.copyWith(
+              color: ThemeColors.textSecondary(context),
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -16,7 +16,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_medallion.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_section.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
@@ -109,7 +108,7 @@ class _HomeContent extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'How are your pets today?',
+                          'PILA VET HUB · Pila, Laguna',
                           style: AppTextStyles.bodySmall.subtleOf(
                             Theme.of(context).brightness,
                           ),
@@ -139,11 +138,8 @@ class _HomeContent extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _PrimaryActionCard(),
-                          const SizedBox(height: NeuTokens.sectionGap),
                           _PetSummarySection(pets: activePets),
-                          const SizedBox(height: NeuTokens.sectionGap),
                           _UpcomingAppointmentsSection(),
-                          const SizedBox(height: NeuTokens.sectionGap),
                           _QuickLinksSection(),
                         ],
                       ),
@@ -166,42 +162,52 @@ class _HomeContent extends StatelessWidget {
   }
 }
 
+/// The one filled-accent surface on the owner's home: booking is the job
+/// most people open the app for.
 class _PrimaryActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return NeuCard(
-      onTap: () => context.push(Routes.appointmentRequest),
-      child: Row(
-        children: [
-          NeuContainer(
-            variant: NeuVariant.pressed,
-            borderRadius: NeuTokens.radiusSm,
-            padding: const EdgeInsets.all(NeuTokens.spaceSm),
-            child: NeuSvgIcon(SvgIcons.calendar, size: NeuTokens.iconLg - 6),
-          ),
-          const SizedBox(width: NeuTokens.spaceMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Book appointment',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w700,
+    final ink = ThemeColors.onPrimary(context);
+    return Semantics(
+      button: true,
+      label: 'Book a visit',
+      excludeSemantics: true,
+      child: NeuContainer(
+        onTap: () => context.push(Routes.appointmentRequest),
+        color: ThemeColors.primary(context),
+        borderRadius: NeuTokens.radiusMd,
+        padding: const EdgeInsets.fromLTRB(
+          NeuTokens.cardPadding,
+          NeuTokens.spaceMd,
+          NeuTokens.spaceMd,
+          NeuTokens.spaceMd,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Book a visit',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: ink,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Schedule a visit with your vet',
-                  style: AppTextStyles.bodySmall.subtleOf(
-                    Theme.of(context).brightness,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Pick a pet, a service and a time',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ink.withValues(alpha: 0.85),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          NeuSvgIcon(SvgIcons.forward, size: 16),
-        ],
+            Icon(Icons.arrow_forward_rounded, color: ink),
+          ],
+        ),
       ),
     );
   }
@@ -215,7 +221,10 @@ class _PetSummarySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (pets.isEmpty) {
-      return const _EmptyPetsPrompt();
+      return const Padding(
+        padding: EdgeInsets.only(top: NeuTokens.sectionGap),
+        child: _EmptyPetsPrompt(),
+      );
     }
 
     return NeuSection(
@@ -223,7 +232,7 @@ class _PetSummarySection extends StatelessWidget {
       actionLabel: pets.length > 5 ? 'View all' : null,
       onAction: pets.length > 5 ? () => context.push(Routes.pets) : null,
       child: SizedBox(
-        height: 152,
+        height: 76,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: pets.length > 5 ? 5 : pets.length,
@@ -249,48 +258,52 @@ class _PetSummaryCard extends StatelessWidget {
     final speciesColor = AppColors.accentForSpecies(pet.species.displayName);
     final speciesSvg = PetUtils.getSpeciesSvg(pet.species);
 
-    return SizedBox(
-      width: 134,
+    final details = [
+      pet.species.displayName,
+      if (pet.birthDate != null) _formatAge(pet.birthDate!),
+    ].join(' · ');
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 168, maxWidth: 220),
       child: NeuCard(
         onTap: () => context.push('/pets/${pet.id}'),
-        padding: const EdgeInsets.all(NeuTokens.spaceSm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(
+          horizontal: NeuTokens.spaceSm,
+          vertical: NeuTokens.spaceXs,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: CircleAvatar(
-                radius: NeuTokens.spaceXl - 4,
-                backgroundColor: speciesColor.withValues(alpha: 0.12),
-                child: NeuSvgIcon(speciesSvg, size: 32),
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: speciesColor.withValues(alpha: 0.12),
+              child: NeuSvgIcon(speciesSvg, size: 26),
+            ),
+            const SizedBox(width: NeuTokens.spaceSm),
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pet.name,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    details,
+                    style: AppTextStyles.bodySmall.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: NeuTokens.spaceXs),
-            Text(
-              pet.name,
-              style: AppTextStyles.titleSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              pet.species.displayName,
-              style: AppTextStyles.bodySmall.subtleOf(
-                Theme.of(context).brightness,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const Spacer(),
-            if (pet.birthDate != null)
-              Text(
-                _formatAge(pet.birthDate!),
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: ThemeColors.primaryText(context),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
           ],
         ),
       ),
@@ -324,10 +337,11 @@ class _EmptyPetsPrompt extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          NeuMedallion(
-            radius: 56,
-            color: ThemeColors.primary(context),
-            child: NeuSvgIcon(SvgIcons.paw, size: 48),
+          NeuContainer(
+            variant: NeuVariant.inset,
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(NeuTokens.spaceLg),
+            child: const NeuSvgIcon(SvgIcons.paw, size: 30),
           ),
           const SizedBox(height: NeuTokens.spaceMd),
           Text(
@@ -338,14 +352,14 @@ class _EmptyPetsPrompt extends StatelessWidget {
           ),
           const SizedBox(height: NeuTokens.spaceXxs),
           Text(
-            'Add your first pet to get started',
+            'Add your pet so the clinic can book and keep their records.',
             style: AppTextStyles.bodyMedium.subtleOf(
               Theme.of(context).brightness,
             ),
           ),
           const SizedBox(height: NeuTokens.spaceMd),
           NeuButton(
-            text: 'Add pet',
+            text: 'Add a pet',
             onPressed: () => context.push(Routes.petAdd),
             variant: NeuButtonVariant.primary,
             icon: Icons.add,
@@ -363,50 +377,32 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuSection(
       title: 'Upcoming',
-      actionLabel: 'View all',
+      actionLabel: 'See all',
       onAction: () => context.push(Routes.appointments),
       child: NeuCard(
-        child: Column(
+        child: Row(
           children: [
-            Row(
-              children: [
-                NeuContainer(
-                  variant: NeuVariant.pressed,
-                  borderRadius: NeuTokens.radiusSm,
-                  padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                  child: NeuSvgIcon(SvgIcons.calendar, size: 22),
-                ),
-                const SizedBox(width: NeuTokens.tightGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'No upcoming appointments',
-                        style: AppTextStyles.titleSmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Book a visit with your vet',
-                        style: AppTextStyles.bodySmall.subtleOf(
-                          Theme.of(context).brightness,
-                        ),
-                      ),
-                    ],
+            const NeuSvgIcon(SvgIcons.calendar, size: 28),
+            const SizedBox(width: NeuTokens.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Nothing booked yet',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: NeuTokens.spaceMd),
-            NeuButton(
-              text: 'Book appointment',
-              onPressed: () => context.push(Routes.appointmentRequest),
-              variant: NeuButtonVariant.secondary,
-              icon: Icons.add,
-              svgAsset: SvgIcons.add,
-              expanded: true,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Your next visit shows here once the clinic confirms it.',
+                    style: AppTextStyles.bodySmall.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -419,7 +415,7 @@ class _QuickLinksSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuSection(
-      title: 'Quick actions',
+      title: 'Records',
       child: NeuCard(padding: EdgeInsets.zero, child: _QuickLinksList()),
     );
   }
@@ -428,42 +424,13 @@ class _QuickLinksSection extends StatelessWidget {
 class _QuickLinksList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _LinkTile(
-          svgAsset: SvgIcons.listNumbered,
-          title: 'Queue status',
-          subtitle: 'Check your place in line',
-          onTap: () => context.push(Routes.queue),
-        ),
-        Divider(
-          height: 1,
-          thickness: 1,
-          indent: 56,
-          color: ThemeColors.divider(context),
-        ),
-        _LinkTile(
-          svgAsset: SvgIcons.visit,
-          title: 'Medical records',
-          subtitle: 'Pick a pet to view health history',
-          // Records need a pet (?petId=); send the owner to pick one —
-          // the pet detail screen links straight to its records.
-          onTap: () => context.push(Routes.pets),
-        ),
-        Divider(
-          height: 1,
-          thickness: 1,
-          indent: 56,
-          color: ThemeColors.divider(context),
-        ),
-        _LinkTile(
-          svgAsset: SvgIcons.vaccination,
-          title: 'Vaccinations',
-          subtitle: 'Pick a pet to track immunizations',
-          // No dedicated vaccinations route — same pet-picker path.
-          onTap: () => context.push(Routes.pets),
-        ),
-      ],
+    return _LinkTile(
+      svgAsset: SvgIcons.visit,
+      title: 'Health records',
+      subtitle: 'Visits, vaccines and medicines, per pet',
+      // Records need a pet (?petId=); send the owner to pick one —
+      // the pet detail screen links straight to its records.
+      onTap: () => context.push(Routes.pets),
     );
   }
 }
@@ -493,25 +460,17 @@ class _LinkTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            NeuContainer(
-              variant: NeuVariant.pressed,
-              borderRadius: NeuTokens.radiusSm,
-              padding: const EdgeInsets.all(NeuTokens.spaceXs),
-              child: svgAsset != null
-                  ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
-                  : SizedBox(
-                      width: NeuTokens.iconSm,
-                      height: NeuTokens.iconSm,
-                    ),
-            ),
-            const SizedBox(width: NeuTokens.tightGap),
+            svgAsset != null
+                ? NeuSvgIcon(svgAsset!, size: 28)
+                : const SizedBox(width: 28, height: 28),
+            const SizedBox(width: NeuTokens.spaceMd),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.titleSmall.copyWith(
+                    style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),

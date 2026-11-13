@@ -12,6 +12,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_medallion.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
@@ -100,7 +101,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
                       return Align(
                         alignment: Alignment.bottomCenter,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                          padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 0, NeuTokens.pagePadding, 16),
                           child: _buildNewAppointmentButton(),
                         ),
                       );
@@ -117,7 +118,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: Text(
-        _isVetOrStaff ? 'All Appointments' : 'Appointments',
+        _isVetOrStaff ? 'All bookings' : 'Appointments',
         style: AppTextStyles.headlineSmall.copyWith(
           fontWeight: FontWeight.w700,
           color: ThemeColors.textPrimary(context),
@@ -134,10 +135,10 @@ class _AppointmentListPageState extends State<AppointmentListPage>
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding),
       child: NeuTextField(
         controller: _searchController,
-        hint: 'Search appointments...',
+        hint: 'Search by pet or service',
         prefixIcon: ClayIconOrMaterial(
           'search_rounded',
           fallback: Icons.search_rounded,
@@ -193,7 +194,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     // Primary, medium, leading + icon. Full width so it fits both the centered
     // empty-state CTA and the bottom footer.
     return NeuButton(
-      text: 'New Appointment',
+      text: 'Book a visit',
       onPressed: _navigateToCreateAppointment,
       icon: Icons.add,
       svgAsset: SvgIcons.add,
@@ -242,7 +243,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               );
             },
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 0, NeuTokens.pagePadding, 12),
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final appointment = filtered[index];
@@ -281,58 +282,20 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   }
 
   Widget _buildEmptyState(bool isUpcoming) {
-    final accent = isUpcoming ? AppColors.primary : AppColors.success;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuMedallion(
-              radius: 70,
-              color: accent,
-              child: ClayIconOrMaterial(
-                isUpcoming ? 'calendar_today_outlined' : 'history_outlined',
-                fallback: isUpcoming
-                    ? Icons.calendar_today_outlined
-                    : Icons.history_outlined,
-                size: 56,
-                color: accent,
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              isUpcoming ? 'No Upcoming Appointments' : 'No Past Appointments',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-                color: ThemeColors.textPrimary(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 14),
-            Text(
-              isUpcoming
-                  ? (_isVetOrStaff
-                        ? 'No upcoming appointments found. Appointments will appear here as they are scheduled.'
-                        : 'Request your first appointment to get started.\nYour upcoming visits will appear here.')
-                  : 'Completed and cancelled appointments will appear here.',
-              style: AppTextStyles.bodyLarge
-                  .subtleOf(Theme.of(context).brightness)
-                  .copyWith(height: 1.6),
-              textAlign: TextAlign.center,
-            ),
-            // Owners get a centered create button here (this whole column is
-            // vertically centered, so the button reads as the center CTA).
-            if (!_isVetOrStaff) ...[
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: _buildNewAppointmentButton(),
-              ),
-            ],
-          ],
-        ),
-      ),
+    // One empty-state treatment app-wide (NeuEmptyState): a recessed disc,
+    // a sentence-case title, one line on what goes here.
+    final ownerCanBook = isUpcoming && !_isVetOrStaff;
+    return NeuEmptyState(
+      icon: isUpcoming ? Icons.calendar_today_outlined : Icons.history,
+      svgAsset: SvgIcons.calendar,
+      title: isUpcoming ? 'Nothing booked yet' : 'No past visits',
+      message: isUpcoming
+          ? (_isVetOrStaff
+                ? 'New bookings from pet owners show up here.'
+                : 'Your next visit to PILA VET HUB will show up here.')
+          : 'Finished and cancelled visits are kept here.',
+      actionLabel: ownerCanBook ? 'Book a visit' : null,
+      onAction: ownerCanBook ? _navigateToCreateAppointment : null,
     );
   }
 
@@ -355,7 +318,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             ),
             const SizedBox(height: 28),
             Text(
-              'Failed to Load Appointments',
+              "Couldn't load bookings",
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
                 color: ThemeColors.textPrimary(context),

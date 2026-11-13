@@ -1,6 +1,7 @@
 # AGENTS.md - CarePaw
 
-See `CLAUDE.md` for full project overview, architecture, and workflows.
+**Read `docs/OPENCODE_HANDOFF.md` first.** It records what was done, the user's decisions, and the open to-do list (last Claude Code session: 2026-11-03).
+Then see `CLAUDE.md` for the full project overview, architecture, and workflows. Track progress in `docs/CHAPTER1_ALIGNMENT.md`.
 
 ## Memory - MUST USE
 

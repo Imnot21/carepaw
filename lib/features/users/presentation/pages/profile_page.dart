@@ -402,8 +402,8 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           _SettingTile(
             svgAsset: SvgIcons.notifications,
-            title: 'Notification Settings',
-            subtitle: 'Manage alerts, categories & delivery',
+            title: 'Notifications',
+            subtitle: 'Choose which alerts you get',
             onTap: () => context.push(Routes.notifications),
           ),
           Padding(
@@ -422,7 +422,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           _SettingTile(
             svgAsset: SvgIcons.lock,
-            title: 'Change Password',
+            title: 'Change password',
             subtitle: 'Update your sign-in password',
             onTap: () => _showChangePasswordDialog(context),
           ),
@@ -441,9 +441,29 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           _SettingTile(
+            svgAsset: SvgIcons.shieldCheck,
+            title: 'Privacy notice',
+            subtitle: 'What the clinic keeps about you and your pets',
+            onTap: () => context.push(Routes.privacy),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              height: 1,
+              child: NeuContainer(
+                padding: EdgeInsets.zero,
+                borderRadius: 0.5,
+                variant: NeuVariant.flat,
+                boxShadow: NeuShadow.none,
+                color: ThemeColors.border(context),
+                child: const SizedBox.shrink(),
+              ),
+            ),
+          ),
+          _SettingTile(
             svgAsset: SvgIcons.help,
-            title: 'Help & Support',
-            subtitle: 'Clinic contact and app info',
+            title: 'Help',
+            subtitle: 'Clinic contact and app version',
             onTap: () => _showHelp(context),
           ),
         ],
@@ -454,7 +474,7 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Logout entry, confirming before dispatching the sign-out event.
   Widget _buildLogoutButton(BuildContext context) {
     return NeuButton(
-      text: 'Logout',
+      text: 'Log out',
       variant: NeuButtonVariant.destructive,
       size: NeuButtonSize.medium,
       icon: Icons.logout_rounded,
@@ -479,7 +499,7 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Logout',
+                'Log out',
                 style: AppTextStyles.headlineSmall.copyWith(
                   color: ThemeColors.textPrimary(context),
                 ),
@@ -505,7 +525,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: NeuButton(
-                      text: 'Logout',
+                      text: 'Log out',
                       variant: NeuButtonVariant.destructive,
                       size: NeuButtonSize.medium,
                       onPressed: () {
@@ -528,7 +548,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showHelp(BuildContext context) {
     NeuDialog.show(
       context: context,
-      title: 'Help & Support',
+      title: 'Help',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

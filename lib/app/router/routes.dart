@@ -14,6 +14,7 @@ abstract class Routes {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
+  static const String privacy = '/privacy';
 
   // ============ Main Routes (Role-based) ============
   static const String home = '/home';
@@ -80,6 +81,7 @@ abstract class RouteNames {
   static const String register = 'register';
   static const String forgotPassword = 'forgot-password';
   static const String resetPassword = 'reset-password';
+  static const String privacy = 'privacy';
 
   static const String home = 'home';
   static const String dashboard = 'dashboard';

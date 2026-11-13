@@ -191,11 +191,16 @@ abstract final class NeuShadow {
     double blur = NeuTokens.shadowAccentBlur,
     double opacity = NeuTokens.shadowAccentOpacity,
   }) {
+    // A short, tight drop in the fill's own (darkened) hue — not a halo.
+    // Callers ask for blur 24 / opacity 0.32 in places; that read as a glow
+    // around every accent disc, so both are capped here.
+    final b = blur.clamp(4.0, 10.0);
+    final a = (opacity * 0.6).clamp(0.0, 0.18);
     return [
       BoxShadow(
-        color: color.withValues(alpha: opacity),
-        offset: Offset(0, (blur * 0.25).roundToDouble()),
-        blurRadius: blur,
+        color: Color.lerp(color, Colors.black, 0.35)!.withValues(alpha: a),
+        offset: Offset(0, (b * 0.3).roundToDouble()),
+        blurRadius: b,
       ),
     ];
   }

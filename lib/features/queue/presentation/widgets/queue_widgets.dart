@@ -279,27 +279,21 @@ class EmptyQueueCard extends StatelessWidget {
       child: Column(
         children: [
           NeuContainer(
-            borderRadius: 48,
-            padding: const EdgeInsets.all(24),
-            color: ThemeColors.primary(context),
-            boxShadow: NeuShadow.color(
-              context,
-              ThemeColors.primary(context),
-              blur: 24,
-              opacity: 0.32,
-            ),
-            child: NeuSvgIcon(SvgIcons.queue, size: 48),
+            variant: NeuVariant.inset,
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(NeuTokens.spaceLg),
+            child: const NeuSvgIcon(SvgIcons.queue, size: 30),
           ),
           const SizedBox(height: 20),
           Text(
-            'No Pets in Queue',
-            style: AppTextStyles.titleLarge.copyWith(
+            'Not in line',
+            style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: NeuTokens.spaceXs),
           Text(
-            'You don\'t have any pets currently checked in.\nBook an appointment and check in when you arrive.',
+            'Check in at the front desk when you arrive. Your place in line shows here.',
             style: AppTextStyles.bodyMedium
                 .subtleOf(Theme.of(context).brightness)
                 .copyWith(height: 1.5),
@@ -322,22 +316,21 @@ class NotInQueueCard extends StatelessWidget {
       child: Column(
         children: [
           NeuContainer(
-            borderRadius: 48,
-            padding: const EdgeInsets.all(24),
-            variant: NeuVariant.flat,
-            color: ThemeColors.warning(context).withValues(alpha: 0.12),
-            child: const NeuSvgIcon(SvgIcons.info, size: 48),
+            variant: NeuVariant.inset,
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(NeuTokens.spaceLg),
+            child: const NeuSvgIcon(SvgIcons.info, size: 30),
           ),
           const SizedBox(height: 20),
           Text(
-            'Not Currently in Queue',
-            style: AppTextStyles.titleLarge.copyWith(
+            'Not checked in yet',
+            style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: NeuTokens.spaceXs),
           Text(
-            'Your pets have upcoming appointments but aren\'t checked in yet.\nCheck in when you arrive at the clinic.',
+            'You have a visit booked. Check in at the front desk when you arrive.',
             style: AppTextStyles.bodyMedium
                 .subtleOf(Theme.of(context).brightness)
                 .copyWith(height: 1.5),
@@ -618,56 +611,42 @@ class QueueEntryCard extends StatelessWidget {
   }
 }
 
-/// Queue info card with helpful information
+/// What happens at the clinic, in order. The numbers carry the sequence, so
+/// they stay; the icon wells that used to sit beside each step did not.
 class QueueInfoCard extends StatelessWidget {
   const QueueInfoCard({super.key});
+
+  static const _steps = [
+    ('Check in at the front desk', "Tell the staff your pet's name."),
+    (
+      'Wait for your turn',
+      'Your place in line updates here. You get a notification when you are next.',
+    ),
+    ('Go in when called', "The staff calls your pet's name."),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              NeuSvgIcon(SvgIcons.info, size: 20),
-              const SizedBox(width: 10),
-              Text(
-                'How It Works',
-                style: AppTextStyles.titleSmall.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: ThemeColors.primaryText(context),
-                ),
-              ),
-            ],
+          Text(
+            'At the clinic',
+            style: AppTextStyles.titleSmall.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 16),
-          _InfoRow(
-            svgAsset: SvgIcons.success,
-            title: 'Check In',
-            description: 'Arrive at the clinic and check in at the front desk',
-          ),
-          const SizedBox(height: 12),
-          _InfoRow(
-            svgAsset: SvgIcons.queue,
-            title: 'Wait',
-            description:
-                'Monitor your position here - you\'ll get a notification when called',
-          ),
-          const SizedBox(height: 12),
-          _InfoRow(
-            svgAsset: SvgIcons.volume,
-            title: 'Called',
-            description:
-                'Listen for your name or check the screen for your room number',
-          ),
-          const SizedBox(height: 12),
-          _InfoRow(
-            svgAsset: SvgIcons.door,
-            title: 'Visit',
-            description: 'Proceed to the assigned room for your appointment',
-          ),
+          const SizedBox(height: NeuTokens.spaceMd),
+          for (var i = 0; i < _steps.length; i++) ...[
+            if (i > 0) const SizedBox(height: NeuTokens.spaceSm),
+            _InfoRow(
+              number: i + 1,
+              title: _steps[i].$1,
+              description: _steps[i].$2,
+            ),
+          ],
         ],
       ),
     );
@@ -675,12 +654,12 @@ class QueueInfoCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  final String? svgAsset;
+  final int number;
   final String title;
   final String description;
 
   const _InfoRow({
-    this.svgAsset,
+    required this.number,
     required this.title,
     required this.description,
   });
@@ -690,15 +669,18 @@ class _InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        NeuContainer(
-          variant: NeuVariant.pressed,
-          borderRadius: NeuTokens.radiusSm,
-          padding: const EdgeInsets.all(NeuTokens.spaceXs),
-          child: svgAsset != null
-              ? NeuSvgIcon(svgAsset!, size: 16)
-              : const SizedBox(width: 16, height: 16),
+        SizedBox(
+          width: 22,
+          child: Text(
+            '$number',
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w700,
+              color: ThemeColors.primaryText(context),
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: NeuTokens.spaceXs),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,7 +728,7 @@ class NotLoggedInView extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Text(
-                'Please log in to view queue',
+                'Sign in to see the line',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -754,7 +736,7 @@ class NotLoggedInView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Sign in to check your queue position',
+                'Your place in line shows here after you sign in.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: ThemeColors.textSecondary(context),
                 ),
@@ -762,7 +744,7 @@ class NotLoggedInView extends StatelessWidget {
               ),
               const SizedBox(height: 36),
               NeuButton(
-                text: 'Log In',
+                text: 'Sign in',
                 onPressed: () => context.go('/login'),
                 icon: Icons.login_rounded,
                 svgAsset: SvgIcons.login,

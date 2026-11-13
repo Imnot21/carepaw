@@ -9,7 +9,10 @@ import 'package:carepaw/features/notifications/presentation/bloc/notification_st
     as states;
 import 'package:carepaw/core/errors/failures.dart';
 
-/// Notification BLoC for managing notifications and preferences.
+/// Notification BLoC for the notification list.
+///
+/// Preferences live in `NotificationPreferencesCubit`: this bloc holds one
+/// state at a time, so a preferences state here replaced the list.
 class NotificationBloc
     extends Bloc<events.NotificationEvent, states.NotificationState> {
   final NotificationRepository _notificationRepository;
@@ -24,8 +27,6 @@ class NotificationBloc
     on<events.DeleteNotification>(_onDeleteNotification);
     on<events.DeleteAllReadNotifications>(_onDeleteAllReadNotifications);
     on<events.CreateNotification>(_onCreateNotification);
-    on<events.UpdateNotificationPreferences>(_onUpdateNotificationPreferences);
-    on<events.LoadNotificationPreferences>(_onLoadNotificationPreferences);
     on<events.RefreshNotifications>(_onRefreshNotifications);
   }
 
@@ -194,55 +195,6 @@ class NotificationBloc
       await _notificationRepository.save(notification);
       emit(states.NotificationCreated(notification));
       add(events.LoadNotifications(userId: event.targetUserId ?? _currentUserId));
-    } on Failure catch (failure) {
-      emit(states.NotificationError(failure));
-    } catch (e) {
-      debugPrint('[notification_bloc] unexpected: $e');
-      emit(states.NotificationError(const UnexpectedFailure()));
-    }
-  }
-
-  /// Update notification preferences
-  Future<void> _onUpdateNotificationPreferences(
-    events.UpdateNotificationPreferences event,
-    Emitter<states.NotificationState> emit,
-  ) async {
-    try {
-      await _notificationRepository.updatePreferences(event.preferences);
-      emit(const states.NotificationPreferencesUpdated());
-    } on Failure catch (failure) {
-      emit(states.NotificationError(failure));
-    } catch (e) {
-      debugPrint('[notification_bloc] unexpected: $e');
-      emit(states.NotificationError(const UnexpectedFailure()));
-    }
-  }
-
-  /// Load notification preferences
-  Future<void> _onLoadNotificationPreferences(
-    events.LoadNotificationPreferences event,
-    Emitter<states.NotificationState> emit,
-  ) async {
-    try {
-      // Preferences live in notificationPreferences/{userId}; the rules only
-      // let a caller read their own document, so the id must be the signed-in
-      // user's (previously hardcoded to 1, which denied everyone else).
-      final userId = LocalStorage.getUserId() ?? 1;
-      final preferences = await _notificationRepository.findPreferences(
-        userId,
-      );
-      if (preferences != null) {
-        emit(states.NotificationPreferencesLoaded(preferences));
-      } else {
-        // Create default preferences if none exist
-        final defaultPrefs = NotificationPreferences(
-          id: null,
-          userId: userId,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-        emit(states.NotificationPreferencesLoaded(defaultPrefs));
-      }
     } on Failure catch (failure) {
       emit(states.NotificationError(failure));
     } catch (e) {

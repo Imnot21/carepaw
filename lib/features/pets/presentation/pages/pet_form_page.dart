@@ -151,7 +151,7 @@ class _PetFormPageState extends State<PetFormPage> {
 
               // Form fields grouped into sections
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding),
                 sliver: SliverList.separated(
                   itemCount: _getFormSections().length,
                   separatorBuilder: (_, _) => const SizedBox(height: 24),
@@ -164,7 +164,7 @@ class _PetFormPageState extends State<PetFormPage> {
 
               // Submit button
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 40, 20, 48),
+                padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 40, NeuTokens.pagePadding, 48),
                 sliver: SliverToBoxAdapter(
                   child: BlocBuilder<PetBloc, PetState>(
                     builder: (context, state) {

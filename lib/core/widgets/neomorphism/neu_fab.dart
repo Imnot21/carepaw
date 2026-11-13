@@ -180,7 +180,7 @@ class _NeuFABSpeedDialState extends State<NeuFABSpeedDial>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: NeuTokens.durationMedium,
       vsync: this,
     );
     _expandAnimation = CurvedAnimation(
@@ -196,7 +196,7 @@ class _NeuFABSpeedDialState extends State<NeuFABSpeedDial>
     // Reduced motion: the speed dial snaps open and closed.
     _controller.duration = NeuMotion.duration(
       context,
-      const Duration(milliseconds: 200),
+      NeuTokens.durationMedium,
     );
   }
 

@@ -30,4 +30,29 @@ class UserIdSequence {
       return nextValue;
     });
   }
+
+  /// Allocates the next id and writes the caller's own profile with it in
+  /// one transaction.
+  ///
+  /// Firestore rules only accept a self-created profile whose `id` is the
+  /// value this same transaction moved the counter to, so a client cannot
+  /// claim another user's id (and with it their pets and records).
+  /// [build] receives the new id and returns the profile document data.
+  Future<int> createProfile(
+    DocumentReference<Map<String, dynamic>> profileRef,
+    Map<String, dynamic> Function(int id) build,
+  ) {
+    final counterRef =
+        _firestore.collection(_counterCollection).doc(_counterDoc);
+    return _firestore.runTransaction((txn) async {
+      final snapshot = await txn.get(counterRef);
+      final raw = snapshot.exists
+          ? (snapshot.data()?[_valueField] as int?)
+          : null;
+      final nextValue = (raw ?? 0) + 1;
+      txn.set(counterRef, {_valueField: nextValue});
+      txn.set(profileRef, build(nextValue));
+      return nextValue;
+    });
+  }
 }

@@ -82,6 +82,16 @@ service cloud.firestore {
       return request.auth.uid;
     }
 
+    // True when `id` is the user id this very transaction allocated: the
+    // counter moves up by exactly one in this write and `id` is its new value.
+    function isFreshUserId(id) {
+      return id is int &&
+        getAfter(/databases/$(database)/documents/counters/userIds).data.value == id &&
+        id == (exists(/databases/$(database)/documents/counters/userIds)
+          ? get(/databases/$(database)/documents/counters/userIds).data.value + 1
+          : 1);
+    }
+
     // ---- Users collection ----
     match /users/{uid} {
       // Self-service registration: a user creates only their own profile.
@@ -92,12 +102,18 @@ service cloud.firestore {
       // not the new user's).
       // A self-created profile is always PET_OWNER; only an existing
       // Owner/Admin may provision another OWNER_ADMIN.
+      // The int `id` is what every ownership rule compares (pets, bookings,
+      // records). A self-created profile must take the id freshly allocated
+      // from counters/userIds in the SAME transaction (UserIdSequence
+      // .createProfile), so nobody can register with someone else's id and
+      // read their pets and medical records.
       allow create: if isAuthenticated()
                     && request.resource.data.firebaseUid == uid
                     && (isOwnerAdmin()
                         ? request.resource.data.role in ['PET_OWNER', 'OWNER_ADMIN']
                         : (request.auth.uid == uid
-                           && request.resource.data.role == 'PET_OWNER'));
+                           && request.resource.data.role == 'PET_OWNER'
+                           && isFreshUserId(request.resource.data.id)));
       // Read (Objective 2.5, data protection): the Owner/Admin reads every
       // profile; a pet owner reads only their own profile and the clinic's
       // Owner/Admin profiles (the veterinarian directory and clinician
@@ -150,11 +166,17 @@ service cloud.firestore {
     match /appointments/{appointmentId} {
       allow read: if isClinicStaff() ||
         (isAuthenticated() && resource.data.ownerId == getCurrentUserId());
+      // Owners only request, reschedule or cancel. Confirming, check-in and
+      // completion are the clinic's call, so an owner cannot approve their
+      // own booking.
       allow create: if isClinicStaff() ||
-        (isAuthenticated() && request.resource.data.ownerId == getCurrentUserId());
+        (isAuthenticated() && request.resource.data.ownerId == getCurrentUserId() &&
+         request.resource.data.status == 'REQUESTED');
       allow update: if isClinicStaff() ||
         (isAuthenticated() && resource.data.ownerId == getCurrentUserId() &&
-         request.resource.data.ownerId == resource.data.ownerId);
+         request.resource.data.ownerId == resource.data.ownerId &&
+         (request.resource.data.status == resource.data.status ||
+          request.resource.data.status in ['REQUESTED', 'RESCHEDULED', 'CANCELLED']));
       allow delete: if isOwnerAdmin();
     }
 
@@ -298,7 +320,15 @@ service cloud.firestore {
       // signed-in user must be able to allocate ids for the records they
       // create (registration, pets, appointments, scans, notifications...),
       // so this is intentionally open to authenticated callers.
-      allow read, write: if isAuthenticated();
+      // Writes may only move a counter up by one: resetting or lowering it
+      // would hand an existing id (and that user's records) to the next
+      // account. No deletes.
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() &&
+        request.resource.data.keys().hasOnly(['value']) &&
+        request.resource.data.value is int &&
+        request.resource.data.value ==
+          (resource == null ? 1 : resource.data.value + 1);
     }
 
     // ---- Deny all other ----

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/design_tokens.dart';
+import 'neu_progress.dart';
 import 'neu_shadows.dart';
 
 /// The page shell every screen in CarePaw builds on.
@@ -102,7 +103,7 @@ class NeuPage extends StatelessWidget {
     Widget content;
 
     if (isLoading) {
-      content = const Center(child: CircularProgressIndicator());
+      content = const Center(child: NeuCircularProgress());
     } else if (slivers != null) {
       content = CustomScrollView(slivers: slivers!);
     } else if (body != null) {

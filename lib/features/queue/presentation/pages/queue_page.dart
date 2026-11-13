@@ -148,16 +148,22 @@ class _QueuePageState extends State<QueuePage> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Center(
+              child: Align(
+                alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 96, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(
+                    NeuTokens.pagePadding,
+                    NeuTokens.spaceMd,
+                    NeuTokens.pagePadding,
+                    NeuTokens.spaceXl,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       EmptyQueueCard(),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: NeuTokens.spaceMd),
                       UpcomingCheckInSection(queueEntries: state.queueEntries),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: NeuTokens.spaceMd),
                       QueueInfoCard(),
                     ],
                   ),
@@ -173,7 +179,7 @@ class _QueuePageState extends State<QueuePage> {
       onRefresh: refresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 96, 20, 20),
+        padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 96, NeuTokens.pagePadding, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

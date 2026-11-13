@@ -184,7 +184,7 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
         side: const BorderSide(color: AppColors.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusXs)),
       ),
       switchTheme: SwitchThemeData(
         trackColor: WidgetStateProperty.resolveWith(
@@ -401,7 +401,7 @@ class AppTheme {
           color: AppColors.textPrimaryOnDark,
         ),
         side: const BorderSide(color: AppColors.borderDark),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(NeuTokens.radiusXs)),
       ),
       switchTheme: SwitchThemeData(
         trackColor: WidgetStateProperty.resolveWith(

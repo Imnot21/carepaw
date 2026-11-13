@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/errors/error_handler.dart';
 import 'package:carepaw/core/errors/failures.dart';
 import 'package:carepaw/core/firebase/firebase_auth_error_mapper.dart';
@@ -127,11 +128,13 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      // Assign a globally-unique app-facing int id and persist the cloud profile.
-      final newId = await _userIdSequence.next();
+      // Allocate the app-facing int id and write the profile in one
+      // transaction (Firestore rules require it). The register screen only
+      // submits after the person accepts the privacy notice, so the profile
+      // records which notice version they agreed to and when.
       final now = DateTime.now();
-      final domainUser = DomainUser(
-        id: newId,
+      DomainUser buildUser(int id) => DomainUser(
+        id: id,
         firebaseUid: fireUser.uid,
         email: email,
         fullName: fullName.trim(),
@@ -143,11 +146,20 @@ class AuthRepositoryImpl implements AuthRepository {
         updatedAt: now,
       );
 
+      final DomainUser domainUser;
       try {
         final docRef = _firestore
             .collection(FirestoreSchema.users)
             .doc(fireUser.uid);
-        await docRef.set(UserDocMapper.toData(domainUser));
+        final newId = await _userIdSequence.createProfile(
+          docRef,
+          (id) => {
+            ...UserDocMapper.toData(buildUser(id)),
+            'privacyNoticeVersion': AppConstants.privacyNoticeVersion,
+            'privacyAcceptedAt': Timestamp.fromDate(now),
+          },
+        );
+        domainUser = buildUser(newId);
       } on FirebaseException catch (e) {
         // Firestore write failed (e.g. rules deny it). Roll back the Auth user
         // that was already created, otherwise the email stays reserved and the
@@ -356,10 +368,9 @@ class AuthRepositoryImpl implements AuthRepository {
   /// actionable message.
   Future<DomainUser?> _autoProvisionFromAuthUser(User fireUser) async {
     try {
-      final newId = await _userIdSequence.next();
       final now = DateTime.now();
-      final domainUser = DomainUser(
-        id: newId,
+      DomainUser buildUser(int id) => DomainUser(
+        id: id,
         firebaseUid: fireUser.uid,
         email: fireUser.email ?? '',
         fullName: fireUser.displayName?.trim().isNotEmpty == true
@@ -370,11 +381,11 @@ class AuthRepositoryImpl implements AuthRepository {
         createdAt: now,
         updatedAt: now,
       );
-      await _firestore
-          .collection(FirestoreSchema.users)
-          .doc(fireUser.uid)
-          .set(UserDocMapper.toData(domainUser));
-      return domainUser;
+      final newId = await _userIdSequence.createProfile(
+        _firestore.collection(FirestoreSchema.users).doc(fireUser.uid),
+        (id) => UserDocMapper.toData(buildUser(id)),
+      );
+      return buildUser(newId);
     } catch (_) {
       // Firestore write blocked (rules) or counter unavailable.
       return null;

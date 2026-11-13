@@ -95,21 +95,6 @@ class CreateNotification extends NotificationEvent {
   List<Object?> get props => [title, body, type, data, targetUserId];
 }
 
-/// Update notification preferences.
-class UpdateNotificationPreferences extends NotificationEvent {
-  final NotificationPreferences preferences;
-
-  const UpdateNotificationPreferences(this.preferences);
-
-  @override
-  List<Object?> get props => [preferences];
-}
-
-/// Load notification preferences.
-class LoadNotificationPreferences extends NotificationEvent {
-  const LoadNotificationPreferences();
-}
-
 /// Refresh notifications (pull to refresh).
 class RefreshNotifications extends NotificationEvent {
   const RefreshNotifications();

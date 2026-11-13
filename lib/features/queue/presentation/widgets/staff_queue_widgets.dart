@@ -30,7 +30,7 @@ class StatsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuContainer(
       borderRadius: 0,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding, vertical: 20),
       variant: NeuVariant.flat,
       child: Row(
         children: [
@@ -46,7 +46,7 @@ class StatsBar extends StatelessWidget {
           Expanded(
             child: _StatItem(
               svgAsset: SvgIcons.door,
-              label: 'Being Served',
+              label: 'With the vet',
               value: '$totalInRoom',
               color: ThemeColors.primaryText(context),
             ),
@@ -55,7 +55,7 @@ class StatsBar extends StatelessWidget {
           Expanded(
             child: _StatItem(
               svgAsset: SvgIcons.volume,
-              label: 'Now Serving',
+              label: 'Now serving',
               value: currentServing > 0 ? '#$currentServing' : '-',
               color: ThemeColors.info(context),
             ),
@@ -83,21 +83,15 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        NeuContainer(
-          borderRadius: NeuTokens.radiusSm,
-          padding: const EdgeInsets.all(12),
-          variant: NeuVariant.flat,
-          color: color.withValues(alpha: 0.12),
-          child: svgAsset != null
-              ? NeuSvgIcon(svgAsset!, size: 22)
-              : const SizedBox(width: 22, height: 22),
-        ),
-        const SizedBox(height: 8),
+        // Numbers lead; colour only when there is something to act on.
+        // A zero in orange was asking for attention it did not need.
         Text(
           value,
-          style: AppTextStyles.headlineSmall.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
+          style: AppTextStyles.numberLarge.copyWith(
+            color: (value == '0' || value == '-')
+                ? ThemeColors.textPrimary(context)
+                : color,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
         const SizedBox(height: 2),

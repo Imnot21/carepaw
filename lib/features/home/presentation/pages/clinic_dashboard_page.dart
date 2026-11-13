@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -15,7 +16,6 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_stat.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 
 /// Home screen for the Owner/Admin — the paper-aligned single clinic
@@ -109,13 +109,13 @@ class _ClinicDashboardContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Good ${_getGreeting()}, $userName',
+                  'Good ${_getGreeting().toLowerCase()}, $userName',
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 Text(
-                  'Clinic overview • Owner/Admin',
+                  '${DateFormat('EEEE, MMMM d').format(DateTime.now())} · PILA VET HUB',
                   style: AppTextStyles.bodySmall.subtleOf(
                     Theme.of(context).brightness,
                   ),
@@ -148,76 +148,50 @@ class _ClinicDashboardContent extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 NeuTokens.pagePadding,
-                NeuTokens.spaceLg,
+                NeuTokens.sectionGap,
                 NeuTokens.pagePadding,
                 NeuTokens.spaceXl,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Bookings, line, patients, stock and scan already sit in
+                  // the tab bar one thumb away; repeating them here as a tile
+                  // grid only doubled the navigation. This list holds what
+                  // the tab bar does not.
                   Text(
-                    'Clinic work',
-                    style: AppTextStyles.titleMedium.copyWith(
+                    'More',
+                    style: AppTextStyles.titleSmall.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: NeuTokens.tightGap),
-                  BlocBuilder<ClinicPulseBloc, ClinicPulseState>(
-                    builder: (context, pulse) {
-                      // Tablet widths get flatter cells: six action cards
-                      // three across at phone proportions would otherwise
-                      // scale into full-width billboards on a tablet.
-                      final isWide = MediaQuery.sizeOf(context).width >= 600;
-                      return GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 3,
-                        crossAxisSpacing: NeuTokens.tightGap,
-                        mainAxisSpacing: NeuTokens.tightGap,
-                        childAspectRatio: isWide ? 1.45 : 0.95,
-                        children: [
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.calendar,
-                            label: 'Bookings',
-                            onTap: () => context.push(Routes.staffAppointments),
-                          ),
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.listNumbered,
-                            label: 'Line',
-                            onTap: () => context.push(Routes.staffQueue),
-                          ),
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.people,
-                            label: 'Patients',
-                            onTap: () => context.push(Routes.vetPatients),
-                          ),
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.visit,
-                            label: 'Records',
-                            onTap: () => _openRecordsPicker(context),
-                          ),
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.inventory,
-                            label: 'Stock',
-                            alert: (pulse.lowStock ?? 0) > 0,
-                            onTap: () => context.push(Routes.staffInventory),
-                          ),
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.scan,
-                            label: 'Scan',
-                            onTap: () => context.push(Routes.staffScanning),
-                          ),
-                          // Chapter 1 (Figure 1): the Owner/Veterinarian and
-                          // the Co-Manager share the Owner/Admin role. The
-                          // Owner creates the Co-Manager's account here.
-                          _ClinicActionCard(
-                            svgAsset: SvgIcons.person,
-                            label: 'Accounts',
-                            onTap: () => context.push(Routes.adminUsers),
-                          ),
-                        ],
-                      );
-                    },
+                  const SizedBox(height: NeuTokens.spaceXs),
+                  NeuCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        _ClinicLinkRow(
+                          svgAsset: SvgIcons.visit,
+                          title: 'Medical records',
+                          subtitle: 'Pick a patient to open their history',
+                          onTap: () => _openRecordsPicker(context),
+                        ),
+                        Divider(
+                          height: 1,
+                          indent: 60,
+                          color: ThemeColors.divider(context),
+                        ),
+                        // Chapter 1 (Figure 1): the Owner/Veterinarian and
+                        // the Co-Manager share the Owner/Admin role. The
+                        // Owner creates the Co-Manager's account here.
+                        _ClinicLinkRow(
+                          svgAsset: SvgIcons.person,
+                          title: 'Staff accounts',
+                          subtitle: "Add or turn off the co-manager's login",
+                          onTap: () => context.push(Routes.adminUsers),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -265,35 +239,53 @@ class _ClinicPulseStrip extends StatelessWidget {
       builder: (context, pulse) {
         final waiting = pulse.waiting;
         final lowStock = pulse.lowStock;
-        return NeuStatGrid(
-          mobileColumns: 3,
-          // "Today's bookings" wraps to two lines in a third of the width;
-          // 0.70 keeps the two-line label clear even at the narrower logical
-          // width of a framed preview (~393pt).
-          childAspectRatio: 0.70,
-          tiles: [
-            NeuStatTile(
-              label: 'Waiting',
-              value: waiting?.toString() ?? '-',
-              icon: Icons.people_outline_rounded,
-              svgAsset: SvgIcons.person,
-              accent: (waiting ?? 0) > 0 ? ThemeColors.warning(context) : null,
-              onTap: () => context.push(Routes.staffQueue),
+        Widget rule() => Container(
+          width: 1,
+          height: 44,
+          color: ThemeColors.divider(context),
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Today',
+              style: AppTextStyles.titleSmall.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            NeuStatTile(
-              label: "Today's bookings",
-              value: pulse.todayBookings?.toString() ?? '-',
-              icon: Icons.event_available_outlined,
-              svgAsset: SvgIcons.calendar,
-              onTap: () => context.push(Routes.staffAppointments),
-            ),
-            NeuStatTile(
-              label: 'Low stock',
-              value: lowStock?.toString() ?? '-',
-              icon: Icons.inventory_2_outlined,
-              svgAsset: SvgIcons.inventory,
-              accent: (lowStock ?? 0) > 0 ? ThemeColors.error(context) : null,
-              onTap: () => context.push(Routes.staffInventory),
+            const SizedBox(height: NeuTokens.spaceXs),
+            NeuCard(
+              padding: const EdgeInsets.symmetric(
+                vertical: NeuTokens.spaceMd,
+                horizontal: NeuTokens.spaceXs,
+              ),
+              child: Row(
+                children: [
+                  _PulseCell(
+                    value: waiting,
+                    label: 'in line',
+                    alert: (waiting ?? 0) > 0
+                        ? ThemeColors.warning(context)
+                        : null,
+                    onTap: () => context.push(Routes.staffQueue),
+                  ),
+                  rule(),
+                  _PulseCell(
+                    value: pulse.todayBookings,
+                    label: 'booked today',
+                    onTap: () => context.push(Routes.staffAppointments),
+                  ),
+                  rule(),
+                  _PulseCell(
+                    value: lowStock,
+                    label: 'low on stock',
+                    alert: (lowStock ?? 0) > 0
+                        ? ThemeColors.error(context)
+                        : null,
+                    onTap: () => context.push(Routes.staffInventory),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -302,81 +294,115 @@ class _ClinicPulseStrip extends StatelessWidget {
   }
 }
 
-class _ClinicActionCard extends StatelessWidget {
-  final String? svgAsset;
+/// One number on the Today panel. Unknown values show a dash, never a fake 0.
+class _PulseCell extends StatelessWidget {
+  final int? value;
   final String label;
+  final Color? alert;
   final VoidCallback onTap;
 
-  /// Marks the tile with an accent dot — something in this area needs
-  /// attention (e.g. low stock).
-  final bool alert;
-
-  const _ClinicActionCard({
-    this.svgAsset,
+  const _PulseCell({
+    required this.value,
     required this.label,
     required this.onTap,
-    this.alert = false,
+    this.alert,
   });
 
   @override
   Widget build(BuildContext context) {
-    final accent = ThemeColors.primary(context);
-    return NeuCard(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              NeuContainer(
-                variant: NeuVariant.pressed,
-                borderRadius: NeuTokens.radiusSm,
-                padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconLg - 4)
-                    : const SizedBox(
-                        width: NeuTokens.iconLg - 4,
-                        height: NeuTokens.iconLg - 4,
-                      ),
-              ),
-              if (alert)
-                Positioned(
-                  top: -1,
-                  right: -1,
-                  child: ExcludeSemantics(
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: ThemeColors.error(context),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: ThemeColors.background(context),
-                          width: 2,
-                        ),
-                      ),
-                    ),
+    final shown = value?.toString() ?? '-';
+    return Expanded(
+      child: Semantics(
+        button: true,
+        label: '$shown $label',
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: NeuTokens.spaceXxs),
+            child: Column(
+              children: [
+                Text(
+                  shown,
+                  style: AppTextStyles.numberLarge.copyWith(
+                    color: alert ?? ThemeColors.textPrimary(context),
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: NeuTokens.spaceXs),
-          Flexible(
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.labelSmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: accent,
-                height: 1.1,
-              ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.subtleOf(
+                    Theme.of(context).brightness,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A row in the "More" list: small icon, what it is, what you do there.
+class _ClinicLinkRow extends StatelessWidget {
+  final String svgAsset;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ClinicLinkRow({
+    required this.svgAsset,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 64),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: NeuTokens.spaceMd,
+            vertical: NeuTokens.spaceSm,
+          ),
+          child: Row(
+            children: [
+              NeuSvgIcon(svgAsset, size: 28),
+              const SizedBox(width: NeuTokens.spaceMd),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall.subtleOf(
+                        Theme.of(context).brightness,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: ThemeColors.textSecondary(context),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

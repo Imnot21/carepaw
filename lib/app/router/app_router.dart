@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
+import 'package:carepaw/core/storage/local_storage.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/pages/login_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/register_page.dart';
+import 'package:carepaw/features/authentication/presentation/pages/privacy_notice_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/reset_password_page.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
@@ -62,6 +64,8 @@ import 'package:carepaw/features/scanning/domain/repositories/scan_repository.da
 import 'package:carepaw/features/scanning/presentation/pages/scan_list_page.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
+import 'package:carepaw/features/notifications/presentation/bloc/notification_preferences_cubit.dart';
+import 'package:carepaw/features/notifications/presentation/notification_alerts.dart';
 import 'package:carepaw/features/notifications/domain/repositories/notification_repository.dart';
 import 'package:carepaw/features/notifications/presentation/pages/notification_list_page.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
@@ -122,6 +126,12 @@ class AppRouter {
         path: Routes.register,
         name: RouteNames.register,
         builder: (context, state) => const RegisterPage(),
+      ),
+      // Public: read before sign-up, and from Profile once signed in.
+      GoRoute(
+        path: Routes.privacy,
+        name: RouteNames.privacy,
+        builder: (context, state) => const PrivacyNoticePage(),
       ),
       GoRoute(
         path: Routes.forgotPassword,
@@ -564,10 +574,22 @@ class AppRouter {
           GoRoute(
             path: Routes.notifications,
             name: RouteNames.notifications,
-            builder: (context, state) => BlocProvider(
-              create: (context) => NotificationBloc(
-                notificationRepository: getIt<NotificationRepository>(),
-              )..add(const LoadNotifications()),
+            builder: (context, state) => MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => NotificationBloc(
+                    notificationRepository: getIt<NotificationRepository>(),
+                  )..add(const LoadNotifications()),
+                ),
+                // Created on first use, when the settings screen opens.
+                BlocProvider(
+                  create: (context) => NotificationPreferencesCubit(
+                    repository: getIt<NotificationRepository>(),
+                    currentUserId: LocalStorage.getUserId,
+                    onChanged: getIt<NotificationAlerts>().applyPreferences,
+                  ),
+                ),
+              ],
               child: const NotificationListPage(),
             ),
           ),
@@ -603,6 +625,11 @@ class AppRouter {
       final isSplashRoute = location == Routes.splash;
       final isLoading = authState is AuthLoading;
       final isInitial = authState is AuthInitial;
+
+      // The privacy notice is open to everyone, signed in or not.
+      if (location.startsWith(Routes.privacy)) {
+        return null;
+      }
 
       // If still loading or initial (auth check not started), don't redirect yet (stay on current route)
       if (isLoading || isInitial) {

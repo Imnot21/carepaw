@@ -118,7 +118,7 @@ class _PetListViewState extends State<PetListView> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       appBar: AppBar(
-        title: const Text('My Pets'),
+        title: const Text('My pets'),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -144,7 +144,7 @@ class _PetListViewState extends State<PetListView> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: NeuTextField(
               controller: _searchController,
-              hint: 'Search pets...',
+              hint: 'Search by name',
               prefixIcon: ClayIconOrMaterial(
                 'search_rounded',
                 fallback: Icons.search_rounded,
@@ -593,7 +593,7 @@ class _StaffPetListViewState extends State<StaffPetListView> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       appBar: AppBar(
-        title: const Text('All Pets'),
+        title: const Text('Patients'),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -608,7 +608,7 @@ class _StaffPetListViewState extends State<StaffPetListView> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: NeuTextField(
               controller: _searchController,
-              hint: 'Search pet or owner name...',
+              hint: 'Search by pet or owner',
               prefixIcon: ClayIconOrMaterial(
                 'search_rounded',
                 fallback: Icons.search_rounded,

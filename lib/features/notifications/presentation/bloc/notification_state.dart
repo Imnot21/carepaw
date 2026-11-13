@@ -95,21 +95,6 @@ class NotificationCreated extends NotificationState {
   List<Object?> get props => [notification];
 }
 
-/// Notification preferences loaded state.
-class NotificationPreferencesLoaded extends NotificationState {
-  final NotificationPreferences preferences;
-
-  const NotificationPreferencesLoaded(this.preferences);
-
-  @override
-  List<Object?> get props => [preferences];
-}
-
-/// Notification preferences updated state.
-class NotificationPreferencesUpdated extends NotificationState {
-  const NotificationPreferencesUpdated();
-}
-
 /// Error state.
 class NotificationError extends NotificationState {
   final Failure failure;

@@ -51,6 +51,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   int? _selectedVeterinarianId;
   String? _selectedService;
   bool _isLoading = false;
+  bool _triedSubmit = false;
   late Future<List<User>> _veterinariansFuture;
 
   bool get _isVetOrStaff => widget.userRole == UserRole.ownerAdmin;
@@ -157,7 +158,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(isEditing ? 'Edit Appointment' : 'Request Appointment'),
+          title: Text(isEditing ? 'Change booking' : 'Book a visit'),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -211,7 +212,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                         NeuButton(
                           text: isEditing
                               ? 'Update Appointment'
-                              : 'Request Appointment',
+                              : 'Send booking request',
                           onPressed: _isLoading ? null : _submitForm,
                           isLoading: _isLoading,
                           expanded: true,
@@ -264,6 +265,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 ? '${_formatDate(_selectedDateTime!)} at ${_formatTime(_selectedDateTime!)}'
                 : null,
             onTap: _pickDateTime,
+            showError: _triedSubmit,
           );
         case 3:
           return ServiceSelectionSection(
@@ -299,6 +301,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 ? '${_formatDate(_selectedDateTime!)} at ${_formatTime(_selectedDateTime!)}'
                 : null,
             onTap: _pickDateTime,
+            showError: _triedSubmit,
           );
         case 2:
           return ServiceSelectionSection(
@@ -348,10 +351,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   }
 
   Future<void> _submitForm() async {
+    if (!_triedSubmit) setState(() => _triedSubmit = true);
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedPetId == null) {
-      NeuToast.error(context, 'Please select a pet');
+      NeuToast.error(context, 'Pick which pet is coming in.');
       return;
     }
 
@@ -376,12 +380,12 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     }
 
     if (_selectedDateTime == null) {
-      NeuToast.error(context, 'Please select a date and time');
+      NeuToast.error(context, 'Pick a date and time for the visit.');
       return;
     }
 
     if (_selectedDateTime!.isBefore(DateTime.now())) {
-      NeuToast.error(context, 'Cannot schedule appointment in the past');
+      NeuToast.error(context, 'That time has already passed. Pick a later one.');
       return;
     }
 

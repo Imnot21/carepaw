@@ -250,31 +250,15 @@ class _NeuButtonState extends State<NeuButton> {
     double blur = 12,
     double strength = 1,
   }) {
+    // One short drop shadow under the fill. The old pair added a lavender
+    // highlight up-left of every filled button, which read as a glow.
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    if (isDark) {
-      return [
-        BoxShadow(
-          color: fill.withValues(alpha: 0.22),
-          offset: Offset(-distance, -distance),
-          blurRadius: blur,
-        ),
-        BoxShadow(
-          color: AppColors.shadowDepthDark.withValues(alpha: 0.42 * strength),
-          offset: Offset(distance, distance),
-          blurRadius: blur,
-        ),
-      ];
-    }
+    final depth = isDark ? AppColors.shadowDepthDark : fill.darken(0.3);
     return [
       BoxShadow(
-        color: fill.lighten(0.52).withValues(alpha: 0.90),
-        offset: Offset(-distance, -distance),
-        blurRadius: blur,
-      ),
-      BoxShadow(
-        color: fill.darken(0.26).withValues(alpha: 0.46 * strength),
-        offset: Offset(distance, distance),
-        blurRadius: blur,
+        color: depth.withValues(alpha: (isDark ? 0.45 : 0.28) * strength),
+        offset: Offset(0, distance * 0.5),
+        blurRadius: blur * 0.6,
       ),
     ];
   }

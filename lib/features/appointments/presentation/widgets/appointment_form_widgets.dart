@@ -77,7 +77,7 @@ class _PetSelectionSectionState extends State<PetSelectionSection> {
           }
         } else if (state is PetLoading) {
           return _SectionCard(
-            title: 'Select Pet',
+            title: 'Pet',
             icon: Icons.pets_rounded,
             svgAsset: SvgIcons.paw,
             iconColor: ThemeColors.primaryText(context),
@@ -101,7 +101,7 @@ class _PetSelectionSectionState extends State<PetSelectionSection> {
         }
 
         return _SectionCard(
-          title: 'Select Pet',
+          title: 'Pet',
           subtitle: _forClinic
               ? 'Choose the client\'s pet that is visiting'
               : 'Choose which pet is visiting',
@@ -187,8 +187,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return _SectionCard(
-              title: 'Your Veterinarian',
-              subtitle: 'Assigned veterinarian for this clinic',
+              title: 'Your vet',
+              subtitle: 'The vet on duty at PILA VET HUB',
               icon: Icons.medical_services_rounded,
             svgAsset: SvgIcons.visit,
               iconColor: ThemeColors.textSecondary(context),
@@ -201,8 +201,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
           // see the failure here too.
           if (snapshot.hasError) {
             return _SectionCard(
-              title: 'Your Veterinarian',
-              subtitle: 'Assigned veterinarian for this clinic',
+              title: 'Your vet',
+              subtitle: 'The vet on duty at PILA VET HUB',
               icon: Icons.medical_services_rounded,
             svgAsset: SvgIcons.visit,
               iconColor: ThemeColors.textSecondary(context),
@@ -239,8 +239,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
               : null;
 
           return _SectionCard(
-            title: 'Your Veterinarian',
-            subtitle: 'Assigned veterinarian for this clinic',
+            title: 'Your vet',
+            subtitle: 'The vet on duty at PILA VET HUB',
             icon: Icons.medical_services_rounded,
             svgAsset: SvgIcons.visit,
             iconColor: ThemeColors.textSecondary(context),
@@ -299,8 +299,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _SectionCard(
-            title: 'Select Veterinarian',
-            subtitle: 'Choose your preferred veterinarian',
+            title: 'Vet',
+            subtitle: 'Who should see your pet?',
             icon: Icons.medical_services_rounded,
             svgAsset: SvgIcons.visit,
             iconColor: ThemeColors.textSecondary(context),
@@ -310,8 +310,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
 
         if (snapshot.hasError) {
           return _SectionCard(
-            title: 'Select Veterinarian',
-            subtitle: 'Choose your preferred veterinarian',
+            title: 'Vet',
+            subtitle: 'Who should see your pet?',
             icon: Icons.medical_services_rounded,
             svgAsset: SvgIcons.visit,
             iconColor: ThemeColors.textSecondary(context),
@@ -362,8 +362,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
         }
 
         return _SectionCard(
-          title: 'Select Veterinarian',
-          subtitle: 'Choose your preferred veterinarian',
+          title: 'Vet',
+          subtitle: 'Who should see your pet?',
           icon: Icons.medical_services_rounded,
           svgAsset: SvgIcons.visit,
           iconColor: ThemeColors.textSecondary(context),
@@ -420,19 +420,25 @@ class DateTimeSelectionSection extends StatelessWidget {
   final String? dateTimeText;
   final VoidCallback onTap;
 
+  /// Show the missing-date error. Off until the user tries to send the
+  /// form: a red error on a field nobody has touched yet reads as blame.
+  final bool showError;
+
   const DateTimeSelectionSection({
     super.key,
     required this.dateTimeText,
     required this.onTap,
+    this.showError = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final hasDate = dateTimeText != null;
+    final flagMissing = showError && !hasDate;
 
     return _SectionCard(
-      title: 'Date & Time',
-      subtitle: 'When would you like the appointment?',
+      title: 'Date and time',
+      subtitle: 'When would you like to come in?',
       icon: Icons.calendar_today_rounded,
       svgAsset: SvgIcons.calendar,
       iconColor: ThemeColors.info(context),
@@ -445,8 +451,8 @@ class DateTimeSelectionSection extends StatelessWidget {
             variant: NeuVariant.inset,
             borderRadius: NeuTokens.radiusSm,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            borderColor: !hasDate ? ThemeColors.error(context) : null,
-            borderWidth: !hasDate ? 1 : 0,
+            borderColor: flagMissing ? ThemeColors.error(context) : null,
+            borderWidth: flagMissing ? 1 : 0,
             child: Row(
               children: [
                 NeuContainer(
@@ -477,11 +483,11 @@ class DateTimeSelectionSection extends StatelessWidget {
               ],
             ),
           ),
-          if (!hasDate)
+          if (flagMissing)
             Padding(
               padding: const EdgeInsets.only(top: 8, left: 4),
               child: Text(
-                'Please select a date and time',
+                'Pick a date and time for the visit.',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: ThemeColors.error(context),
                 ),
@@ -507,7 +513,7 @@ class DurationSelectionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _SectionCard(
       title: 'Duration',
-      subtitle: 'How long will the appointment take?',
+      subtitle: 'How long the visit should take',
       icon: Icons.timer_outlined,
       svgAsset: SvgIcons.schedule,
       iconColor: ThemeColors.warning(context),
@@ -613,15 +619,15 @@ class ReasonSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Reason for Visit',
-      subtitle: 'What is the purpose of this appointment?',
+      title: 'Reason for the visit',
+      subtitle: 'What is going on with your pet?',
       icon: Icons.description_rounded,
       svgAsset: SvgIcons.note,
       iconColor: ThemeColors.success(context),
       isRequired: true,
       child: NeuTextField(
         controller: reasonController,
-        label: 'Reason for Visit',
+        label: 'Reason',
         hint: 'e.g., Annual checkup, Vaccination, Illness',
         validator: (value) => Validators.required(value, 'Reason'),
         maxLines: 3,
@@ -648,14 +654,14 @@ class NotesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Additional Notes',
-      subtitle: 'Any other information for the veterinarian',
+      title: 'Notes for the vet',
+      subtitle: 'Optional',
       icon: Icons.note_alt_rounded,
       svgAsset: SvgIcons.prescription,
       iconColor: ThemeColors.textSecondary(context),
       child: NeuTextField(
         controller: notesController,
-        label: 'Additional Notes',
+        label: 'Notes',
         hint: 'Any additional information for the veterinarian...',
         maxLines: 4,
         minLines: 3,
@@ -693,23 +699,17 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuCard(
       borderRadius: NeuTokens.radiusMd,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       shape: RoundedRectangleBorder(borderRadius: NeuShape.card),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(10),
-                borderRadius: NeuTokens.radiusSm,
-                variant: NeuVariant.flat,
-                color: iconColor.withValues(alpha: 0.15),
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset!, size: 22)
-                    : Icon(icon, size: 22, color: iconColor),
-              ),
-              const SizedBox(width: 12),
+              svgAsset != null
+                  ? NeuSvgIcon(svgAsset!, size: 28)
+                  : Icon(icon, size: 28, color: iconColor),
+              const SizedBox(width: NeuTokens.spaceSm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -718,7 +718,7 @@ class _SectionCard extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: AppTextStyles.titleLarge.copyWith(
+                          style: AppTextStyles.titleMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: ThemeColors.textPrimary(context),
                           ),

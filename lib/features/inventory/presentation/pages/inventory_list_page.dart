@@ -135,7 +135,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
             children: [
               Expanded(
                 child: Text(
-                  'Inventory',
+                  'Stock',
                   style: AppTextStyles.headlineMedium.copyWith(
                     fontWeight: FontWeight.w800,
                     color: ThemeColors.textPrimary(context),
@@ -153,7 +153,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Add or restock medicines, check expiry dates, take stock out',
+            'Medicines on hand, what is running low, and what expires soon.',
             style: AppTextStyles.bodySmall.copyWith(
               color: ThemeColors.textSecondary(context),
             ),
@@ -250,7 +250,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
               message:
                   'Tap Add stock, or scan a medicine box or a supplier '
                   'receipt.',
-              actionLabel: 'Go to Scan',
+              actionLabel: 'Scan a box or receipt',
               onAction: () => context.go(Routes.staffScanning),
             );
     }

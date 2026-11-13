@@ -167,7 +167,7 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
             NeuTextField(
               controller: _searchController,
               hint: widget.seesAllPatients
-                  ? 'Search pet or owner name...'
+                  ? 'Search by pet or owner'
                   : 'Search patients...',
               prefixIcon: ClayIconOrMaterial(
                 'search_rounded',

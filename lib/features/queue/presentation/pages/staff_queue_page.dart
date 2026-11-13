@@ -16,6 +16,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -56,7 +57,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           backgroundColor: ThemeColors.background(context),
           appBar: AppBar(
             title: Text(
-              'Queue management',
+              'Line',
               style: AppTextStyles.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -229,7 +230,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                     context.read<QueueBloc>().add(QueueStaffLoadRequested());
                   },
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                    padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 8, NeuTokens.pagePadding, 100),
                     itemCount: queueEntries.length,
                     itemBuilder: (context, index) {
                       final entry = queueEntries[index];
@@ -274,44 +275,12 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
   }
 
   Widget _buildEmptyQueue() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuContainer(
-              borderRadius: 70,
-              padding: const EdgeInsets.all(32),
-              color: ThemeColors.primary(context),
-              boxShadow: NeuShadow.color(
-                context,
-                ThemeColors.primary(context),
-                blur: 24,
-                opacity: 0.32,
-              ),
-              child: NeuSvgIcon(SvgIcons.people, size: 60),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'No Patients in Queue',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Patients will appear here when they check in.\nPull to refresh.',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: ThemeColors.textSecondary(context),
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return const NeuEmptyState(
+      icon: Icons.people_outline,
+      svgAsset: SvgIcons.people,
+      title: 'No one is waiting',
+      message:
+          'Pets appear here once they check in at the desk. Pull down to refresh.',
     );
   }
 

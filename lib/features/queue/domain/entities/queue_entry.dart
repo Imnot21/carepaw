@@ -240,7 +240,7 @@ enum QueueStatus {
       case QueueStatus.called:
         return 'Called';
       case QueueStatus.inRoom:
-        return 'Being Served';
+        return 'With the vet';
       case QueueStatus.completed:
         return 'Done';
       case QueueStatus.cancelled:

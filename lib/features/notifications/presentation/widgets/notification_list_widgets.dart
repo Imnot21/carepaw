@@ -8,12 +8,12 @@ import 'package:carepaw/features/notifications/presentation/bloc/notification_bl
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_avatar.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
@@ -345,66 +345,16 @@ class NotificationEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        child: NeuCard(
-          borderRadius: NeuTokens.radiusMd,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NeuContainer(
-                borderRadius: 90,
-                padding: const EdgeInsets.all(24),
-                color: ThemeColors.primary(context),
-                boxShadow: NeuShadow.color(
-                  context,
-                  ThemeColors.primary(context),
-                  blur: 24,
-                  opacity: 0.32,
-                ),
-                child: svgAsset != null
-                    ? NeuSvgIcon(svgAsset!, size: 48)
-                    : const SizedBox(width: 48, height: 48),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                title,
-                style: AppTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 20),
-                NeuButton(
-                  text: actionLabel!,
-                  onPressed: onAction,
-                  variant: NeuButtonVariant.primary,
-                  size: NeuButtonSize.medium,
-                  icon: Icons.refresh_rounded,
-                  svgAsset: SvgIcons.refresh,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+    // Same quiet treatment as every other empty list (NeuEmptyState). The
+    // action is a text button: refreshing an empty inbox is not the main
+    // thing anyone came here to do.
+    return NeuEmptyState(
+      icon: Icons.notifications_none_rounded,
+      svgAsset: svgAsset,
+      title: title,
+      message: message,
+      secondaryActionLabel: actionLabel,
+      onSecondaryAction: onAction,
     );
   }
 }

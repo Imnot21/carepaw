@@ -4,6 +4,7 @@ import 'package:carepaw/features/notifications/domain/entities/notification.dart
     as domain;
 import 'package:carepaw/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_event.dart';
+import 'package:carepaw/features/notifications/presentation/bloc/notification_preferences_cubit.dart';
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart';
 import 'package:carepaw/features/notifications/presentation/pages/notification_detail_page.dart';
 import 'package:carepaw/features/notifications/presentation/pages/notification_settings_page.dart';
@@ -145,7 +146,7 @@ class _NotificationListPageState extends State<NotificationListPage>
           ),
           const SizedBox(height: 4),
           Text(
-            'Stay updated with your clinic',
+            'Updates from PILA VET HUB',
             style: AppTextStyles.bodySmall.copyWith(
               color: _isDark
                   ? AppColors.textSecondaryOnDark
@@ -230,9 +231,9 @@ class _NotificationListPageState extends State<NotificationListPage>
         if (state is NotificationError) {
           return NotificationEmptyState(
             svgAsset: SvgIcons.error,
-            title: 'Error Loading Notifications',
+            title: "Couldn't load notifications",
             message: state.failure.message,
-            actionLabel: 'Retry',
+            actionLabel: 'Try again',
             onAction: () {
               context.read<NotificationBloc>().add(
                 type == null
@@ -271,11 +272,11 @@ class _NotificationListPageState extends State<NotificationListPage>
           return NotificationEmptyState(
             svgAsset: type != null ? _getTypeSvg(type) : SvgIcons.notifications,
             title: type != null
-                ? 'No ${type.displayName} Notifications'
-                : 'No Notifications Yet',
+                ? 'No ${type.displayName.toLowerCase()} updates'
+                : 'No notifications yet',
             message: type != null
-                ? 'You\'re all caught up on ${type.displayName.toLowerCase()} notifications'
-                : 'Notifications will appear here when you receive them',
+                ? 'Nothing new here.'
+                : 'Booking changes and queue calls from the clinic show up here.',
             actionLabel: type == null ? 'Refresh' : null,
             onAction: type == null
                 ? () => context.read<NotificationBloc>().add(
@@ -330,9 +331,9 @@ class _NotificationListPageState extends State<NotificationListPage>
           if (unread.isEmpty) {
             return NotificationEmptyState(
               svgAsset: SvgIcons.email,
-              title: 'All Caught Up!',
-              message: 'No unread notifications',
-              actionLabel: 'View All',
+              title: 'All read',
+              message: 'You have read everything.',
+              actionLabel: 'Show all',
               onAction: () => _tabController.animateTo(0),
             );
           }
@@ -364,8 +365,8 @@ class _NotificationListPageState extends State<NotificationListPage>
           if (notifications.isEmpty) {
             return NotificationEmptyState(
               svgAsset: _getTypeSvg(type),
-              title: 'No ${type.displayName} Notifications',
-              message: 'Notifications of this type will appear here',
+              title: 'No ${type.displayName.toLowerCase()} updates',
+              message: 'Nothing here yet.',
             );
           }
           return ListView.builder(
@@ -388,8 +389,8 @@ class _NotificationListPageState extends State<NotificationListPage>
         }
         return NotificationEmptyState(
           svgAsset: _getTypeSvg(type),
-          title: 'No ${type.displayName} Notifications',
-          message: 'Pull to refresh',
+          title: 'No ${type.displayName.toLowerCase()} updates',
+          message: 'Pull down to refresh.',
           actionLabel: 'Refresh',
           onAction: () => context.read<NotificationBloc>().add(
             LoadNotificationsByType(type),
@@ -455,10 +456,15 @@ class _NotificationListPageState extends State<NotificationListPage>
 
   void _navigateToSettings() {
     final bloc = context.read<NotificationBloc>();
+    // Reload on every visit, so the switches show what Firestore holds.
+    final preferences = context.read<NotificationPreferencesCubit>()..load();
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: bloc,
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: bloc),
+            BlocProvider.value(value: preferences),
+          ],
           child: const NotificationSettingsPage(),
         ),
       ),

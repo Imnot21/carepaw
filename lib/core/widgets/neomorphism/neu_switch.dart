@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_svg_icon.dart';
 import 'neu_motion.dart';
@@ -73,17 +74,36 @@ class NeuSwitch extends StatelessWidget {
       ),
     );
 
+    final VoidCallback? toggle = enabled && onChanged != null
+        ? () {
+            HapticFeedback.selectionClick();
+            onChanged!(!value);
+          }
+        : null;
+
     return Semantics(
       toggled: value,
       enabled: enabled,
       label: label,
-      onTap: enabled && onChanged != null ? () => onChanged!(!value) : null,
+      onTap: toggle,
       child: GestureDetector(
-        onTap: enabled && onChanged != null ? () => onChanged!(!value) : null,
+        onTap: toggle,
         behavior: HitTestBehavior.opaque,
-        child: Opacity(
-          opacity: enabled ? 1 : NeuTokens.opacityDisabled,
-          child: control,
+        // The track is 32 tall. The box around it brings the touch area up to
+        // the minimum tap target without changing how the switch looks.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: NeuTokens.minTapTarget,
+            minHeight: NeuTokens.minTapTarget,
+          ),
+          child: Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Opacity(
+              opacity: enabled ? 1 : NeuTokens.opacityDisabled,
+              child: control,
+            ),
+          ),
         ),
       ),
     );

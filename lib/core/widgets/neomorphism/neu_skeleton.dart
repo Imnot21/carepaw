@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/design_tokens.dart';
 import 'neu_motion.dart';
 
 /// A moving sheen that makes skeleton placeholders feel alive.
@@ -18,7 +18,7 @@ class NeuShimmer extends StatefulWidget {
     required this.child,
     this.base,
     this.highlight,
-    this.duration = const Duration(milliseconds: 1500),
+    this.duration = NeuTokens.durationShimmer,
   });
 
   @override

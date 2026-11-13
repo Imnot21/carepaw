@@ -331,7 +331,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
       height: 60,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding),
         itemCount: filters.length + 1, // +1 for "All"
         separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
@@ -397,7 +397,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
         }
       },
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
+        padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 12, NeuTokens.pagePadding, 110),
         itemCount: records.length,
         separatorBuilder: (_, _) => const SizedBox(height: 14),
         itemBuilder: (context, index) {

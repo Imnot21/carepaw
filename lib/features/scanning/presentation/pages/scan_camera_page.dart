@@ -151,7 +151,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           title: 'Scan ${_isReceipt ? 'Supplier Receipt' : 'Medicine Box'}',
           subtitle: _isReceipt
               ? 'The AI lists every medicine on the receipt'
-              : 'The AI reads the name, lot and expiry',
+              : 'Name, lot number and expiry are read from the photo',
           onClose: () => Navigator.pop(context),
         ),
         Expanded(child: _buildGuide()),

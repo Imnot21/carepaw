@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/design_tokens.dart';
 import 'neu_button.dart';
+import 'neu_motion.dart';
 import 'neu_shadows.dart';
 import 'neu_shapes.dart';
 import 'neu_style.dart';
@@ -89,7 +90,7 @@ class NeuDialog extends StatelessWidget {
     // instead of overflowing when space runs out.
     return AnimatedPadding(
       padding: MediaQuery.viewInsetsOf(context),
-      duration: const Duration(milliseconds: 100),
+      duration: NeuMotion.duration(context, NeuTokens.durationCard),
       curve: Curves.decelerate,
       child: Center(
         child: ConstrainedBox(

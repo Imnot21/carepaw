@@ -58,14 +58,14 @@ abstract final class NeuTokens {
   /// 16 dp — chips, icon buttons, small inputs.
   static const double radiusSm = 16;
 
-  /// 24 dp — cards, containers, fields. The workhorse.
-  static const double radiusMd = 24;
+  /// 18 dp — cards, containers, fields. The workhorse.
+  static const double radiusMd = 18;
 
-  /// 28 dp — dialogs, sheets, hero surfaces.
-  static const double radiusLg = 28;
+  /// 22 dp — dialogs, sheets, hero surfaces.
+  static const double radiusLg = 22;
 
-  /// 36 dp — app bars and large feature panels.
-  static const double radiusXl = 36;
+  /// 26 dp — app bars and large feature panels.
+  static const double radiusXl = 26;
 
   /// 999 dp — full pill (buttons, chips, nav bar, FABs).
   static const double radiusPill = 999;
@@ -263,7 +263,7 @@ abstract final class NeuTokens {
 
   static const double buttonHeightSm = 40;
   static const double buttonHeightMd = 50;
-  static const double buttonHeightLg = 58;
+  static const double buttonHeightLg = 52;
 
   static const double switchTrackWidth = 56;
   static const double switchTrackHeight = 32;
