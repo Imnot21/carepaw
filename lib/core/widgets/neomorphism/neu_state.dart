@@ -327,7 +327,7 @@ class _NeuLoadingBlockState extends State<NeuLoadingBlock>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final base = isDark ? AppColors.skeletonDark : AppColors.skeleton;
-    final peak = isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset;
+    final peak = ThemeColors.surfaceInset(context);
 
     return AnimatedBuilder(
       animation: _controller,

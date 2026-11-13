@@ -36,15 +36,17 @@ class NotificationCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  bool _isDark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
+  static NeuButtonSize _buttonSize(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(1) > 1.2
+      ? NeuButtonSize.small
+      : NeuButtonSize.medium;
 
   @override
   Widget build(BuildContext context) {
     final isUnread = !notification.isRead;
 
     return NeuCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(NeuTokens.spaceMd),
       variant: NeuVariant.raised,
       borderColor: isUnread ? typeColor.withValues(alpha: 0.3) : null,
       borderWidth: isUnread ? 1 : 0,
@@ -83,9 +85,7 @@ class NotificationCard extends StatelessWidget {
                               fontWeight: isUnread
                                   ? FontWeight.w700
                                   : FontWeight.w600,
-                              color: _isDark(context)
-                                  ? AppColors.textPrimaryOnDark
-                                  : AppColors.textPrimary,
+                              color: ThemeColors.textPrimary(context),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -96,10 +96,10 @@ class NotificationCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       formatRelativeTime(notification.createdAt),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: _isDark(context)
-                            ? AppColors.textSecondaryOnDark
-                            : AppColors.textSecondary,
+                        color: ThemeColors.textSecondary(context),
                       ),
                     ),
                   ],
@@ -125,97 +125,54 @@ class NotificationCard extends StatelessWidget {
             notification.message,
             style: AppTextStyles.bodyMedium.copyWith(
               color: isUnread
-                  ? (_isDark(context)
-                        ? AppColors.textPrimaryOnDark
-                        : AppColors.textPrimary)
-                  : (_isDark(context)
-                        ? AppColors.textSecondaryOnDark
-                        : AppColors.textSecondary),
+                  ? (ThemeColors.textPrimary(context))
+                  : (ThemeColors.textSecondary(context)),
               height: 1.4,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
 
-          // Data preview if available
-          if (notification.referenceType != null) ...[
-            const SizedBox(height: 8),
-            NeuCard(
-              padding: const EdgeInsets.all(10),
-              variant: NeuVariant.inset,
-              borderRadius: NeuTokens.radiusSm,
-              child: Row(
-                children: [
-                  NeuSvgIcon(SvgIcons.info, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${notification.referenceType}: ${notification.referenceId}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: _isDark(context)
-                            ? AppColors.textSecondaryOnDark
-                            : AppColors.textSecondary,
-                        fontFamily: 'monospace',
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
           const SizedBox(height: 12),
 
           // Action buttons
-          Row(
-            children: [
-              if (isUnread)
-                Expanded(
-                  child: NeuButton(
-                    text: 'Mark Read',
-                    variant: NeuButtonVariant.primary,
-                    icon: Icons.mark_email_read_rounded,
-                    svgAsset: SvgIcons.email,
-                    size: NeuButtonSize.medium,
-                    onPressed: () {
-                      context.read<NotificationBloc>().add(
-                        MarkAsRead(notification.id!),
-                      );
-                    },
-                    expanded: true,
-                  ),
-                )
-              else ...[
-                Expanded(
-                  child: NeuButton(
-                    text: 'View Details',
-                    variant: NeuButtonVariant.secondary,
-                    icon: Icons.visibility_rounded,
-                    svgAsset: SvgIcons.visibility,
-                    size: NeuButtonSize.medium,
-                    onPressed: () => onViewDetails(),
-                    expanded: true,
-                  ),
+          if (isUnread)
+            NeuButton(
+              text: 'Mark as read',
+              variant: NeuButtonVariant.primary,
+              icon: Icons.mark_email_read_rounded,
+              svgAsset: SvgIcons.email,
+              size: _buttonSize(context),
+              onPressed: () {
+                context.read<NotificationBloc>().add(
+                  MarkAsRead(notification.id!),
+                );
+              },
+              expanded: true,
+            )
+          else
+            Wrap(
+              spacing: NeuTokens.spaceXs,
+              runSpacing: NeuTokens.spaceXs,
+              children: [
+                NeuButton(
+                  text: 'View details',
+                  variant: NeuButtonVariant.secondary,
+                  icon: Icons.visibility_rounded,
+                  svgAsset: SvgIcons.visibility,
+                  size: _buttonSize(context),
+                  onPressed: onViewDetails,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: NeuButton(
-                    text: 'Delete',
-                    variant: NeuButtonVariant.outline,
-                    icon: Icons.delete_outline_rounded,
-                    svgAsset: SvgIcons.delete,
-                    size: NeuButtonSize.medium,
-                    onPressed: () {
-                      onDelete();
-                    },
-                    expanded: true,
-                  ),
+                NeuButton(
+                  text: 'Delete',
+                  variant: NeuButtonVariant.outline,
+                  icon: Icons.delete_outline_rounded,
+                  svgAsset: SvgIcons.delete,
+                  size: _buttonSize(context),
+                  onPressed: onDelete,
                 ),
               ],
-            ],
-          ),
+            ),
         ],
       ),
     );
@@ -246,9 +203,9 @@ class _NotificationCreateDialogState extends State<NotificationCreateDialog> {
   @override
   Widget build(BuildContext context) {
     return NeuDialog(
-      title: 'Create Test Notification',
-      content: SizedBox(
-        width: 320,
+      title: 'Create test notification',
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -257,7 +214,7 @@ class _NotificationCreateDialogState extends State<NotificationCreateDialog> {
               label: 'Title',
               hint: 'Notification title',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: NeuTokens.spaceMd),
             NeuTextField(
               controller: _bodyController,
               label: 'Body',
@@ -279,14 +236,14 @@ class _NotificationCreateDialogState extends State<NotificationCreateDialog> {
           text: 'Create',
           variant: NeuButtonVariant.primary,
           onPressed: () {
-            if (_titleController.text.isNotEmpty &&
-                _bodyController.text.isNotEmpty) {
+            if (_titleController.text.trim().isNotEmpty &&
+                _bodyController.text.trim().isNotEmpty) {
               final bloc = context.read<NotificationBloc>();
               Navigator.pop(context);
               bloc.add(
                 CreateNotification(
-                  title: _titleController.text,
-                  body: _bodyController.text,
+                  title: _titleController.text.trim(),
+                  body: _bodyController.text.trim(),
                   type: _selectedType,
                 ),
               );
@@ -363,18 +320,13 @@ class NotificationEmptyState extends StatelessWidget {
 class NotificationNotLoggedInView extends StatelessWidget {
   const NotificationNotLoggedInView({super.key});
 
-  bool _isDark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDark(context)
-          ? AppColors.backgroundDark
-          : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(NeuTokens.pagePadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -388,14 +340,12 @@ class NotificationNotLoggedInView extends StatelessWidget {
                   child: NeuSvgIcon(SvgIcons.notifications, size: 80),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: NeuTokens.sectionGap),
               Text(
-                'Please log in to view notifications',
+                'Sign in to see notifications',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: _isDark(context)
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -403,15 +353,13 @@ class NotificationNotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to stay updated with your clinic',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: _isDark(context)
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: NeuTokens.spaceXxl),
               NeuButton(
-                text: 'Log In',
+                text: 'Sign in',
                 onPressed: () => context.go(Routes.login),
                 icon: Icons.login_rounded,
                 svgAsset: SvgIcons.login,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -101,6 +103,9 @@ class _ClinicDashboardContent extends StatelessWidget {
           SliverAppBar(
             floating: true,
             snap: true,
+            toolbarHeight: MediaQuery.textScalerOf(
+              context,
+            ).scale(56).clamp(64.0, 120.0),
             backgroundColor: Colors.transparent,
             elevation: 0,
             scrolledUnderElevation: 0,
@@ -113,12 +118,16 @@ class _ClinicDashboardContent extends StatelessWidget {
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   '${DateFormat('EEEE, MMMM d').format(DateTime.now())} · PILA VET HUB',
                   style: AppTextStyles.bodySmall.subtleOf(
                     Theme.of(context).brightness,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -141,7 +150,7 @@ class _ClinicDashboardContent extends StatelessWidget {
                 NeuTokens.pagePadding,
                 0,
               ),
-              child: const _ClinicPulseStrip(),
+              child: const _CappedWidth(child: _ClinicPulseStrip()),
             ),
           ),
           SliverToBoxAdapter(
@@ -152,48 +161,50 @@ class _ClinicDashboardContent extends StatelessWidget {
                 NeuTokens.pagePadding,
                 NeuTokens.spaceXl,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Bookings, line, patients, stock and scan already sit in
-                  // the tab bar one thumb away; repeating them here as a tile
-                  // grid only doubled the navigation. This list holds what
-                  // the tab bar does not.
-                  Text(
-                    'More',
-                    style: AppTextStyles.titleSmall.copyWith(
-                      fontWeight: FontWeight.w700,
+              child: _CappedWidth(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Bookings, line, patients, stock and scan already sit in
+                    // the tab bar one thumb away; repeating them here as a tile
+                    // grid only doubled the navigation. This list holds what
+                    // the tab bar does not.
+                    Text(
+                      'More',
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: NeuTokens.spaceXs),
-                  NeuCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      children: [
-                        _ClinicLinkRow(
-                          svgAsset: SvgIcons.visit,
-                          title: 'Medical records',
-                          subtitle: 'Pick a patient to open their history',
-                          onTap: () => _openRecordsPicker(context),
-                        ),
-                        Divider(
-                          height: 1,
-                          indent: 60,
-                          color: ThemeColors.divider(context),
-                        ),
-                        // Chapter 1 (Figure 1): the Owner/Veterinarian and
-                        // the Co-Manager share the Owner/Admin role. The
-                        // Owner creates the Co-Manager's account here.
-                        _ClinicLinkRow(
-                          svgAsset: SvgIcons.person,
-                          title: 'Staff accounts',
-                          subtitle: "Add or turn off the co-manager's login",
-                          onTap: () => context.push(Routes.adminUsers),
-                        ),
-                      ],
+                    const SizedBox(height: NeuTokens.spaceXs),
+                    NeuCard(
+                      padding: EdgeInsets.zero,
+                      child: Column(
+                        children: [
+                          _ClinicLinkRow(
+                            svgAsset: SvgIcons.visit,
+                            title: 'Medical records',
+                            subtitle: 'Pick a patient to open their history',
+                            onTap: () => _openRecordsPicker(context),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 60,
+                            color: ThemeColors.divider(context),
+                          ),
+                          // Chapter 1 (Figure 1): the Owner/Veterinarian and
+                          // the Co-Manager share the Owner/Admin role. The
+                          // Owner creates the Co-Manager's account here.
+                          _ClinicLinkRow(
+                            svgAsset: SvgIcons.person,
+                            title: 'Staff accounts',
+                            subtitle: "Add or turn off the co-manager's login",
+                            onTap: () => context.push(Routes.adminUsers),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -208,7 +219,13 @@ class _ClinicDashboardContent extends StatelessWidget {
     bloc.add(const ClinicPulseRefreshRequested());
     if (bloc.state.revision >= targetRevision) return;
     // Hold the spinner until the reload this pull started lands.
-    await bloc.stream.firstWhere((s) => s.revision >= targetRevision);
+    try {
+      await bloc.stream
+          .firstWhere((s) => s.revision >= targetRevision)
+          .timeout(const Duration(seconds: 12));
+    } on TimeoutException {
+      // Stop the spinner; the cells keep their last known values.
+    }
   }
 
   Future<void> _openRecordsPicker(BuildContext context) async {
@@ -239,11 +256,8 @@ class _ClinicPulseStrip extends StatelessWidget {
       builder: (context, pulse) {
         final waiting = pulse.waiting;
         final lowStock = pulse.lowStock;
-        Widget rule() => Container(
-          width: 1,
-          height: 44,
-          color: ThemeColors.divider(context),
-        );
+        Widget rule() =>
+            Container(width: 1, color: ThemeColors.divider(context));
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -259,32 +273,35 @@ class _ClinicPulseStrip extends StatelessWidget {
                 vertical: NeuTokens.spaceMd,
                 horizontal: NeuTokens.spaceXs,
               ),
-              child: Row(
-                children: [
-                  _PulseCell(
-                    value: waiting,
-                    label: 'in line',
-                    alert: (waiting ?? 0) > 0
-                        ? ThemeColors.warning(context)
-                        : null,
-                    onTap: () => context.push(Routes.staffQueue),
-                  ),
-                  rule(),
-                  _PulseCell(
-                    value: pulse.todayBookings,
-                    label: 'booked today',
-                    onTap: () => context.push(Routes.staffAppointments),
-                  ),
-                  rule(),
-                  _PulseCell(
-                    value: lowStock,
-                    label: 'low on stock',
-                    alert: (lowStock ?? 0) > 0
-                        ? ThemeColors.error(context)
-                        : null,
-                    onTap: () => context.push(Routes.staffInventory),
-                  ),
-                ],
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _PulseCell(
+                      value: waiting,
+                      label: 'in line',
+                      alert: (waiting ?? 0) > 0
+                          ? ThemeColors.warning(context)
+                          : null,
+                      onTap: () => context.push(Routes.staffQueue),
+                    ),
+                    rule(),
+                    _PulseCell(
+                      value: pulse.todayBookings,
+                      label: 'booked today',
+                      onTap: () => context.push(Routes.staffAppointments),
+                    ),
+                    rule(),
+                    _PulseCell(
+                      value: lowStock,
+                      label: 'low on stock',
+                      alert: (lowStock ?? 0) > 0
+                          ? ThemeColors.error(context)
+                          : null,
+                      onTap: () => context.push(Routes.staffInventory),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -310,11 +327,11 @@ class _PulseCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shown = value?.toString() ?? '-';
+    final shown = value?.toString() ?? '–';
     return Expanded(
       child: Semantics(
         button: true,
-        label: '$shown $label',
+        label: value == null ? 'Unavailable, $label' : '$shown $label',
         excludeSemantics: true,
         child: InkWell(
           onTap: onTap,
@@ -396,13 +413,27 @@ class _ClinicLinkRow extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: ThemeColors.textSecondary(context),
-              ),
+              const NeuSvgIcon(SvgIcons.chevronRight, size: 20),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Keeps a scroll body readable on wide screens.
+class _CappedWidth extends StatelessWidget {
+  final Widget child;
+
+  const _CappedWidth({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: NeuTokens.maxContentWidth),
+        child: child,
       ),
     );
   }

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
+import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/appointments/presentation/widgets/appointment_form_widgets.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
@@ -20,6 +22,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 
 /// Appointment form page for creating or editing appointments
 class AppointmentFormPage extends StatefulWidget {
@@ -54,6 +58,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   bool _triedSubmit = false;
   late Future<List<User>> _veterinariansFuture;
 
+  /// The booking being edited, loaded once so the form opens filled in.
+  Appointment? _existing;
+  bool _loadingExisting = false;
+  bool _loadFailed = false;
+
   bool get _isVetOrStaff => widget.userRole == UserRole.ownerAdmin;
 
   @override
@@ -62,6 +71,46 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     _selectedPetId = widget.petId;
     _selectedVeterinarianId = widget.veterinarianId;
     _loadPetsAndVets();
+    if (widget.appointmentId != null) _loadExisting();
+  }
+
+  Future<void> _loadExisting() async {
+    setState(() {
+      _loadingExisting = true;
+      _loadFailed = false;
+    });
+    try {
+      final existing = await getIt<AppointmentRepository>().findById(
+        widget.appointmentId!,
+      );
+      if (!mounted) return;
+      if (existing == null) {
+        setState(() {
+          _loadingExisting = false;
+          _loadFailed = true;
+        });
+        return;
+      }
+      setState(() {
+        _existing = existing;
+        _selectedPetId = existing.petId;
+        _selectedVeterinarianId = existing.veterinarianId;
+        _selectedDateTime = existing.scheduledAt;
+        _durationMinutes = existing.durationMinutes;
+        _selectedService = existing.service;
+        _addressController.text = existing.serviceAddress ?? '';
+        _reasonController.text = existing.reason ?? '';
+        _notesController.text = existing.notes ?? '';
+        _loadingExisting = false;
+      });
+    } catch (e) {
+      debugPrint('[appointment_form] could not load booking: $e');
+      if (!mounted) return;
+      setState(() {
+        _loadingExisting = false;
+        _loadFailed = true;
+      });
+    }
   }
 
   void _loadPetsAndVets() {
@@ -132,9 +181,20 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       listeners: [
         BlocListener<AppointmentBloc, AppointmentState>(
           listener: (context, state) {
-            if (state is AppointmentCreated || state is AppointmentUpdated) {
-              _isLoading = false;
+            if (state is AppointmentDeleted) {
               if (mounted) {
+                setState(() => _isLoading = false);
+                context.go(
+                  _isVetOrStaff
+                      ? Routes.staffAppointments
+                      : Routes.appointments,
+                );
+                NeuToast.success(context, 'Booking deleted.');
+              }
+            } else if (state is AppointmentCreated ||
+                state is AppointmentUpdated) {
+              if (mounted) {
+                setState(() => _isLoading = false);
                 context.go(
                   _isVetOrStaff
                       ? Routes.staffAppointments
@@ -146,12 +206,15 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
                 );
               }
             } else if (state is AppointmentError) {
-              _isLoading = false;
               if (mounted) {
-                NeuToast.error(context, state.message);
+                setState(() => _isLoading = false);
+                NeuToast.error(
+                  context,
+                  "Couldn't save the booking. Check your connection and try again.",
+                );
               }
-            } else if (state is AppointmentLoading) {
-              _isLoading = true;
+            } else if (state is AppointmentLoading && mounted) {
+              setState(() => _isLoading = true);
             }
           },
         ),
@@ -164,7 +227,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
           elevation: 0,
           scrolledUnderElevation: 0,
           leading: Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(NeuTokens.spaceXs),
             child: NeuIconButton(
               plain: true,
               icon: Icons.arrow_back_ios_new_rounded,
@@ -174,9 +237,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
             ),
           ),
           actions: [
-            if (isEditing)
+            if (isEditing && _isVetOrStaff && _existing != null)
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: NeuTokens.spaceXs),
                 child: NeuIconButton(
                   plain: true,
                   icon: Icons.delete_outline_rounded,
@@ -188,55 +251,85 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
               ),
           ],
         ),
-        body: SafeArea(
-          child: Form(
-            key: _formKey,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-                  sliver: SliverList.separated(
-                    itemCount: _isVetOrStaff ? 7 : 5,
-                    separatorBuilder: (_, _) => const SizedBox(height: 20),
-                    itemBuilder: (context, index) =>
-                        _buildFormSection(context, index, isEditing),
-                  ),
-                ),
-                // Submit button at bottom
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        NeuButton(
-                          text: isEditing
-                              ? 'Update Appointment'
-                              : 'Send booking request',
-                          onPressed: _isLoading ? null : _submitForm,
-                          isLoading: _isLoading,
-                          expanded: true,
-                          size: NeuButtonSize.medium,
-                          icon: Icons.event_available_rounded,
-                          svgAsset: SvgIcons.eventAvailable,
-                          variant: NeuButtonVariant.primary,
-                        ),
-                        const SizedBox(height: 12),
-                        NeuButton(
-                          text: 'Cancel',
-                          onPressed: _isLoading ? null : () => context.pop(),
-                          expanded: true,
-                          size: NeuButtonSize.medium,
-                          variant: NeuButtonVariant.ghost,
-                        ),
-                      ],
+        body: _loadingExisting
+            ? const NeuSkeletonDetail(blocks: 4)
+            : _loadFailed
+            ? NeuErrorState(
+                title: "Couldn't load this booking",
+                message: 'Check your connection and try again.',
+                svgAsset: SvgIcons.error,
+                onRetry: _loadExisting,
+              )
+            : SafeArea(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: NeuTokens.maxContentWidth,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        slivers: [
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(
+                              NeuTokens.pagePadding,
+                              NeuTokens.pagePadding,
+                              NeuTokens.pagePadding,
+                              NeuTokens.spaceMd,
+                            ),
+                            sliver: SliverList.separated(
+                              itemCount: _isVetOrStaff ? 7 : 5,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: NeuTokens.spaceLg),
+                              itemBuilder: (context, index) =>
+                                  _buildFormSection(context, index, isEditing),
+                            ),
+                          ),
+                          // Submit button at bottom
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(
+                              NeuTokens.pagePadding,
+                              0,
+                              NeuTokens.pagePadding,
+                              NeuTokens.pagePadding,
+                            ),
+                            sliver: SliverToBoxAdapter(
+                              child: Column(
+                                children: [
+                                  NeuButton(
+                                    text: isEditing
+                                        ? 'Save Changes'
+                                        : 'Send booking request',
+                                    onPressed: _isLoading ? null : _submitForm,
+                                    isLoading: _isLoading,
+                                    expanded: true,
+                                    size: NeuButtonSize.medium,
+                                    icon: Icons.event_available_rounded,
+                                    svgAsset: SvgIcons.eventAvailable,
+                                    variant: NeuButtonVariant.primary,
+                                  ),
+                                  const SizedBox(height: NeuTokens.tightGap),
+                                  NeuButton(
+                                    text: 'Discard',
+                                    onPressed: _isLoading
+                                        ? null
+                                        : () => context.pop(),
+                                    expanded: true,
+                                    size: NeuButtonSize.medium,
+                                    variant: NeuButtonVariant.ghost,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }
@@ -370,11 +463,11 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
         } catch (_) {}
         if (_selectedVeterinarianId == null) {
           if (!mounted) return;
-          NeuToast.error(context, 'No veterinarian available for this clinic');
+          NeuToast.error(context, 'No veterinarian is available right now.');
           return;
         }
       } else {
-        NeuToast.error(context, 'Please select a veterinarian');
+        NeuToast.error(context, 'Pick a veterinarian for the visit.');
         return;
       }
     }
@@ -385,7 +478,10 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     }
 
     if (_selectedDateTime!.isBefore(DateTime.now())) {
-      NeuToast.error(context, 'That time has already passed. Pick a later one.');
+      NeuToast.error(
+        context,
+        'That time has already passed. Pick a later one.',
+      );
       return;
     }
 
@@ -412,7 +508,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
-      createdAt: DateTime.now(),
+      createdAt: _existing?.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
@@ -442,16 +538,7 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
-  }
+  String _formatDate(DateTime date) => DateFormat('MMM d, y').format(date);
 
-  String _formatTime(DateTime date) {
-    final hour = date.hour > 12
-        ? date.hour - 12
-        : (date.hour == 0 ? 12 : date.hour);
-    final minute = date.minute.toString().padLeft(2, '0');
-    final period = date.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $period';
-  }
+  String _formatTime(DateTime date) => DateFormat.jm().format(date);
 }

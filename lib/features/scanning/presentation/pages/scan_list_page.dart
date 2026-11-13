@@ -40,49 +40,62 @@ class ScanListPage extends StatelessWidget {
             child: RefreshIndicator(
               onRefresh: () async =>
                   context.read<ScanBloc>().add(const LoadScanRecords()),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
-                children: [
-                  Text(
-                    'Scan',
-                    style: AppTextStyles.headlineMedium.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: ThemeColors.textPrimary(context),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: NeuTokens.maxContentWidth,
+                  ),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(
+                      NeuTokens.pagePadding,
+                      NeuTokens.pagePadding,
+                      NeuTokens.pagePadding,
+                      110,
                     ),
+                    children: [
+                      Text(
+                        'Scan',
+                        style: AppTextStyles.headlineMedium.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: ThemeColors.textPrimary(context),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Take a photo. Check what was read, then save it '
+                        'to stock.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                        ),
+                      ),
+                      const SizedBox(height: NeuTokens.pagePadding),
+                      _ScanAction(
+                        type: ScanType.medicineBox,
+                        title: 'Medicine box',
+                        subtitle: 'One medicine: name, lot and expiry',
+                        svgAsset: SvgIcons.medication,
+                      ),
+                      const SizedBox(height: NeuTokens.spaceMd),
+                      _ScanAction(
+                        type: ScanType.receipt,
+                        title: 'Supplier receipt',
+                        subtitle: 'Every medicine on the delivery',
+                        svgAsset: SvgIcons.receipt,
+                      ),
+                      const SizedBox(height: NeuTokens.sectionGap),
+                      Text(
+                        'Recent scans',
+                        style: AppTextStyles.titleMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: ThemeColors.textPrimary(context),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const _RecentScans(),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Take a photo. Check what was read, then save it '
-                    'to stock.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: ThemeColors.textSecondary(context),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _ScanAction(
-                    type: ScanType.medicineBox,
-                    title: 'Medicine box',
-                    subtitle: 'One medicine: name, lot and expiry',
-                    svgAsset: SvgIcons.medication,
-                  ),
-                  const SizedBox(height: 16),
-                  _ScanAction(
-                    type: ScanType.receipt,
-                    title: 'Supplier receipt',
-                    subtitle: 'Every medicine on the delivery',
-                    svgAsset: SvgIcons.receipt,
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Recent scans',
-                    style: AppTextStyles.titleMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: ThemeColors.textPrimary(context),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const _RecentScans(),
-                ],
+                ),
               ),
             ),
           ),
@@ -125,6 +138,8 @@ class _ScanAction extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: ThemeColors.textPrimary(context),
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -132,6 +147,8 @@ class _ScanAction extends StatelessWidget {
                   style: AppTextStyles.bodySmall.copyWith(
                     color: ThemeColors.textSecondary(context),
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -177,7 +194,9 @@ class _RecentScans extends StatelessWidget {
             icon: Icons.error_outline_rounded,
             svgAsset: SvgIcons.error,
             title: 'Could not load scans',
-            message: state.failure.message,
+            message:
+                'We could not load your recent scans. Check your connection '
+                'and try again.',
             actionLabel: 'Retry',
             onAction: () =>
                 context.read<ScanBloc>().add(const LoadScanRecords()),
@@ -222,8 +241,8 @@ class _ScanTile extends StatelessWidget {
         .toList();
 
     return NeuCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: NeuTokens.spaceSm),
+      padding: const EdgeInsets.all(NeuTokens.spaceMd),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -239,7 +258,7 @@ class _ScanTile extends StatelessWidget {
               size: 22,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: NeuTokens.spaceSm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,6 +287,8 @@ class _ScanTile extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.textSecondary(context),
                     ),
+                    maxLines: 8,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ],

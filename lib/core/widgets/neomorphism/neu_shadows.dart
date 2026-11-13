@@ -27,7 +27,7 @@ abstract final class NeuShadow {
 
   /// Resolve the canvas colour for the current brightness.
   static Color surfaceOf(BuildContext context) =>
-      _isDark(context) ? AppColors.surfaceDarkMode : AppColors.surface;
+      ThemeColors.surface(context);
 
   static Color _light(BuildContext context, double opacity) =>
       _lightColorOf(context).withValues(alpha: opacity);

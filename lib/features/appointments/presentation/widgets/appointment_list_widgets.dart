@@ -10,6 +10,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_badge.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
@@ -41,6 +42,13 @@ class AppointmentCard extends StatelessWidget {
     final speciesSvg = _getSpeciesSvg(pet?.species);
     final textPrimary = ThemeColors.textPrimary(context);
     final textSecondary = ThemeColors.textSecondary(context);
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    final statusBadge = appointment.isLate
+        ? const NeuStatusBadge(label: 'Late', tone: NeuStatusTone.warning)
+        : NeuStatusBadge.fromValue(
+            appointment.status.value,
+            label: appointment.status.displayName,
+          );
 
     return NeuCard(
       onTap: onTap,
@@ -79,20 +87,23 @@ class AppointmentCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: textPrimary,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               // Status chip; a late arrival reads as Late until resolved.
-              appointment.isLate
-                  ? const NeuStatusBadge(
-                      label: 'Late',
-                      tone: NeuStatusTone.warning,
-                    )
-                  : NeuStatusBadge.fromValue(
-                      appointment.status.value,
-                      label: appointment.status.displayName,
-                    ),
+              // At large text sizes it drops below the date instead.
+              if (!largeText) statusBadge,
             ],
           ),
+          if (largeText) ...[
+            const SizedBox(height: NeuTokens.spaceXs),
+            Align(
+              alignment: Alignment.centerLeft,
+              // The kit badge does not wrap; scale it down rather than clip.
+              child: FittedBox(fit: BoxFit.scaleDown, child: statusBadge),
+            ),
+          ],
 
           const SizedBox(height: 16),
 
@@ -111,34 +122,30 @@ class AppointmentCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      pet != null ? pet!.name : 'Pet ID: ${appointment.petId}',
+                      pet != null ? pet!.name : 'Pet details unavailable',
                       style: AppTextStyles.titleSmall.copyWith(
                         fontWeight: FontWeight.w700,
                         color: textPrimary,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (pet != null) ...[
+                    if (pet != null)
                       Text(
                         '${pet!.species.displayName}${pet!.breed != null ? ' • ${pet!.breed}' : ''}',
                         style: AppTextStyles.bodySmall.subtleOf(
                           Theme.of(context).brightness,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ] else if (appointment.veterinarianId > 0) ...[
-                      Text(
-                        'Dr. ID: ${appointment.veterinarianId}',
-                        style: AppTextStyles.bodySmall.subtleOf(
-                          Theme.of(context).brightness,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
             ],
           ),
 
-          if (appointment.reason != null) ...[
+          if (appointment.reason != null && appointment.reason!.isNotEmpty) ...[
             const SizedBox(height: 16),
             NeuContainer(
               padding: const EdgeInsets.all(NeuTokens.spaceMd),
@@ -198,16 +205,7 @@ class AppointmentCard extends StatelessWidget {
               appointment.status != AppointmentStatus.cancelled &&
               appointment.status != AppointmentStatus.noShow) ...[
             const SizedBox(height: 16),
-            SizedBox(
-              height: 1,
-              child: NeuContainer(
-                borderRadius: 0,
-                variant: NeuVariant.flat,
-                color: ThemeColors.border(context),
-                padding: EdgeInsets.zero,
-                child: const SizedBox.shrink(),
-              ),
-            ),
+            NeuDivider(thickness: 1, indent: 0, endIndent: 0),
             const SizedBox(height: 16),
             if (isVetOrStaff) ...[
               // Vet/Staff actions: Check In, Start, Complete, Cancel, View
@@ -275,14 +273,15 @@ class AppointmentCard extends StatelessWidget {
                 ],
               ),
             ] else ...[
-              // Pet Owner actions: Cancel, View only
-              Row(
-                children: [
-                  if (onCancel != null) ...[
-                    Expanded(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: NeuButton(
+              // Pet Owner actions: Cancel, View only. Stacked at large text
+              // sizes, where two icon buttons no longer fit side by side.
+              Builder(
+                builder: (context) {
+                  final stacked =
+                      MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                  final cancel = onCancel == null
+                      ? null
+                      : NeuButton(
                           text: 'Cancel',
                           onPressed: onCancel,
                           variant: NeuButtonVariant.outline,
@@ -290,40 +289,42 @@ class AppointmentCard extends StatelessWidget {
                           svgAsset: SvgIcons.error,
                           size: NeuButtonSize.medium,
                           expanded: true,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                  ],
-                  Expanded(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: NeuButton(
-                        text: 'View',
-                        onPressed: onTap,
-                        variant: NeuButtonVariant.primary,
-                        icon: Icons.visibility_outlined,
-                        svgAsset: SvgIcons.visibility,
-                        size: NeuButtonSize.medium,
-                        expanded: true,
-                      ),
-                    ),
-                  ),
-                ],
+                        );
+                  final view = NeuButton(
+                    text: 'View',
+                    onPressed: onTap,
+                    variant: NeuButtonVariant.primary,
+                    icon: Icons.visibility_outlined,
+                    svgAsset: SvgIcons.visibility,
+                    size: NeuButtonSize.medium,
+                    expanded: true,
+                  );
+                  if (stacked) {
+                    return Column(
+                      children: [
+                        if (cancel != null) ...[
+                          cancel,
+                          const SizedBox(height: 10),
+                        ],
+                        view,
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      if (cancel != null) ...[
+                        Expanded(child: cancel),
+                        const SizedBox(width: 10),
+                      ],
+                      Expanded(child: view),
+                    ],
+                  );
+                },
               ),
             ],
           ] else if (!isUpcoming) ...[
             const SizedBox(height: 16),
-            SizedBox(
-              height: 1,
-              child: NeuContainer(
-                borderRadius: 0,
-                variant: NeuVariant.flat,
-                color: ThemeColors.border(context),
-                padding: EdgeInsets.zero,
-                child: const SizedBox.shrink(),
-              ),
-            ),
+            NeuDivider(thickness: 1, indent: 0, endIndent: 0),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

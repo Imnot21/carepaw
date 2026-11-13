@@ -251,6 +251,7 @@ class _InfoRow extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
+            flex: 2,
             child: Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -258,11 +259,22 @@ class _InfoRow extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            value,
-            style:
-                valueStyle ??
-                AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+          const SizedBox(width: NeuTokens.spaceXs),
+          // Long values (markings, breed, microchip) wrap instead of
+          // overflowing.
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  valueStyle ??
+                  AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
           ),
         ],
       ),
@@ -497,55 +509,41 @@ class MedicalRecordsCard extends StatelessWidget {
               variant: NeuVariant.flat,
               child: const NeuSvgIcon(SvgIcons.visit, size: 26),
             ),
-            const SizedBox(width: 16),
-            Text(
-              'Medical Records',
-              style: AppTextStyles.titleSmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: ThemeColors.textPrimary(context),
+            const SizedBox(width: NeuTokens.spaceMd),
+            Expanded(
+              child: Text(
+                'Medical Records',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.titleSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: ThemeColors.textPrimary(context),
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        Center(
-          child: Column(
-            children: [
-              NeuContainer(
-                padding: const EdgeInsets.all(24),
-                borderRadius: NeuTokens.radiusMd,
-                variant: NeuVariant.flat,
-                child: const NeuSvgIcon(SvgIcons.folder, size: 56),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No medical records yet',
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Medical records will appear here after vet visits',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              NeuButton(
-                text: 'View Medical Records',
-                variant: NeuButtonVariant.secondary,
-                onPressed: () {
-                  final petId = pet.id;
-                  if (petId == null) return;
-                  context.push('${Routes.medicalRecords}?petId=$petId');
-                },
-                icon: Icons.arrow_forward_rounded,
-                svgAsset: SvgIcons.forward,
-              ),
-            ],
+        const SizedBox(height: NeuTokens.spaceMd),
+        // This card does not load the records, so it must not claim there
+        // are none; the records page shows the real list.
+        Text(
+          'Vaccinations, treatments and visit notes for this pet are kept on the records page.',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: ThemeColors.textSecondary(context),
           ),
+        ),
+        const SizedBox(height: NeuTokens.spaceLg),
+        NeuButton(
+          text: 'View Medical Records',
+          variant: NeuButtonVariant.secondary,
+          expanded: true,
+          onPressed: () {
+            final petId = pet.id;
+            if (petId == null) return;
+            context.push('${Routes.medicalRecords}?petId=$petId');
+          },
+          icon: Icons.arrow_forward_rounded,
+          svgAsset: SvgIcons.forward,
         ),
       ],
     );

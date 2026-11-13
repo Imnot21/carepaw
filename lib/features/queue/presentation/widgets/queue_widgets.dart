@@ -53,7 +53,7 @@ class UpcomingCheckInSection extends StatelessWidget {
         if (upcoming.isEmpty) return const SizedBox.shrink();
 
         return NeuCard(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(NeuTokens.cardPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -126,7 +126,7 @@ class _UpcomingCheckInTile extends StatelessWidget {
     final pet = detail.pet;
 
     return NeuCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(NeuTokens.spaceMd),
       child: Row(
         children: [
           PetUtils.buildAvatar(species: pet.species, radius: 22, iconSize: 22),
@@ -137,6 +137,8 @@ class _UpcomingCheckInTile extends StatelessWidget {
               children: [
                 Text(
                   pet.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.titleSmall.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -201,7 +203,7 @@ class PositionCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: NeuContainer(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(NeuTokens.sectionGap),
         borderRadius: NeuTokens.radiusLg,
         color: ThemeColors.primary(context),
         boxShadow: NeuShadow.color(
@@ -275,7 +277,7 @@ class EmptyQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(NeuTokens.sectionGap),
       child: Column(
         children: [
           NeuContainer(
@@ -312,7 +314,7 @@ class NotInQueueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(NeuTokens.sectionGap),
       child: Column(
         children: [
           NeuContainer(
@@ -358,7 +360,7 @@ class QueueEntryCard extends StatelessWidget {
     final statusColor = _getStatusColor(context, entry.queueEntry.status);
 
     return NeuCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -399,6 +401,8 @@ class QueueEntryCard extends StatelessWidget {
                   children: [
                     Text(
                       entry.pet.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.titleMedium.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -406,6 +410,8 @@ class QueueEntryCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${entry.pet.species.displayName} • ${entry.pet.breed}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.subtleOf(
                         Theme.of(context).brightness,
                       ),
@@ -446,6 +452,8 @@ class QueueEntryCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         entry.appointment.reason ?? 'General checkup',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
@@ -483,11 +491,15 @@ class QueueEntryCard extends StatelessWidget {
                   ).withValues(alpha: 0.15),
                   foregroundColor: ThemeColors.primaryText(context),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'Dr. ${entry.veterinarian.fullName}',
-                  style: AppTextStyles.bodyMedium.subtleOf(
-                    Theme.of(context).brightness,
+                const SizedBox(width: NeuTokens.spaceSm),
+                Expanded(
+                  child: Text(
+                    'Dr. ${entry.veterinarian.fullName}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium.subtleOf(
+                      Theme.of(context).brightness,
+                    ),
                   ),
                 ),
               ],
@@ -537,6 +549,8 @@ class QueueEntryCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       'Room ${entry.queueEntry.room}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: ThemeColors.success(context),
                         fontWeight: FontWeight.w500,
@@ -548,8 +562,7 @@ class QueueEntryCard extends StatelessWidget {
             ],
           ),
           // Owners can leave the line while still waiting or called.
-          if (entry.queueEntry.canCancel &&
-              entry.queueEntry.id != null) ...[
+          if (entry.queueEntry.canCancel && entry.queueEntry.id != null) ...[
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -582,7 +595,6 @@ class QueueEntryCard extends StatelessWidget {
     );
     if (confirmed == true) bloc.add(QueueCancelRequested(queueId));
   }
-
 
   Color _getStatusColor(BuildContext context, QueueStatus status) {
     switch (status) {
@@ -726,7 +738,7 @@ class NotLoggedInView extends StatelessWidget {
                 padding: const EdgeInsets.all(NeuTokens.spaceLg),
                 child: NeuSvgIcon(SvgIcons.queue, size: 48),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: NeuTokens.spaceXxl),
               Text(
                 'Sign in to see the line',
                 style: AppTextStyles.headlineSmall.copyWith(
@@ -777,7 +789,7 @@ class AccessDeniedView extends StatelessWidget {
                 padding: const EdgeInsets.all(NeuTokens.spaceLg),
                 child: NeuSvgIcon(SvgIcons.block, size: 48),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: NeuTokens.spaceXxl),
               Text(
                 'Access Denied',
                 style: AppTextStyles.headlineSmall.copyWith(

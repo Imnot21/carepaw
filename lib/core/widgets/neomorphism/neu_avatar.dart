@@ -45,7 +45,7 @@ class NeuAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surface = isDark ? AppColors.surfaceDarkMode : AppColors.surface;
+    final surface = ThemeColors.surface(context);
 
     // A supplied background is a species tint. Keep it as the disc fill, but
     // make sure it is opaque enough to carry a shadow — a 15%-alpha fill lets

@@ -14,7 +14,14 @@ import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
+import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_switch.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/users/presentation/bloc/user_management_bloc.dart';
@@ -49,6 +56,12 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   int _visibleCount = AppConstants.defaultPageSize;
   Timer? _searchDebounce;
 
+  /// Last list the bloc reported, so the page does not blank while the bloc
+  /// passes through Loading / ActionSuccess between two loads.
+  List<User> _lastUsers = const [];
+  bool _loadedOnce = false;
+  bool _creating = false;
+
   static const _debounceMs = AppConstants.searchDebounceMs;
   // _users is derived from Bloc state, never stored.
 
@@ -78,13 +91,25 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           role: _selectedRole,
         ),
       );
-      _fullNameController.clear();
-      _emailController.clear();
-      _phoneController.clear();
-      _passwordController.clear();
-      _confirmPasswordController.clear();
+      // The form is cleared only once the account is created, so a failed
+      // attempt does not lose what was typed.
+      _creating = true;
     }
   }
+
+  void _clearForm() {
+    _fullNameController.clear();
+    _emailController.clear();
+    _phoneController.clear();
+    _passwordController.clear();
+    _confirmPasswordController.clear();
+  }
+
+  /// Firebase text can leak through [UnexpectedFailure]; show a plain
+  /// sentence for that case.
+  String _friendly(Failure failure) => failure is UnexpectedFailure
+      ? 'Something went wrong. Please try again.'
+      : failure.message;
 
   /// Turn an account on or off. Switching off asks first.
   ///
@@ -150,33 +175,17 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocListener<UserManagementBloc, UserManagementState>(
       listener: (context, state) {
         if (state is UserManagementActionSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: ThemeColors.success(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          if (_creating) {
+            _creating = false;
+            _clearForm();
+          }
+          NeuToast.success(context, state.message);
         } else if (state is UserManagementError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.failure.message),
-              backgroundColor: ThemeColors.error(context),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          _creating = false;
+          NeuToast.error(context, _friendly(state.failure));
         }
       },
       child: BlocBuilder<UserManagementBloc, UserManagementState>(
@@ -184,16 +193,22 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           final allUsers = switch (state) {
             UserManagementLoaded(:final users) => users,
             UserManagementMutating(:final users) => users,
-            _ => const <User>[],
+            UserManagementError(:final users) when users.isNotEmpty => users,
+            _ => _lastUsers,
           };
+          if (state is UserManagementLoaded) _loadedOnce = true;
+          _lastUsers = allUsers;
           final isInitialLoading =
-              state is UserManagementLoading && allUsers.isEmpty;
+              (state is UserManagementLoading ||
+                  state is UserManagementInitial) &&
+              allUsers.isEmpty &&
+              !_loadedOnce;
+          final loadFailed =
+              state is UserManagementError && allUsers.isEmpty && !_loadedOnce;
           final isMutating = state is UserManagementMutating;
 
           return Scaffold(
-            backgroundColor: isDark
-                ? AppColors.backgroundDark
-                : AppColors.background,
+            backgroundColor: ThemeColors.background(context),
             appBar: AppBar(
               title: const Text('Accounts'),
               centerTitle: true,
@@ -204,8 +219,15 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
             body: SafeArea(
               top: false,
               child: isInitialLoading
-                  ? const Center(
-                      child: NeuCircularProgress(size: 32, strokeWidth: 3),
+                  ? const NeuSkeletonList()
+                  : loadFailed
+                  ? NeuErrorState(
+                      message:
+                          'The account list could not be loaded. Check your '
+                          'connection and try again.',
+                      onRetry: () => context.read<UserManagementBloc>().add(
+                        const UserManagementLoadRequested(),
+                      ),
                     )
                   : _buildContent(context, state, allUsers, isMutating),
             ),
@@ -223,323 +245,348 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   ) {
     final isLoading =
         state is UserManagementLoading || state is UserManagementMutating;
+    final authState = context.read<AuthBloc>().state;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
     final filtered = _filteredUsers(allUsers);
     final visible = filtered.take(_visibleCount).toList();
     final hasMore = filtered.length > visible.length;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (isLoading && allUsers.isNotEmpty) ...[
-            const Center(child: NeuCircularProgress(size: 20, strokeWidth: 2)),
-            const SizedBox(height: 12),
-          ],
-
-          // ---------- Create Account ----------
-          Text(
-            'Create Account',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+      padding: const EdgeInsets.all(NeuTokens.pagePadding),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: NeuTokens.maxContentWidth,
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Create the Co-Manager\'s account with the Owner / Co-Manager '
-            'role. Pet owners register in the app themselves. Each account '
-            'signs in with these details.',
-            style: AppTextStyles.bodySmall.subtleOf(
-              Theme.of(context).brightness,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          NeuCard(
-            borderRadius: NeuTokens.radiusMd,
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  NeuTextField(
-                    controller: _fullNameController,
-                    label: 'Full Name',
-                    hint: 'John Doe',
-                    keyboardType: TextInputType.name,
-                    validator: Validators.requiredWith([
-                      Validators.name,
-                    ], 'Full Name'),
-                  ),
-                  const SizedBox(height: 16),
-                  NeuTextField(
-                    controller: _emailController,
-                    label: 'Email',
-                    hint: 'you@example.com',
-                    keyboardType: TextInputType.emailAddress,
-                    validator: Validators.requiredWith([
-                      Validators.email,
-                    ], 'Email'),
-                  ),
-                  const SizedBox(height: 16),
-                  NeuTextField(
-                    controller: _phoneController,
-                    label: 'Phone (Optional)',
-                    hint: '09XX XXX XXXX',
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(11),
-                    ],
-                    helper: 'Philippine mobile number (optional)',
-                  ),
-                  const SizedBox(height: 16),
-                  NeuTextField(
-                    controller: _passwordController,
-                    label: 'Password',
-                    hint: 'Set a starting password',
-                    obscureText: true,
-                    validator: Validators.requiredWith([
-                      Validators.password,
-                    ], 'Password'),
-                  ),
-                  const SizedBox(height: 16),
-                  NeuTextField(
-                    controller: _confirmPasswordController,
-                    label: 'Confirm Password',
-                    hint: 'Confirm the password',
-                    obscureText: true,
-                    validator: (value) {
-                      final requiredError = Validators.required(
-                        value,
-                        'Confirm Password',
-                      );
-                      if (requiredError != null) return requiredError;
-                      if (value != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _onCreatePressed(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text('Role', style: AppTextStyles.labelLarge),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: const [UserRole.petOwner, UserRole.ownerAdmin]
-                        .map(
-                          (role) => _RoleChip(
-                            role: role,
-                            selected: _selectedRole == role,
-                            onTap: () => setState(() => _selectedRole = role),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 20),
-
-                  NeuButton(
-                    text: 'Create Account',
-                    onPressed: (isLoading || isMutating)
-                        ? null
-                        : _onCreatePressed,
-                    isLoading: isLoading || isMutating,
-                    expanded: true,
-                    variant: NeuButtonVariant.primary,
-                    size: NeuButtonSize.medium,
-                    icon: Icons.person_add_outlined,
-                    svgAsset: SvgIcons.personAdd,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // ---------- Existing Staff & Veterinarians ----------
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              NeuSvgIcon(SvgIcons.badge, size: 20),
-              const SizedBox(width: 8),
+              if (isLoading && allUsers.isNotEmpty) ...[
+                const Center(
+                  child: NeuCircularProgress(size: 20, strokeWidth: 2),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // ---------- Create Account ----------
               Text(
-                'Accounts',
+                'Create Account',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Spacer(),
-              if (allUsers.isNotEmpty)
-                NeuContainer(
-                  borderRadius: NeuTokens.radiusSm,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  variant: NeuVariant.flat,
-                  child: Text(
-                    '${filtered.length} of ${allUsers.length}',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: ThemeColors.textSecondary(context),
-                      fontWeight: FontWeight.w600,
-                    ),
+              const SizedBox(height: 4),
+              Text(
+                'Create the Co-Manager\'s account with the Owner / Co-Manager '
+                'role. Pet owners register in the app themselves. Each account '
+                'signs in with these details.',
+                style: AppTextStyles.bodySmall.subtleOf(
+                  Theme.of(context).brightness,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              NeuCard(
+                borderRadius: NeuTokens.radiusMd,
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      NeuTextField(
+                        controller: _fullNameController,
+                        label: 'Full Name',
+                        hint: 'John Doe',
+                        keyboardType: TextInputType.name,
+                        validator: Validators.requiredWith([
+                          Validators.name,
+                        ], 'Full Name'),
+                      ),
+                      const SizedBox(height: 16),
+                      NeuTextField(
+                        controller: _emailController,
+                        label: 'Email',
+                        hint: 'you@example.com',
+                        keyboardType: TextInputType.emailAddress,
+                        validator: Validators.requiredWith([
+                          Validators.email,
+                        ], 'Email'),
+                      ),
+                      const SizedBox(height: 16),
+                      NeuTextField(
+                        controller: _phoneController,
+                        label: 'Phone (Optional)',
+                        hint: '09XX XXX XXXX',
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
+                        helper: 'Philippine mobile number (optional)',
+                      ),
+                      const SizedBox(height: 16),
+                      NeuTextField(
+                        controller: _passwordController,
+                        label: 'Password',
+                        hint: 'Set a starting password',
+                        obscureText: true,
+                        validator: Validators.requiredWith([
+                          Validators.password,
+                        ], 'Password'),
+                      ),
+                      const SizedBox(height: 16),
+                      NeuTextField(
+                        controller: _confirmPasswordController,
+                        label: 'Confirm Password',
+                        hint: 'Confirm the password',
+                        obscureText: true,
+                        validator: (value) {
+                          final requiredError = Validators.required(
+                            value,
+                            'Confirm Password',
+                          );
+                          if (requiredError != null) return requiredError;
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _onCreatePressed(),
+                      ),
+                      const SizedBox(height: 16),
+
+                      Text('Role', style: AppTextStyles.labelLarge),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: const [UserRole.petOwner, UserRole.ownerAdmin]
+                            .map(
+                              (role) => _RoleChip(
+                                role: role,
+                                selected: _selectedRole == role,
+                                onTap: () =>
+                                    setState(() => _selectedRole = role),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+
+                      NeuButton(
+                        text: 'Create Account',
+                        onPressed: (isLoading || isMutating)
+                            ? null
+                            : _onCreatePressed,
+                        isLoading: isLoading || isMutating,
+                        expanded: true,
+                        variant: NeuButtonVariant.primary,
+                        size: NeuButtonSize.medium,
+                        icon: Icons.person_add_outlined,
+                        svgAsset: SvgIcons.personAdd,
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 12),
+              ),
 
-          NeuTextField(
-            controller: _searchController,
-            hint: 'Search by name or email',
-            prefixIcon: NeuSvgIcon(SvgIcons.search, size: 18),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: NeuSvgIcon(SvgIcons.close, size: 18),
-                    onPressed: () {
-                      _searchDebounce?.cancel();
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
-                        _visibleCount = AppConstants.defaultPageSize;
-                      });
-                    },
-                    tooltip: 'Clear',
-                  )
-                : null,
-            onChanged: _onSearchChanged,
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                NeuChip(
-                  label: 'All roles',
-                  selected: _roleFilter == null,
-                  onTap: () => setState(() {
-                    _roleFilter = null;
-                    _visibleCount = AppConstants.defaultPageSize;
-                  }),
-                  selectedColor: ThemeColors.primary(context),
-                ),
-                const SizedBox(width: 8),
-                for (final role in const [
-                  UserRole.ownerAdmin,
-                  UserRole.petOwner,
-                ])
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: NeuChip(
-                      label: role.displayName,
-                      selected: _roleFilter == role,
-                      onTap: () => setState(() {
-                        _roleFilter = _roleFilter == role ? null : role;
-                        _visibleCount = AppConstants.defaultPageSize;
-                      }),
-                      selectedColor: roleColor(context, role),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
+              const SizedBox(height: 24),
 
-          if (allUsers.isEmpty)
-            NeuCard(
-              borderRadius: NeuTokens.radiusSm,
-              padding: const EdgeInsets.all(20),
-              child: Column(
+              // ---------- Existing Staff & Veterinarians ----------
+              Row(
                 children: [
-                  NeuSvgIcon(SvgIcons.people, size: 40),
-                  const SizedBox(height: 8),
-                  Text(
-                    'No staff or veterinarian accounts yet.',
-                    style: AppTextStyles.bodyMedium.subtleOf(
-                      Theme.of(context).brightness,
+                  NeuSvgIcon(SvgIcons.badge, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Accounts',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: NeuTokens.spaceXs),
+                  if (allUsers.isNotEmpty)
+                    NeuContainer(
+                      borderRadius: NeuTokens.radiusSm,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      variant: NeuVariant.flat,
+                      child: Text(
+                        '${filtered.length} of ${allUsers.length}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-            )
-          else if (filtered.isEmpty)
-            NeuCard(
-              borderRadius: NeuTokens.radiusSm,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  NeuSvgIcon(SvgIcons.searchOff, size: 40),
-                  const SizedBox(height: 8),
-                  Text(
-                    'No matches for "${_searchController.text.trim()}"${_roleFilter == null ? '' : ' in ${_roleFilter!.displayName}'}',
-                    style: AppTextStyles.bodyMedium.subtleOf(
-                      Theme.of(context).brightness,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  NeuButton(
-                    text: 'Clear filters',
-                    variant: NeuButtonVariant.text,
-                    size: NeuButtonSize.small,
-                    onPressed: () {
-                      _searchDebounce?.cancel();
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
+              const SizedBox(height: 12),
+
+              NeuTextField(
+                controller: _searchController,
+                hint: 'Search by name or email',
+                prefixIcon: NeuSvgIcon(SvgIcons.search, size: 18),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? NeuIconButton(
+                        icon: Icons.clear_rounded,
+                        svgAsset: SvgIcons.close,
+                        onPressed: () {
+                          _searchDebounce?.cancel();
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                            _visibleCount = AppConstants.defaultPageSize;
+                          });
+                        },
+                        tooltip: 'Clear search',
+                      )
+                    : null,
+                onChanged: _onSearchChanged,
+              ),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    NeuChip(
+                      label: 'All roles',
+                      selected: _roleFilter == null,
+                      onTap: () => setState(() {
                         _roleFilter = null;
                         _visibleCount = AppConstants.defaultPageSize;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            )
-          else ...[
-            ...visible.map(
-              (user) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _UserManagementCard(
-                  user: user,
-                  busy: isLoading || isMutating,
-                  onRoleChanged: (role) {
-                    if (user.id != null) {
-                      context.read<UserManagementBloc>().add(
-                        UserManagementChangeRoleRequested(
-                          userId: user.id!,
-                          newRole: role,
+                      }),
+                      selectedColor: ThemeColors.primary(context),
+                    ),
+                    const SizedBox(width: 8),
+                    for (final role in const [
+                      UserRole.ownerAdmin,
+                      UserRole.petOwner,
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: NeuChip(
+                          label: role.displayName,
+                          selected: _roleFilter == role,
+                          onTap: () => setState(() {
+                            _roleFilter = _roleFilter == role ? null : role;
+                            _visibleCount = AppConstants.defaultPageSize;
+                          }),
+                          selectedColor: roleColor(context, role),
                         ),
-                      );
-                    }
-                  },
-                  onToggleActive: (active) =>
-                      _confirmToggle(context, user, active),
+                      ),
+                  ],
                 ),
               ),
-            ),
-            if (hasMore) ...[
-              const SizedBox(height: 4),
-              NeuButton(
-                text:
-                    'Load more (${filtered.length - visible.length} remaining)',
-                variant: NeuButtonVariant.outline,
-                size: NeuButtonSize.small,
-                icon: Icons.expand_more_rounded,
-                svgAsset: SvgIcons.chevronDown,
-                onPressed: () => setState(() {
-                  _visibleCount = (_visibleCount + AppConstants.defaultPageSize)
-                      .clamp(0, filtered.length);
-                }),
-              ),
+              const SizedBox(height: 12),
+
+              if (allUsers.isEmpty)
+                NeuCard(
+                  borderRadius: NeuTokens.radiusSm,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      NeuSvgIcon(SvgIcons.people, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No accounts yet.',
+                        style: AppTextStyles.bodyMedium.subtleOf(
+                          Theme.of(context).brightness,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (filtered.isEmpty)
+                NeuCard(
+                  borderRadius: NeuTokens.radiusSm,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      NeuSvgIcon(SvgIcons.searchOff, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No matches for "${_searchController.text.trim()}"${_roleFilter == null ? '' : ' in ${_roleFilter!.displayName}'}',
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodyMedium.subtleOf(
+                          Theme.of(context).brightness,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      NeuButton(
+                        text: 'Clear filters',
+                        variant: NeuButtonVariant.text,
+                        size: NeuButtonSize.small,
+                        onPressed: () {
+                          _searchDebounce?.cancel();
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                            _roleFilter = null;
+                            _visibleCount = AppConstants.defaultPageSize;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              else ...[
+                ...visible.map(
+                  (user) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _UserManagementCard(
+                      user: user,
+                      isSelf: user.id != null && user.id == currentUserId,
+                      busy: isLoading || isMutating,
+                      onRoleChanged: (role) {
+                        if (user.id != null) {
+                          context.read<UserManagementBloc>().add(
+                            UserManagementChangeRoleRequested(
+                              userId: user.id!,
+                              newRole: role,
+                            ),
+                          );
+                        }
+                      },
+                      onToggleActive: (active) =>
+                          _confirmToggle(context, user, active),
+                    ),
+                  ),
+                ),
+                if (hasMore) ...[
+                  const SizedBox(height: 4),
+                  NeuButton(
+                    text:
+                        'Load more (${filtered.length - visible.length} remaining)',
+                    variant: NeuButtonVariant.outline,
+                    size: NeuButtonSize.small,
+                    icon: Icons.expand_more_rounded,
+                    svgAsset: SvgIcons.chevronDown,
+                    onPressed: () => setState(() {
+                      _visibleCount =
+                          (_visibleCount + AppConstants.defaultPageSize).clamp(
+                            0,
+                            filtered.length,
+                          );
+                    }),
+                  ),
+                ],
+              ],
             ],
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -566,26 +613,34 @@ class _RoleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NeuChip(
-      label: role.displayName,
-      svgAsset: role == UserRole.petOwner ? SvgIcons.person : SvgIcons.visit,
-      selected: selected,
-      onTap: onTap,
-      selectedColor: _color(context),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: NeuChip(
+        label: role.displayName,
+        svgAsset: role == UserRole.petOwner ? SvgIcons.person : SvgIcons.visit,
+        selected: selected,
+        onTap: onTap,
+        selectedColor: _color(context),
+      ),
     );
   }
 }
 
-/// A card listing one staff / veterinarian with role + activation controls.
+/// A card listing one account with role + activation controls.
 class _UserManagementCard extends StatelessWidget {
   final User user;
   final bool busy;
+
+  /// The signed-in operator's own card: role and activation are locked so the
+  /// clinic cannot lock itself out.
+  final bool isSelf;
   final ValueChanged<UserRole> onRoleChanged;
   final ValueChanged<bool> onToggleActive;
 
   const _UserManagementCard({
     required this.user,
     this.busy = false,
+    this.isSelf = false,
     required this.onRoleChanged,
     required this.onToggleActive,
   });
@@ -593,96 +648,99 @@ class _UserManagementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final role = user.role;
-    final primary = user.isActive
-        ? roleColor(context, role)
-        : ThemeColors.textSecondary(context);
+    final locked = busy || isSelf;
+    final status = user.isActive ? 'Active' : 'Deactivated';
 
     return NeuCard(
       borderRadius: NeuTokens.radiusSm,
-      padding: const EdgeInsets.all(16),
-      borderColor: primary.withValues(alpha: 0.3),
-      borderWidth: 1.2,
-      child: Row(
+      padding: const EdgeInsets.all(NeuTokens.spaceMd),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: roleColor(context, role).withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
-            ),
-            child: NeuSvgIcon(
-              role == UserRole.ownerAdmin ? SvgIcons.visit : SvgIcons.person,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.fullName,
-                  style: AppTextStyles.titleSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  user.email,
-                  style: AppTextStyles.bodySmall.subtleOf(
-                    Theme.of(context).brightness,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  user.isActive ? 'Active' : 'De-activated',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: user.isActive
-                        ? ThemeColors.success(context)
-                        : ThemeColors.error(context),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Role selector using NeuChip for consistent styling
-                  Wrap(
-                    spacing: 6,
-                    children: [UserRole.ownerAdmin, UserRole.petOwner]
-                        .map(
-                          (r) => NeuChip(
-                            label: r.displayName,
-                            selected: user.role == r,
-                            onTap: (!user.isActive || busy)
-                                ? null
-                                : () {
-                                    if (r != user.role) onRoleChanged(r);
-                                  },
-                            selectedColor: roleColor(context, r),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ],
+              Container(
+                width: NeuTokens.minTapTarget,
+                height: NeuTokens.minTapTarget,
+                decoration: BoxDecoration(
+                  color: roleColor(context, role).withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(NeuTokens.radiusSm),
+                ),
+                child: NeuSvgIcon(
+                  role == UserRole.ownerAdmin
+                      ? SvgIcons.visit
+                      : SvgIcons.person,
+                  size: 22,
+                ),
               ),
-              const SizedBox(height: 8),
-              NeuSwitch(
-                value: user.isActive,
-                onChanged: busy ? null : (v) => onToggleActive(v),
+              const SizedBox(width: NeuTokens.spaceSm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.fullName,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user.email,
+                      style: AppTextStyles.bodySmall.subtleOf(
+                        Theme.of(context).brightness,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: NeuTokens.spaceXxs),
+                    Text(
+                      isSelf ? '$status \u00b7 You' : status,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: user.isActive
+                            ? ThemeColors.success(context)
+                            : ThemeColors.error(context),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: NeuTokens.spaceXs),
+              Semantics(
+                label: 'Account active for ${user.fullName}',
+                child: NeuSwitch(
+                  value: user.isActive,
+                  onChanged: locked ? null : (v) => onToggleActive(v),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: NeuTokens.spaceSm),
+          Wrap(
+            spacing: NeuTokens.spaceXs,
+            runSpacing: NeuTokens.spaceXs,
+            children: [UserRole.ownerAdmin, UserRole.petOwner]
+                .map(
+                  (r) => FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: NeuChip(
+                      label: r.displayName,
+                      selected: user.role == r,
+                      onTap: (!user.isActive || locked)
+                          ? null
+                          : () {
+                              if (r != user.role) onRoleChanged(r);
+                            },
+                      selectedColor: roleColor(context, r),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),

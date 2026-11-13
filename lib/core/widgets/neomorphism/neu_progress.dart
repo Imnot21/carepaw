@@ -23,11 +23,10 @@ class NeuProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final fillColor = color ?? ThemeColors.primaryText(context);
     final channel =
         trackColor ??
-        (isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset);
+        (ThemeColors.surfaceInset(context));
     final radius = rounded ? height / 2 : NeuTokens.radiusXs;
 
     return SizedBox(
@@ -85,11 +84,8 @@ class NeuCircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = color ?? ThemeColors.primaryText(context);
-    final channel = isDark
-        ? AppColors.surfaceInsetDark
-        : AppColors.surfaceInset;
+    final channel = ThemeColors.surfaceInset(context);
     final isIndeterminate = value < 0;
 
     final progress = RepaintBoundary(

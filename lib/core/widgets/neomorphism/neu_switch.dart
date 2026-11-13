@@ -34,7 +34,7 @@ class NeuSwitch extends StatelessWidget {
 
     final trackColor = value
         ? accent
-        : (isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset);
+        : (ThemeColors.surfaceInset(context));
     final thumbColor = value
         ? ThemeColors.onPrimary(context)
         : (isDark ? AppColors.textSecondaryOnDark : AppColors.textPrimary);

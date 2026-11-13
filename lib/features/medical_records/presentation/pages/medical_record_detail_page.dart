@@ -84,110 +84,132 @@ class MedicalRecordDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Header with record type and pet info
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  // Type badge
-                  NeuContainer(
-                    borderRadius: NeuTokens.radiusLg,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 22,
-                      vertical: 12,
-                    ),
-                    color: typeInfo.color,
-                    boxShadow: NeuShadow.color(
-                      context,
-                      typeInfo.color,
-                      blur: 16,
-                      opacity: 0.28,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        NeuSvgIcon(typeInfo.svgAsset, size: 20),
-                        const SizedBox(width: 10),
-                        Text(
-                          record.recordType.displayName,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: NeuTokens.maxContentWidth,
+          ),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header with record type and pet info
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  NeuTokens.pagePadding,
+                  NeuTokens.sectionGap,
+                  NeuTokens.pagePadding,
+                  NeuTokens.spaceLg,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      // Type badge
+                      NeuContainer(
+                        borderRadius: NeuTokens.radiusLg,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 12,
                         ),
-                      ],
-                    ),
+                        color: typeInfo.color,
+                        boxShadow: NeuShadow.color(
+                          context,
+                          typeInfo.color,
+                          blur: 16,
+                          opacity: 0.28,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            NeuSvgIcon(typeInfo.svgAsset, size: 20),
+                            const SizedBox(width: 10),
+                            Text(
+                              record.recordType.displayName,
+                              style: AppTextStyles.titleMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      // Pet avatar
+                      PetUtils.buildAvatar(
+                        species: pet.species,
+                        radius: 50,
+                        iconSize: 50,
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        pet.name,
+                        style: AppTextStyles.headlineMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        record.title,
+                        style: AppTextStyles.headlineSmall.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Recorded on ${_formatFullDate(record.recordedAt)}',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 28),
-                  // Pet avatar
-                  PetUtils.buildAvatar(
-                    species: pet.species,
-                    radius: 50,
-                    iconSize: 50,
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    pet.name,
-                    style: AppTextStyles.headlineMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: ThemeColors.textSecondary(context),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    record.title,
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Recorded on ${_formatFullDate(record.recordedAt)}',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: ThemeColors.textSecondary(context),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
 
-          // Content sections
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList.separated(
-              itemCount: _getSections(context).length,
-              separatorBuilder: (_, _) => const SizedBox(height: 18),
-              itemBuilder: (context, index) {
-                final section = _getSections(context)[index];
-                if (section.content == null || section.content!.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-                return _SectionCard(
-                  title: section.title,
-                  icon: section.icon,
-                  svgAsset: section.svgAsset,
-                  color: section.color,
-                  content: section.content!,
-                );
-              },
-            ),
-          ),
+              // Content sections
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NeuTokens.pagePadding,
+                ),
+                sliver: SliverList.separated(
+                  itemCount: _getSections(context).length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 18),
+                  itemBuilder: (context, index) {
+                    final section = _getSections(context)[index];
+                    if (section.content == null || section.content!.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return _SectionCard(
+                      title: section.title,
+                      icon: section.icon,
+                      svgAsset: section.svgAsset,
+                      color: section.color,
+                      content: section.content!,
+                    );
+                  },
+                ),
+              ),
 
-          // Bottom padding
-          const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
-        ],
+              // Bottom padding
+              const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -365,9 +387,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeuCard(
-      padding: const EdgeInsets.all(24),
-      borderColor: color.withValues(alpha: 0.2),
-      borderWidth: 1,
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -382,11 +402,13 @@ class _SectionCard extends StatelessWidget {
                     ? NeuSvgIcon(svgAsset!, size: 24)
                     : Icon(icon, color: color, size: 24),
               ),
-              const SizedBox(width: 14),
-              Text(
-                title,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: NeuTokens.spaceSm),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

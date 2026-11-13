@@ -166,69 +166,83 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfile(BuildContext context, User user) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          // Avatar — circular contour
-          NeuAvatar(
-            radius: 44,
-            svgAsset: SvgIcons.person,
-            backgroundColor: ThemeColors.primary(
-              context,
-            ).withValues(alpha: 0.14),
-            foregroundColor: ThemeColors.primary(context),
+      padding: const EdgeInsets.all(NeuTokens.pagePadding),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: NeuTokens.maxContentWidth,
           ),
-          const SizedBox(height: 20),
-
-          // Name
-          Text(
-            user.fullName,
-            style: AppTextStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.w700,
-              color: ThemeColors.textPrimary(context),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            user.email,
-            style: AppTextStyles.bodyMedium.subtleOf(
-              Theme.of(context).brightness,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          NeuContainer(
-            borderRadius: NeuTokens.radiusSm,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            variant: NeuVariant.flat,
-            child: Text(
-              user.role.displayName,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: ThemeColors.textSecondary(context),
-                fontWeight: FontWeight.w600,
+          child: Column(
+            children: [
+              // Avatar — circular contour
+              NeuAvatar(
+                radius: 44,
+                svgAsset: SvgIcons.person,
+                backgroundColor: ThemeColors.primary(
+                  context,
+                ).withValues(alpha: 0.14),
+                foregroundColor: ThemeColors.primary(context),
               ),
-            ),
+              const SizedBox(height: 20),
+
+              // Name
+              Text(
+                user.fullName,
+                style: AppTextStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: ThemeColors.textPrimary(context),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                user.email,
+                style: AppTextStyles.bodyMedium.subtleOf(
+                  Theme.of(context).brightness,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: NeuTokens.spaceSm),
+              NeuContainer(
+                borderRadius: NeuTokens.radiusSm,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+                variant: NeuVariant.flat,
+                child: Text(
+                  user.role.displayName,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: ThemeColors.textSecondary(context),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 36),
+
+              if (_editing)
+                _buildEditForm(context, user)
+              else
+                _buildInfoCard(context, user),
+
+              const SizedBox(height: 32),
+              _buildSectionLabel(context, 'Preferences'),
+              const SizedBox(height: 14),
+              _buildPreferencesCard(context),
+              // Administration card HIDDEN in the paper build (settings/audit
+              // stay in code, reachable only by direct route, not from tabs).
+              const SizedBox(height: 32),
+              _buildLogoutButton(context),
+              // Add padding at the bottom to prevent logout button from being hidden by navigation
+              const SizedBox(height: 84),
+            ],
           ),
-
-          const SizedBox(height: 36),
-
-          if (_editing)
-            _buildEditForm(context, user)
-          else
-            _buildInfoCard(context, user),
-
-          const SizedBox(height: 32),
-          _buildSectionLabel(context, 'Preferences'),
-          const SizedBox(height: 14),
-          _buildPreferencesCard(context),
-          // Administration card HIDDEN in the paper build (settings/audit
-          // stay in code, reachable only by direct route, not from tabs).
-          const SizedBox(height: 32),
-          _buildLogoutButton(context),
-          // Add padding at the bottom to prevent logout button from being hidden by navigation
-          const SizedBox(height: 84),
-        ],
+        ),
       ),
     );
   }
@@ -260,7 +274,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _infoRow(
                 context,
                 'Status',
-                user.isActive ? 'Active' : 'De-activated',
+                user.isActive ? 'Active' : 'Deactivated',
               ),
             ],
           ),
@@ -287,8 +301,8 @@ class _ProfilePageState extends State<ProfilePage> {
             color: ThemeColors.textSecondary(context),
           ),
         ),
-        const Spacer(),
-        Flexible(
+        const SizedBox(width: NeuTokens.spaceSm),
+        Expanded(
           child: Text(
             value,
             style: AppTextStyles.bodySmall.copyWith(
@@ -296,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.end,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -358,7 +372,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     text: 'Cancel',
                     variant: NeuButtonVariant.outline,
                     size: NeuButtonSize.medium,
-                    onPressed: _cancelEdit,
+                    onPressed: _saving ? null : _cancelEdit,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -370,7 +384,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.check_rounded,
                     svgAsset: SvgIcons.check,
                     isLoading: _saving,
-                    onPressed: _save,
+                    onPressed: _saving ? null : _save,
                   ),
                 ),
               ],
@@ -738,10 +752,9 @@ class _SettingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+      borderRadius: BorderRadius.circular(NeuTokens.radiusMd),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
@@ -749,9 +762,7 @@ class _SettingTile extends StatelessWidget {
             NeuContainer(
               borderRadius: NeuTokens.radiusSm,
               padding: const EdgeInsets.all(10),
-              color: isDark
-                  ? AppColors.primary.withValues(alpha: 0.16)
-                  : AppColors.primaryTint,
+              color: ThemeColors.primary(context).withValues(alpha: 0.14),
               child: svgAsset != null
                   ? NeuSvgIcon(svgAsset!, size: 22)
                   : const SizedBox(width: 22, height: 22),

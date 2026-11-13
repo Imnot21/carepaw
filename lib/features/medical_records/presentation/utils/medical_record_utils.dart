@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 /// Utility class for medical record presentation logic.
 class MedicalRecordUtils {
   /// Get type-specific custom icon type and color for a medical record type.
-  static TypeInfoCustom getTypeInfoCustom(BuildContext context, MedicalRecordType type) {
+  static TypeInfoCustom getTypeInfoCustom(
+    BuildContext context,
+    MedicalRecordType type,
+  ) {
     switch (type) {
       case MedicalRecordType.visit:
         return TypeInfoCustom(
@@ -85,8 +88,9 @@ class MedicalRecordUtils {
   ///
   /// Every type stores its details in the same three fields; these are the
   /// names the record form uses for them, so the detail view reads the same.
-  static ({String diagnosis, String treatment, String medications})
-  fieldLabels(MedicalRecordType type) {
+  static ({String diagnosis, String treatment, String medications}) fieldLabels(
+    MedicalRecordType type,
+  ) {
     return switch (type) {
       MedicalRecordType.vaccination => (
         diagnosis: 'Diagnosis',

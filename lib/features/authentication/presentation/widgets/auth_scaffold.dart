@@ -141,7 +141,11 @@ class AuthBrandMark extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: Icon(icon, size: radius, color: ThemeColors.primaryText(context)),
+        child: Icon(
+          icon,
+          size: radius,
+          color: ThemeColors.primaryText(context),
+        ),
       ),
     );
   }

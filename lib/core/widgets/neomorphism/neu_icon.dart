@@ -98,12 +98,11 @@ class NeuIcon extends StatelessWidget {
   }
 
   Color _resolveBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (variant) {
-      NeuVariant.raised => isDark ? AppColors.surfaceDarkMode : AppColors.surface,
-      NeuVariant.pressed => isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted,
-      NeuVariant.inset => isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset,
-      NeuVariant.flat => isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted,
+      NeuVariant.raised => ThemeColors.surface(context),
+      NeuVariant.pressed => ThemeColors.surfaceMuted(context),
+      NeuVariant.inset => ThemeColors.surfaceInset(context),
+      NeuVariant.flat => ThemeColors.surfaceMuted(context),
       NeuVariant.transparent => Colors.transparent,
     };
   }

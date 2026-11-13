@@ -27,16 +27,11 @@ class MedicalRecordPetHeader extends StatelessWidget {
     required this.speciesColor,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        PetUtils.buildAvatar(
-          species: pet.species,
-          radius: 36,
-          iconSize: 36,
-        ),
+        PetUtils.buildAvatar(species: pet.species, radius: 36, iconSize: 36),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
@@ -54,22 +49,30 @@ class MedicalRecordPetHeader extends StatelessWidget {
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-        NeuContainer(
-          borderRadius: NeuTokens.radiusSm,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          variant: NeuVariant.flat,
-          color: speciesColor.withValues(alpha: 0.12),
-          borderColor: speciesColor.withValues(alpha: 0.3),
-          borderWidth: 1,
-          child: Text(
-            selectedType.displayName,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: speciesColor,
-              fontWeight: FontWeight.w600,
+        const SizedBox(width: NeuTokens.spaceXs),
+        Flexible(
+          child: NeuContainer(
+            borderRadius: NeuTokens.radiusSm,
+            padding: const EdgeInsets.symmetric(
+              horizontal: NeuTokens.spaceMd,
+              vertical: NeuTokens.spaceXs,
+            ),
+            variant: NeuVariant.flat,
+            color: speciesColor.withValues(alpha: 0.12),
+            child: Text(
+              selectedType.displayName,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: speciesColor,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),
@@ -91,16 +94,13 @@ class MedicalRecordTypeSelector extends StatelessWidget {
     required this.onChanged,
   });
 
-
   @override
   Widget build(BuildContext context) {
     final types = MedicalRecordType.selectable(selectedType);
 
     return NeuCard(
       borderRadius: NeuTokens.radiusMd,
-      padding: const EdgeInsets.all(20),
-      borderColor: speciesColor.withValues(alpha: 0.2),
-      borderWidth: 1,
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -113,11 +113,13 @@ class MedicalRecordTypeSelector extends StatelessWidget {
                 color: speciesColor.withValues(alpha: 0.12),
                 child: const NeuSvgIcon(SvgIcons.category, size: 22),
               ),
-              const SizedBox(width: 12),
-              Text(
-                'Record Type',
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: NeuTokens.spaceSm),
+              Expanded(
+                child: Text(
+                  'Record Type',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -127,7 +129,10 @@ class MedicalRecordTypeSelector extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: types.map((type) {
-              final typeInfo = MedicalRecordUtils.getTypeInfoCustom(context, type);
+              final typeInfo = MedicalRecordUtils.getTypeInfoCustom(
+                context,
+                type,
+              );
               return NeuChip(
                 label: type.displayName,
                 svgAsset: typeInfo.svgAsset,
@@ -164,12 +169,11 @@ class MedicalRecordFormField extends StatelessWidget {
     this.validator,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return NeuCard(
       borderRadius: NeuTokens.radiusMd,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -177,12 +181,18 @@ class MedicalRecordFormField extends StatelessWidget {
             children: [
               svgAsset != null
                   ? NeuSvgIcon(svgAsset!, size: 20)
-                  : Icon(icon, size: 20, color: ThemeColors.textSecondary(context)),
+                  : Icon(
+                      icon,
+                      size: 20,
+                      color: ThemeColors.textSecondary(context),
+                    ),
               const SizedBox(width: 10),
-              Text(
-                label,
-                style: AppTextStyles.labelLarge.copyWith(
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

@@ -83,7 +83,6 @@ abstract final class NeuToast {
     VoidCallback? onAction,
   }) {
     final messenger = ScaffoldMessenger.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final accent = switch (tone) {
       NeuToastTone.success => ThemeColors.success(context),
@@ -97,9 +96,7 @@ abstract final class NeuToast {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           elevation: 0,
-          backgroundColor: isDark
-              ? AppColors.surfaceInsetDark
-              : AppColors.surfaceInset,
+          backgroundColor: ThemeColors.surfaceInset(context),
           margin: const EdgeInsets.all(NeuTokens.spaceMd),
           padding: const EdgeInsets.symmetric(
             horizontal: NeuTokens.spaceMd,

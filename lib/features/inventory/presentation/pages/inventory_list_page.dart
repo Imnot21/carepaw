@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/core/errors/failures.dart';
 import 'package:carepaw/core/utils/input_formatters.dart';
 import 'package:carepaw/core/widgets/neomorphism/index.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -121,13 +122,18 @@ class _InventoryListPageState extends State<InventoryListPage> {
     } else if (state is InventoryOperationSuccess) {
       NeuToast.success(context, state.message);
     } else if (state is InventoryError && _items != null) {
-      NeuToast.error(context, state.failure.message);
+      NeuToast.error(context, _friendlyMessage(state.failure));
     }
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+      padding: const EdgeInsets.fromLTRB(
+        NeuTokens.pagePadding,
+        NeuTokens.pagePadding,
+        NeuTokens.pagePadding,
+        NeuTokens.spaceSm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -151,14 +157,14 @@ class _InventoryListPageState extends State<InventoryListPage> {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: NeuTokens.spaceXxs),
           Text(
             'Medicines on hand, what is running low, and what expires soon.',
             style: AppTextStyles.bodySmall.copyWith(
               color: ThemeColors.textSecondary(context),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: NeuTokens.spaceMd),
           NeuTextField(
             controller: _searchController,
             hint: 'Search medicines',
@@ -172,6 +178,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
                     plain: true,
                     icon: Icons.close_rounded,
                     svgAsset: SvgIcons.close,
+                    tooltip: 'Clear search',
                     onPressed: () {
                       _searchController.clear();
                       setState(() => _query = '');
@@ -180,7 +187,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
             textInputAction: TextInputAction.search,
             onChanged: (value) => setState(() => _query = value.trim()),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: NeuTokens.spaceSm),
           NeuChipRow(
             padding: EdgeInsets.zero,
             chips: [
@@ -193,8 +200,7 @@ class _InventoryListPageState extends State<InventoryListPage> {
                 label: 'Expiring soon (${_count(_ExpiryStatus.soon)})',
                 selected: _filter == _ExpiryFilter.expiring,
                 selectedColor: ThemeColors.warning(context),
-                onTap: () =>
-                    setState(() => _filter = _ExpiryFilter.expiring),
+                onTap: () => setState(() => _filter = _ExpiryFilter.expiring),
               ),
               NeuChip(
                 label: 'Expired (${_count(_ExpiryStatus.expired)})',
@@ -212,13 +218,11 @@ class _InventoryListPageState extends State<InventoryListPage> {
   Widget _buildList(InventoryState state) {
     if (_items == null) {
       if (state is InventoryError) {
-        return NeuEmptyState(
-          icon: Icons.error_outline_rounded,
-          svgAsset: SvgIcons.error,
+        return NeuErrorState(
           title: 'Could not load the inventory',
-          message: state.failure.message,
-          actionLabel: 'Retry',
-          onAction: _reload,
+          message: _friendlyMessage(state.failure),
+          svgAsset: SvgIcons.error,
+          onRetry: _reload,
         );
       }
       return const NeuSkeletonList();
@@ -258,9 +262,14 @@ class _InventoryListPageState extends State<InventoryListPage> {
     return RefreshIndicator(
       onRefresh: () async => _reload(),
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 110),
+        padding: const EdgeInsets.fromLTRB(
+          NeuTokens.pagePadding,
+          NeuTokens.spaceXs,
+          NeuTokens.pagePadding,
+          110,
+        ),
         itemCount: items.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: NeuTokens.spaceSm),
         itemBuilder: (context, index) => _StockCard(
           item: items[index],
           batches: _batchesOf(items[index]),
@@ -374,7 +383,7 @@ class _StockCard extends StatelessWidget {
         : ThemeColors.textPrimary(context);
 
     return NeuCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(NeuTokens.spaceMd),
       child: Row(
         children: [
           NeuContainer(
@@ -400,18 +409,24 @@ class _StockCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(
-                      '${_qty(item.currentStock)} ${item.unit}',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: stockColor,
+                    Flexible(
+                      child: Text(
+                        '${_qty(item.currentStock)} ${item.unit}',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: stockColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (out || low) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: NeuTokens.spaceXs),
                       NeuStatusBadge(
                         label: out ? 'Out of stock' : 'Low',
-                        tone: out ? NeuStatusTone.danger : NeuStatusTone.warning,
+                        tone: out
+                            ? NeuStatusTone.danger
+                            : NeuStatusTone.warning,
                         compact: true,
                       ),
                     ],
@@ -582,6 +597,7 @@ class _EditStockSheetState extends State<_EditStockSheet> {
               NeuIconButton(
                 icon: Icons.remove_rounded,
                 svgAsset: SvgIcons.remove,
+                tooltip: 'Take out one less',
                 onPressed: _amount > 0 ? () => _step(-1) : null,
               ),
               const SizedBox(width: 12),
@@ -589,8 +605,7 @@ class _EditStockSheetState extends State<_EditStockSheet> {
                 child: NeuTextField(
                   controller: _takeOut,
                   error: _takeOutError,
-                  helper:
-                      '${_qty(left.toDouble())} ${_item.unit} left after',
+                  helper: '${_qty(left.toDouble())} ${_item.unit} left after',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
@@ -602,6 +617,7 @@ class _EditStockSheetState extends State<_EditStockSheet> {
               NeuIconButton(
                 icon: Icons.add_rounded,
                 svgAsset: SvgIcons.add,
+                tooltip: 'Take out one more',
                 onPressed: _amount < _item.currentStock ? () => _step(1) : null,
               ),
             ],
@@ -642,10 +658,8 @@ class _EditStockSheetState extends State<_EditStockSheet> {
             variant: NeuButtonVariant.secondary,
             icon: Icons.add_rounded,
             svgAsset: SvgIcons.add,
-            onPressed: () => Navigator.pop(
-              context,
-              const _EditResult(_EditAction.addStock),
-            ),
+            onPressed: () =>
+                Navigator.pop(context, const _EditResult(_EditAction.addStock)),
             expanded: true,
           ),
           const SizedBox(height: 12),
@@ -977,9 +991,8 @@ class _NotLoggedInView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1007,9 +1020,7 @@ class _NotLoggedInView extends StatelessWidget {
                 'Please log in to manage inventory',
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1017,9 +1028,7 @@ class _NotLoggedInView extends StatelessWidget {
               Text(
                 'Sign in to access inventory management',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1045,9 +1054,8 @@ class _AccessDeniedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1083,9 +1091,7 @@ class _AccessDeniedView extends StatelessWidget {
               Text(
                 'Only veterinarians and clinic staff can manage inventory.\n\nThis feature is for clinic operations only.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
+                  color: ThemeColors.textSecondary(context),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1104,6 +1110,22 @@ class _AccessDeniedView extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A calm sentence for a failure. Domain rules (not enough stock, expired
+/// medicine, bad input) keep their own wording; anything else, such as raw
+/// service text, becomes a generic line.
+String _friendlyMessage(Failure failure) {
+  if (failure is InsufficientStockFailure ||
+      failure is MedicineExpiredFailure ||
+      failure is NotFoundFailure ||
+      failure is ValidationFailure) {
+    return failure.message;
+  }
+  if (failure is NetworkFailure) {
+    return 'Can’t reach the server. Check your connection and try again.';
+  }
+  return 'Something went wrong. Please try again.';
 }
 
 /// A stock amount as typed: `10`, `2.5`. No thousands separator, so the

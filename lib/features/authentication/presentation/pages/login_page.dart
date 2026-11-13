@@ -5,6 +5,7 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dar
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:carepaw/features/authentication/presentation/pages/register_page.dart';
+import 'package:carepaw/features/authentication/presentation/widgets/auth_messages.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
 import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:carepaw/core/utils/validators.dart';
@@ -50,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
-          NeuToast.error(context, state.failure.message);
+          NeuToast.error(context, authFailureMessage(state.failure));
         } else if (state is AuthAuthenticated) {
           NeuToast.success(context, 'Welcome back, ${state.user.fullName}!');
         }
@@ -119,31 +120,34 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: NeuTokens.spaceXs),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const ForgotPasswordPage(),
-                            ),
-                          );
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minHeight: NeuTokens.minTapTarget,
-                          ),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: NeuTokens.spaceXs,
+                      child: Semantics(
+                        button: true,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordPage(),
                               ),
-                              child: Text(
-                                'Forgot your password?',
-                                style: Theme.of(context).textTheme.labelMedium
-                                    ?.copyWith(
-                                      color: ThemeColors.primary(context),
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                            );
+                          },
+                          behavior: HitTestBehavior.opaque,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minHeight: NeuTokens.minTapTarget,
+                            ),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: NeuTokens.spaceXs,
+                                ),
+                                child: Text(
+                                  'Forgot your password?',
+                                  style: Theme.of(context).textTheme.labelMedium
+                                      ?.copyWith(
+                                        color: ThemeColors.primary(context),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
                               ),
                             ),
                           ),

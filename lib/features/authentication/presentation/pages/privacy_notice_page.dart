@@ -134,7 +134,9 @@ class PrivacyNoticePage extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
             // Keep lines readable on tablets and the web build.
-            constraints: const BoxConstraints(maxWidth: 620),
+            constraints: const BoxConstraints(
+              maxWidth: NeuTokens.maxContentWidth,
+            ),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 NeuTokens.pagePadding,
@@ -160,10 +162,7 @@ class PrivacyNoticePage extends StatelessWidget {
                 ),
                 for (final (title, paragraphs) in _sections) ...[
                   const SizedBox(height: NeuTokens.spaceLg),
-                  Semantics(
-                    header: true,
-                    child: Text(title, style: heading),
-                  ),
+                  Semantics(header: true, child: Text(title, style: heading)),
                   for (final p in paragraphs) ...[
                     const SizedBox(height: NeuTokens.spaceXs),
                     Text(p, style: body),

@@ -139,7 +139,7 @@ class _PetSelectionSectionState extends State<PetSelectionSection> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
-                    'Please select a pet',
+                    'Pick a pet to continue.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.error(context),
                     ),
@@ -149,7 +149,7 @@ class _PetSelectionSectionState extends State<PetSelectionSection> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
-                    'No pets found. Please add a pet first.',
+                    'No pets yet. Add a pet first.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.error(context),
                     ),
@@ -190,7 +190,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
               title: 'Your vet',
               subtitle: 'The vet on duty at PILA VET HUB',
               icon: Icons.medical_services_rounded,
-            svgAsset: SvgIcons.visit,
+              svgAsset: SvgIcons.visit,
               iconColor: ThemeColors.textSecondary(context),
               child: const Center(child: NeuCircularProgress(size: 24)),
             );
@@ -204,7 +204,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
               title: 'Your vet',
               subtitle: 'The vet on duty at PILA VET HUB',
               icon: Icons.medical_services_rounded,
-            svgAsset: SvgIcons.visit,
+              svgAsset: SvgIcons.visit,
               iconColor: ThemeColors.textSecondary(context),
               child: NeuContainer(
                 variant: NeuVariant.inset,
@@ -214,14 +214,11 @@ class VeterinarianSelectionSection extends StatelessWidget {
                 borderWidth: 1,
                 child: Row(
                   children: [
-                    NeuSvgIcon(
-                      SvgIcons.error,
-                      size: 22,
-                    ),
+                    NeuSvgIcon(SvgIcons.error, size: 22),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Failed to load veterinarian: ${snapshot.error}',
+                        "Couldn't load the veterinarian. Go back and try again.",
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: ThemeColors.error(context),
                         ),
@@ -275,6 +272,8 @@ class VeterinarianSelectionSection extends StatelessWidget {
                                 ? ThemeColors.textPrimary(context)
                                 : ThemeColors.error(context),
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         if (assignedVet != null)
                           Text(
@@ -323,14 +322,11 @@ class VeterinarianSelectionSection extends StatelessWidget {
               borderWidth: 1,
               child: Row(
                 children: [
-                  NeuSvgIcon(
-                    SvgIcons.error,
-                    size: 22,
-                  ),
+                  NeuSvgIcon(SvgIcons.error, size: 22),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Failed to load veterinarians: ${snapshot.error}',
+                      "Couldn't load the veterinarians. Go back and try again.",
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: ThemeColors.error(context),
                       ),
@@ -355,8 +351,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
                 : null;
             onAutoSelect(effectiveSelectedVetId);
           }
-        } else if (veterinarians.isNotEmpty &&
-            effectiveSelectedVetId == null) {
+        } else if (veterinarians.isNotEmpty && effectiveSelectedVetId == null) {
           effectiveSelectedVetId = veterinarians.first.id;
           onAutoSelect(effectiveSelectedVetId);
         }
@@ -379,11 +374,10 @@ class VeterinarianSelectionSection extends StatelessWidget {
                   return NeuChip(
                     label: 'Dr. ${vet.fullName}',
                     icon: Icons.medical_services_rounded,
-            svgAsset: SvgIcons.visit,
+                    svgAsset: SvgIcons.visit,
                     selected: isSelected,
                     selectedColor: ThemeColors.primary(context),
-                    onTap: () =>
-                        onVetSelected(vet.id),
+                    onTap: () => onVetSelected(vet.id),
                     unselectedVariant: NeuVariant.raised,
                   );
                 }).toList(),
@@ -392,7 +386,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
-                    'Please select a veterinarian',
+                    'Pick a veterinarian to continue.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.error(context),
                     ),
@@ -402,7 +396,7 @@ class VeterinarianSelectionSection extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
-                    'No veterinarians available',
+                    'No veterinarian is available right now.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.error(context),
                     ),
@@ -469,9 +463,9 @@ class DateTimeSelectionSection extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    hasDate
-                        ? dateTimeText!
-                        : 'Select date and time',
+                    hasDate ? dateTimeText! : 'Select date and time',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: hasDate
                           ? ThemeColors.textPrimary(context)
@@ -580,7 +574,7 @@ class ServiceSelectionSection extends StatelessWidget {
             ],
             onChanged: (value) => onServiceChanged(value),
             validator: (value) => value == null || value.isEmpty
-                ? 'Please select a service'
+                ? 'Pick a service for the visit.'
                 : null,
           ),
           if (selectedService == homeServiceLabel) ...[
@@ -611,10 +605,7 @@ class ServiceSelectionSection extends StatelessWidget {
 class ReasonSection extends StatelessWidget {
   final TextEditingController reasonController;
 
-  const ReasonSection({
-    super.key,
-    required this.reasonController,
-  });
+  const ReasonSection({super.key, required this.reasonController});
 
   @override
   Widget build(BuildContext context) {
@@ -646,10 +637,7 @@ class ReasonSection extends StatelessWidget {
 class NotesSection extends StatelessWidget {
   final TextEditingController notesController;
 
-  const NotesSection({
-    super.key,
-    required this.notesController,
-  });
+  const NotesSection({super.key, required this.notesController});
 
   @override
   Widget build(BuildContext context) {
@@ -716,11 +704,13 @@ class _SectionCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: ThemeColors.textPrimary(context),
+                        Flexible(
+                          child: Text(
+                            title,
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: ThemeColors.textPrimary(context),
+                            ),
                           ),
                         ),
                         if (isRequired) ...[
@@ -787,7 +777,7 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Select Date & Time',
+          'Select Date and Time',
           style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 24),

@@ -8,7 +8,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -136,137 +136,145 @@ class _PatientPickerSheetState extends State<_PatientPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: NeuContainer(
-        margin: const EdgeInsets.all(20),
-        borderRadius: NeuTokens.radiusMd,
-        variant: NeuVariant.raised,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'View patient records',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-                color: ThemeColors.textPrimary(context),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Pick a patient to open their records.',
-              style: AppTextStyles.bodySmall.subtleOf(
-                Theme.of(context).brightness,
-              ),
-            ),
-            const SizedBox(height: 20),
-            NeuTextField(
-              controller: _searchController,
-              hint: widget.seesAllPatients
-                  ? 'Search by pet or owner'
-                  : 'Search patients...',
-              prefixIcon: ClayIconOrMaterial(
-                'search_rounded',
-                fallback: Icons.search_rounded,
-                size: 20,
-              ),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? NeuIconButton(
-                      icon: Icons.clear_rounded,
-                      svgAsset: SvgIcons.close,
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                        _reloadPatients();
-                      },
-                      tooltip: 'Clear search',
-                    )
-                  : null,
-              onChanged: (value) {
-                setState(() => _searchQuery = value);
-                // The operator list is filtered locally so owner names match.
-                if (widget.seesAllPatients) return;
-                if (value.isEmpty) {
-                  _reloadPatients();
-                } else {
-                  _searchPatients(value);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 360),
-              child: BlocBuilder<PetBloc, PetState>(
-                builder: (context, state) {
-                  if (state is PetsLoaded) {
-                    final pets = widget.seesAllPatients
-                        ? state.pets.where(_matches).toList()
-                        : state.pets;
-                    if (pets.isEmpty) {
-                      return _PickerMessage(
-                        title: _searchQuery.isEmpty
-                            ? 'No patients yet'
-                            : 'No matches',
-                        detail: _searchQuery.isEmpty
-                            ? 'Patients you add will appear here.'
-                            : widget.seesAllPatients
-                            ? 'Try a pet name or an owner name.'
-                            : 'Try a different name.',
-                      );
+    return Center(
+      heightFactor: 1,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: NeuTokens.maxContentWidth),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: NeuContainer(
+            margin: const EdgeInsets.all(NeuTokens.spaceLg),
+            borderRadius: NeuTokens.radiusMd,
+            variant: NeuVariant.raised,
+            padding: const EdgeInsets.all(NeuTokens.pagePadding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'View patient records',
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ThemeColors.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: NeuTokens.spaceXxs),
+                Text(
+                  'Pick a patient to open their records.',
+                  style: AppTextStyles.bodySmall.subtleOf(
+                    Theme.of(context).brightness,
+                  ),
+                ),
+                const SizedBox(height: NeuTokens.spaceLg),
+                NeuTextField(
+                  controller: _searchController,
+                  hint: widget.seesAllPatients
+                      ? 'Search by pet or owner'
+                      : 'Search patients...',
+                  prefixIcon: ClayIconOrMaterial(
+                    'search_rounded',
+                    fallback: Icons.search_rounded,
+                    size: 20,
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? NeuIconButton(
+                          icon: Icons.clear_rounded,
+                          svgAsset: SvgIcons.close,
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                            _reloadPatients();
+                          },
+                          tooltip: 'Clear search',
+                        )
+                      : null,
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value);
+                    // The operator list is filtered locally so owner names match.
+                    if (widget.seesAllPatients) return;
+                    if (value.isEmpty) {
+                      _reloadPatients();
+                    } else {
+                      _searchPatients(value);
                     }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      itemCount: pets.length,
-                      itemBuilder: (context, index) {
-                        final pet = pets[index];
-                        return _PatientRow(
-                          pet: pet,
-                          ownerName: _ownerNames[pet.ownerId],
-                          onTap: () => Navigator.of(context).pop(pet.id),
+                  },
+                ),
+                const SizedBox(height: NeuTokens.spaceMd),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 360),
+                  child: BlocBuilder<PetBloc, PetState>(
+                    builder: (context, state) {
+                      if (state is PetsLoaded) {
+                        final pets = widget.seesAllPatients
+                            ? state.pets.where(_matches).toList()
+                            : state.pets;
+                        if (pets.isEmpty) {
+                          return _PickerMessage(
+                            title: _searchQuery.isEmpty
+                                ? 'No patients yet'
+                                : 'No matches',
+                            detail: _searchQuery.isEmpty
+                                ? 'Patients you add will appear here.'
+                                : widget.seesAllPatients
+                                ? 'Try a pet name or an owner name.'
+                                : 'Try a different name.',
+                          );
+                        }
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: EdgeInsets.zero,
+                          itemCount: pets.length,
+                          itemBuilder: (context, index) {
+                            final pet = pets[index];
+                            return _PatientRow(
+                              pet: pet,
+                              ownerName: _ownerNames[pet.ownerId],
+                              onTap: () => Navigator.of(context).pop(pet.id),
+                            );
+                          },
                         );
-                      },
-                    );
-                  }
+                      }
 
-                  if (state is PetError) {
-                    return SizedBox(
-                      height: 160,
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              state.failure.message,
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.bodyMedium.subtleOf(
-                                Theme.of(context).brightness,
-                              ),
+                      if (state is PetError) {
+                        return SizedBox(
+                          height: 160,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Could not load patients. Check your connection and try again.',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.bodyMedium.subtleOf(
+                                    Theme.of(context).brightness,
+                                  ),
+                                ),
+                                const SizedBox(height: NeuTokens.spaceSm),
+                                NeuButton(
+                                  text: 'Try again',
+                                  variant: NeuButtonVariant.secondary,
+                                  onPressed: _reloadPatients,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: NeuTokens.spaceSm),
-                            NeuButton(
-                              text: 'Try Again',
-                              variant: NeuButtonVariant.secondary,
-                              onPressed: _reloadPatients,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
+                          ),
+                        );
+                      }
 
-                  return const SizedBox(
-                    height: 160,
-                    child: Center(child: NeuCircularProgress()),
-                  );
-                },
-              ),
+                      return const NeuSkeletonList(
+                        itemCount: 3,
+                        padding: EdgeInsets.zero,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

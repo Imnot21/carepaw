@@ -9,6 +9,7 @@ import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/authentication/presentation/widgets/auth_messages.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/password_requirements.dart';
 import 'package:carepaw/core/utils/validators.dart';
@@ -70,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
-          NeuToast.error(context, state.failure.message);
+          NeuToast.error(context, authFailureMessage(state.failure));
         } else if (state is AuthAuthenticated) {
           NeuToast.success(
             context,
@@ -262,7 +263,7 @@ class _PrivacyConsentField extends StatelessWidget {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 12),
+                        padding: const EdgeInsets.only(top: NeuTokens.tightGap),
                         child: Text(
                           'I have read the privacy notice and agree that the '
                           'clinic keeps my and my pet\u2019s information to '

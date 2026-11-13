@@ -199,7 +199,20 @@ class _NeuButtonState extends State<NeuButton> {
             Icon(widget.icon, size: _getIconSize(), color: bodyColor.color),
           const SizedBox(width: 8),
         ],
-        Text(widget.text, style: bodyColor),
+        // A full-width button has a bounded width, so its label may shrink
+        // and ellipsize at large text sizes. A sized-to-content button can
+        // sit in an unbounded Row, where Flexible would throw.
+        if (widget.expanded)
+          Flexible(
+            child: Text(
+              widget.text,
+              style: bodyColor,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          )
+        else
+          Text(widget.text, style: bodyColor),
         if (widget.trailingIcon != null && !widget.isLoading) ...[
           const SizedBox(width: 8),
           Icon(

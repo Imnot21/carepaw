@@ -30,29 +30,37 @@ class NotificationDetailPage extends StatefulWidget {
 }
 
 class _NotificationDetailPageState extends State<NotificationDetailPage> {
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-
   @override
   Widget build(BuildContext context) {
     final notification = widget.notification;
     final typeColor = _getTypeColor(notification.type);
 
     return Scaffold(
-      backgroundColor: _isDark
-          ? AppColors.backgroundDark
-          : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: _buildAppBar(notification, typeColor),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-        child: Column(
-          children: [
-            _buildNotificationCard(notification, typeColor),
-            const SizedBox(height: 16),
-            _buildMetaSection(notification),
-            const SizedBox(height: 24),
-            _buildOpenTargetButton(notification),
-            _buildActionButtons(notification),
-          ],
+        padding: const EdgeInsets.fromLTRB(
+          NeuTokens.pagePadding,
+          NeuTokens.spaceMd,
+          NeuTokens.pagePadding,
+          120,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: NeuTokens.maxContentWidth,
+            ),
+            child: Column(
+              children: [
+                _buildNotificationCard(notification, typeColor),
+                const SizedBox(height: NeuTokens.spaceMd),
+                _buildMetaSection(notification),
+                const SizedBox(height: NeuTokens.spaceXl),
+                _buildOpenTargetButton(notification),
+                _buildActionButtons(notification),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -83,11 +91,11 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
         children: [
           Text(
             'Notification',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w700,
-              color: _isDark
-                  ? AppColors.textPrimaryOnDark
-                  : AppColors.textPrimary,
+              color: ThemeColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 2),
@@ -106,7 +114,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
               );
               Navigator.pop(context, true);
             },
-            tooltip: 'Mark as Read',
+            tooltip: 'Mark as read',
             color: typeColor,
           ),
         const SizedBox(width: 8),
@@ -128,7 +136,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     Color typeColor,
   ) {
     return NeuCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -148,11 +156,11 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                   children: [
                     Text(
                       notification.title,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.headlineSmall.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: _isDark
-                            ? AppColors.textPrimaryOnDark
-                            : AppColors.textPrimary,
+                        color: ThemeColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -170,19 +178,14 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           const SizedBox(height: 20),
 
           // Divider
-          Divider(
-            height: 1,
-            color: _isDark ? AppColors.dividerDark : AppColors.divider,
-          ),
+          Divider(height: 1, color: ThemeColors.divider(context)),
           const SizedBox(height: 20),
 
           // Body
           Text(
             notification.message,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: _isDark
-                  ? AppColors.textPrimaryOnDark
-                  : AppColors.textPrimary,
+              color: ThemeColors.textPrimary(context),
               height: 1.6,
             ),
           ),
@@ -193,7 +196,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
 
   Widget _buildMetaSection(domain.Notification notification) {
     return NeuCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(NeuTokens.spaceMd),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -205,9 +208,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
                 'Details',
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: _isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
+                  color: ThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -215,18 +216,9 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
           const SizedBox(height: 12),
           _buildMetaRow('Created', formatDateTime(notification.createdAt)),
           if (notification.readAt != null)
-            _buildMetaRow('Read At', formatDateTime(notification.readAt!)),
-          _buildMetaRow(
-            'Notification ID',
-            notification.id?.toString() ?? 'N/A',
-          ),
+            _buildMetaRow('Read', formatDateTime(notification.readAt!)),
           _buildMetaRow('Type', notification.type.displayName),
           _buildMetaRow('Status', notification.isRead ? 'Read' : 'Unread'),
-          if (notification.referenceType != null)
-            _buildMetaRow(
-              'Reference',
-              '${notification.referenceType}: ${notification.referenceId}',
-            ),
         ],
       ),
     );
@@ -243,9 +235,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             child: Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark
-                    ? AppColors.textSecondaryOnDark
-                    : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -255,9 +245,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
             child: Text(
               value,
               style: AppTextStyles.bodySmall.copyWith(
-                color: _isDark
-                    ? AppColors.textPrimaryOnDark
-                    : AppColors.textPrimary,
+                color: ThemeColors.textPrimary(context),
               ),
             ),
           ),
@@ -283,7 +271,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: NeuButton(
-        text: isAppointment ? 'View Appointment' : 'View Queue',
+        text: isAppointment ? 'View appointment' : 'View queue',
         variant: NeuButtonVariant.primary,
         icon: isAppointment
             ? Icons.event_rounded
@@ -302,46 +290,44 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
 
   Widget _buildActionButtons(domain.Notification notification) {
     final isUnread = !notification.isRead;
+    final size = MediaQuery.textScalerOf(context).scale(1) > 1.2
+        ? NeuButtonSize.small
+        : NeuButtonSize.medium;
 
-    return Row(
+    return Wrap(
+      spacing: NeuTokens.spaceSm,
+      runSpacing: NeuTokens.spaceSm,
       children: [
         if (isUnread)
-          Expanded(
-            child: NeuButton(
-              text: 'Mark as Read',
-              variant: NeuButtonVariant.primary,
-              icon: Icons.mark_email_read_rounded,
-              svgAsset: SvgIcons.email,
-              onPressed: () {
-                context.read<NotificationBloc>().add(
-                  MarkAsRead(notification.id!),
-                );
-                Navigator.pop(context, true);
-              },
-              expanded: true,
-            ),
+          NeuButton(
+            text: 'Mark as read',
+            variant: NeuButtonVariant.primary,
+            icon: Icons.mark_email_read_rounded,
+            svgAsset: SvgIcons.email,
+            size: size,
+            onPressed: () {
+              context.read<NotificationBloc>().add(
+                MarkAsRead(notification.id!),
+              );
+              Navigator.pop(context, true);
+            },
           )
         else
-          Expanded(
-            child: NeuButton(
-              text: 'Back to List',
-              variant: NeuButtonVariant.secondary,
-              icon: Icons.arrow_back_rounded,
-              svgAsset: SvgIcons.back,
-              onPressed: () => Navigator.pop(context),
-              expanded: true,
-            ),
+          NeuButton(
+            text: 'Back to list',
+            variant: NeuButtonVariant.secondary,
+            icon: Icons.arrow_back_rounded,
+            svgAsset: SvgIcons.back,
+            size: size,
+            onPressed: () => Navigator.pop(context),
           ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: NeuButton(
-            text: 'Delete',
-            variant: NeuButtonVariant.outline,
-            icon: Icons.delete_outline_rounded,
-            svgAsset: SvgIcons.delete,
-            onPressed: _showDeleteConfirmation,
-            expanded: true,
-          ),
+        NeuButton(
+          text: 'Delete',
+          variant: NeuButtonVariant.outline,
+          icon: Icons.delete_outline_rounded,
+          svgAsset: SvgIcons.delete,
+          size: size,
+          onPressed: _showDeleteConfirmation,
         ),
       ],
     );
@@ -350,10 +336,11 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
   Future<void> _showDeleteConfirmation() async {
     final confirmed = await NeuConfirmDialog.show(
       context: context,
-      title: 'Delete Notification',
+      title: 'Delete notification',
       message:
           'Are you sure you want to delete this notification? This action cannot be undone.',
       confirmText: 'Delete',
+      confirmVariant: NeuButtonVariant.destructive,
     );
     if (confirmed != true || !mounted) return;
     context.read<NotificationBloc>().add(
@@ -361,7 +348,6 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
     );
     Navigator.pop(context, true);
   }
-
 
   Color _getTypeColor(domain.NotificationType type) {
     switch (type) {
@@ -374,9 +360,7 @@ class _NotificationDetailPageState extends State<NotificationDetailPage> {
       case domain.NotificationType.inventoryLow:
         return ThemeColors.success(context);
       case domain.NotificationType.system:
-        return _isDark
-            ? AppColors.textSecondaryOnDark
-            : AppColors.textSecondary;
+        return ThemeColors.textSecondary(context);
     }
   }
 

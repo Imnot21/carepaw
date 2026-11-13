@@ -134,15 +134,14 @@ class NeuContainer extends StatelessWidget {
   /// Light mode steps *down* from the canvas for recessed wells; dark mode
   /// steps down too, so a field is always visibly below a card.
   Color _resolveFill(BuildContext context, NeuVariant resolvedVariant) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (resolvedVariant) {
       NeuVariant.transparent => Colors.transparent,
       NeuVariant.inset =>
-        isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset,
+        ThemeColors.surfaceInset(context),
       NeuVariant.flat || NeuVariant.pressed =>
-        isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted,
+        ThemeColors.surfaceMuted(context),
       NeuVariant.raised =>
-        isDark ? AppColors.surfaceDarkMode : AppColors.surface,
+        ThemeColors.surface(context),
     };
   }
 

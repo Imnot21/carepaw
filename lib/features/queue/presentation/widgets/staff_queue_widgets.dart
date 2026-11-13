@@ -30,7 +30,10 @@ class StatsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuContainer(
       borderRadius: 0,
-      padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding, vertical: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NeuTokens.pagePadding,
+        vertical: NeuTokens.spaceLg,
+      ),
       variant: NeuVariant.flat,
       child: Row(
         children: [
@@ -136,7 +139,7 @@ class StaffQueueEntryCard extends StatelessWidget {
             entry.queueEntry.status == QueueStatus.called);
 
     return NeuCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NeuTokens.cardPadding),
       margin: const EdgeInsets.only(bottom: 14),
       borderColor: isCurrentServing ? statusColor.withValues(alpha: 0.5) : null,
       borderWidth: isCurrentServing ? 1.5 : 0,
@@ -192,6 +195,7 @@ class StaffQueueEntryCard extends StatelessWidget {
                             style: AppTextStyles.titleMedium.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -218,23 +222,17 @@ class StaffQueueEntryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${entry.pet.species.displayName} • ${entry.pet.breed} • Owner: ${entry.pet.ownerId}',
+                      '${entry.pet.species.displayName} • ${entry.pet.breed}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: ThemeColors.textSecondary(context),
                       ),
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              if (onPriorityChanged != null && entry.queueEntry.id != null) ...[
-                _PriorityControl(
-                  priority: entry.queueEntry.priority,
-                  onChanged: onPriorityChanged,
-                ),
-                const SizedBox(width: 8),
-              ],
-
+              const SizedBox(width: 8),
               // Status chip
               NeuStatusBadge.fromValue(
                 entry.queueEntry.status.value,
@@ -242,6 +240,14 @@ class StaffQueueEntryCard extends StatelessWidget {
               ),
             ],
           ),
+
+          if (onPriorityChanged != null && entry.queueEntry.id != null) ...[
+            const SizedBox(height: NeuTokens.tightGap),
+            _PriorityControl(
+              priority: entry.queueEntry.priority,
+              onChanged: onPriorityChanged,
+            ),
+          ],
 
           const SizedBox(height: 16),
 
@@ -273,6 +279,8 @@ class StaffQueueEntryCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         entry.appointment.reason ?? 'General checkup',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
@@ -317,10 +325,14 @@ class StaffQueueEntryCard extends StatelessWidget {
                   foregroundColor: ThemeColors.primaryText(context),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Dr. ${entry.veterinarian.fullName}',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: ThemeColors.textSecondary(context),
+                Expanded(
+                  child: Text(
+                    'Dr. ${entry.veterinarian.fullName}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                    ),
                   ),
                 ),
               ],
@@ -329,38 +341,54 @@ class StaffQueueEntryCard extends StatelessWidget {
 
           // Time info
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              NeuSvgIcon(SvgIcons.schedule, size: 14),
-              const SizedBox(width: 6),
-              Text(
-                'Checked in: ${_formatTime(entry.queueEntry.checkedInAt)}',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: ThemeColors.textSecondary(context),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NeuSvgIcon(SvgIcons.schedule, size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Checked in: ${_formatTime(entry.queueEntry.checkedInAt)}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: ThemeColors.textSecondary(context),
+                    ),
+                  ),
+                ],
               ),
               if (entry.queueEntry.calledAt != null) ...[
-                const SizedBox(width: 16),
-                NeuSvgIcon(SvgIcons.volume, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  'Called: ${_formatTime(entry.queueEntry.calledAt!)}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: ThemeColors.info(context),
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NeuSvgIcon(SvgIcons.volume, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Called: ${_formatTime(entry.queueEntry.calledAt!)}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: ThemeColors.info(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
               if (entry.queueEntry.room != null) ...[
-                const SizedBox(width: 16),
-                NeuSvgIcon(SvgIcons.door, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  'Room ${entry.queueEntry.room}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: ThemeColors.success(context),
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NeuSvgIcon(SvgIcons.door, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Room ${entry.queueEntry.room}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: ThemeColors.success(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ],
@@ -376,94 +404,80 @@ class StaffQueueEntryCard extends StatelessWidget {
     );
   }
 
+  static NeuButtonSize _actionSize(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(1) > 1.2
+      ? NeuButtonSize.small
+      : NeuButtonSize.medium;
+
   Widget _buildActionButtons(BuildContext context) {
     final actions = <Widget>[];
 
     if (onCall != null) {
       actions.add(
-        Expanded(
-          child: NeuButton(
-            text: 'Call',
-            onPressed: onCall!,
-            icon: Icons.volume_up_rounded,
-            svgAsset: SvgIcons.volume,
-            variant: NeuButtonVariant.secondary,
-            size: NeuButtonSize.medium,
-            expanded: true,
-          ),
+        NeuButton(
+          text: 'Call',
+          onPressed: onCall!,
+          icon: Icons.volume_up_rounded,
+          svgAsset: SvgIcons.volume,
+          variant: NeuButtonVariant.secondary,
+          size: _actionSize(context),
         ),
       );
     }
 
     if (onMoveToRoom != null) {
-      if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
-        Expanded(
-          child: NeuButton(
-            text: 'Room',
-            onPressed: onMoveToRoom!,
-            icon: Icons.door_front_door_rounded,
-            svgAsset: SvgIcons.door,
-            variant: NeuButtonVariant.primary,
-            size: NeuButtonSize.medium,
-            expanded: true,
-          ),
+        NeuButton(
+          text: 'Room',
+          onPressed: onMoveToRoom!,
+          icon: Icons.door_front_door_rounded,
+          svgAsset: SvgIcons.door,
+          variant: NeuButtonVariant.primary,
+          size: _actionSize(context),
         ),
       );
     }
 
     if (onComplete != null) {
-      if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
-        Expanded(
-          child: NeuButton(
-            text: 'Complete',
-            onPressed: onComplete!,
-            icon: Icons.check_rounded,
-            svgAsset: SvgIcons.check,
-            variant: NeuButtonVariant.primary,
-            size: NeuButtonSize.medium,
-            expanded: true,
-          ),
+        NeuButton(
+          text: 'Complete',
+          onPressed: onComplete!,
+          icon: Icons.check_rounded,
+          svgAsset: SvgIcons.check,
+          variant: NeuButtonVariant.primary,
+          size: _actionSize(context),
         ),
       );
     }
 
     if (onSkip != null) {
-      if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
-        Expanded(
-          child: NeuButton(
-            text: 'Skip',
-            onPressed: onSkip!,
-            icon: Icons.skip_next_rounded,
-            svgAsset: SvgIcons.skipNext,
-            variant: NeuButtonVariant.destructive,
-            size: NeuButtonSize.medium,
-            expanded: true,
-          ),
+        NeuButton(
+          text: 'Skip',
+          onPressed: onSkip!,
+          icon: Icons.skip_next_rounded,
+          svgAsset: SvgIcons.skipNext,
+          variant: NeuButtonVariant.destructive,
+          size: _actionSize(context),
         ),
       );
     }
 
     if (onCancel != null) {
-      if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
       actions.add(
-        Expanded(
-          child: NeuButton(
-            text: 'Cancel',
-            onPressed: onCancel!,
-            icon: Icons.cancel_outlined,
-            svgAsset: SvgIcons.error,
-            variant: NeuButtonVariant.destructive,
-            size: NeuButtonSize.medium,
-            expanded: true,
-          ),
+        NeuButton(
+          text: 'Cancel',
+          onPressed: onCancel!,
+          icon: Icons.cancel_outlined,
+          svgAsset: SvgIcons.error,
+          variant: NeuButtonVariant.destructive,
+          size: _actionSize(context),
         ),
       );
     }
 
-    return Row(children: actions);
+    return Wrap(spacing: 8, runSpacing: 8, children: actions);
   }
 
   Color _getStatusColor(BuildContext context, QueueStatus status) {
@@ -554,7 +568,7 @@ class StaffNotLoggedInView extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(NeuTokens.pagePadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -610,7 +624,7 @@ class StaffAccessDeniedView extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(NeuTokens.pagePadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

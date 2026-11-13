@@ -20,7 +20,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 
@@ -29,68 +29,50 @@ class PetNotLoggedInView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 160,
-                height: 160,
-                child: NeuContainer(
-                  borderRadius: 80,
-                  variant: NeuVariant.raised,
-                  color: ThemeColors.primary(context),
-                  boxShadow: NeuShadow.color(
-                    context,
-                    ThemeColors.primary(context),
-                    blur: 24,
-                    opacity: 0.32,
-                  ),
-                  child: const NeuSvgIcon(SvgIcons.paw, size: 80),
-                ),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'Please log in to view your pets',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sign in to manage your pets\' profiles and book appointments',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryOnDark
-                      : AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              NeuButton(
-                text: 'Go to Login',
-                onPressed: () => context.push('/login'),
-                variant: NeuButtonVariant.primary,
-                icon: Icons.login_outlined,
-                svgAsset: SvgIcons.login,
-                size: NeuButtonSize.medium,
-                expanded: true,
-              ),
-            ],
-          ),
-        ),
+      backgroundColor: ThemeColors.background(context),
+      body: NeuEmptyState(
+        icon: Icons.pets_rounded,
+        svgAsset: SvgIcons.paw,
+        title: 'Please log in to view your pets',
+        message: "Sign in to manage your pets' profiles and book appointments.",
+        actionLabel: 'Go to Login',
+        onAction: () => context.push('/login'),
       ),
     );
   }
+}
+
+/// Centres a page body and caps its width on wide screens.
+class _PetPageBody extends StatelessWidget {
+  final Widget child;
+  const _PetPageBody({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: NeuTokens.maxContentWidth),
+        child: child,
+      ),
+    );
+  }
+}
+
+const _listPadding = EdgeInsets.fromLTRB(
+  NeuTokens.pagePadding,
+  0,
+  NeuTokens.pagePadding,
+  NeuTokens.sectionGap,
+);
+
+/// Waits for the bloc to settle so pull-to-refresh shows its spinner.
+Future<void> _refreshPets(BuildContext context, PetEvent event) async {
+  final bloc = context.read<PetBloc>()..add(event);
+  await bloc.stream
+      .firstWhere((s) => s is PetsLoaded || s is PetError)
+      .timeout(const Duration(seconds: 15), onTimeout: () => bloc.state);
 }
 
 class PetListView extends StatefulWidget {
@@ -112,11 +94,16 @@ class _PetListViewState extends State<PetListView> {
     super.dispose();
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _searchQuery = '');
+    context.read<PetBloc>().add(LoadPets(ownerId: widget.ownerId));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         title: const Text('My pets'),
         centerTitle: true,
@@ -125,7 +112,7 @@ class _PetListViewState extends State<PetListView> {
         backgroundColor: Colors.transparent,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: NeuTokens.spaceXs),
             child: NeuIconButton(
               icon: Icons.add,
               svgAsset: SvgIcons.add,
@@ -137,108 +124,125 @@ class _PetListViewState extends State<PetListView> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: NeuTextField(
-              controller: _searchController,
-              hint: 'Search by name',
-              prefixIcon: ClayIconOrMaterial(
-                'search_rounded',
-                fallback: Icons.search_rounded,
-                size: 20,
+      body: _PetPageBody(
+        child: Column(
+          children: [
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                NeuTokens.pagePadding,
+                NeuTokens.spaceXs,
+                NeuTokens.pagePadding,
+                NeuTokens.spaceMd,
               ),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? NeuIconButton(
-                      icon: Icons.clear_rounded,
-                      svgAsset: SvgIcons.close,
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                        context.read<PetBloc>().add(
-                          LoadPets(ownerId: widget.ownerId),
-                        );
-                      },
-                      tooltip: 'Clear search',
-                    )
-                  : null,
-              onChanged: (value) {
-                setState(() => _searchQuery = value);
-                if (value.isEmpty) {
-                  context.read<PetBloc>().add(
-                    LoadPets(ownerId: widget.ownerId),
-                  );
-                } else {
-                  context.read<PetBloc>().add(
-                    SearchPets(ownerId: widget.ownerId, query: value),
-                  );
-                }
-              },
+              child: NeuTextField(
+                controller: _searchController,
+                hint: 'Search by name',
+                prefixIcon: ClayIconOrMaterial(
+                  'search_rounded',
+                  fallback: Icons.search_rounded,
+                  size: 20,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? NeuIconButton(
+                        icon: Icons.clear_rounded,
+                        svgAsset: SvgIcons.close,
+                        onPressed: _clearSearch,
+                        tooltip: 'Clear search',
+                      )
+                    : null,
+                onChanged: (value) {
+                  setState(() => _searchQuery = value);
+                  if (value.trim().isEmpty) {
+                    context.read<PetBloc>().add(
+                      LoadPets(ownerId: widget.ownerId),
+                    );
+                  } else {
+                    context.read<PetBloc>().add(
+                      SearchPets(ownerId: widget.ownerId, query: value),
+                    );
+                  }
+                },
+              ),
             ),
-          ),
 
-          // Pets list
-          Expanded(
-            child: BlocConsumer<PetBloc, PetState>(
-              listener: (context, state) {
-                if (state is PetError) {
-                  NeuToast.error(context, state.failure.message);
-                } else if (state is PetOperationSuccess) {
-                  NeuToast.success(context, state.message);
-                }
-              },
-              builder: (context, state) {
-                if (state is PetLoading) {
-                  return const NeuSkeletonList();
-                }
-
-                if (state is PetsLoaded) {
-                  final pets = state.pets;
-
-                  if (pets.isEmpty) {
-                    return _EmptyPetsView(
-                      onAddPet: () => _navigateToAddPet(context),
+            // Pets list
+            Expanded(
+              child: BlocConsumer<PetBloc, PetState>(
+                listener: (context, state) {
+                  if (state is PetOperationSuccess) {
+                    NeuToast.success(context, state.message);
+                    // Reload from the listener, not from build.
+                    context.read<PetBloc>().add(
+                      LoadPets(ownerId: widget.ownerId),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is PetError) {
+                    return NeuErrorState(
+                      title: 'Could not load pets',
+                      message: state.failure.message,
+                      onRetry: () => context.read<PetBloc>().add(
+                        LoadPets(ownerId: widget.ownerId),
+                      ),
                     );
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<PetBloc>().add(
-                        LoadPets(ownerId: widget.ownerId),
-                      );
-                    },
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                      itemCount: pets.length,
-                      itemBuilder: (context, index) {
-                        final pet = pets[index];
-                        return _PetCard(
-                          pet: pet,
-                          onTap: () => _navigateToPetDetail(context, pet),
-                          onEdit: () => _navigateToEditPet(context, pet),
-                          onDelete: () => _showDeleteConfirmation(context, pet),
+                  if (state is PetsLoaded) {
+                    final pets = state.pets;
+
+                    if (pets.isEmpty) {
+                      if (_searchQuery.trim().isNotEmpty) {
+                        return NeuEmptyState(
+                          icon: Icons.search_off_rounded,
+                          title: 'No pets found',
+                          message: 'No pet matches "${_searchQuery.trim()}".',
+                          actionLabel: 'Clear search',
+                          onAction: _clearSearch,
                         );
-                      },
-                    ),
-                  );
-                }
+                      }
+                      return NeuEmptyState(
+                        icon: Icons.pets_rounded,
+                        svgAsset: SvgIcons.paw,
+                        title: 'No pets yet',
+                        message:
+                            'Add your first pet to book appointments, track health and keep medical records in one place.',
+                        actionLabel: 'Add Pet',
+                        onAction: () => _navigateToAddPet(context),
+                      );
+                    }
 
-                if (state is PetOperationSuccess) {
-                  context.read<PetBloc>().add(
-                    LoadPets(ownerId: widget.ownerId),
-                  );
-                  return const NeuSkeletonList();
-                }
+                    return RefreshIndicator(
+                      onRefresh: () => _refreshPets(
+                        context,
+                        LoadPets(ownerId: widget.ownerId),
+                      ),
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: _listPadding,
+                        itemCount: pets.length,
+                        itemBuilder: (context, index) {
+                          final pet = pets[index];
+                          return _PetCard(
+                            pet: pet,
+                            onTap: () => _navigateToPetDetail(context, pet),
+                            onEdit: () => _navigateToEditPet(context, pet),
+                            onDelete: () =>
+                                _showDeleteConfirmation(context, pet),
+                          );
+                        },
+                      ),
+                    );
+                  }
 
-                return _EmptyPetsView(
-                  onAddPet: () => _navigateToAddPet(context),
-                );
-              },
+                  // Initial, loading and operation-success states.
+                  return const NeuSkeletonList(padding: _listPadding);
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -258,16 +262,24 @@ class _PetListViewState extends State<PetListView> {
   void _navigateToPetDetail(BuildContext context, Pet pet) {
     final petId = pet.id;
     if (petId == null) return;
+    final petBloc = context.read<PetBloc>();
     // Router route (fetch-by-id + deep-linkable) instead of a raw
     // MaterialPageRoute, so back-stack and tab highlight stay consistent.
-    context.push('/pets/$petId');
+    // Reload on return: the detail page can change weight or active status.
+    context.push('/pets/$petId').then((_) {
+      if (mounted) {
+        petBloc.add(LoadPets(ownerId: widget.ownerId));
+      }
+    });
   }
 
   void _navigateToEditPet(BuildContext context, Pet pet) {
+    final petId = pet.id;
+    if (petId == null) return;
     final petBloc = context.read<PetBloc>();
     // Router route wraps PetFormPage in a BlocProvider<PetBloc>; the edit
     // route loads the pet by ID and pre-fills the form.
-    context.push(Routes.petEdit.replaceAll(':id', '${pet.id}')).then((_) {
+    context.push(Routes.petEdit.replaceAll(':id', '$petId')).then((_) {
       if (mounted) {
         petBloc.add(LoadPets(ownerId: widget.ownerId));
       }
@@ -275,6 +287,8 @@ class _PetListViewState extends State<PetListView> {
   }
 
   void _showDeleteConfirmation(BuildContext context, Pet pet) {
+    final petId = pet.id;
+    if (petId == null) return;
     NeuConfirmDialog.show(
       context: context,
       title: 'Delete ${pet.name}?',
@@ -283,37 +297,48 @@ class _PetListViewState extends State<PetListView> {
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmVariant: NeuButtonVariant.destructive,
-      onConfirm: () => context.read<PetBloc>().add(DeletePet(petId: pet.id!)),
+      onConfirm: () => context.read<PetBloc>().add(DeletePet(petId: petId)),
     );
   }
 }
 
-/// Individual pet card with the CarePaw surface system
+/// Pet card shared by the owner list and the clinic list.
+///
+/// The clinic list passes [ownerName] and no edit/delete callbacks: the clinic
+/// views and searches pets, owners manage them.
 class _PetCard extends StatelessWidget {
   final Pet pet;
+
+  /// Staff list only: shown so same-name pets can be told apart.
+  final bool showOwner;
+  final String? ownerName;
   final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const _PetCard({
     required this.pet,
+    this.showOwner = false,
+    this.ownerName,
     required this.onTap,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
     final speciesSvg = PetUtils.getSpeciesSvg(pet.species);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondary = AppTextStyles.bodyMedium.copyWith(
+      color: ThemeColors.textSecondary(context),
+    );
+    final speciesBreed =
+        PetUtils.formatSpecies(pet.species) +
+        (pet.breed != null ? ' • ${pet.breed}' : '');
 
     return Padding(
       padding: const EdgeInsets.only(bottom: NeuTokens.tightGap),
       child: NeuCard(
         onTap: onTap,
-        showBorder: !pet.isActive,
-        borderColor: !pet.isActive ? ThemeColors.warning(context) : null,
-        borderWidth: !pet.isActive ? 2 : 0,
         child: Row(
           children: [
             PetUtils.buildAvatar(
@@ -321,7 +346,7 @@ class _PetCard extends StatelessWidget {
               avatarUrl: pet.avatarUrl,
               radius: 36,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: NeuTokens.spaceMd),
 
             // Pet info
             Expanded(
@@ -333,20 +358,21 @@ class _PetCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           pet.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.titleLarge.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.textPrimaryOnDark
-                                : AppColors.textPrimary,
+                            color: ThemeColors.textPrimary(context),
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (!pet.isActive)
+                      if (!pet.isActive) ...[
+                        const SizedBox(width: NeuTokens.spaceXs),
                         const NeuStatusBadge(
                           label: 'Inactive',
                           tone: NeuStatusTone.warning,
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -355,115 +381,79 @@ class _PetCard extends StatelessWidget {
                     children: [
                       NeuSvgIcon(speciesSvg, size: 16),
                       const SizedBox(width: 6),
-                      Text(
-                        PetUtils.formatSpecies(pet.species) +
-                            (pet.breed != null ? ' • ${pet.breed}' : ''),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark
-                              ? AppColors.textSecondaryOnDark
-                              : AppColors.textSecondary,
+                      Expanded(
+                        child: Text(
+                          speciesBreed,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: secondary,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  // Age and weight row
-                  Row(
-                    children: [
-                      if (pet.birthDate != null) ...[
-                        const NeuSvgIcon(SvgIcons.cake, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          PetUtils.calculateAge(pet.birthDate!),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                      if (pet.birthDate != null && pet.weightKg != null) ...[
-                        const SizedBox(width: 16),
-                      ],
-                      if (pet.weightKg != null) ...[
-                        const NeuSvgIcon(SvgIcons.weightScale, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${pet.weightKg!.toStringAsFixed(1)} kg',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  // Microchip indicator
-                  if (pet.microchipId != null) ...[
+                  if (showOwner) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const NeuSvgIcon(SvgIcons.microchip, size: 16),
+                        const NeuSvgIcon(SvgIcons.person, size: 16),
                         const SizedBox(width: 4),
-                        Text(
-                          'Microchipped',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: ThemeColors.success(context),
-                            fontWeight: FontWeight.w600,
+                        Expanded(
+                          child: Text(
+                            ownerName != null && ownerName!.isNotEmpty
+                                ? 'Owner: $ownerName'
+                                : 'Owner: unknown',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: ThemeColors.textSecondary(context),
+                            ),
                           ),
                         ),
                       ],
+                    ),
+                  ],
+                  if (pet.birthDate != null || pet.weightKg != null) ...[
+                    const SizedBox(height: 4),
+                    // Age and weight wrap instead of overflowing.
+                    Wrap(
+                      spacing: NeuTokens.spaceMd,
+                      runSpacing: 2,
+                      children: [
+                        if (pet.birthDate != null)
+                          _CardFact(
+                            svgAsset: SvgIcons.cake,
+                            text: PetUtils.calculateAge(pet.birthDate!),
+                            style: secondary,
+                          ),
+                        if (pet.weightKg != null)
+                          _CardFact(
+                            svgAsset: SvgIcons.weightScale,
+                            text: '${pet.weightKg!.toStringAsFixed(1)} kg',
+                            style: secondary,
+                          ),
+                      ],
+                    ),
+                  ],
+                  // Microchip indicator
+                  if (pet.microchipId != null) ...[
+                    const SizedBox(height: 4),
+                    _CardFact(
+                      svgAsset: SvgIcons.microchip,
+                      text: 'Microchipped',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: ThemeColors.success(context),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
 
-            // Action menu - simplified
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                switch (value) {
-                  case 'edit':
-                    onEdit();
-                    break;
-                  case 'delete':
-                    onDelete();
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: const Row(
-                    children: [
-                      NeuSvgIcon(SvgIcons.edit, size: 20),
-                      SizedBox(width: 8),
-                      Text('Edit'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const NeuSvgIcon(SvgIcons.delete, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Delete',
-                        style: TextStyle(color: ThemeColors.error(context)),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              child: NeuContainer(
-                borderRadius: NeuTokens.radiusSm,
-                padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                variant: NeuVariant.raised,
-                child: const NeuSvgIcon(SvgIcons.more, size: 22),
-              ),
-            ),
+            if (onEdit != null && onDelete != null) ...[
+              const SizedBox(width: NeuTokens.spaceXs),
+              _PetActionMenu(onEdit: onEdit!, onDelete: onDelete!),
+            ],
           ],
         ),
       ),
@@ -471,64 +461,101 @@ class _PetCard extends StatelessWidget {
   }
 }
 
-/// Empty pets view - friendly and inviting
-class _EmptyPetsView extends StatelessWidget {
-  final VoidCallback? onAddPet;
+/// Small icon + text fact on a pet card.
+class _CardFact extends StatelessWidget {
+  final String svgAsset;
+  final String text;
+  final TextStyle style;
 
-  const _EmptyPetsView({this.onAddPet});
+  const _CardFact({
+    required this.svgAsset,
+    required this.text,
+    required this.style,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(NeuTokens.pagePadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuContainer(
-              variant: NeuVariant.inset,
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(NeuTokens.spaceLg + 12),
-              child: const NeuSvgIcon(SvgIcons.paw, size: 56),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'No pets yet',
-              style: AppTextStyles.headlineMedium.copyWith(
-                fontWeight: FontWeight.w700,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        NeuSvgIcon(svgAsset, size: 16),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PetActionMenu extends StatelessWidget {
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _PetActionMenu({required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: 'Pet actions',
+      onSelected: (value) {
+        switch (value) {
+          case 'edit':
+            onEdit();
+          case 'delete':
+            onDelete();
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              NeuSvgIcon(SvgIcons.edit, size: 20),
+              SizedBox(width: NeuTokens.spaceXs),
+              Text('Edit'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              const NeuSvgIcon(SvgIcons.delete, size: 20),
+              const SizedBox(width: NeuTokens.spaceXs),
+              Text(
+                'Delete',
+                style: TextStyle(color: ThemeColors.error(context)),
               ),
-            ),
-            const SizedBox(height: NeuTokens.spaceXs),
-            Text(
-              // Without an add action this is the clinic's list, which
-              // fills as pet owners add their pets in the app.
-              onAddPet == null
-                  ? 'Patients appear here once pet owners\nadd their pets in the app.'
-                  : 'Add your first pet to get started with CarePaw.\nYou\u2019ll be able to book appointments, track health,\nand manage their medical records.',
-              style: AppTextStyles.bodyLarge
-                  .subtleOf(Theme.of(context).brightness)
-                  .copyWith(height: 1.5),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            if (onAddPet != null)
-              NeuButton(
-                text: 'Add Your First Pet',
-                onPressed: onAddPet,
-                variant: NeuButtonVariant.primary,
-                icon: Icons.add,
-                svgAsset: SvgIcons.add,
-                size: NeuButtonSize.medium,
-                expanded: true,
-              ),
-          ],
+            ],
+          ),
+        ),
+      ],
+      child: const SizedBox(
+        width: NeuTokens.minTapTarget,
+        height: NeuTokens.minTapTarget,
+        child: Center(
+          child: NeuContainer(
+            borderRadius: NeuTokens.radiusSm,
+            padding: EdgeInsets.all(NeuTokens.spaceXs),
+            variant: NeuVariant.raised,
+            child: NeuSvgIcon(SvgIcons.more, size: 22),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Staff pet list view - for vets/staff/admins to see all pets
+/// Staff pet list view - the clinic's read-only list of every pet.
+///
+/// No Add Pet and no edit/delete: pet owners create and manage their pets
+/// (Chapter 1, Pet Profile Management); the clinic views and searches them.
 class StaffPetListView extends StatefulWidget {
   const StaffPetListView({super.key});
 
@@ -581,6 +608,11 @@ class _StaffPetListViewState extends State<StaffPetListView> {
         (pet.markings ?? '').toLowerCase().contains(query);
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _searchQuery = '');
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -589,115 +621,111 @@ class _StaffPetListViewState extends State<StaffPetListView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         title: const Text('Patients'),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
-        // No Add Pet here: Chapter 1 (Pet Profile Management) has pet owners
-        // create their pets; the clinic views and searches them.
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: NeuTextField(
-              controller: _searchController,
-              hint: 'Search by pet or owner',
-              prefixIcon: ClayIconOrMaterial(
-                'search_rounded',
-                fallback: Icons.search_rounded,
-                size: 20,
+      body: _PetPageBody(
+        child: Column(
+          children: [
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                NeuTokens.pagePadding,
+                NeuTokens.spaceXs,
+                NeuTokens.pagePadding,
+                NeuTokens.spaceMd,
               ),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? NeuIconButton(
-                      icon: Icons.clear_rounded,
-                      svgAsset: SvgIcons.close,
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                      tooltip: 'Clear search',
-                    )
-                  : null,
-              // Filtered locally over the loaded list so owner names match.
-              onChanged: (value) => setState(() => _searchQuery = value),
+              child: NeuTextField(
+                controller: _searchController,
+                hint: 'Search by pet or owner',
+                prefixIcon: ClayIconOrMaterial(
+                  'search_rounded',
+                  fallback: Icons.search_rounded,
+                  size: 20,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? NeuIconButton(
+                        icon: Icons.clear_rounded,
+                        svgAsset: SvgIcons.close,
+                        onPressed: _clearSearch,
+                        tooltip: 'Clear search',
+                      )
+                    : null,
+                // Filtered locally over the loaded list so owner names match.
+                onChanged: (value) => setState(() => _searchQuery = value),
+              ),
             ),
-          ),
 
-          // Pets list
-          Expanded(
-            child: BlocConsumer<PetBloc, PetState>(
-              listener: (context, state) {
-                if (state is PetError) {
-                  NeuToast.error(context, state.failure.message);
-                } else if (state is PetOperationSuccess) {
-                  NeuToast.success(context, state.message);
-                }
-              },
-              builder: (context, state) {
-                if (state is PetLoading) {
-                  return const NeuSkeletonList();
-                }
-
-                if (state is PetsLoaded) {
-                  final pets = state.pets.where(_matches).toList();
-
-                  if (state.pets.isEmpty) {
-                    return const _EmptyPetsView();
+            // Pets list
+            Expanded(
+              child: BlocBuilder<PetBloc, PetState>(
+                builder: (context, state) {
+                  if (state is PetError) {
+                    return NeuErrorState(
+                      title: 'Could not load patients',
+                      message: state.failure.message,
+                      onRetry: () =>
+                          context.read<PetBloc>().add(const LoadAllPets()),
+                    );
                   }
 
-                  if (pets.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          'No pet or owner matches "${_searchQuery.trim()}".',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: ThemeColors.textSecondary(context),
-                          ),
-                        ),
+                  if (state is PetsLoaded) {
+                    if (state.pets.isEmpty) {
+                      return const NeuEmptyState(
+                        icon: Icons.pets_rounded,
+                        svgAsset: SvgIcons.paw,
+                        title: 'No pets yet',
+                        message:
+                            'Patients appear here once pet owners add their pets in the app.',
+                      );
+                    }
+
+                    final pets = state.pets.where(_matches).toList();
+
+                    if (pets.isEmpty) {
+                      return NeuEmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: 'No patients found',
+                        message:
+                            'No pet or owner matches "${_searchQuery.trim()}".',
+                        actionLabel: 'Clear search',
+                        onAction: _clearSearch,
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () =>
+                          _refreshPets(context, const LoadAllPets()),
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: _listPadding,
+                        itemCount: pets.length,
+                        itemBuilder: (context, index) {
+                          final pet = pets[index];
+                          return _PetCard(
+                            pet: pet,
+                            showOwner: true,
+                            ownerName: _ownerNames[pet.ownerId],
+                            onTap: () => _navigateToPetDetail(context, pet),
+                          );
+                        },
                       ),
                     );
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<PetBloc>().add(const LoadAllPets());
-                    },
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                      itemCount: pets.length,
-                      itemBuilder: (context, index) {
-                        final pet = pets[index];
-                        return _StaffPetCard(
-                          pet: pet,
-                          ownerName: _ownerNames[pet.ownerId],
-                          onTap: () => _navigateToPetDetail(context, pet),
-                          onEdit: () => _navigateToEditPet(context, pet),
-                          onDelete: () => _showDeleteConfirmation(context, pet),
-                        );
-                      },
-                    ),
-                  );
-                }
-
-                if (state is PetOperationSuccess) {
-                  context.read<PetBloc>().add(const LoadAllPets());
-                  return const NeuSkeletonList();
-                }
-
-                return const _EmptyPetsView();
-              },
+                  // Initial and loading states.
+                  return const NeuSkeletonList(padding: _listPadding);
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -705,241 +733,13 @@ class _StaffPetListViewState extends State<StaffPetListView> {
   void _navigateToPetDetail(BuildContext context, Pet pet) {
     final petId = pet.id;
     if (petId == null) return;
+    final petBloc = context.read<PetBloc>();
     // Router route (fetch-by-id + deep-linkable) instead of a raw
     // MaterialPageRoute, so back-stack and tab highlight stay consistent.
-    context.push('/pets/$petId');
-  }
-
-  void _navigateToEditPet(BuildContext context, Pet pet) {
-    final petBloc = context.read<PetBloc>();
-    context.push(Routes.petEdit.replaceAll(':id', '${pet.id}')).then((_) {
+    context.push('/pets/$petId').then((_) {
       if (mounted) {
         petBloc.add(const LoadAllPets());
       }
     });
-  }
-
-  void _showDeleteConfirmation(BuildContext context, Pet pet) {
-    NeuConfirmDialog.show(
-      context: context,
-      title: 'Delete ${pet.name}?',
-      message:
-          'Are you sure you want to delete ${pet.name}? This action can be undone by restoring the pet.',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      confirmVariant: NeuButtonVariant.destructive,
-      onConfirm: () => context.read<PetBloc>().add(DeletePet(petId: pet.id!)),
-    );
-  }
-}
-
-/// Staff pet card with owner info
-class _StaffPetCard extends StatelessWidget {
-  final Pet pet;
-
-  /// The owner's full name, or null while names load or when unknown.
-  final String? ownerName;
-  final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  const _StaffPetCard({
-    required this.pet,
-    this.ownerName,
-    required this.onTap,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final speciesSvg = PetUtils.getSpeciesSvg(pet.species);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: NeuCard(
-        onTap: onTap,
-        borderRadius: NeuTokens.radiusMd,
-        borderColor: !pet.isActive
-            ? AppColors.warning.withValues(alpha: 0.4)
-            : null,
-        borderWidth: !pet.isActive ? 2 : 0,
-        child: Row(
-          children: [
-            // Pet avatar
-            PetUtils.buildAvatar(
-              species: pet.species,
-              avatarUrl: pet.avatarUrl,
-              radius: 40,
-              iconSize: 40,
-            ),
-            const SizedBox(width: 16),
-
-            // Pet info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          pet.name,
-                          style: AppTextStyles.titleLarge.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.textPrimaryOnDark
-                                : AppColors.textPrimary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (!pet.isActive)
-                        const NeuStatusBadge(
-                          label: 'Inactive',
-                          tone: NeuStatusTone.warning,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  // Species and breed
-                  Row(
-                    children: [
-                      NeuSvgIcon(speciesSvg, size: 16),
-                      const SizedBox(width: 6),
-                      Text(
-                        PetUtils.formatSpecies(pet.species) +
-                            (pet.breed != null ? ' • ${pet.breed}' : ''),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark
-                              ? AppColors.textSecondaryOnDark
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  // Owner name, so same-name pets can be told apart
-                  Row(
-                    children: [
-                      const NeuSvgIcon(SvgIcons.person, size: 16),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          ownerName != null && ownerName!.isNotEmpty
-                              ? 'Owner: $ownerName'
-                              : 'Owner: unknown',
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Age and weight row
-                  Row(
-                    children: [
-                      if (pet.birthDate != null) ...[
-                        const NeuSvgIcon(SvgIcons.cake, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          PetUtils.calculateAge(pet.birthDate!),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                      if (pet.birthDate != null && pet.weightKg != null) ...[
-                        const SizedBox(width: 16),
-                      ],
-                      if (pet.weightKg != null) ...[
-                        const NeuSvgIcon(SvgIcons.weightScale, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${pet.weightKg!.toStringAsFixed(1)} kg',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondaryOnDark
-                                : AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  // Microchip indicator
-                  if (pet.microchipId != null) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const NeuSvgIcon(SvgIcons.microchip, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Microchipped',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: ThemeColors.success(context),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-
-            // Action menu
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                switch (value) {
-                  case 'edit':
-                    onEdit();
-                    break;
-                  case 'delete':
-                    onDelete();
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      NeuSvgIcon(SvgIcons.edit, size: 20),
-                      SizedBox(width: 8),
-                      Text('Edit'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const NeuSvgIcon(SvgIcons.delete, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Delete',
-                        style: TextStyle(color: ThemeColors.error(context)),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              child: NeuContainer(
-                borderRadius: NeuTokens.radiusSm,
-                padding: const EdgeInsets.all(NeuTokens.spaceXs),
-                variant: NeuVariant.raised,
-                child: const NeuSvgIcon(SvgIcons.more, size: 22),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

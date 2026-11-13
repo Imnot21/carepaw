@@ -144,7 +144,11 @@ class PetSexSelector extends StatelessWidget {
   final PetSex? selectedSex;
   final ValueChanged<PetSex?> onChanged;
 
-  const PetSexSelector({super.key, required this.selectedSex, required this.onChanged});
+  const PetSexSelector({
+    super.key,
+    required this.selectedSex,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -391,7 +395,12 @@ class _PetBreedSelectorState extends State<PetBreedSelector> {
               ...breeds.map(
                 (breed) => DropdownMenuItem(
                   value: breed,
-                  child: Text(breed, style: AppTextStyles.bodyLarge),
+                  child: Text(
+                    breed,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyLarge,
+                  ),
                 ),
               ),
             ],
@@ -452,7 +461,11 @@ class PetActiveSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const PetActiveSwitch({super.key, required this.value, required this.onChanged});
+  const PetActiveSwitch({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {

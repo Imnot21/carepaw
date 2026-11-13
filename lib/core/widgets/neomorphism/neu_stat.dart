@@ -124,7 +124,7 @@ class _Delta extends StatelessWidget {
         decoration: BoxDecoration(
           color: Color.alphaBlend(
             tone.withValues(alpha: isDark ? 0.20 : 0.12),
-            isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted,
+            ThemeColors.surfaceMuted(context),
           ),
           borderRadius: BorderRadius.circular(NeuTokens.radiusXs),
         ),

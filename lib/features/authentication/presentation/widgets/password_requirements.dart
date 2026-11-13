@@ -25,25 +25,13 @@ class PasswordRequirements extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _RuleRow(
-          label: 'At least 8 characters',
-          met: _hasMinLength,
-        ),
-        const SizedBox(height: 4),
-        _RuleRow(
-          label: '1 uppercase letter (A-Z)',
-          met: _hasUppercase,
-        ),
-        const SizedBox(height: 4),
-        _RuleRow(
-          label: '1 lowercase letter (a-z)',
-          met: _hasLowercase,
-        ),
-        const SizedBox(height: 4),
-        _RuleRow(
-          label: '1 number (0-9)',
-          met: _hasNumber,
-        ),
+        _RuleRow(label: 'At least 8 characters', met: _hasMinLength),
+        const SizedBox(height: NeuTokens.spaceXxs),
+        _RuleRow(label: '1 uppercase letter (A-Z)', met: _hasUppercase),
+        const SizedBox(height: NeuTokens.spaceXxs),
+        _RuleRow(label: '1 lowercase letter (a-z)', met: _hasLowercase),
+        const SizedBox(height: NeuTokens.spaceXxs),
+        _RuleRow(label: '1 number (0-9)', met: _hasNumber),
       ],
     );
   }

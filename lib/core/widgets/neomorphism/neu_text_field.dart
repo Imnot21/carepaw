@@ -263,9 +263,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
             child: Text(
               widget.helper!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: isDark
-                    ? AppColors.textSecondaryOnDark
-                    : AppColors.textSecondary,
+                color: ThemeColors.textSecondary(context),
               ),
             ),
           ),

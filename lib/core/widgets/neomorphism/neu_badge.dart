@@ -157,7 +157,7 @@ class NeuStatusBadge extends StatelessWidget {
         shape: const StadiumBorder(),
         color: Color.alphaBlend(
           accent.withValues(alpha: isDark ? 0.20 : 0.13),
-          isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted,
+          ThemeColors.surfaceMuted(context),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -197,7 +197,6 @@ class NeuTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = color ?? ThemeColors.textSecondary(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -205,7 +204,7 @@ class NeuTag extends StatelessWidget {
         vertical: 3,
       ),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted,
+        color: ThemeColors.surfaceMuted(context),
         borderRadius: BorderRadius.circular(NeuTokens.radiusXs),
       ),
       child: Row(

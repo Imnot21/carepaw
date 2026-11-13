@@ -49,7 +49,6 @@ class NeuListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final effectiveIconColor = iconColor ?? ThemeColors.textSecondary(context);
 
     Widget? leading;
@@ -143,7 +142,7 @@ class NeuListRow extends StatelessWidget {
                         ? 0
                         : (avatar != null || initials != null ? 70 : 60))
                     .toDouble(),
-            color: isDark ? AppColors.dividerDark : AppColors.divider,
+            color: ThemeColors.divider(context),
           ),
       ],
     );

@@ -2,6 +2,7 @@ import 'package:carepaw/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
@@ -11,6 +12,7 @@ import 'package:carepaw/features/appointments/domain/repositories/appointment_re
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/app/router/routes.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
@@ -19,10 +21,12 @@ import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_divider.dart';
@@ -38,6 +42,14 @@ class AppointmentDetailPage extends StatefulWidget {
 }
 
 class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
+  /// Last loaded booking. Kept on screen while an action runs, so the page
+  /// does not blank out between the action and the refreshed detail.
+  AppointmentWithDetails? _last;
+
+  /// Set after a status change; the next list reload (which the bloc emits
+  /// on its own) is the cue to fetch this booking's detail again.
+  bool _reloadAfterAction = false;
+
   @override
   void initState() {
     super.initState();
@@ -46,8 +58,33 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
     );
   }
 
+  bool get _isClinic {
+    final authState = context.read<AuthBloc>().state;
+    return authState is AuthAuthenticated && authState.user.isOwnerAdmin;
+  }
+
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(_isClinic ? Routes.staffAppointments : Routes.appointments);
+    }
+  }
+
+  /// Only open bookings can be changed. Owners reschedule or cancel; the
+  /// clinic moves a visit along, so a checked-in or running visit is not
+  /// re-booked from here.
+  bool _canChange(Appointment a) =>
+      a.status == AppointmentStatus.requested ||
+      a.status == AppointmentStatus.confirmed ||
+      a.status == AppointmentStatus.rescheduled;
+
   @override
   Widget build(BuildContext context) {
+    final last = _last?.appointment;
+    final canEdit = last != null && _canChange(last);
+    // Deleting is a clinic action (Firestore rules deny it for owners).
+    final canDelete = last != null && _isClinic;
     return Scaffold(
       backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
@@ -66,116 +103,182 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           icon: Icons.arrow_back_rounded,
           svgAsset: SvgIcons.back,
           tooltip: 'Back',
-          onPressed: () => context.pop(),
+          onPressed: _goBack,
         ),
         actions: [
-          NeuIconButton(
-            plain: true,
-            icon: Icons.edit_outlined,
-            svgAsset: SvgIcons.edit,
-            tooltip: 'Edit',
-            onPressed: _navigateToEdit,
-          ),
-          NeuIconButton(
-            plain: true,
-            icon: Icons.delete_outline_rounded,
-            svgAsset: SvgIcons.delete,
-            color: ThemeColors.error(context),
-            tooltip: 'Delete',
-            onPressed: _showDeleteConfirmation,
-          ),
+          if (canEdit)
+            NeuIconButton(
+              plain: true,
+              icon: Icons.edit_outlined,
+              svgAsset: SvgIcons.edit,
+              tooltip: 'Edit',
+              onPressed: _navigateToEdit,
+            ),
+          if (canDelete)
+            NeuIconButton(
+              plain: true,
+              icon: Icons.delete_outline_rounded,
+              svgAsset: SvgIcons.delete,
+              color: ThemeColors.error(context),
+              tooltip: 'Delete',
+              onPressed: _showDeleteConfirmation,
+            ),
           const SizedBox(width: NeuTokens.spaceXs),
         ],
       ),
-      body: BlocBuilder<AppointmentBloc, AppointmentState>(
+      body: BlocConsumer<AppointmentBloc, AppointmentState>(
+        listener: (context, state) {
+          if (state is AppointmentDetailLoaded) {
+            setState(() => _last = state.appointmentWithDetails);
+          } else if (state is AppointmentStatusUpdated ||
+              state is AppointmentUpdated) {
+            _reloadAfterAction = true;
+            NeuToast.success(context, 'Booking updated.');
+          } else if (state is AppointmentDeleted) {
+            NeuToast.success(context, 'Booking deleted.');
+            _goBack();
+          } else if (state is AppointmentLoaded && _reloadAfterAction) {
+            _reloadAfterAction = false;
+            context.read<AppointmentBloc>().add(
+              AppointmentDetailLoadRequested(widget.appointmentId),
+            );
+          } else if (state is AppointmentError && _last != null) {
+            NeuToast.error(
+              context,
+              'That did not go through. Check your connection and try again.',
+            );
+          }
+        },
         builder: (context, state) {
-          if (state is AppointmentLoading) {
-            return const Center(child: NeuCircularProgress(size: 32));
-          } else if (state is AppointmentDetailLoaded) {
-            return _buildAppointmentDetail(state.appointmentWithDetails);
-          } else if (state is AppointmentError) {
+          final busy = state is AppointmentLoading;
+          if (state is AppointmentDetailLoaded) {
+            return _buildAppointmentDetail(
+              state.appointmentWithDetails,
+              busy: false,
+            );
+          }
+          if (state is AppointmentError && _last == null) {
             return _buildError(state.message);
           }
-          return const Center(child: NeuCircularProgress(size: 32));
+          final last = _last;
+          if (last != null) {
+            return _buildAppointmentDetail(last, busy: busy);
+          }
+          return const NeuSkeletonDetail();
         },
       ),
     );
   }
 
-  Widget _buildAppointmentDetail(AppointmentWithDetails appointment) {
+  Widget _buildAppointmentDetail(
+    AppointmentWithDetails appointment, {
+    required bool busy,
+  }) {
     final pet = appointment.pet;
     final status = appointment.appointment.status;
     final statusInfo = _getStatusInfo(status);
     final speciesColor = PetUtils.getSpeciesColor(pet.species);
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              children: [
-                _buildStatusBadge(statusInfo),
-                const SizedBox(height: 24),
-                NeuAvatar(
-                  radius: 50,
-                  svgAsset: PetUtils.getSpeciesSvg(pet.species),
-                  backgroundColor: PetUtils.getSpeciesColor(
-                    pet.species,
-                  ).withValues(alpha: 0.2),
-                  foregroundColor: PetUtils.getSpeciesColor(pet.species),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  pet.name,
-                  style: AppTextStyles.headlineMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                ),
-                if (pet.ageInYears != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    '${pet.ageInYears} ${pet.ageInYears == 1 ? 'year' : 'years'} old',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: ThemeColors.textSecondary(context),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: NeuTokens.maxContentWidth),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                NeuTokens.pagePadding,
+                NeuTokens.pagePadding,
+                NeuTokens.pagePadding,
+                NeuTokens.spaceMd,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    _buildStatusBadge(statusInfo),
+                    const SizedBox(height: NeuTokens.pagePadding),
+                    NeuAvatar(
+                      radius: 50,
+                      svgAsset: PetUtils.getSpeciesSvg(pet.species),
+                      backgroundColor: PetUtils.getSpeciesColor(
+                        pet.species,
+                      ).withValues(alpha: 0.2),
+                      foregroundColor: PetUtils.getSpeciesColor(pet.species),
                     ),
-                  ),
-                ],
-              ],
+                    const SizedBox(height: NeuTokens.spaceMd),
+                    Text(
+                      pet.name,
+                      style: AppTextStyles.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${pet.species.displayName}${pet.breed != null ? ' - ${pet.breed}' : ''}',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: ThemeColors.textSecondary(context),
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (pet.ageInYears != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '${pet.ageInYears} ${pet.ageInYears == 1 ? 'year' : 'years'} old',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NeuTokens.pagePadding,
+              ),
+              sliver: SliverList.separated(
+                itemCount: 5,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: NeuTokens.spaceMd),
+                itemBuilder: (context, index) => _buildSectionCard(
+                  context,
+                  index,
+                  appointment,
+                  speciesColor,
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                NeuTokens.pagePadding,
+                NeuTokens.spaceMd,
+                NeuTokens.pagePadding,
+                NeuTokens.pagePadding,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: _buildActionButtons(appointment.appointment, busy),
+              ),
+            ),
+          ],
         ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          sliver: SliverList.separated(
-            itemCount: 5,
-            separatorBuilder: (_, _) => const SizedBox(height: 16),
-            itemBuilder: (context, index) =>
-                _buildSectionCard(context, index, appointment, speciesColor),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          sliver: SliverToBoxAdapter(
-            child: _buildActionButtons(appointment.appointment),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildStatusBadge(_StatusInfo statusInfo) {
     return NeuContainer(
       borderRadius: NeuTokens.radiusLg,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NeuTokens.spaceLg,
+        vertical: 10,
+      ),
       color: statusInfo.color.withValues(alpha: 0.15),
       boxShadow: NeuShadow.none,
       child: Row(
@@ -185,11 +288,15 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
               ? NeuSvgIcon(statusInfo.svgAsset!, size: 20)
               : Icon(statusInfo.icon, color: statusInfo.color, size: 20),
           const SizedBox(width: 8),
-          Text(
-            statusInfo.label,
-            style: AppTextStyles.titleMedium.copyWith(
-              color: statusInfo.color,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              statusInfo.label,
+              style: AppTextStyles.titleMedium.copyWith(
+                color: statusInfo.color,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -361,7 +468,6 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                   style: AppTextStyles.labelSmall.copyWith(
                     color: ThemeColors.textSecondary(context),
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -370,6 +476,8 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (vet.phone != null) ...[
                   const SizedBox(height: 4),
@@ -377,10 +485,14 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                     children: [
                       NeuSvgIcon(SvgIcons.phone, size: 16),
                       const SizedBox(width: 6),
-                      Text(
-                        vet.phone!,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: ThemeColors.textSecondary(context),
+                      Expanded(
+                        child: Text(
+                          vet.phone!,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: ThemeColors.textSecondary(context),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -391,10 +503,14 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                   children: [
                     NeuSvgIcon(SvgIcons.email, size: 16),
                     const SizedBox(width: 6),
-                    Text(
-                      vet.email,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: ThemeColors.textSecondary(context),
+                    Expanded(
+                      child: Text(
+                        vet.email,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: ThemeColors.textSecondary(context),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -534,28 +650,28 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                     : Icon(icon, size: 22, color: iconColor),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: NeuTokens.spaceMd),
           Text(content, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
         ],
       ),
     );
   }
 
-  Widget _buildActionButtons(Appointment appointment) {
+  Widget _buildActionButtons(Appointment appointment, bool busy) {
     // Approving and moving a visit along is clinic work; owners can only
     // reschedule or cancel their own booking.
-    final authState = context.read<AuthBloc>().state;
-    final isClinic =
-        authState is AuthAuthenticated && authState.user.isOwnerAdmin;
-    final canEdit = !appointment.isTerminal;
+    final isClinic = _isClinic;
+    final canEdit = _canChange(appointment);
     final canApprove =
         isClinic &&
         (appointment.status == AppointmentStatus.requested ||
@@ -566,12 +682,12 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         isClinic && appointment.status == AppointmentStatus.checkedIn;
     final canComplete =
         isClinic && appointment.status == AppointmentStatus.inProgress;
-    final canCancel =
-        !appointment.isTerminal &&
-        appointment.status != AppointmentStatus.cancelled;
+    final canCancel = !appointment.isTerminal;
     // A late owner can still be checked in; the clinic may instead release
     // the slot by marking the visit a no-show.
     final canMarkNoShow = isClinic && appointment.isLate;
+
+    VoidCallback? guard(VoidCallback action) => busy ? null : action;
 
     return Column(
       children: [
@@ -590,7 +706,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         if (canApprove) ...[
           NeuButton(
             text: 'Approve Booking',
-            onPressed: () => _updateStatus(AppointmentStatus.confirmed),
+            onPressed: guard(() => _updateStatus(AppointmentStatus.confirmed)),
             expanded: true,
             icon: Icons.check_circle_rounded,
             svgAsset: SvgIcons.success,
@@ -601,12 +717,14 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         ],
         if (canEdit) ...[
           NeuButton(
-            text: 'Edit Appointment',
-            onPressed: _navigateToEdit,
+            text: isClinic ? 'Edit Appointment' : 'Reschedule',
+            onPressed: guard(_navigateToEdit),
             expanded: true,
             icon: Icons.edit_rounded,
             svgAsset: SvgIcons.edit,
-            variant: NeuButtonVariant.primary,
+            variant: canApprove
+                ? NeuButtonVariant.secondary
+                : NeuButtonVariant.primary,
             size: NeuButtonSize.medium,
           ),
           const SizedBox(height: 10),
@@ -614,7 +732,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         if (canCheckIn) ...[
           NeuButton(
             text: 'Check In',
-            onPressed: () => _updateStatus(AppointmentStatus.checkedIn),
+            onPressed: guard(() => _updateStatus(AppointmentStatus.checkedIn)),
             expanded: true,
             icon: Icons.login_rounded,
             svgAsset: SvgIcons.login,
@@ -626,7 +744,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         if (canMarkNoShow) ...[
           NeuButton(
             text: 'Mark as No-Show',
-            onPressed: () => _updateStatus(AppointmentStatus.noShow),
+            onPressed: guard(() => _updateStatus(AppointmentStatus.noShow)),
             expanded: true,
             icon: Icons.person_off_rounded,
             svgAsset: SvgIcons.error,
@@ -638,7 +756,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         if (canStart) ...[
           NeuButton(
             text: 'Start Consultation',
-            onPressed: () => _updateStatus(AppointmentStatus.inProgress),
+            onPressed: guard(() => _updateStatus(AppointmentStatus.inProgress)),
             expanded: true,
             icon: Icons.medical_services_rounded,
             svgAsset: SvgIcons.visit,
@@ -650,7 +768,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         if (canComplete) ...[
           NeuButton(
             text: 'Complete Appointment',
-            onPressed: () => _updateStatus(AppointmentStatus.completed),
+            onPressed: guard(() => _updateStatus(AppointmentStatus.completed)),
             expanded: true,
             icon: Icons.task_alt_rounded,
             svgAsset: SvgIcons.success,
@@ -662,7 +780,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         if (canCancel)
           NeuButton(
             text: 'Cancel Appointment',
-            onPressed: _showCancelDialog,
+            onPressed: guard(_showCancelDialog),
             expanded: true,
             icon: Icons.cancel_rounded,
             svgAsset: SvgIcons.error,
@@ -688,7 +806,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text('Please provide a reason for cancellation:'),
-          const SizedBox(height: 16),
+          const SizedBox(height: NeuTokens.spaceMd),
           NeuTextField(
             controller: reasonController,
             label: 'Reason for cancellation',
@@ -700,7 +818,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       ),
       actions: [
         NeuButton(
-          text: 'Cancel',
+          text: 'Keep Booking',
           variant: NeuButtonVariant.ghost,
           onPressed: () => context.pop(),
         ),
@@ -718,7 +836,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
           },
         ),
       ],
-    );
+    ).whenComplete(reasonController.dispose);
   }
 
   void _navigateToEdit() {
@@ -726,6 +844,7 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   }
 
   void _showDeleteConfirmation() {
+    // The dialog closes itself; the page leaves once the delete succeeds.
     NeuConfirmDialog.show(
       context: context,
       title: 'Delete Appointment',
@@ -734,77 +853,32 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmVariant: NeuButtonVariant.destructive,
-      onConfirm: () {
-        context.read<AppointmentBloc>().add(
-          AppointmentDeleteRequested(widget.appointmentId),
-        );
-        context.pop();
-      },
-    );
-  }
-
-  Widget _buildError(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(NeuTokens.pagePadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuContainer(
-              variant: NeuVariant.inset,
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(NeuTokens.spaceLg),
-              child: NeuSvgIcon(SvgIcons.error, size: 48),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Error loading appointment',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            NeuButton(
-              text: 'Retry',
-              onPressed: () => context.read<AppointmentBloc>().add(
-                AppointmentDetailLoadRequested(widget.appointmentId),
-              ),
-              icon: Icons.refresh_rounded,
-              svgAsset: SvgIcons.refresh,
-              variant: NeuButtonVariant.primary,
-            ),
-            const SizedBox(height: 12),
-            NeuButton(
-              text: 'Back',
-              onPressed: () => context.pop(),
-              icon: Icons.arrow_back_rounded,
-              svgAsset: SvgIcons.back,
-              variant: NeuButtonVariant.secondary,
-            ),
-          ],
-        ),
+      onConfirm: () => context.read<AppointmentBloc>().add(
+        AppointmentDeleteRequested(widget.appointmentId),
       ),
     );
   }
 
-  String _formatDate(DateTime date) => '${date.month}/${date.day}/${date.year}';
-
-  String _formatTime(DateTime date) {
-    final hour = date.hour > 12
-        ? date.hour - 12
-        : (date.hour == 0 ? 12 : date.hour);
-    final minute = date.minute.toString().padLeft(2, '0');
-    final period = date.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $period';
+  Widget _buildError(String message) {
+    final gone = message == 'Appointment not found';
+    return NeuErrorState(
+      title: gone ? 'Booking not found' : "Couldn't load this booking",
+      message: gone
+          ? 'It may have been removed. Go back to your bookings.'
+          : 'Check your connection and try again.',
+      svgAsset: SvgIcons.error,
+      retryLabel: gone ? 'Back' : 'Try again',
+      onRetry: gone
+          ? _goBack
+          : () => context.read<AppointmentBloc>().add(
+              AppointmentDetailLoadRequested(widget.appointmentId),
+            ),
+    );
   }
+
+  String _formatDate(DateTime date) => DateFormat('MMM d, y').format(date);
+
+  String _formatTime(DateTime date) => DateFormat.jm().format(date);
 
   String _formatDateTime(DateTime date) =>
       '${_formatDate(date)} at ${_formatTime(date)}';

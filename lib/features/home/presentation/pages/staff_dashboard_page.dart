@@ -798,10 +798,7 @@ class _LinkTile extends StatelessWidget {
               padding: const EdgeInsets.all(NeuTokens.spaceXs),
               child: svgAsset != null
                   ? NeuSvgIcon(svgAsset!, size: NeuTokens.iconSm)
-                  : SizedBox(
-                      width: NeuTokens.iconSm,
-                      height: NeuTokens.iconSm,
-                    ),
+                  : SizedBox(width: NeuTokens.iconSm, height: NeuTokens.iconSm),
             ),
             const SizedBox(width: NeuTokens.tightGap),
             Expanded(

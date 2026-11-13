@@ -87,6 +87,7 @@ class _PetFormPageState extends State<PetFormPage> {
         if (state is PetError) {
           NeuToast.error(context, state.failure.message);
         } else if (state is PetOperationSuccess) {
+          // Pop only once the save has really succeeded.
           NeuToast.success(context, state.message);
           Navigator.of(context).pop();
         }
@@ -113,77 +114,103 @@ class _PetFormPageState extends State<PetFormPage> {
           ),
           centerTitle: true,
         ),
-        body: Form(
-          key: _formKey,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header with avatar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                  child: Column(
-                    children: [
-                      NeuAvatar(
-                        radius: 50,
-                        customIcon: PetUtils.getSpeciesCustomIcon(_selectedSpecies),
-                        svgAsset: PetUtils.getSpeciesSvg(_selectedSpecies),
-                        backgroundColor: PetUtils.getSpeciesColor(
-                          _selectedSpecies,
-                        ).withValues(alpha: 0.14),
-                        foregroundColor: PetUtils.getSpeciesColor(
-                          _selectedSpecies,
-                        ),
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: NeuTokens.maxContentWidth,
+            ),
+            child: Form(
+              key: _formKey,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Header with avatar
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        NeuTokens.pagePadding,
+                        NeuTokens.spaceMd,
+                        NeuTokens.pagePadding,
+                        NeuTokens.pagePadding,
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        isEditing
-                            ? 'Update ${widget.pet!.name}'
-                            : 'Add a new pet',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: ThemeColors.textSecondary(context),
-                        ),
+                      child: Column(
+                        children: [
+                          NeuAvatar(
+                            radius: 50,
+                            customIcon: PetUtils.getSpeciesCustomIcon(
+                              _selectedSpecies,
+                            ),
+                            svgAsset: PetUtils.getSpeciesSvg(_selectedSpecies),
+                            backgroundColor: PetUtils.getSpeciesColor(
+                              _selectedSpecies,
+                            ).withValues(alpha: 0.14),
+                            foregroundColor: PetUtils.getSpeciesColor(
+                              _selectedSpecies,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            isEditing
+                                ? 'Update ${widget.pet!.name}'
+                                : 'Add a new pet',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: ThemeColors.textSecondary(context),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              // Form fields grouped into sections
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding),
-                sliver: SliverList.separated(
-                  itemCount: _getFormSections().length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 24),
-                  itemBuilder: (context, index) {
-                    final section = _getFormSections()[index];
-                    return _buildSection(context, section, speciesColor);
-                  },
-                ),
-              ),
-
-              // Submit button
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 40, NeuTokens.pagePadding, 48),
-                sliver: SliverToBoxAdapter(
-                  child: BlocBuilder<PetBloc, PetState>(
-                    builder: (context, state) {
-                      final isLoading = state is PetLoading;
-                      return NeuButton(
-                        text: isEditing ? 'Save Changes' : 'Add Pet',
-                        variant: NeuButtonVariant.primary,
-                        icon: isEditing
-                            ? Icons.save_outlined
-                            : Icons.add_rounded,
-                        svgAsset: isEditing ? SvgIcons.save : SvgIcons.add,
-                        onPressed: isLoading ? null : _onSubmit,
-                        expanded: true,
-                      );
-                    },
+                  // Form fields grouped into sections
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NeuTokens.pagePadding,
+                    ),
+                    sliver: SliverList.separated(
+                      itemCount: _getFormSections().length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 24),
+                      itemBuilder: (context, index) {
+                        final section = _getFormSections()[index];
+                        return _buildSection(context, section, speciesColor);
+                      },
+                    ),
                   ),
-                ),
+
+                  // Submit button
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      NeuTokens.pagePadding,
+                      40,
+                      NeuTokens.pagePadding,
+                      48,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: BlocBuilder<PetBloc, PetState>(
+                        builder: (context, state) {
+                          final isLoading = state is PetLoading;
+                          return NeuButton(
+                            text: isEditing ? 'Save Changes' : 'Add Pet',
+                            variant: NeuButtonVariant.primary,
+                            icon: isEditing
+                                ? Icons.save_outlined
+                                : Icons.add_rounded,
+                            svgAsset: isEditing ? SvgIcons.save : SvgIcons.add,
+                            onPressed: isLoading ? null : _onSubmit,
+                            isLoading: isLoading,
+                            expanded: true,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -210,10 +237,14 @@ class _PetFormPageState extends State<PetFormPage> {
                     : Icon(section.icon, size: 20, color: speciesColor),
               ),
               const SizedBox(width: NeuTokens.spaceXs),
-              Text(
-                section.title,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  section.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -406,4 +437,3 @@ class _FormSection {
     required this.buildFields,
   });
 }
-

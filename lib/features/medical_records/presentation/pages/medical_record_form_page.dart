@@ -11,6 +11,7 @@ import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
+import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
@@ -104,7 +105,10 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
               context.pop(true);
             } else if (state is MedicalRecordError) {
               setState(() => _isLoading = false);
-              NeuToast.error(context, state.failure.message);
+              NeuToast.error(
+                context,
+                'We could not save this record. Check your connection and try again.',
+              );
             } else if (state is MedicalRecordsLoaded ||
                 state is MedicalRecordsByTypeLoaded) {
               setState(() => _isLoading = false);
@@ -133,54 +137,80 @@ class _MedicalRecordFormPageState extends State<MedicalRecordFormPage> {
                 ),
               ),
             ),
-            body: Form(
-              key: _formKey,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // Pet header
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-                    sliver: SliverToBoxAdapter(
-                      child: MedicalRecordPetHeader(
-                        pet: widget.pet,
-                        selectedType: _selectedType,
-                        speciesColor: speciesColor,
+            body: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: NeuTokens.maxContentWidth,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      // Pet header
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(
+                          NeuTokens.pagePadding,
+                          NeuTokens.spaceLg,
+                          NeuTokens.pagePadding,
+                          NeuTokens.spaceSm,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: MedicalRecordPetHeader(
+                            pet: widget.pet,
+                            selectedType: _selectedType,
+                            speciesColor: speciesColor,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
 
-                  // Record type selector
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverToBoxAdapter(
-                      child: MedicalRecordTypeSelector(
-                        selectedType: _selectedType,
-                        speciesColor: speciesColor,
-                        onChanged: (type) =>
-                            setState(() => _selectedType = type),
+                      // Record type selector
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: NeuTokens.pagePadding,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: MedicalRecordTypeSelector(
+                            selectedType: _selectedType,
+                            speciesColor: speciesColor,
+                            onChanged: (type) =>
+                                setState(() => _selectedType = type),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
 
-                  // Form fields
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                    sliver: SliverList.separated(
-                      itemCount: _getFields().length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 18),
-                      itemBuilder: (context, index) => _getFields()[index],
-                    ),
-                  ),
+                      // Form fields
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(
+                          NeuTokens.pagePadding,
+                          NeuTokens.spaceLg,
+                          NeuTokens.pagePadding,
+                          NeuTokens.pagePadding,
+                        ),
+                        sliver: SliverList.separated(
+                          itemCount: _getFields().length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 18),
+                          itemBuilder: (context, index) => _getFields()[index],
+                        ),
+                      ),
 
-                  // Submit button
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
-                    sliver: SliverToBoxAdapter(
-                      child: _buildSubmitButton(context, isEditing),
-                    ),
+                      // Submit button
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(
+                          NeuTokens.pagePadding,
+                          NeuTokens.spaceXs,
+                          NeuTokens.pagePadding,
+                          48,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: _buildSubmitButton(context, isEditing),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

@@ -19,6 +19,8 @@ import 'package:carepaw/core/widgets/neomorphism/neu_fab.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 
@@ -33,6 +35,13 @@ class NotificationListPage extends StatefulWidget {
 class _NotificationListPageState extends State<NotificationListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  static const _loadErrorMessage = 'Check your connection and try again.';
+
+  /// Last list the bloc delivered. The bloc emits one-off states (marked as
+  /// read, unread count, deleted) between loads; without this the tabs would
+  /// flash empty each time.
+  NotificationsLoaded? _lastLoaded;
 
   @override
   void initState() {
@@ -62,35 +71,96 @@ class _NotificationListPageState extends State<NotificationListPage>
         final isVetOrStaff = user.isOwnerAdmin;
 
         return Scaffold(
-          backgroundColor: _isDark
-              ? AppColors.backgroundDark
-              : AppColors.background,
+          backgroundColor: ThemeColors.background(context),
           appBar: _buildAppBar(),
-          body: Column(
-            children: [
-              _buildTabBar(),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildNotificationList(null),
-                    _buildUnreadList(),
-                    _buildNotificationsByType(
-                      domain.NotificationType.appointmentReminder,
-                    ),
-                    _buildNotificationsByType(
-                      domain.NotificationType.queueUpdate,
-                    ),
-                  ],
+          body: BlocListener<NotificationBloc, NotificationState>(
+            listener: _onBlocState,
+            child: Column(
+              children: [
+                _buildTabBar(),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildNotificationList(null),
+                      _buildUnreadList(),
+                      _buildNotificationsByType(
+                        domain.NotificationType.appointmentReminder,
+                      ),
+                      _buildNotificationsByType(
+                        domain.NotificationType.queueUpdate,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           floatingActionButton: isVetOrStaff
               ? _buildFloatingActionButton()
               : null,
         );
       },
+    );
+  }
+
+  void _onBlocState(BuildContext context, NotificationState state) {
+    if (state is NotificationsLoaded) {
+      _lastLoaded = state;
+    } else if (state is NotificationError && _lastLoaded != null) {
+      NeuToast.error(context, 'That did not work. $_loadErrorMessage');
+    } else if (state is NotificationMarkedAsRead ||
+        state is AllNotificationsMarkedAsRead ||
+        state is NotificationDeleted ||
+        state is NotificationCreated) {
+      context.read<NotificationBloc>().add(const RefreshNotifications());
+    }
+  }
+
+  NotificationsLoaded? _loadedFrom(NotificationState state) =>
+      state is NotificationsLoaded ? state : _lastLoaded;
+
+  Widget _errorView(VoidCallback onRetry) => NeuErrorState(
+    title: "Couldn't load notifications",
+    message: _loadErrorMessage,
+    svgAsset: SvgIcons.error,
+    onRetry: onRetry,
+  );
+
+  Widget _list(
+    List<domain.Notification> items, {
+    bool showMoreSpinner = false,
+  }) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: NeuTokens.maxContentWidth),
+        child: ListView.builder(
+          padding: const EdgeInsets.fromLTRB(
+            NeuTokens.pagePadding,
+            NeuTokens.spaceMd,
+            NeuTokens.pagePadding,
+            100,
+          ),
+          itemCount: items.length + (showMoreSpinner ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= items.length) {
+              return const Padding(
+                padding: EdgeInsets.all(NeuTokens.spaceMd),
+                child: Center(child: NeuCircularProgress(size: 24)),
+              );
+            }
+            final notification = items[index];
+            return NotificationCard(
+              notification: notification,
+              typeColor: _getTypeColor(notification.type),
+              typeSvg: _getTypeSvg(notification.type),
+              onViewDetails: () => _navigateToDetail(notification),
+              onDelete: () => _showDeleteConfirmation(notification.id!),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -101,20 +171,22 @@ class _NotificationListPageState extends State<NotificationListPage>
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
-      titleSpacing: 20,
+      titleSpacing: NeuTokens.pagePadding,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Text(
-                'Notifications',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: _isDark
-                      ? AppColors.textPrimaryOnDark
-                      : AppColors.textPrimary,
+              Flexible(
+                child: Text(
+                  'Notifications',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: ThemeColors.textPrimary(context),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -147,10 +219,10 @@ class _NotificationListPageState extends State<NotificationListPage>
           const SizedBox(height: 4),
           Text(
             'Updates from PILA VET HUB',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodySmall.copyWith(
-              color: _isDark
-                  ? AppColors.textSecondaryOnDark
-                  : AppColors.textSecondary,
+              color: ThemeColors.textSecondary(context),
             ),
           ),
         ],
@@ -161,7 +233,7 @@ class _NotificationListPageState extends State<NotificationListPage>
           icon: Icons.settings_rounded,
           svgAsset: SvgIcons.settings,
           onPressed: _navigateToSettings,
-          tooltip: 'Notification Settings',
+          tooltip: 'Notification settings',
         ),
         const SizedBox(width: 8),
         BlocBuilder<NotificationBloc, NotificationState>(
@@ -175,7 +247,7 @@ class _NotificationListPageState extends State<NotificationListPage>
                 onPressed: () {
                   context.read<NotificationBloc>().add(const MarkAllAsRead());
                 },
-                tooltip: 'Mark All as Read',
+                tooltip: 'Mark all as read',
               );
             }
             return const SizedBox.shrink();
@@ -196,7 +268,10 @@ class _NotificationListPageState extends State<NotificationListPage>
 
     return Container(
       color: _isDark ? AppColors.surfaceContainerDark : AppColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NeuTokens.tightGap,
+        vertical: NeuTokens.spaceXs,
+      ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ListenableBuilder(
@@ -205,7 +280,7 @@ class _NotificationListPageState extends State<NotificationListPage>
             children: List.generate(tabs.length, (index) {
               final tab = tabs[index];
               return Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: NeuTokens.spaceXs),
                 child: NeuChip(
                   label: tab['label'] as String,
                   svgAsset: tab['svg'] as String,
@@ -228,61 +303,47 @@ class _NotificationListPageState extends State<NotificationListPage>
           return const NeuSkeletonList();
         }
 
-        if (state is NotificationError) {
-          return NotificationEmptyState(
-            svgAsset: SvgIcons.error,
-            title: "Couldn't load notifications",
-            message: state.failure.message,
-            actionLabel: 'Try again',
-            onAction: () {
-              context.read<NotificationBloc>().add(
-                type == null
-                    ? const LoadNotifications()
-                    : LoadNotificationsByType(type),
-              );
-            },
+        final loaded = _loadedFrom(state);
+        if (state is NotificationError && loaded == null) {
+          return _errorView(
+            () => context.read<NotificationBloc>().add(
+              type == null
+                  ? const LoadNotifications()
+                  : LoadNotificationsByType(type),
+            ),
           );
         }
 
-        List<domain.Notification> notifications = [];
-        bool hasReachedMax = false;
+        var notifications = <domain.Notification>[];
+        var hasReachedMax = false;
 
-        if (state is NotificationsLoaded) {
-          notifications = state.notifications;
-          hasReachedMax = state.hasReachedMax;
+        if (loaded != null) {
+          notifications = loaded.notifications;
+          hasReachedMax = loaded.hasReachedMax;
         } else if (state is NotificationsByTypeLoaded) {
           notifications = state.notifications;
         }
 
-        if (type != null) {
-          notifications = notifications.where((n) => n.type == type).toList();
-        } else {
-          // PAPER-ONLY: All tab shows appointment + queue notifications.
-          // prescription/inventory/system stay stored but hidden in demo UI.
-          notifications = notifications
-              .where(
-                (n) =>
-                    n.type == domain.NotificationType.appointmentReminder ||
-                    n.type == domain.NotificationType.queueUpdate,
-              )
-              .toList();
-        }
+        // PAPER-ONLY: All tab shows appointment + queue notifications.
+        // prescription/inventory/system stay stored but hidden in demo UI.
+        notifications = notifications
+            .where(
+              (n) =>
+                  n.type == domain.NotificationType.appointmentReminder ||
+                  n.type == domain.NotificationType.queueUpdate,
+            )
+            .toList();
 
         if (notifications.isEmpty) {
           return NotificationEmptyState(
-            svgAsset: type != null ? _getTypeSvg(type) : SvgIcons.notifications,
-            title: type != null
-                ? 'No ${type.displayName.toLowerCase()} updates'
-                : 'No notifications yet',
-            message: type != null
-                ? 'Nothing new here.'
-                : 'Booking changes and queue calls from the clinic show up here.',
-            actionLabel: type == null ? 'Refresh' : null,
-            onAction: type == null
-                ? () => context.read<NotificationBloc>().add(
-                    const RefreshNotifications(),
-                  )
-                : null,
+            svgAsset: SvgIcons.notifications,
+            title: 'No notifications yet',
+            message:
+                'Booking changes and queue calls from the clinic show up here.',
+            actionLabel: 'Refresh',
+            onAction: () => context.read<NotificationBloc>().add(
+              const RefreshNotifications(),
+            ),
           );
         }
 
@@ -290,26 +351,7 @@ class _NotificationListPageState extends State<NotificationListPage>
           onRefresh: () async {
             context.read<NotificationBloc>().add(const RefreshNotifications());
           },
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: notifications.length + (hasReachedMax ? 0 : 1),
-            itemBuilder: (context, index) {
-              if (index >= notifications.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: NeuCircularProgress(size: 24)),
-                );
-              }
-              final notification = notifications[index];
-              return NotificationCard(
-                notification: notification,
-                typeColor: _getTypeColor(notification.type),
-                typeSvg: _getTypeSvg(notification.type),
-                onViewDetails: () => _navigateToDetail(notification),
-                onDelete: () => _showDeleteConfirmation(notification.id!),
-              );
-            },
-          ),
+          child: _list(notifications, showMoreSpinner: !hasReachedMax),
         );
       },
     );
@@ -318,41 +360,37 @@ class _NotificationListPageState extends State<NotificationListPage>
   Widget _buildUnreadList() {
     return BlocBuilder<NotificationBloc, NotificationState>(
       builder: (context, state) {
-        if (state is NotificationsLoaded) {
-          // PAPER-ONLY: unread tab shows appointment + queue only.
-          final unread = state.notifications
-              .where(
-                (n) =>
-                    !n.isRead &&
-                    (n.type == domain.NotificationType.appointmentReminder ||
-                        n.type == domain.NotificationType.queueUpdate),
-              )
-              .toList();
-          if (unread.isEmpty) {
-            return NotificationEmptyState(
-              svgAsset: SvgIcons.email,
-              title: 'All read',
-              message: 'You have read everything.',
-              actionLabel: 'Show all',
-              onAction: () => _tabController.animateTo(0),
+        if (state is NotificationLoading) return const NeuSkeletonList();
+        final loaded = _loadedFrom(state);
+        if (loaded == null) {
+          if (state is NotificationError) {
+            return _errorView(
+              () => context.read<NotificationBloc>().add(
+                const LoadNotifications(),
+              ),
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: unread.length,
-            itemBuilder: (context, index) {
-              final notification = unread[index];
-              return NotificationCard(
-                notification: notification,
-                typeColor: _getTypeColor(notification.type),
-                typeSvg: _getTypeSvg(notification.type),
-                onViewDetails: () => _navigateToDetail(notification),
-                onDelete: () => _showDeleteConfirmation(notification.id!),
-              );
-            },
+          return const NeuSkeletonList();
+        }
+        // PAPER-ONLY: unread tab shows appointment + queue only.
+        final unread = loaded.notifications
+            .where(
+              (n) =>
+                  !n.isRead &&
+                  (n.type == domain.NotificationType.appointmentReminder ||
+                      n.type == domain.NotificationType.queueUpdate),
+            )
+            .toList();
+        if (unread.isEmpty) {
+          return NotificationEmptyState(
+            svgAsset: SvgIcons.email,
+            title: 'All read',
+            message: 'You have read everything.',
+            actionLabel: 'Show all',
+            onAction: () => _tabController.animateTo(0),
           );
         }
-        return const NeuSkeletonList();
+        return _list(unread);
       },
     );
   }
@@ -369,23 +407,17 @@ class _NotificationListPageState extends State<NotificationListPage>
               message: 'Nothing here yet.',
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notification = notifications[index];
-              return NotificationCard(
-                notification: notification,
-                typeColor: _getTypeColor(notification.type),
-                typeSvg: _getTypeSvg(notification.type),
-                onViewDetails: () => _navigateToDetail(notification),
-                onDelete: () => _showDeleteConfirmation(notification.id!),
-              );
-            },
-          );
+          return _list(notifications);
         }
         if (state is NotificationLoading) {
           return const NeuSkeletonList();
+        }
+        if (state is NotificationError) {
+          return _errorView(
+            () => context.read<NotificationBloc>().add(
+              LoadNotificationsByType(type),
+            ),
+          );
         }
         return NotificationEmptyState(
           svgAsset: _getTypeSvg(type),
@@ -421,9 +453,7 @@ class _NotificationListPageState extends State<NotificationListPage>
       case domain.NotificationType.inventoryLow:
         return ThemeColors.success(context);
       case domain.NotificationType.system:
-        return _isDark
-            ? AppColors.textSecondaryOnDark
-            : AppColors.textSecondary;
+        return ThemeColors.textSecondary(context);
     }
   }
 
@@ -474,7 +504,7 @@ class _NotificationListPageState extends State<NotificationListPage>
   void _showDeleteConfirmation(int notificationId) {
     NeuConfirmDialog.show(
       context: context,
-      title: 'Delete Notification',
+      title: 'Delete notification',
       message: 'Are you sure you want to delete this notification?',
       confirmText: 'Delete',
       confirmVariant: NeuButtonVariant.destructive,

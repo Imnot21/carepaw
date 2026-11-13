@@ -13,7 +13,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_medallion.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_dialog.dart';
@@ -66,51 +66,69 @@ class _AppointmentListPageState extends State<AppointmentListPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeColors.background(context),
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          const SizedBox(height: 8),
-          // Search bar
-          _buildSearchBar(),
-          const SizedBox(height: 16),
-          // Tab bar
-          _buildTabBar(),
-          // Tab content
-          Expanded(
-            child: Stack(
+    return BlocListener<AppointmentBloc, AppointmentState>(
+      listenWhen: (_, state) => state is AppointmentStatusUpdated,
+      listener: (context, state) =>
+          NeuToast.success(context, 'Booking updated.'),
+      child: Scaffold(
+        backgroundColor: ThemeColors.background(context),
+        appBar: _buildAppBar(),
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: NeuTokens.maxContentWidth,
+            ),
+            child: Column(
               children: [
-                TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildAppointmentList(isUpcoming: true),
-                    _buildAppointmentList(isUpcoming: false),
-                  ],
-                ),
-                // Create footer (owners only), shown when the active tab has
-                // items. Empty tabs show the button inside the empty state
-                // instead, so it reads as a centered call to action. A
-                // BlocBuilder keeps this in sync with the live appointment state.
-                if (!_isVetOrStaff)
-                  BlocBuilder<AppointmentBloc, AppointmentState>(
-                    builder: (context, state) {
-                      if (_isCurrentTabEmpty(state)) {
-                        return const SizedBox.shrink();
-                      }
-                      return Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 0, NeuTokens.pagePadding, 16),
-                          child: _buildNewAppointmentButton(),
+                const SizedBox(height: NeuTokens.spaceXs),
+                // Search bar
+                _buildSearchBar(),
+                const SizedBox(height: NeuTokens.spaceMd),
+                // Tab bar
+                _buildTabBar(),
+                // Tab content
+                Expanded(
+                  child: Stack(
+                    children: [
+                      TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildAppointmentList(isUpcoming: true),
+                          _buildAppointmentList(isUpcoming: false),
+                        ],
+                      ),
+                      // Create footer (owners only), shown when the active tab has
+                      // items. Empty tabs show the button inside the empty state
+                      // instead, so it reads as a centered call to action. A
+                      // BlocBuilder keeps this in sync with the live appointment state.
+                      if (!_isVetOrStaff)
+                        BlocBuilder<AppointmentBloc, AppointmentState>(
+                          builder: (context, state) {
+                            if (_isCurrentTabEmpty(state)) {
+                              return const SizedBox.shrink();
+                            }
+                            return Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  NeuTokens.pagePadding,
+                                  0,
+                                  NeuTokens.pagePadding,
+                                  NeuTokens.spaceMd,
+                                ),
+                                child: _buildNewAppointmentButton(),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                    ],
                   ),
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -164,29 +182,38 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   }
 
   Widget _buildTabBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: NeuChip(
-              label: 'Upcoming',
-              selected: _tabController.index == 0,
-              selectedColor: ThemeColors.primary(context),
-              onTap: () => _tabController.animateTo(0),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: NeuChip(
-              label: 'Past',
-              selected: _tabController.index == 1,
-              selectedColor: ThemeColors.primary(context),
-              onTap: () => _tabController.animateTo(1),
-            ),
-          ),
-        ],
+    final chips = [
+      NeuChip(
+        label: 'Upcoming',
+        selected: _tabController.index == 0,
+        selectedColor: ThemeColors.primary(context),
+        onTap: () => _tabController.animateTo(0),
       ),
+      NeuChip(
+        label: 'Past',
+        selected: _tabController.index == 1,
+        selectedColor: ThemeColors.primary(context),
+        onTap: () => _tabController.animateTo(1),
+      ),
+    ];
+    // At large text sizes the two chips no longer fit in equal halves, so
+    // they take their natural width and wrap instead.
+    final wrap = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: NeuTokens.pagePadding),
+      child: wrap
+          ? Wrap(
+              spacing: NeuTokens.tightGap,
+              runSpacing: NeuTokens.spaceXs,
+              children: chips,
+            )
+          : Row(
+              children: [
+                Expanded(child: chips[0]),
+                const SizedBox(width: NeuTokens.tightGap),
+                Expanded(child: chips[1]),
+              ],
+            ),
     );
   }
 
@@ -212,7 +239,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
         }
 
         if (state is AppointmentError) {
-          return _buildErrorState(state.message, isUpcoming);
+          return _buildErrorState(isUpcoming);
         }
 
         if (state is AppointmentLoaded) {
@@ -224,16 +251,19 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               : state.pastWithPetDetails;
 
           // Apply search filter
-          final filtered = _filterAppointments(appointments);
+          // Map of appointment ID to pet details for quick lookup
+          final petDetailsMap = _petMap(appointmentsWithPetDetails);
+          final filtered = _filterAppointments(appointments, petDetailsMap);
 
           if (filtered.isEmpty) {
-            return _buildEmptyState(isUpcoming);
-          }
-
-          // Create a map of appointment ID to pet details for quick lookup
-          final petDetailsMap = <int, Pet>{};
-          for (final detail in appointmentsWithPetDetails) {
-            petDetailsMap[detail.appointment.id!] = detail.pet;
+            return _searchActive && appointments.isNotEmpty
+                ? const NeuEmptyState(
+                    icon: Icons.search_off_rounded,
+                    svgAsset: SvgIcons.searchOff,
+                    title: 'No matches',
+                    message: 'Try a different pet name or service.',
+                  )
+                : _buildEmptyState(isUpcoming);
           }
 
           return RefreshIndicator(
@@ -243,7 +273,12 @@ class _AppointmentListPageState extends State<AppointmentListPage>
               );
             },
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 0, NeuTokens.pagePadding, 12),
+              padding: const EdgeInsets.fromLTRB(
+                NeuTokens.pagePadding,
+                0,
+                NeuTokens.pagePadding,
+                96,
+              ),
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final appointment = filtered[index];
@@ -270,15 +305,30 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     );
   }
 
-  List<Appointment> _filterAppointments(List<Appointment> appointments) {
+  bool get _searchActive => _searchController.text.trim().isNotEmpty;
+
+  Map<int, Pet> _petMap(List<AppointmentWithPetDetails> details) => {
+    for (final d in details)
+      if (d.appointment.id != null) d.appointment.id!: d.pet,
+  };
+
+  List<Appointment> _filterAppointments(
+    List<Appointment> appointments,
+    Map<int, Pet> pets,
+  ) {
     final query = _searchController.text.toLowerCase().trim();
     if (query.isEmpty) return appointments;
 
-    return appointments.where((a) {
-      // We need pet info for searching - for now just search by reason/notes
-      return (a.reason?.toLowerCase().contains(query) ?? false) ||
-          (a.notes?.toLowerCase().contains(query) ?? false);
-    }).toList();
+    bool has(String? text) => text?.toLowerCase().contains(query) ?? false;
+    return appointments
+        .where(
+          (a) =>
+              has(pets[a.id]?.name) ||
+              has(a.service) ||
+              has(a.reason) ||
+              has(a.notes),
+        )
+        .toList();
   }
 
   Widget _buildEmptyState(bool isUpcoming) {
@@ -299,59 +349,13 @@ class _AppointmentListPageState extends State<AppointmentListPage>
     );
   }
 
-  Widget _buildErrorState(String message, bool isUpcoming) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuMedallion(
-              radius: 70,
-              color: ThemeColors.error(context),
-              child: ClayIconOrMaterial(
-                'error_outline_rounded',
-                fallback: Icons.error_outline_rounded,
-                size: 56,
-                color: ThemeColors.error(context),
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              "Couldn't load bookings",
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-                color: ThemeColors.textPrimary(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium.subtleOf(
-                Theme.of(context).brightness,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: NeuButton(
-                text: 'Retry',
-                onPressed: () {
-                  context.read<AppointmentBloc>().add(
-                    AppointmentRefreshRequested(),
-                  );
-                },
-                icon: Icons.refresh_rounded,
-                svgAsset: SvgIcons.refresh,
-                variant: NeuButtonVariant.primary,
-                expanded: true,
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildErrorState(bool isUpcoming) {
+    return NeuErrorState(
+      title: "Couldn't load bookings",
+      message: 'Check your connection and try again.',
+      svgAsset: SvgIcons.error,
+      onRetry: () =>
+          context.read<AppointmentBloc>().add(AppointmentRefreshRequested()),
     );
   }
 
@@ -364,10 +368,14 @@ class _AppointmentListPageState extends State<AppointmentListPage>
   /// bottom footer.
   bool _isCurrentTabEmpty(AppointmentState state) {
     if (state is! AppointmentLoaded) return false;
-    final list = _tabController.index == 0
+    final isUpcoming = _tabController.index == 0;
+    final list = isUpcoming
         ? state.upcomingAppointments
         : state.pastAppointments;
-    return _filterAppointments(list).isEmpty;
+    final pets = _petMap(
+      isUpcoming ? state.upcomingWithPetDetails : state.pastWithPetDetails,
+    );
+    return _filterAppointments(list, pets).isEmpty;
   }
 
   void _navigateToCreateAppointment() {
@@ -384,7 +392,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       title: 'Check In',
       message: 'Check in for ${appointment.reason ?? 'this appointment'}?',
       confirmText: 'Check In',
-      cancelText: 'Cancel',
+      cancelText: 'Not now',
       confirmVariant: NeuButtonVariant.primary,
       onConfirm: () => context.read<AppointmentBloc>().add(
         AppointmentCheckInRequested(appointment.id!),
@@ -420,7 +428,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
       ),
       actions: [
         NeuButton(
-          text: 'No',
+          text: 'Keep booking',
           variant: NeuButtonVariant.ghost,
           onPressed: () => context.pop(),
         ),
@@ -440,6 +448,6 @@ class _AppointmentListPageState extends State<AppointmentListPage>
           },
         ),
       ],
-    );
+    ).whenComplete(reasonController.dispose);
   }
 }

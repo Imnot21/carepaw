@@ -19,6 +19,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_section.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -79,6 +80,9 @@ class _HomeContent extends StatelessWidget {
           builder: (context, petState) {
             final pets = petState is PetsLoaded ? petState.pets : <Pet>[];
             final activePets = pets.where((p) => p.isActive).toList();
+            final toolbarHeight = MediaQuery.textScalerOf(
+              context,
+            ).scale(60).clamp(64.0, 120.0);
 
             return RefreshIndicator(
               onRefresh: () async {
@@ -90,10 +94,12 @@ class _HomeContent extends StatelessWidget {
                 }
               },
               child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverAppBar(
                     floating: true,
                     snap: true,
+                    toolbarHeight: toolbarHeight,
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     scrolledUnderElevation: 0,
@@ -106,12 +112,16 @@ class _HomeContent extends StatelessWidget {
                           style: AppTextStyles.headlineMedium.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           'PILA VET HUB · Pila, Laguna',
                           style: AppTextStyles.bodySmall.subtleOf(
                             Theme.of(context).brightness,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -134,14 +144,24 @@ class _HomeContent extends StatelessWidget {
                         NeuTokens.pagePadding,
                         NeuTokens.spaceXl,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _PrimaryActionCard(),
-                          _PetSummarySection(pets: activePets),
-                          _UpcomingAppointmentsSection(),
-                          _QuickLinksSection(),
-                        ],
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: NeuTokens.maxContentWidth,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _PrimaryActionCard(),
+                              _PetSummarySection(
+                                pets: activePets,
+                                state: petState,
+                              ),
+                              _UpcomingAppointmentsSection(),
+                              _QuickLinksSection(),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -215,11 +235,24 @@ class _PrimaryActionCard extends StatelessWidget {
 
 class _PetSummarySection extends StatelessWidget {
   final List<Pet> pets;
+  final PetState state;
 
-  const _PetSummarySection({required this.pets});
+  const _PetSummarySection({required this.pets, required this.state});
 
   @override
   Widget build(BuildContext context) {
+    if (state is PetError) {
+      return const Padding(
+        padding: EdgeInsets.only(top: NeuTokens.sectionGap),
+        child: _PetsLoadError(),
+      );
+    }
+    if (state is! PetsLoaded) {
+      return const Padding(
+        padding: EdgeInsets.only(top: NeuTokens.sectionGap),
+        child: NeuShimmer(child: NeuSkeletonBox(height: 76, borderRadius: 16)),
+      );
+    }
     if (pets.isEmpty) {
       return const Padding(
         padding: EdgeInsets.only(top: NeuTokens.sectionGap),
@@ -232,12 +265,11 @@ class _PetSummarySection extends StatelessWidget {
       actionLabel: pets.length > 5 ? 'View all' : null,
       onAction: pets.length > 5 ? () => context.push(Routes.pets) : null,
       child: SizedBox(
-        height: 76,
+        height: MediaQuery.textScalerOf(context).scale(76),
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: pets.length > 5 ? 5 : pets.length,
-          separatorBuilder: (_, _) =>
-              const SizedBox(width: NeuTokens.tightGap),
+          separatorBuilder: (_, _) => const SizedBox(width: NeuTokens.tightGap),
           itemBuilder: (context, index) {
             final pet = pets[index];
             return _PetSummaryCard(pet: pet);
@@ -321,9 +353,46 @@ class _PetSummaryCard extends StatelessWidget {
     if (years > 0) return '$years yr${years > 1 ? 's' : ''}';
     return '$months mo';
   }
+}
 
-  Color colorMix(Color c, BuildContext context, {required double light}) {
-    return c.withValues(alpha: light);
+class _PetsLoadError extends StatelessWidget {
+  const _PetsLoadError();
+
+  @override
+  Widget build(BuildContext context) {
+    return NeuCard(
+      padding: const EdgeInsets.all(NeuTokens.spaceLg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Could not load your pets',
+            style: AppTextStyles.titleMedium.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: NeuTokens.spaceXxs),
+          Text(
+            'Check your connection and try again.',
+            style: AppTextStyles.bodyMedium.subtleOf(
+              Theme.of(context).brightness,
+            ),
+          ),
+          const SizedBox(height: NeuTokens.spaceMd),
+          NeuButton(
+            text: 'Try again',
+            variant: NeuButtonVariant.secondary,
+            expanded: true,
+            onPressed: () {
+              final auth = context.read<AuthBloc>().state;
+              if (auth is AuthAuthenticated) {
+                context.read<PetBloc>().add(LoadPets(ownerId: auth.user.id!));
+              }
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -389,14 +458,14 @@ class _UpcomingAppointmentsSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Nothing booked yet',
+                    'Your appointments',
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Your next visit shows here once the clinic confirms it.',
+                    'See your upcoming and past visits and their status.',
                     style: AppTextStyles.bodySmall.subtleOf(
                       Theme.of(context).brightness,
                     ),

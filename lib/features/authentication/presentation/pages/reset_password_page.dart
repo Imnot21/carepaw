@@ -11,6 +11,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/authentication/presentation/widgets/auth_messages.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/auth_scaffold.dart';
 import 'package:carepaw/features/authentication/presentation/widgets/password_requirements.dart';
 
@@ -51,7 +52,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
-          NeuToast.error(context, state.failure.message);
+          NeuToast.error(context, authFailureMessage(state.failure));
         } else if (state is AuthPasswordReset) {
           NeuToast.success(context, 'Password has been reset. Please sign in.');
           Navigator.of(

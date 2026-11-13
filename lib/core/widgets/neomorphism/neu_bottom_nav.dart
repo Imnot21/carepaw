@@ -216,7 +216,6 @@ class NeuBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     // A slot needs 22 (icon) + 2 (gap) + 11 (label) + 10 (padding) = 45px,
     // plus the container's 12px vertical padding = 57px total. The old 54px
     // clipped every label by 3px ("BOTTOM OVERFLOWED BY 3.0 PIXELS").
@@ -231,7 +230,7 @@ class NeuBottomNav extends StatelessWidget {
         child: Container(
           height: effectiveHeight,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceDarkMode : AppColors.surface,
+            color: ThemeColors.surface(context),
             borderRadius: NeuShape.panel,
             boxShadow: NeuShadow.floating(context),
           ),

@@ -6,10 +6,9 @@ import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';
 import 'package:carepaw/features/queue/presentation/widgets/queue_widgets.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/app/theme/app_text_styles.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -68,7 +67,7 @@ class _QueuePageState extends State<QueuePage> {
               if (state is QueueOperationSuccess) {
                 NeuToast.success(context, state.message);
               } else if (state is QueueError) {
-                NeuToast.error(context, state.message);
+                NeuToast.error(context, _friendlyError);
               }
             },
             builder: (context, state) {
@@ -77,7 +76,7 @@ class _QueuePageState extends State<QueuePage> {
               }
 
               if (state is QueueError) {
-                return _buildErrorState(state.message);
+                return _buildErrorState();
               }
 
               if (state is QueueLoaded) {
@@ -103,7 +102,7 @@ class _QueuePageState extends State<QueuePage> {
             padding: const EdgeInsets.all(NeuTokens.spaceLg),
             child: NeuSvgIcon(SvgIcons.queue, size: 48),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: NeuTokens.sectionGap),
           Text(
             'Queue Status',
             style: AppTextStyles.headlineMedium.copyWith(
@@ -150,22 +149,29 @@ class _QueuePageState extends State<QueuePage> {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Align(
                 alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    NeuTokens.pagePadding,
-                    NeuTokens.spaceMd,
-                    NeuTokens.pagePadding,
-                    NeuTokens.spaceXl,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: NeuTokens.maxContentWidth,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      EmptyQueueCard(),
-                      const SizedBox(height: NeuTokens.spaceMd),
-                      UpcomingCheckInSection(queueEntries: state.queueEntries),
-                      const SizedBox(height: NeuTokens.spaceMd),
-                      QueueInfoCard(),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      NeuTokens.pagePadding,
+                      NeuTokens.spaceMd,
+                      NeuTokens.pagePadding,
+                      NeuTokens.spaceXl,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        EmptyQueueCard(),
+                        const SizedBox(height: NeuTokens.spaceMd),
+                        UpcomingCheckInSection(
+                          queueEntries: state.queueEntries,
+                        ),
+                        const SizedBox(height: NeuTokens.spaceMd),
+                        QueueInfoCard(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -179,97 +185,72 @@ class _QueuePageState extends State<QueuePage> {
       onRefresh: refresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 96, NeuTokens.pagePadding, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Position Card
-            if (isInQueue) ...[
-              PositionCard(
-                position: userPosition,
-                petsAhead: petsAhead,
-                estimatedWaitMinutes: estimatedWait,
-              ),
-              const SizedBox(height: 28),
-            ] else ...[
-              NotInQueueCard(),
-              const SizedBox(height: 28),
-            ],
+        padding: const EdgeInsets.fromLTRB(
+          NeuTokens.pagePadding,
+          NeuTokens.spaceMd,
+          NeuTokens.pagePadding,
+          NeuTokens.spaceXl,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: NeuTokens.maxContentWidth,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Position Card
+                if (isInQueue) ...[
+                  PositionCard(
+                    position: userPosition,
+                    petsAhead: petsAhead,
+                    estimatedWaitMinutes: estimatedWait,
+                  ),
+                  const SizedBox(height: NeuTokens.sectionGap),
+                ] else ...[
+                  NotInQueueCard(),
+                  const SizedBox(height: NeuTokens.sectionGap),
+                ],
 
-            // Your Pets in Queue
-            if (hasQueueEntries) ...[
-              Text(
-                'Your Pets in Queue',
-                style: AppTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...state.queueEntries.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: QueueEntryCard(entry: entry, isCurrentUser: true),
-                ),
-              ),
-              const SizedBox(height: 28),
-            ],
+                // Your Pets in Queue
+                if (hasQueueEntries) ...[
+                  Text(
+                    'Your Pets in Queue',
+                    style: AppTextStyles.titleLarge.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: NeuTokens.spaceMd),
+                  ...state.queueEntries.map(
+                    (entry) => Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: NeuTokens.tightGap,
+                      ),
+                      child: QueueEntryCard(entry: entry, isCurrentUser: true),
+                    ),
+                  ),
+                  const SizedBox(height: NeuTokens.sectionGap),
+                ],
 
-            // Queue Info
-            QueueInfoCard(),
-          ],
+                // Queue Info
+                QueueInfoCard(),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuContainer(
-              borderRadius: 70,
-              padding: const EdgeInsets.all(28),
-              color: ThemeColors.error(context),
-              boxShadow: NeuShadow.color(
-                context,
-                ThemeColors.error(context),
-                blur: 24,
-                opacity: 0.32,
-              ),
-              child: NeuSvgIcon(SvgIcons.error, size: 70),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Failed to Load Queue',
-              style: AppTextStyles.headlineMedium.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium.subtleOf(
-                Theme.of(context).brightness,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-            NeuButton(
-              text: 'Retry',
-              onPressed: () {
-                context.read<QueueBloc>().add(QueueLoadRequested());
-              },
-              icon: Icons.refresh_rounded,
-              svgAsset: SvgIcons.refresh,
-              variant: NeuButtonVariant.primary,
-            ),
-          ],
-        ),
-      ),
+  static const _friendlyError =
+      'We could not update the queue. Check your connection and try again.';
+
+  Widget _buildErrorState() {
+    return NeuErrorState(
+      title: 'Could not load the queue',
+      message: _friendlyError,
+      svgAsset: SvgIcons.error,
+      onRetry: () => context.read<QueueBloc>().add(QueueLoadRequested()),
     );
   }
 

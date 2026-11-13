@@ -133,16 +133,15 @@ class _NeuCardState extends State<NeuCard> {
     final style = widget.style;
     if (style != null && style.color != null) return style.color!;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (visualVariant == NeuVariant.inset) {
-      return isDark ? AppColors.surfaceInsetDark : AppColors.surfaceInset;
+      return ThemeColors.surfaceInset(context);
     }
     if (visualVariant == NeuVariant.pressed ||
         visualVariant == NeuVariant.flat) {
-      return isDark ? AppColors.surfaceMutedDark : AppColors.surfaceMuted;
+      return ThemeColors.surfaceMuted(context);
     }
     if (visualVariant == NeuVariant.transparent) return Colors.transparent;
-    return isDark ? AppColors.surfaceDarkMode : AppColors.surface;
+    return ThemeColors.surface(context);
   }
 
   ShapeBorder _shape(

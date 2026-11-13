@@ -264,13 +264,12 @@ class NeuBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = maxHeight ?? MediaQuery.of(context).size.height * 0.85;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: height),
       child: DecoratedBox(
         decoration: ShapeDecoration(
-          color: isDark ? AppColors.surfaceDarkMode : AppColors.surface,
+          color: ThemeColors.surface(context),
           shape: RoundedRectangleBorder(borderRadius: NeuShape.panel),
           shadows: NeuShadow.floating(context),
         ),

@@ -10,12 +10,12 @@ import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/pets/domain/entities/pet.dart';
 import 'package:carepaw/features/pets/presentation/utils/pet_utils.dart';
 import 'package:carepaw/features/pets/presentation/widgets/pet_detail_widgets.dart';
-import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
-import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 import 'package:carepaw/core/utils/input_formatters.dart';
 import 'package:carepaw/core/utils/validators.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_card.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_chip.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_feedback.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shapes.dart';
@@ -80,117 +80,141 @@ class _PetDetailPageState extends State<PetDetailPage> {
           const SizedBox(width: 8),
         ],
       ),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Header with avatar
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 8, NeuTokens.pagePadding, 16),
-              child: Column(
-                children: [
-                  NeuCard(
-                    padding: const EdgeInsets.all(28),
-                    shape: RoundedRectangleBorder(borderRadius: NeuShape.card),
-                    child: Column(
-                      children: [
-                        _pet.avatarUrl != null
-                            ? NeuAvatar(
-                                radius: 55,
-                                image: NetworkImage(_pet.avatarUrl!),
-                                backgroundColor: speciesColor.withValues(
-                                  alpha: 0.14,
-                                ),
-                                foregroundColor: speciesColor,
-                              )
-                            : NeuAvatar(
-                                radius: 55,
-                                svgAsset: PetUtils.getSpeciesSvg(_pet.species),
-                                backgroundColor: speciesColor.withValues(
-                                  alpha: 0.14,
-                                ),
-                                foregroundColor: speciesColor,
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: NeuTokens.maxContentWidth,
+          ),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Header with avatar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    NeuTokens.pagePadding,
+                    8,
+                    NeuTokens.pagePadding,
+                    16,
+                  ),
+                  child: Column(
+                    children: [
+                      NeuCard(
+                        padding: const EdgeInsets.all(28),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: NeuShape.card,
+                        ),
+                        child: Column(
+                          children: [
+                            _pet.avatarUrl != null
+                                ? NeuAvatar(
+                                    radius: 55,
+                                    image: NetworkImage(_pet.avatarUrl!),
+                                    backgroundColor: speciesColor.withValues(
+                                      alpha: 0.14,
+                                    ),
+                                    foregroundColor: speciesColor,
+                                  )
+                                : NeuAvatar(
+                                    radius: 55,
+                                    svgAsset: PetUtils.getSpeciesSvg(
+                                      _pet.species,
+                                    ),
+                                    backgroundColor: speciesColor.withValues(
+                                      alpha: 0.14,
+                                    ),
+                                    foregroundColor: speciesColor,
+                                  ),
+                            const SizedBox(height: 20),
+                            Text(
+                              _pet.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.headlineMedium.copyWith(
+                                fontWeight: FontWeight.w800,
                               ),
-                        const SizedBox(height: 20),
-                        Text(
-                          _pet.name,
-                          style: AppTextStyles.headlineMedium.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                          textAlign: TextAlign.center,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            NeuChip(
+                              label: PetUtils.formatSpecies(_pet.species),
+                              svgAsset: PetUtils.getSpeciesSvg(_pet.species),
+                              selected: true,
+                              selectedColor: speciesColor,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        NeuChip(
-                          label: PetUtils.formatSpecies(_pet.species),
-                          svgAsset: PetUtils.getSpeciesSvg(_pet.species),
-                          selected: true,
-                          selectedColor: speciesColor,
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
 
-                  // Quick info chips
-                  const SizedBox(height: 16),
-                  QuickInfoChips(pet: _pet),
-                ],
+                      // Quick info chips
+                      const SizedBox(height: 16),
+                      QuickInfoChips(pet: _pet),
+                    ],
+                  ),
+                ),
               ),
-            ),
+
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  NeuTokens.pagePadding,
+                  0,
+                  NeuTokens.pagePadding,
+                  40,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Basic info section
+                    _buildSection(
+                      context,
+                      title: 'Basic Information',
+                      icon: Icons.info_outline_rounded,
+                      svgAsset: SvgIcons.info,
+                      iconColor: speciesColor,
+                      child: BasicInfoCard(pet: _pet),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Weight tracking section
+                    _buildSection(
+                      context,
+                      title: 'Weight Tracking',
+                      icon: Icons.monitor_weight_outlined,
+                      svgAsset: SvgIcons.weightScale,
+                      iconColor: ThemeColors.primary(context),
+                      child: WeightTrackingCard(
+                        pet: _pet,
+                        onAddWeight: _showAddWeightDialog,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Quick actions
+                    _buildSection(
+                      context,
+                      title: 'Quick Actions',
+                      icon: Icons.flash_on_rounded,
+                      svgAsset: SvgIcons.bolt,
+                      iconColor: ThemeColors.textSecondary(context),
+                      child: QuickActionsCard(pet: _pet),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Medical records
+                    _buildSection(
+                      context,
+                      title: 'Medical Records',
+                      icon: Icons.medical_services_outlined,
+                      svgAsset: SvgIcons.visit,
+                      iconColor: ThemeColors.progress(context),
+                      child: MedicalRecordsCard(pet: _pet),
+                    ),
+                  ]),
+                ),
+              ),
+            ],
           ),
-
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 0, NeuTokens.pagePadding, 40),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Basic info section
-                _buildSection(
-                  context,
-                  title: 'Basic Information',
-                  icon: Icons.info_outline_rounded,
-                  svgAsset: SvgIcons.info,
-                  iconColor: speciesColor,
-                  child: BasicInfoCard(pet: _pet),
-                ),
-                const SizedBox(height: 20),
-
-                // Weight tracking section
-                _buildSection(
-                  context,
-                  title: 'Weight Tracking',
-                  icon: Icons.monitor_weight_outlined,
-                  svgAsset: SvgIcons.weightScale,
-                  iconColor: ThemeColors.primary(context),
-                  child: WeightTrackingCard(
-                    pet: _pet,
-                    onAddWeight: _showAddWeightDialog,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Quick actions
-                _buildSection(
-                  context,
-                  title: 'Quick Actions',
-                  icon: Icons.flash_on_rounded,
-                  svgAsset: SvgIcons.bolt,
-                  iconColor: ThemeColors.textSecondary(context),
-                  child: QuickActionsCard(pet: _pet),
-                ),
-                const SizedBox(height: 20),
-
-                // Medical records
-                _buildSection(
-                  context,
-                  title: 'Medical Records',
-                  icon: Icons.medical_services_outlined,
-                  svgAsset: SvgIcons.visit,
-                  iconColor: ThemeColors.progress(context),
-                  child: MedicalRecordsCard(pet: _pet),
-                ),
-              ]),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -218,10 +242,14 @@ class _PetDetailPageState extends State<PetDetailPage> {
                     : Icon(icon, size: 20, color: iconColor),
               ),
               const SizedBox(width: NeuTokens.spaceXs),
-              Text(
-                title,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -298,6 +326,26 @@ class _PetDetailPageState extends State<PetDetailPage> {
 
   void _showAddWeightDialog(BuildContext context) {
     final weightController = TextEditingController();
+    final weightError = ValueNotifier<String?>(null);
+    final currentWeight = _pet.weightKg == null
+        ? 'Current weight: not set'
+        : 'Current weight: ${_pet.weightKg!.toStringAsFixed(1)} kg';
+
+    // Validates, then closes the dialog and saves. Stays open with a message
+    // when the weight is not valid.
+    void submit() {
+      final text = weightController.text.trim();
+      final error = text.isEmpty
+          ? 'Enter the weight in kg'
+          : Validators.weight(text);
+      if (error != null) {
+        weightError.value = error;
+        return;
+      }
+      context.pop();
+      _saveWeight(double.parse(text));
+    }
+
     NeuDialog.show(
       context: context,
       title: 'Add Weight Entry',
@@ -306,26 +354,35 @@ class _PetDetailPageState extends State<PetDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Current weight: ${_pet.weightKg?.toStringAsFixed(1) ?? 'Not set'} kg',
+            currentWeight,
             style: AppTextStyles.bodyMedium.copyWith(
               color: ThemeColors.textSecondary(context),
             ),
           ),
-          const SizedBox(height: 16),
-          NeuTextField(
-            controller: weightController,
-            label: 'New Weight (kg)',
-            hint: 'e.g., 26.5',
-            prefixIcon: ClayIconOrMaterial(
-              'monitor_weight_outlined',
-              fallback: Icons.monitor_weight_outlined,
-              size: 20,
+          const SizedBox(height: NeuTokens.spaceMd),
+          ValueListenableBuilder<String?>(
+            valueListenable: weightError,
+            builder: (context, error, _) => NeuTextField(
+              controller: weightController,
+              label: 'New Weight (kg)',
+              hint: 'e.g., 26.5',
+              error: error,
+              prefixIcon: ClayIconOrMaterial(
+                'monitor_weight_outlined',
+                fallback: Icons.monitor_weight_outlined,
+                size: 20,
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [DecimalInputFormatter.weightKg],
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              onChanged: (_) {
+                if (weightError.value != null) weightError.value = null;
+              },
+              onSubmitted: (_) => submit(),
             ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [DecimalInputFormatter.weightKg],
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _saveWeight(context, weightController),
           ),
         ],
       ),
@@ -340,25 +397,21 @@ class _PetDetailPageState extends State<PetDetailPage> {
           variant: NeuButtonVariant.primary,
           icon: Icons.save,
           svgAsset: SvgIcons.save,
-          onPressed: () => _saveWeight(context, weightController),
+          onPressed: submit,
         ),
       ],
     );
   }
 
-  void _saveWeight(BuildContext context, TextEditingController controller) {
-    final weight = double.tryParse(controller.text);
-    if (weight != null && Validators.weight(controller.text) == null) {
-      context.pop();
-      final updatedPet = _pet.copyWith(
-        weightKg: weight,
-        updatedAt: DateTime.now(),
-      );
-      _updatePet(updatedPet);
-      context.read<PetBloc>().add(
-        UpdatePetWeight(petId: _pet.id!, weightKg: weight),
-      );
-    }
+  void _saveWeight(double weight) {
+    final petId = _pet.id;
+    if (petId == null) return;
+    // Optimistic: the page shows the new weight at once; the loader reloads
+    // the saved pet, or restores the old one and reports if the save fails.
+    _updatePet(_pet.copyWith(weightKg: weight, updatedAt: DateTime.now()));
+    context.read<PetBloc>().add(
+      UpdatePetWeight(petId: petId, weightKg: weight),
+    );
   }
 
   void _showDeactivateDialog(BuildContext context) {
@@ -427,33 +480,20 @@ class PetFormPageWithBloc extends StatelessWidget {
   }
 }
 
-/// Loads pet by ID and shows PetDetailPage
-class _PetDetailLoader extends StatelessWidget {
-  final int petId;
-  const _PetDetailLoader({required this.petId});
+/// Shared error screen for the pet loaders.
+class _PetLoadError extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _PetLoadError({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PetBloc, PetState>(
-      builder: (context, state) {
-        if (state is PetLoading) {
-          return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
-        }
-        if (state is PetDetailLoaded) return PetDetailPage(pet: state.pet);
-        if (state is PetError) {
-          return _buildError(context, state.failure.message);
-        }
-        return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
-      },
-    );
-  }
-
-  Widget _buildError(BuildContext context, String message) {
     return Scaffold(
       backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: NeuIconButton(
           plain: true,
           icon: Icons.arrow_back_rounded,
@@ -462,135 +502,104 @@ class _PetDetailLoader extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: NeuCard(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NeuContainer(
-                  padding: const EdgeInsets.all(20),
-                  borderRadius: NeuTokens.radiusMd,
-                  variant: NeuVariant.flat,
-                  child: const NeuSvgIcon(SvgIcons.error, size: 64),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Error Loading Pet',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    color: ThemeColors.textPrimary(context),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  message,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                NeuButton(
-                  text: 'Retry',
-                  onPressed: () =>
-                      context.read<PetBloc>().add(LoadPetsById(petId)),
-                  icon: Icons.refresh_rounded,
-                  svgAsset: SvgIcons.refresh,
-                ),
-              ],
-            ),
-          ),
-        ),
+      body: NeuErrorState(
+        title: 'Could not load pet',
+        message: message,
+        onRetry: onRetry,
       ),
     );
   }
 }
 
-/// Loads pet by ID and shows PetFormPage for editing
-class _PetFormLoader extends StatelessWidget {
+/// Loads pet by ID and shows PetDetailPage.
+///
+/// Once the pet has loaded the page stays on screen while a weight or status
+/// update runs; the bloc's "loading" and "success" states do not replace it.
+class _PetDetailLoader extends StatefulWidget {
   final int petId;
-  const _PetFormLoader({required this.petId});
+  const _PetDetailLoader({required this.petId});
+
+  @override
+  State<_PetDetailLoader> createState() => _PetDetailLoaderState();
+}
+
+class _PetDetailLoaderState extends State<_PetDetailLoader> {
+  Pet? _pet;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PetBloc, PetState>(
-      builder: (context, state) {
-        if (state is PetLoading) {
-          return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
-        }
+    return BlocConsumer<PetBloc, PetState>(
+      listener: (context, state) {
+        final bloc = context.read<PetBloc>();
         if (state is PetDetailLoaded) {
-          final authState = context.read<AuthBloc>().state;
-          final ownerId = authState is AuthAuthenticated
-              ? authState.user.id!
-              : 0;
-          return PetFormPage(ownerId: ownerId, pet: state.pet);
+          setState(() => _pet = state.pet);
+        } else if (state is PetOperationSuccess) {
+          NeuToast.success(context, state.message);
+        } else if (state is PetsLoaded) {
+          // An update finished: fetch the saved pet so the page shows it.
+          bloc.add(LoadPetsById(widget.petId));
+        } else if (state is PetError && _pet != null) {
+          NeuToast.error(context, state.failure.message);
+          // Drop the optimistic change by reloading the saved pet.
+          bloc.add(LoadPetsById(widget.petId));
+        }
+      },
+      builder: (context, state) {
+        final pet = _pet;
+        if (pet != null) {
+          return PetDetailPage(key: ObjectKey(pet), pet: pet);
         }
         if (state is PetError) {
-          return _buildError(context, state.failure.message);
+          return _PetLoadError(
+            message: state.failure.message,
+            onRetry: () =>
+                context.read<PetBloc>().add(LoadPetsById(widget.petId)),
+          );
         }
         return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
       },
     );
   }
+}
 
-  Widget _buildError(BuildContext context, String message) {
-    return Scaffold(
-      backgroundColor: ThemeColors.background(context),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: NeuIconButton(
-          plain: true,
-          icon: Icons.arrow_back_rounded,
-          svgAsset: SvgIcons.back,
-          tooltip: 'Back',
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: NeuCard(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NeuContainer(
-                  padding: const EdgeInsets.all(20),
-                  borderRadius: NeuTokens.radiusMd,
-                  variant: NeuVariant.flat,
-                  child: const NeuSvgIcon(SvgIcons.error, size: 64),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Error Loading Pet',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    color: ThemeColors.textPrimary(context),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  message,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: ThemeColors.textSecondary(context),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                NeuButton(
-                  text: 'Retry',
-                  onPressed: () =>
-                      context.read<PetBloc>().add(LoadPetsById(petId)),
-                  icon: Icons.refresh_rounded,
-                  svgAsset: SvgIcons.refresh,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+/// Loads pet by ID and shows PetFormPage for editing.
+///
+/// The form stays on screen while the save runs so its listener can show the
+/// result and close the page.
+class _PetFormLoader extends StatefulWidget {
+  final int petId;
+  const _PetFormLoader({required this.petId});
+
+  @override
+  State<_PetFormLoader> createState() => _PetFormLoaderState();
+}
+
+class _PetFormLoaderState extends State<_PetFormLoader> {
+  Pet? _pet;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<PetBloc, PetState>(
+      listenWhen: (previous, current) => _pet == null,
+      listener: (context, state) {
+        if (state is PetDetailLoaded) setState(() => _pet = state.pet);
+      },
+      builder: (context, state) {
+        final pet = _pet;
+        if (pet != null) {
+          // Keep the pet's real owner: a clinic account must not take over
+          // ownership by saving an edit.
+          return PetFormPage(ownerId: pet.ownerId, pet: pet);
+        }
+        if (state is PetError) {
+          return _PetLoadError(
+            message: state.failure.message,
+            onRetry: () =>
+                context.read<PetBloc>().add(LoadPetsById(widget.petId)),
+          );
+        }
+        return const Scaffold(body: NeuSkeletonDetail(blocks: 4));
+      },
     );
   }
 }

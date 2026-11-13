@@ -13,7 +13,7 @@ import 'package:carepaw/core/widgets/neomorphism/neu_button.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_container.dart';
 
 import 'package:carepaw/core/widgets/neomorphism/neu_icon_button.dart';
-import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
+import 'package:carepaw/core/widgets/neomorphism/neu_skeleton.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_svg_icon.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_state.dart';
@@ -68,7 +68,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
             backgroundColor: Colors.transparent,
             actions: [
               Padding(
-                padding: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.only(right: NeuTokens.spaceMd),
                 child: NeuIconButton(
                   plain: true,
                   icon: Icons.reorder_rounded,
@@ -91,16 +91,16 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                 // Reload queue after successful operation
                 context.read<QueueBloc>().add(QueueStaffLoadRequested());
               } else if (state is QueueError) {
-                NeuToast.error(context, state.message);
+                NeuToast.error(context, _friendlyError);
               }
             },
             builder: (context, state) {
               if (state is QueueLoading) {
-                return const Center(child: NeuCircularProgress());
+                return const NeuSkeletonList();
               }
 
               if (state is QueueError) {
-                return _buildErrorState(state.message);
+                return _buildErrorState();
               }
 
               if (state is QueueStaffLoaded) {
@@ -157,55 +157,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
     );
   }
 
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuContainer(
-              borderRadius: 70,
-              padding: const EdgeInsets.all(32),
-              color: ThemeColors.error(context),
-              boxShadow: NeuShadow.color(
-                context,
-                ThemeColors.error(context),
-                blur: 24,
-                opacity: 0.32,
-              ),
-              child: NeuSvgIcon(SvgIcons.error, size: 60),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Failed to Load Queue',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: ThemeColors.textSecondary(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-            NeuButton(
-              text: 'Retry',
-              onPressed: () {
-                context.read<QueueBloc>().add(QueueStaffLoadRequested());
-              },
-              icon: Icons.refresh_rounded,
-              svgAsset: SvgIcons.refresh,
-              variant: NeuButtonVariant.primary,
-              expanded: true,
-            ),
-          ],
-        ),
-      ),
+  static const _friendlyError =
+      'We could not update the queue. Check your connection and try again.';
+
+  Widget _buildErrorState() {
+    return NeuErrorState(
+      title: 'Could not load the queue',
+      message: _friendlyError,
+      svgAsset: SvgIcons.error,
+      onRetry: () => context.read<QueueBloc>().add(QueueStaffLoadRequested()),
     );
   }
 
@@ -229,44 +189,66 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
                   onRefresh: () async {
                     context.read<QueueBloc>().add(QueueStaffLoadRequested());
                   },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(NeuTokens.pagePadding, 8, NeuTokens.pagePadding, 100),
-                    itemCount: queueEntries.length,
-                    itemBuilder: (context, index) {
-                      final entry = queueEntries[index];
-                      return StaffQueueEntryCard(
-                        entry: entry,
-                        onPriorityChanged: (priority) {
-                          context.read<QueueBloc>().add(
-                            QueueSetPriorityRequested(
-                              entry.queueEntry.id!,
-                              priority,
-                            ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: NeuTokens.maxContentWidth,
+                      ),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(
+                          NeuTokens.pagePadding,
+                          NeuTokens.spaceXs,
+                          NeuTokens.pagePadding,
+                          100,
+                        ),
+                        itemCount: queueEntries.length,
+                        itemBuilder: (context, index) {
+                          final entry = queueEntries[index];
+                          return StaffQueueEntryCard(
+                            entry: entry,
+                            onPriorityChanged: (priority) {
+                              context.read<QueueBloc>().add(
+                                QueueSetPriorityRequested(
+                                  entry.queueEntry.id!,
+                                  priority,
+                                ),
+                              );
+                            },
+                            // "Call" runs callNext, which calls the head of
+                            // the waiting line, so only that card offers it.
+                            onCall:
+                                entry.queueEntry.id != null &&
+                                    entry.queueEntry.id ==
+                                        _nextWaitingId(queueEntries)
+                                ? () => _showCallDialog(entry)
+                                : null,
+                            onMoveToRoom:
+                                entry.queueEntry.status == QueueStatus.called
+                                ? () => _showMoveToRoomDialog(entry)
+                                : null,
+                            onComplete:
+                                entry.queueEntry.status == QueueStatus.inRoom
+                                ? () => _showCompleteDialog(entry)
+                                : null,
+                            onSkip:
+                                entry.queueEntry.status ==
+                                        QueueStatus.waiting ||
+                                    entry.queueEntry.status ==
+                                        QueueStatus.called
+                                ? () => _showSkipDialog(entry)
+                                : null,
+                            onCancel:
+                                entry.queueEntry.status ==
+                                        QueueStatus.waiting ||
+                                    entry.queueEntry.status ==
+                                        QueueStatus.called
+                                ? () => _showCancelDialog(entry)
+                                : null,
                           );
                         },
-                        onCall: entry.queueEntry.status == QueueStatus.waiting
-                            ? () => _showCallDialog(entry)
-                            : null,
-                        onMoveToRoom:
-                            entry.queueEntry.status == QueueStatus.called
-                            ? () => _showMoveToRoomDialog(entry)
-                            : null,
-                        onComplete:
-                            entry.queueEntry.status == QueueStatus.inRoom
-                            ? () => _showCompleteDialog(entry)
-                            : null,
-                        onSkip:
-                            entry.queueEntry.status == QueueStatus.waiting ||
-                                entry.queueEntry.status == QueueStatus.called
-                            ? () => _showSkipDialog(entry)
-                            : null,
-                        onCancel:
-                            entry.queueEntry.status == QueueStatus.waiting ||
-                                entry.queueEntry.status == QueueStatus.called
-                            ? () => _showCancelDialog(entry)
-                            : null,
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
         ),
@@ -282,6 +264,15 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
       message:
           'Pets appear here once they check in at the desk. Pull down to refresh.',
     );
+  }
+
+  /// Id of the entry `callNext` will call: the first waiting entry in queue
+  /// order (the same sort the repository uses).
+  int? _nextWaitingId(List<QueueEntryWithDetails> entries) {
+    final waiting = entries.map((e) => e.queueEntry).where((e) => e.isWaiting)
+        .toList()
+      ..sort(QueueEntry.byQueueOrder);
+    return waiting.isEmpty ? null : waiting.first.id;
   }
 
   void _showCallDialog(QueueEntryWithDetails entry) {
@@ -328,6 +319,7 @@ class _StaffQueuePageState extends State<StaffQueuePage> {
           variant: NeuButtonVariant.primary,
           onPressed: () {
             final room = roomController.text.trim();
+            if (room.isEmpty) return;
             context.pop();
             context.read<QueueBloc>().add(
               QueueMoveToRoomRequested(entry.queueEntry.id!, room),

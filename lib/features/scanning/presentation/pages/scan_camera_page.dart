@@ -136,7 +136,15 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       child: Scaffold(
         backgroundColor: ThemeColors.background(context),
         body: SafeArea(
-          child: _imagePath == null ? _buildScannerView() : _buildReview(),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: NeuTokens.maxContentWidth,
+              ),
+              child: _imagePath == null ? _buildScannerView() : _buildReview(),
+            ),
+          ),
         ),
       ),
     );
@@ -166,7 +174,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     required VoidCallback? onClose,
   }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      padding: const EdgeInsets.fromLTRB(
+        NeuTokens.pagePadding,
+        NeuTokens.spaceLg,
+        NeuTokens.pagePadding,
+        NeuTokens.spaceSm,
+      ),
       child: Row(
         children: [
           NeuIconButton(
@@ -174,8 +187,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
             icon: Icons.close_rounded,
             svgAsset: SvgIcons.close,
             onPressed: onClose,
+            tooltip: 'Close',
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: NeuTokens.spaceSm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +200,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                     fontWeight: FontWeight.w800,
                     color: ThemeColors.textPrimary(context),
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -197,7 +213,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: NeuTokens.spaceSm),
           NeuContainer(
             padding: const EdgeInsets.all(12),
             borderRadius: NeuTokens.radiusSm,
@@ -212,48 +228,55 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   /// Framing tips shown before a photo is taken.
   Widget _buildGuide() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+      padding: const EdgeInsets.fromLTRB(
+        NeuTokens.pagePadding,
+        NeuTokens.spaceMd,
+        NeuTokens.pagePadding,
+        0,
+      ),
       child: NeuContainer(
         variant: NeuVariant.inset,
         borderRadius: NeuTokens.radiusMd,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) =>
-                  Transform.scale(scale: _pulseAnimation.value, child: child),
-              child: SizedBox(
-                width: _isReceipt ? 150 : 240,
-                height: _isReceipt ? 220 : 150,
-                child: CustomPaint(
-                  painter: _FrameGuidePainter(_typeColor),
-                  child: Center(child: NeuSvgIcon(_typeSvg, size: 48)),
+        padding: const EdgeInsets.all(NeuTokens.pagePadding),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) =>
+                    Transform.scale(scale: _pulseAnimation.value, child: child),
+                child: SizedBox(
+                  width: _isReceipt ? 150 : 240,
+                  height: _isReceipt ? 220 : 150,
+                  child: CustomPaint(
+                    painter: _FrameGuidePainter(_typeColor),
+                    child: Center(child: NeuSvgIcon(_typeSvg, size: 48)),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _isReceipt
-                  ? 'Lay the receipt flat and fit the whole page'
-                  : 'Fill the frame, use good light, avoid glare',
-              style: AppTextStyles.titleSmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: ThemeColors.textPrimary(context),
+              const SizedBox(height: 24),
+              Text(
+                _isReceipt
+                    ? 'Lay the receipt flat and fit the whole page'
+                    : 'Fill the frame, use good light, avoid glare',
+                style: AppTextStyles.titleSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: ThemeColors.textPrimary(context),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'The photo is sent to Gemini to read it. You can fix '
-              'anything it gets wrong before it is added to the inventory.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: ThemeColors.textSecondary(context),
+              const SizedBox(height: 8),
+              Text(
+                'The photo is sent to Gemini to read it. You can fix '
+                'anything it gets wrong before it is added to the inventory.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: ThemeColors.textSecondary(context),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -261,7 +284,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Widget _buildBottomControls() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+      padding: const EdgeInsets.fromLTRB(
+        NeuTokens.pagePadding,
+        NeuTokens.spaceMd,
+        NeuTokens.pagePadding,
+        NeuTokens.sectionGap,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -275,7 +303,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
               expanded: true,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: NeuTokens.spaceMd),
           Expanded(
             flex: 3,
             child: NeuButton(
@@ -305,7 +333,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+            padding: const EdgeInsets.fromLTRB(
+              NeuTokens.pagePadding,
+              NeuTokens.spaceXs,
+              NeuTokens.pagePadding,
+              NeuTokens.spaceMd,
+            ),
             children: [
               NeuCard(
                 padding: EdgeInsets.zero,
@@ -329,7 +362,12 @@ class _ScanCameraPageState extends State<ScanCameraPage>
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+          padding: const EdgeInsets.fromLTRB(
+            NeuTokens.pagePadding,
+            NeuTokens.spaceSm,
+            NeuTokens.pagePadding,
+            NeuTokens.sectionGap,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -343,7 +381,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   expanded: true,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: NeuTokens.spaceMd),
               Expanded(
                 flex: 3,
                 child: NeuButton(
@@ -365,7 +403,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   Widget _buildReading() {
     return NeuCard(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(NeuTokens.pagePadding),
       child: Column(
         children: [
           AnimatedBuilder(
@@ -487,6 +525,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                 plain: true,
                 icon: Icons.delete_outline_rounded,
                 svgAsset: SvgIcons.delete,
+                tooltip: 'Remove this medicine row',
                 onPressed: _isSaving
                     ? null
                     : () => setState(() => _lines.removeAt(index).dispose()),
@@ -578,6 +617,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   // ── Actions ────────────────────────────────────────────────
 
   Future<void> _pick(ImageSource source) async {
+    if (_isReading) return;
     XFile? picked;
     try {
       picked = await _picker.pickImage(
@@ -704,6 +744,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   }
 
   void _submit() {
+    if (_isSaving) return;
     FocusScope.of(context).unfocus();
     final lines = _validate();
     if (lines == null) {
@@ -758,7 +799,10 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       }
     } else if (state is ScanError) {
       setState(() => _isSaving = false);
-      NeuToast.error(context, state.failure.message);
+      NeuToast.error(
+        context,
+        'We could not save this scan. Check your connection and try again.',
+      );
     }
   }
 
@@ -769,7 +813,11 @@ class _ScanCameraPageState extends State<ScanCameraPage>
       Navigator.pop(context, true);
     } else if (state is InventoryError) {
       setState(() => _isSaving = false);
-      NeuToast.error(context, state.failure.message);
+      NeuToast.error(
+        context,
+        'We could not add the medicines to stock. Your scan is kept; '
+        'try again.',
+      );
     }
   }
 
