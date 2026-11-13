@@ -87,7 +87,9 @@ Pet owner accounts can be registered from the app's sign-up screen.
 CarePaw is distributed as an APK on this repository's **Releases** page, not
 through the Google Play Store.
 
-1. On the phone, open the latest release and download `app-release.apk`.
+1. On the phone, open the
+   [latest release](https://github.com/Imnot21/carepaw/releases/latest) and
+   download the `.apk` file (for example `CarePaw-v1.0.6.apk`).
 2. Open the downloaded file. If Android blocks it, allow
    **Install unknown apps** for your browser or file manager when prompted.
 3. Tap **Install**. If Play Protect warns about an unknown developer, choose
