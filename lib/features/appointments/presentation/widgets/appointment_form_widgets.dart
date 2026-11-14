@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carepaw/app/theme/design_tokens.dart';
+import 'package:carepaw/features/appointments/domain/clinic_schedule.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_bloc.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
@@ -767,8 +768,23 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedDate = widget.initialDate;
+    // CalendarDatePicker asserts its initial date is selectable, so a stored
+    // weekday booking opens on the next weekend day instead.
+    _selectedDate = ClinicSchedule.nextOpenDay(widget.initialDate);
     _selectedTime = TimeOfDay.fromDateTime(widget.initialDate);
+  }
+
+  /// Today at midnight, or an earlier stored date when editing, so the
+  /// picker's initial date is never before its first date.
+  DateTime _firstDate() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final initial = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    return initial.isBefore(today) ? initial : today;
   }
 
   @override
@@ -780,16 +796,25 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
           'Select Date and Time',
           style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 24),
-        // Date picker
+        const SizedBox(height: 8),
+        Text(
+          'The clinic is open on ${ClinicSchedule.openDaysLabel} only.',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: ThemeColors.textSecondary(context),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        // Date picker: weekend days only.
         NeuContainer(
           borderRadius: NeuTokens.radiusSm,
           padding: const EdgeInsets.all(16),
           variant: NeuVariant.raised,
           child: CalendarDatePicker(
             initialDate: _selectedDate,
-            firstDate: DateTime.now(),
+            firstDate: _firstDate(),
             lastDate: DateTime.now().add(const Duration(days: 365)),
+            selectableDayPredicate: ClinicSchedule.isOpenDay,
             onDateChanged: (date) => setState(() => _selectedDate = date),
           ),
         ),

@@ -7,6 +7,7 @@ import 'package:carepaw/app/theme/design_tokens.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_bloc.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_state.dart';
+import 'package:carepaw/features/appointments/domain/clinic_schedule.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/appointments/presentation/widgets/appointment_form_widgets.dart';
@@ -427,8 +428,9 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   }
 
   Future<void> _pickDateTime() async {
-    final initialDate =
-        _selectedDateTime ?? DateTime.now().add(const Duration(days: 1));
+    final initialDate = ClinicSchedule.nextOpenDay(
+      _selectedDateTime ?? DateTime.now().add(const Duration(days: 1)),
+    );
 
     await NeuBottomSheet.show(
       context: context,
@@ -474,6 +476,15 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
 
     if (_selectedDateTime == null) {
       NeuToast.error(context, 'Pick a date and time for the visit.');
+      return;
+    }
+
+    if (!ClinicSchedule.isOpenDay(_selectedDateTime!)) {
+      NeuToast.error(
+        context,
+        'The clinic is open on ${ClinicSchedule.openDaysLabel} only. '
+        'Pick a weekend day.',
+      );
       return;
     }
 

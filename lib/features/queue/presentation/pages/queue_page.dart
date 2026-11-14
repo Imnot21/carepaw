@@ -129,9 +129,6 @@ class _QueuePageState extends State<QueuePage> {
     final petsAhead = state.petsAhead;
     final isInQueue = userPosition != null && userPosition > 0;
 
-    // Calculate estimated wait time
-    final estimatedWait = _calculateEstimatedWait(state);
-
     Future<void> refresh() async {
       context.read<QueueBloc>().add(QueueLoadRequested());
     }
@@ -203,8 +200,9 @@ class _QueuePageState extends State<QueuePage> {
                 if (isInQueue) ...[
                   PositionCard(
                     position: userPosition,
+                    // No minutes estimate: visit length varies, and a guessed
+                    // number would mislead owners. "Pets ahead" is exact.
                     petsAhead: petsAhead,
-                    estimatedWaitMinutes: estimatedWait,
                   ),
                   const SizedBox(height: NeuTokens.sectionGap),
                 ] else ...[
@@ -252,13 +250,5 @@ class _QueuePageState extends State<QueuePage> {
       svgAsset: SvgIcons.error,
       onRetry: () => context.read<QueueBloc>().add(QueueLoadRequested()),
     );
-  }
-
-  int? _calculateEstimatedWait(QueueLoaded state) {
-    if (state.petsAhead == null || state.petsAhead! <= 0) {
-      return null;
-    }
-    // Rough estimate: 15 minutes per pet ahead
-    return state.petsAhead! * 15;
   }
 }
