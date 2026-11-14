@@ -30,7 +30,9 @@ inventory → records → notifications → settings) and the pet owner flow
   stock) plus quick access to every clinic surface.
 - **Pet Management** — digital pet profiles owned by their pet owners.
 - **Appointment Scheduling** — request, confirm, reject, check-in, and complete
-  appointments with strict, valid state transitions.
+  appointments with strict, valid state transitions. Bookings are for
+  Saturdays and Sundays only, the clinic's open days; the app and the
+  Firestore rules both enforce it.
 - **Real-Time Queue** — backend-authoritative queue state with check-in,
   call-next, and position tracking.
 - **Digital Medical Records** — append-only, authorization-protected pet health
@@ -89,7 +91,7 @@ through the Google Play Store.
 
 1. On the phone, open the
    [latest release](https://github.com/Imnot21/carepaw/releases/latest) and
-   download the `.apk` file (for example `CarePaw-v1.0.6.apk`).
+   download the `.apk` file (for example `CarePaw-v1.0.7.apk`).
 2. Open the downloaded file. If Android blocks it, allow
    **Install unknown apps** for your browser or file manager when prompted.
 3. Tap **Install**. If Play Protect warns about an unknown developer, choose

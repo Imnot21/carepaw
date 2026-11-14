@@ -92,6 +92,22 @@ service cloud.firestore {
           : 1);
     }
 
+    // True when timestamp `t` falls on a Saturday or Sunday in the
+    // Philippines. PILA VET HUB opens on weekends only. Timestamps are UTC,
+    // so shift by +8 h to the clinic's day; dayOfWeek() is 1 = Mon .. 7 = Sun.
+    function isClinicOpenDay(t) {
+      return t is timestamp && (t + duration.value(8, 'h')).dayOfWeek() >= 6;
+    }
+
+    // A booking update keeps a weekend date: a moved date must be a clinic
+    // day, while a status change on an older booking leaves its date as it
+    // was.
+    function keepsClinicDay() {
+      return request.resource.data.get('scheduledAt', null) ==
+          resource.data.get('scheduledAt', null) ||
+        isClinicOpenDay(request.resource.data.get('scheduledAt', null));
+    }
+
     // ---- Users collection ----
     match /users/{uid} {
       // Self-service registration: a user creates only their own profile.
@@ -169,14 +185,16 @@ service cloud.firestore {
       // Owners only request, reschedule or cancel. Confirming, check-in and
       // completion are the clinic's call, so an owner cannot approve their
       // own booking.
-      allow create: if isClinicStaff() ||
-        (isAuthenticated() && request.resource.data.ownerId == getCurrentUserId() &&
-         request.resource.data.status == 'REQUESTED');
-      allow update: if isClinicStaff() ||
+      // Bookings are for weekend days only (see isClinicOpenDay).
+      allow create: if isClinicOpenDay(request.resource.data.get('scheduledAt', null)) &&
+        (isClinicStaff() ||
+         (isAuthenticated() && request.resource.data.ownerId == getCurrentUserId() &&
+          request.resource.data.status == 'REQUESTED'));
+      allow update: if keepsClinicDay() && (isClinicStaff() ||
         (isAuthenticated() && resource.data.ownerId == getCurrentUserId() &&
          request.resource.data.ownerId == resource.data.ownerId &&
          (request.resource.data.status == resource.data.status ||
-          request.resource.data.status in ['REQUESTED', 'RESCHEDULED', 'CANCELLED']));
+          request.resource.data.status in ['REQUESTED', 'RESCHEDULED', 'CANCELLED'])));
       allow delete: if isOwnerAdmin();
     }
 
