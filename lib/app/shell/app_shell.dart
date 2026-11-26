@@ -6,6 +6,7 @@ import 'package:carepaw/app/theme/theme_colors.dart';
 import 'package:carepaw/features/authentication/domain/entities/user.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:carepaw/features/app_update/presentation/widgets/update_prompt.dart';
 import 'role_tabs.dart';
 
 /// The primary application shell.
@@ -36,7 +37,7 @@ class AppShell extends StatelessWidget {
       backgroundColor: ThemeColors.background(context),
       // The canvas is the warm bone background, not a white wash. Cards supply
       // the white planes; the page itself stays at the back.
-      body: SafeArea(bottom: false, child: child),
+      body: SafeArea(bottom: false, child: UpdatePrompt(child: child)),
       bottomNavigationBar: NeuBottomNav.svg(
         items: tabs.toNavItems(),
         currentIndex: currentIndex,

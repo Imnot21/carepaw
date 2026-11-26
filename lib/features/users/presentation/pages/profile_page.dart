@@ -25,6 +25,9 @@ import 'package:carepaw/core/widgets/neomorphism/neu_progress.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_shadows.dart';
 import 'package:carepaw/core/widgets/neomorphism/neu_text_field.dart';
 import 'package:carepaw/core/widgets/clinic_logo.dart';
+import 'package:carepaw/features/app_update/data/app_update_service.dart';
+import 'package:carepaw/features/app_update/presentation/bloc/app_update_cubit.dart';
+import 'package:carepaw/features/app_update/presentation/widgets/update_dialog.dart';
 
 /// Profile page - shows the authenticated user's info with name/phone editing.
 ///
@@ -480,9 +483,56 @@ class _ProfilePageState extends State<ProfilePage> {
             subtitle: 'Clinic contact and app version',
             onTap: () => _showHelp(context),
           ),
+          if (AppUpdateService.supported) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                height: 1,
+                child: NeuContainer(
+                  padding: EdgeInsets.zero,
+                  borderRadius: 0.5,
+                  variant: NeuVariant.flat,
+                  boxShadow: NeuShadow.none,
+                  color: ThemeColors.border(context),
+                  child: const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            BlocBuilder<AppUpdateCubit, AppUpdateState>(
+              bloc: getIt<AppUpdateCubit>(),
+              builder: (context, update) => _SettingTile(
+                svgAsset: SvgIcons.refresh,
+                title: update.hasUpdate
+                    ? 'Update to ${update.release!.version}'
+                    : 'Check for updates',
+                subtitle: update.status == AppUpdateStatus.checking
+                    ? 'Checking…'
+                    : update.hasUpdate
+                    ? 'A new version is ready to install'
+                    : 'You have version '
+                          '${update.currentVersion ?? AppConstants.appVersion}',
+                onTap: () => _checkForUpdates(context),
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  /// Checks for a newer build and offers it, or says this one is current.
+  Future<void> _checkForUpdates(BuildContext context) async {
+    final cubit = getIt<AppUpdateCubit>();
+    if (!cubit.state.hasUpdate) await cubit.check();
+    if (!context.mounted) return;
+    final s = cubit.state;
+    if (s.hasUpdate) {
+      await showUpdateDialog(context, cubit);
+    } else if (s.status == AppUpdateStatus.upToDate) {
+      NeuToast.success(context, 'You have the latest version (${s.currentVersion}).');
+    } else if (s.message != null) {
+      NeuToast.error(context, s.message!);
+    }
   }
 
   /// Logout entry, confirming before dispatching the sign-out event.

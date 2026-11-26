@@ -32,6 +32,8 @@ import 'package:carepaw/features/authentication/domain/repositories/auth_reposit
 import 'package:carepaw/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:carepaw/features/audit/domain/repositories/audit_log_repository.dart';
 import 'package:carepaw/features/audit/data/repositories/firestore_audit_log_repository.dart';
+import 'package:carepaw/features/app_update/data/app_update_service.dart';
+import 'package:carepaw/features/app_update/presentation/bloc/app_update_cubit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -56,6 +58,12 @@ Future<void> configureDependencies() async {
   // Change signals that keep list screens live without a manual refresh.
   getIt.registerLazySingleton<LiveChanges>(
     () => LiveChanges(getIt<FirebaseFirestore>()),
+  );
+
+  // In-app updates: GitHub release APK on Android, reload on web.
+  getIt.registerLazySingleton<AppUpdateService>(AppUpdateService.new);
+  getIt.registerLazySingleton<AppUpdateCubit>(
+    () => AppUpdateCubit(getIt<AppUpdateService>()),
   );
 
   // User ID sequence (Firestore counter for app-facing int IDs)

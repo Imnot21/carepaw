@@ -1,7 +1,7 @@
 name: carepaw
 description: "Smart Veterinary Patient Management System"
 publish_to: 'none'
-version: 1.0.8+9
+version: 1.0.9+10
 
 environment:
   sdk: ^3.12.2
@@ -58,6 +58,9 @@ dependencies:
   image_picker: ^1.2.4
   google_mlkit_text_recognition: ^0.17.1
   firebase_ai: 2.3.0
+  package_info_plus: ^10.2.2
+  ota_update: ^7.1.0
+  web: ^1.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
