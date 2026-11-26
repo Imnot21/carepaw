@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -82,6 +83,9 @@ class _ScanCameraPageState extends State<ScanCameraPage>
   bool _isReading = false;
   bool _isSaving = false;
   String? _imagePath;
+
+  /// The picked photo, for the preview (works on phones and the web).
+  Uint8List? _imageBytes;
   String _rawText = '';
 
   /// Set once the scan record is saved, so a retry after a failed stock
@@ -347,12 +351,15 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                   child: SizedBox(
                     height: 160,
                     width: double.infinity,
-                    child: Image.file(
-                      File(_imagePath!),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          Center(child: NeuSvgIcon(_typeSvg, size: 64)),
-                    ),
+                    // Memory, not File: the web build has no dart:io files.
+                    child: _imageBytes == null
+                        ? Center(child: NeuSvgIcon(_typeSvg, size: 64))
+                        : Image.memory(
+                            _imageBytes!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                Center(child: NeuSvgIcon(_typeSvg, size: 64)),
+                          ),
                   ),
                 ),
               ),
@@ -640,9 +647,16 @@ class _ScanCameraPageState extends State<ScanCameraPage>
     if (picked == null || !mounted) return;
 
     final path = await _keep(picked);
+    Uint8List? bytes;
+    try {
+      bytes = await picked.readAsBytes();
+    } catch (e) {
+      debugPrint('[scan_camera] preview unavailable: $e');
+    }
     if (!mounted) return;
     setState(() {
       _imagePath = path;
+      _imageBytes = bytes;
       _isReading = true;
       _clearForm();
     });
@@ -672,6 +686,8 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   /// Copy the photo out of the picker's temp cache so the scan keeps it.
   Future<String> _keep(XFile picked) async {
+    // The web build has no app folder; the picker's blob URL is the photo.
+    if (kIsWeb) return picked.path;
     try {
       final dir = await getApplicationDocumentsDirectory();
       final scans = Directory('${dir.path}/scans');
@@ -698,6 +714,7 @@ class _ScanCameraPageState extends State<ScanCameraPage>
 
   void _retake() => setState(() {
     _imagePath = null;
+    _imageBytes = null;
     _clearForm();
   });
 

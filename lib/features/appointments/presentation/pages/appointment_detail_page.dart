@@ -83,8 +83,8 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
   Widget build(BuildContext context) {
     final last = _last?.appointment;
     final canEdit = last != null && _canChange(last);
-    // Deleting is a clinic action (Firestore rules deny it for owners).
-    final canDelete = last != null && _isClinic;
+    // No delete here: bookings stay in the history. An open booking is
+    // removed with Cancel Appointment, which keeps the record and the reason.
     return Scaffold(
       backgroundColor: ThemeColors.background(context),
       appBar: AppBar(
@@ -113,15 +113,6 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
               svgAsset: SvgIcons.edit,
               tooltip: 'Edit',
               onPressed: _navigateToEdit,
-            ),
-          if (canDelete)
-            NeuIconButton(
-              plain: true,
-              icon: Icons.delete_outline_rounded,
-              svgAsset: SvgIcons.delete,
-              color: ThemeColors.error(context),
-              tooltip: 'Delete',
-              onPressed: _showDeleteConfirmation,
             ),
           const SizedBox(width: NeuTokens.spaceXs),
         ],
@@ -226,10 +217,10 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (pet.ageInYears != null) ...[
+                    if (pet.birthDate != null) ...[
                       const SizedBox(height: 4),
                       Text(
-                        '${pet.ageInYears} ${pet.ageInYears == 1 ? 'year' : 'years'} old',
+                        PetUtils.calculateAge(pet.birthDate!),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: ThemeColors.textSecondary(context),
                         ),
@@ -676,8 +667,10 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
         isClinic &&
         (appointment.status == AppointmentStatus.requested ||
             appointment.status == AppointmentStatus.rescheduled);
-    final canCheckIn =
-        isClinic && appointment.status == AppointmentStatus.confirmed;
+    final canCheckIn = isClinic && appointment.canCheckInNow;
+    // Approved but not today: say when check-in opens instead of hiding it.
+    final checkInLater =
+        isClinic && appointment.canCheckIn && !appointment.isToday;
     final canStart =
         isClinic && appointment.status == AppointmentStatus.checkedIn;
     final canComplete =
@@ -738,6 +731,16 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
             svgAsset: SvgIcons.login,
             variant: NeuButtonVariant.secondary,
             size: NeuButtonSize.medium,
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (checkInLater) ...[
+          Text(
+            'Check-in opens on the day of the visit.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: ThemeColors.textSecondary(context),
+            ),
           ),
           const SizedBox(height: 10),
         ],
@@ -841,22 +844,6 @@ class _AppointmentDetailPageState extends State<AppointmentDetailPage> {
 
   void _navigateToEdit() {
     context.go('/appointments/${widget.appointmentId}/edit');
-  }
-
-  void _showDeleteConfirmation() {
-    // The dialog closes itself; the page leaves once the delete succeeds.
-    NeuConfirmDialog.show(
-      context: context,
-      title: 'Delete Appointment',
-      message:
-          'Are you sure you want to delete this appointment? This action cannot be undone.',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      confirmVariant: NeuButtonVariant.destructive,
-      onConfirm: () => context.read<AppointmentBloc>().add(
-        AppointmentDeleteRequested(widget.appointmentId),
-      ),
-    );
   }
 
   Widget _buildError(String message) {

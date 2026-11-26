@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart' show XFile;
 import 'package:carepaw/features/scanning/domain/entities/scan_record.dart';
 import 'package:carepaw/features/scanning/domain/services/ocr_service.dart';
 import 'package:carepaw/features/scanning/domain/services/scan_reader.dart';
@@ -107,11 +107,13 @@ $_rules''';
   @override
   Future<ScanReading> read(String imagePath, ScanType type) async {
     try {
-      final bytes = await File(imagePath).readAsBytes();
+      // XFile reads a file path on phones and the picker's blob URL on the
+      // web build, where dart:io File is not available.
+      final bytes = await XFile(imagePath).readAsBytes();
       final reply = await _generate(
         type == ScanType.receipt ? receiptPrompt : medicineBoxPrompt,
         bytes,
-        mimeTypeOf(imagePath),
+        mimeTypeFor(imagePath, bytes),
       ).timeout(timeout);
       return parseReply(reply);
     } catch (e) {
@@ -171,6 +173,25 @@ $_rules''';
     if (value == null) return null;
     final s = value.toString().trim();
     return s.isEmpty || s.toLowerCase() == 'null' ? null : s;
+  }
+
+  /// The image type from the file's first bytes, falling back to the path's
+  /// extension. Web picks have blob URLs with no extension.
+  @visibleForTesting
+  static String mimeTypeFor(String path, Uint8List bytes) {
+    if (bytes.length >= 12) {
+      if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E) {
+        return 'image/png';
+      }
+      if (bytes[0] == 0xFF && bytes[1] == 0xD8) return 'image/jpeg';
+      if (bytes[8] == 0x57 &&
+          bytes[9] == 0x45 &&
+          bytes[10] == 0x42 &&
+          bytes[11] == 0x50) {
+        return 'image/webp';
+      }
+    }
+    return mimeTypeOf(path);
   }
 
   @visibleForTesting

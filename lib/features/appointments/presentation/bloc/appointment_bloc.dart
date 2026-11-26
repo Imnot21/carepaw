@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
 import 'package:carepaw/core/errors/error_handler.dart';
+import 'package:carepaw/core/errors/exceptions.dart' show ValidationException;
+import 'package:carepaw/core/utils/live_reload.dart';
+import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 import 'package:carepaw/features/appointments/presentation/bloc/appointment_event.dart';
@@ -12,20 +15,31 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dar
 import 'package:carepaw/features/notifications/domain/services/clinic_notifier.dart';
 
 /// Appointment BLoC - manages appointment state and business logic
-class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
+class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState>
+    with LiveReload<AppointmentEvent, AppointmentState> {
   final AppointmentRepository _repository;
   final AuthBloc _authBloc;
   final ClinicNotifier? _notifier;
+  final QueueRepository? _queue;
   int? _currentPetId;
+
+  /// The booking a detail screen shows, so a live update reloads that one.
+  int? _detailId;
 
   AppointmentBloc({
     required this._repository,
     required this._authBloc,
     ClinicNotifier? notifier,
+    QueueRepository? queue,
   }) : _notifier =
            notifier ??
            (getIt.isRegistered<ClinicNotifier>()
                ? getIt<ClinicNotifier>()
+               : null),
+       _queue =
+           queue ??
+           (getIt.isRegistered<QueueRepository>()
+               ? getIt<QueueRepository>()
                : null),
        super(AppointmentInitial()) {
     on<AppointmentLoadRequested>(_onLoadRequested);
@@ -67,13 +81,45 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     };
   }
 
+  /// Checks a booking in on its day and puts the pet in the queue.
+  ///
+  /// The queue entry is what the Line screen and the owner's queue position
+  /// read, so check-in always goes through the queue (which also marks the
+  /// booking checked in). Without a queue repository (tests) it falls back
+  /// to the status change alone.
+  Future<Appointment> _checkIn(int appointmentId) async {
+    final appointment = await _repository.findById(appointmentId);
+    if (appointment == null) {
+      throw const ValidationException(message: 'Booking not found.');
+    }
+    if (!appointment.canCheckIn) {
+      throw const ValidationException(
+        message: 'Only an approved booking can be checked in.',
+      );
+    }
+    if (!appointment.isToday) {
+      final d = appointment.scheduledAt;
+      throw ValidationException(
+        message:
+            'Check-in opens on the day of the visit. This booking is for '
+            '${d.month}/${d.day}/${d.year}.',
+      );
+    }
+    final queue = _queue;
+    if (queue == null) return _repository.checkIn(appointmentId);
+    await queue.checkIn(appointmentId);
+    return await _repository.findById(appointmentId) ??
+        appointment.copyWith(status: AppointmentStatus.checkedIn);
+  }
+
   /// Load all appointments for the authenticated user's pets (optionally filtered by pet)
   Future<void> _onLoadRequested(
     AppointmentLoadRequested event,
     Emitter<AppointmentState> emit,
   ) async {
     _currentPetId = event.petId;
-    emit(const AppointmentLoading());
+    _detailId = null;
+    if (!event.silent) emit(const AppointmentLoading());
 
     try {
       final authState = _authBloc.state;
@@ -93,7 +139,6 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
         // Clinic side sees every booking (requested included). The old code
         // ran findByOwner(operator id) here, and the operator owns zero pets,
         // so the admin list was always empty.
-        appointments = await _repository.findAll();
         // One parallel batch (pets concurrently), not one query chain per
         // booking — the sequential loop took minutes on slow networks.
         // Single collection scan: derive the list from the enriched batch.
@@ -189,9 +234,24 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
           pastWithPetDetails: pastWithPetDetails,
         ),
       );
+      _watchBookings();
     } catch (e) {
-      emit(AppointmentError(ErrorHandler.getErrorMessage(e)));
+      if (!event.silent) {
+        emit(AppointmentError(ErrorHandler.getErrorMessage(e)));
+      }
     }
+  }
+
+  /// Reload whatever this bloc last showed when any visible booking changes.
+  void _watchBookings() {
+    watchLive('appointments', (live) => live.appointments(), () {
+      final detailId = _detailId;
+      if (detailId != null) {
+        add(AppointmentDetailLoadRequested(detailId, silent: true));
+      } else {
+        add(AppointmentLoadRequested(petId: _currentPetId, silent: true));
+      }
+    });
   }
 
   /// Load upcoming appointments for a specific pet
@@ -223,7 +283,8 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     AppointmentDetailLoadRequested event,
     Emitter<AppointmentState> emit,
   ) async {
-    emit(const AppointmentLoading());
+    _detailId = event.appointmentId;
+    if (!event.silent) emit(const AppointmentLoading());
 
     try {
       final appointmentWithDetails = await _repository.findWithDetails(
@@ -231,11 +292,14 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
       );
       if (appointmentWithDetails != null) {
         emit(AppointmentDetailLoaded(appointmentWithDetails));
-      } else {
+        _watchBookings();
+      } else if (!event.silent) {
         emit(const AppointmentError('Appointment not found'));
       }
     } catch (e) {
-      emit(AppointmentError(ErrorHandler.getErrorMessage(e)));
+      if (!event.silent) {
+        emit(AppointmentError(ErrorHandler.getErrorMessage(e)));
+      }
     }
   }
 
@@ -297,11 +361,13 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     emit(const AppointmentLoading());
 
     try {
-      final appointment = await _repository.updateStatus(
-        event.appointmentId,
-        event.status,
-        cancellationReason: event.cancellationReason,
-      );
+      final appointment = event.status == AppointmentStatus.checkedIn
+          ? await _checkIn(event.appointmentId)
+          : await _repository.updateStatus(
+              event.appointmentId,
+              event.status,
+              cancellationReason: event.cancellationReason,
+            );
       emit(AppointmentStatusUpdated(appointment));
       final notice = _noticeFor(event.status);
       if (notice != null) _notify(appointment, notice);
@@ -325,7 +391,7 @@ class AppointmentBloc extends Bloc<AppointmentEvent, AppointmentState> {
     emit(const AppointmentLoading());
 
     try {
-      final appointment = await _repository.checkIn(event.appointmentId);
+      final appointment = await _checkIn(event.appointmentId);
       emit(AppointmentStatusUpdated(appointment));
 
       // Reload appointments

@@ -771,7 +771,10 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
     // CalendarDatePicker asserts its initial date is selectable, so a stored
     // weekday booking opens on the next weekend day instead.
     _selectedDate = ClinicSchedule.nextOpenDay(widget.initialDate);
-    _selectedTime = TimeOfDay.fromDateTime(widget.initialDate);
+    // The wheel moves in slot steps and needs a start time on a step.
+    _selectedTime = TimeOfDay.fromDateTime(
+      ClinicSchedule.roundToSlot(widget.initialDate),
+    );
   }
 
   /// Today at midnight, or an earlier stored date when editing, so the
@@ -828,6 +831,7 @@ class _DateTimePickerSheetState extends State<DateTimePickerSheet> {
             height: 200,
             child: CupertinoDatePicker(
               mode: CupertinoDatePickerMode.time,
+              minuteInterval: ClinicSchedule.slotMinutes,
               initialDateTime: DateTime(
                 2024,
                 1,

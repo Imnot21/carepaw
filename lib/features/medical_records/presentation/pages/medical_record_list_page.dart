@@ -274,10 +274,10 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.pet.ageInYears != null) ...[
+                if (widget.pet.birthDate != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    '${widget.pet.ageInYears} ${widget.pet.ageInYears == 1 ? 'year' : 'years'} old',
+                    PetUtils.calculateAge(widget.pet.birthDate!),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: ThemeColors.textTertiary(context),
                     ),
@@ -450,22 +450,60 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
 
     final isVetOrStaff = _isVetOrStaff;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(NeuTokens.pagePadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NeuContainer(
-              borderRadius: 70,
-              variant: NeuVariant.raised,
-              child: const SizedBox(
-                width: 140,
-                height: 140,
-                child: NeuSvgIcon(SvgIcons.prescription, size: 70),
+    // Scrolls, and clears the floating nav bar, so Add Record stays
+    // reachable on short screens (small phones, laptop browser windows).
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 560;
+        final medallion = compact ? 96.0 : 140.0;
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(
+            NeuTokens.pagePadding,
+            NeuTokens.pagePadding,
+            NeuTokens.pagePadding,
+            120,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - NeuTokens.pagePadding - 120)
+                  .clamp(0, double.infinity),
+            ),
+            child: Center(
+              child: _emptyContent(
+                context,
+                filterText: filterText,
+                isVetOrStaff: isVetOrStaff,
+                medallion: medallion,
+                compact: compact,
               ),
             ),
-            const SizedBox(height: 28),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _emptyContent(
+    BuildContext context, {
+    required String filterText,
+    required bool isVetOrStaff,
+    required double medallion,
+    required bool compact,
+  }) {
+    return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NeuContainer(
+              borderRadius: medallion / 2,
+              variant: NeuVariant.raised,
+              child: SizedBox(
+                width: medallion,
+                height: medallion,
+                child: NeuSvgIcon(SvgIcons.prescription, size: medallion / 2),
+              ),
+            ),
+            SizedBox(height: compact ? 18 : 28),
             Text(
               filterText,
               style: AppTextStyles.headlineSmall.copyWith(
@@ -484,7 +522,7 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: compact ? 18 : 28),
             if (isVetOrStaff)
               NeuButton(
                 text: 'Add Record',
@@ -496,8 +534,6 @@ class _MedicalRecordListViewState extends State<_MedicalRecordListView> {
                 variant: NeuButtonVariant.primary,
               ),
           ],
-        ),
-      ),
     );
   }
 

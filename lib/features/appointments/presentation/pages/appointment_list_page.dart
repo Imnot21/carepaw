@@ -287,7 +287,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
                   appointment: appointment,
                   pet: pet,
                   onTap: () => _navigateToDetail(appointment),
-                  onCheckIn: appointment.canCheckIn
+                  onCheckIn: _isVetOrStaff && appointment.canCheckInNow
                       ? () => _showCheckInDialog(appointment)
                       : null,
                   onCancel: appointment.canCancel

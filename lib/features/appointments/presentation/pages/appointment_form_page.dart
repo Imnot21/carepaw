@@ -428,8 +428,17 @@ class _AppointmentFormPageState extends State<AppointmentFormPage> {
   }
 
   Future<void> _pickDateTime() async {
+    // A new booking starts at 9:00 AM on the next clinic day, not at the
+    // current clock minute (which gave slots like 4:23 PM).
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
     final initialDate = ClinicSchedule.nextOpenDay(
-      _selectedDateTime ?? DateTime.now().add(const Duration(days: 1)),
+      _selectedDateTime ??
+          DateTime(
+            tomorrow.year,
+            tomorrow.month,
+            tomorrow.day,
+            ClinicSchedule.defaultHour,
+          ),
     );
 
     await NeuBottomSheet.show(

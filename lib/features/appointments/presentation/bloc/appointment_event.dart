@@ -13,10 +13,14 @@ abstract class AppointmentEvent extends Equatable {
 class AppointmentLoadRequested extends AppointmentEvent {
   final int? petId; // Optional: filter by specific pet
 
-  const AppointmentLoadRequested({this.petId});
+  /// Reload in place (live update): no loading skeleton, and a failed
+  /// reload keeps what is on screen.
+  final bool silent;
+
+  const AppointmentLoadRequested({this.petId, this.silent = false});
 
   @override
-  List<Object?> get props => [petId];
+  List<Object?> get props => [petId, silent];
 }
 
 /// Load upcoming appointments
@@ -137,8 +141,12 @@ class AppointmentRefreshRequested extends AppointmentEvent {}
 class AppointmentDetailLoadRequested extends AppointmentEvent {
   final int appointmentId;
 
-  const AppointmentDetailLoadRequested(this.appointmentId);
+  /// Reload in place (live update): no loading skeleton, and a failed
+  /// reload keeps what is on screen.
+  final bool silent;
+
+  const AppointmentDetailLoadRequested(this.appointmentId, {this.silent = false});
 
   @override
-  List<Object?> get props => [appointmentId];
+  List<Object?> get props => [appointmentId, silent];
 }

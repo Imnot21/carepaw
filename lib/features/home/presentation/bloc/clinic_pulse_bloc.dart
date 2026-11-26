@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:carepaw/core/utils/live_reload.dart';
 import 'package:carepaw/features/appointments/domain/entities/appointment.dart';
 import 'package:carepaw/features/appointments/domain/repositories/appointment_repository.dart';
 import 'package:carepaw/features/home/presentation/bloc/clinic_pulse_event.dart';
@@ -15,7 +16,8 @@ import 'package:carepaw/features/queue/domain/repositories/queue_repository.dart
 /// Each counter is independent: a source that fails leaves its value unknown
 /// (the strip shows a dash) without taking the other two down with it, and a
 /// refresh simply re-runs all three.
-class ClinicPulseBloc extends Bloc<ClinicPulseEvent, ClinicPulseState> {
+class ClinicPulseBloc extends Bloc<ClinicPulseEvent, ClinicPulseState>
+    with LiveReload<ClinicPulseEvent, ClinicPulseState> {
   final QueueRepository _queueRepository;
   final AppointmentRepository _appointmentRepository;
   final InventoryItemRepository _inventoryRepository;
@@ -35,6 +37,12 @@ class ClinicPulseBloc extends Bloc<ClinicPulseEvent, ClinicPulseState> {
   ) async {
     emit(state.copyWith(status: ClinicPulseStatus.loading));
     await _load(emit);
+    // Keep the counters current as bookings, the queue and stock change.
+    watchLive(
+      'clinic-pulse',
+      (live) => live.clinicPulse(),
+      () => add(const ClinicPulseRefreshRequested()),
+    );
   }
 
   Future<void> _onRefresh(

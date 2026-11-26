@@ -15,10 +15,18 @@ class LoadNotifications extends NotificationEvent {
   final int? limit;
   final int? offset;
 
-  const LoadNotifications({this.userId, this.limit, this.offset});
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const LoadNotifications({
+    this.userId,
+    this.limit,
+    this.offset,
+    this.silent = false,
+  });
 
   @override
-  List<Object?> get props => [userId, limit, offset];
+  List<Object?> get props => [userId, limit, offset, silent];
 }
 
 /// Load unread notifications count.

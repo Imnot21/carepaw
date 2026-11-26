@@ -13,6 +13,21 @@ class ClinicSchedule {
 
   static bool isOpenDay(DateTime date) => openWeekdays.contains(date.weekday);
 
+  /// Booking times move in steps of this many minutes (9:00, 9:15, ...).
+  static const int slotMinutes = 15;
+
+  /// The hour a new booking's time picker starts on.
+  static const int defaultHour = 9;
+
+  /// [time] rounded to the nearest booking slot.
+  static DateTime roundToSlot(DateTime time) {
+    final minutes = time.hour * 60 + time.minute;
+    final rounded = ((minutes + slotMinutes ~/ 2) ~/ slotMinutes) * slotMinutes;
+    return DateTime(time.year, time.month, time.day).add(
+      Duration(minutes: rounded),
+    );
+  }
+
   /// [from] itself when the clinic is open that day, otherwise the next open
   /// day at the same time of day.
   static DateTime nextOpenDay(DateTime from) {

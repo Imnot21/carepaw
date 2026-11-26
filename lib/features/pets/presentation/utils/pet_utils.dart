@@ -59,19 +59,20 @@ class PetUtils {
   }
 
   /// Format pet age from birth date.
-  static String calculateAge(DateTime birthDate) {
-    final now = DateTime.now();
-    int years = now.year - birthDate.year;
-    int months = now.month - birthDate.month;
-    if (months < 0 || (months == 0 && now.day < birthDate.day)) {
-      years--;
-      months += 12;
-    }
-    if (years > 0) {
-      return '$years year${years > 1 ? 's' : ''}${months > 0 ? ' $months month${months > 1 ? 's' : ''}' : ''}';
-    } else {
-      return '$months month${months > 1 ? 's' : ''}';
-    }
+  ///
+  /// Counts whole months only (a month is complete on the birth day of the
+  /// month), so every screen shows the same age, e.g. "1 year 8 months".
+  static String calculateAge(DateTime birthDate, {DateTime? now}) {
+    final today = now ?? DateTime.now();
+    var totalMonths =
+        (today.year - birthDate.year) * 12 + today.month - birthDate.month;
+    if (today.day < birthDate.day) totalMonths--;
+    if (totalMonths < 1) return 'Under 1 month';
+    final years = totalMonths ~/ 12;
+    final months = totalMonths % 12;
+    final yearText = years > 0 ? '$years year${years > 1 ? 's' : ''}' : '';
+    final monthText = months > 0 ? '$months month${months > 1 ? 's' : ''}' : '';
+    return [yearText, monthText].where((s) => s.isNotEmpty).join(' ');
   }
 
   /// Build a species-themed avatar placeholder.

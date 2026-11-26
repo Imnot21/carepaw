@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:carepaw/core/firebase/user_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
+import 'package:carepaw/core/firebase/live_changes.dart';
 import 'package:carepaw/features/users/domain/repositories/user_repository.dart';
 import 'package:carepaw/features/users/data/repositories/firestore_user_repository.dart';
 import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
@@ -50,6 +51,11 @@ Future<void> configureDependencies() async {
   // Register Firestore (needs Firebase to be initialized first)
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
+  );
+
+  // Change signals that keep list screens live without a manual refresh.
+  getIt.registerLazySingleton<LiveChanges>(
+    () => LiveChanges(getIt<FirebaseFirestore>()),
   );
 
   // User ID sequence (Firestore counter for app-facing int IDs)

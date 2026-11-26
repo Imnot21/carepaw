@@ -108,6 +108,35 @@ service cloud.firestore {
         isClinicOpenDay(request.resource.data.get('scheduledAt', null));
     }
 
+    // True when pet `petId` (an int; pets/{id} documents are keyed by it)
+    // belongs to the caller, so an owner cannot book or move a visit onto
+    // someone else's pet.
+    function ownsPet(petId) {
+      return petId is int &&
+        exists(/databases/$(database)/documents/pets/$(string(petId))) &&
+        get(/databases/$(database)/documents/pets/$(string(petId))).data.ownerId == getCurrentUserId();
+    }
+
+    // Booking states an owner may still change. Checked-in, running,
+    // completed, cancelled and no-show bookings are the clinic's.
+    function isOpenBooking(status) {
+      return status in ['REQUESTED', 'CONFIRMED', 'RESCHEDULED'];
+    }
+
+    // An owner's change to their own open booking: they may reschedule
+    // (back to REQUESTED or RESCHEDULED, so the clinic approves the new
+    // time) or cancel. A moved date can never stay CONFIRMED, and a closed
+    // booking cannot be reopened.
+    function isOwnerBookingChange() {
+      return isOpenBooking(resource.data.status) &&
+        ownsPet(request.resource.data.get('petId', null)) &&
+        (request.resource.data.status == resource.data.status ||
+         request.resource.data.status in ['REQUESTED', 'RESCHEDULED', 'CANCELLED']) &&
+        (request.resource.data.get('scheduledAt', null) ==
+           resource.data.get('scheduledAt', null) ||
+         request.resource.data.status in ['REQUESTED', 'RESCHEDULED', 'CANCELLED']);
+    }
+
     // ---- Users collection ----
     match /users/{uid} {
       // Self-service registration: a user creates only their own profile.
@@ -182,19 +211,19 @@ service cloud.firestore {
     match /appointments/{appointmentId} {
       allow read: if isClinicStaff() ||
         (isAuthenticated() && resource.data.ownerId == getCurrentUserId());
-      // Owners only request, reschedule or cancel. Confirming, check-in and
-      // completion are the clinic's call, so an owner cannot approve their
-      // own booking.
+      // Owners only request, reschedule or cancel, and only for their own
+      // pets. Confirming, check-in and completion are the clinic's call, so
+      // an owner cannot approve their own booking or reopen a closed one.
       // Bookings are for weekend days only (see isClinicOpenDay).
       allow create: if isClinicOpenDay(request.resource.data.get('scheduledAt', null)) &&
         (isClinicStaff() ||
          (isAuthenticated() && request.resource.data.ownerId == getCurrentUserId() &&
+          ownsPet(request.resource.data.get('petId', null)) &&
           request.resource.data.status == 'REQUESTED'));
       allow update: if keepsClinicDay() && (isClinicStaff() ||
         (isAuthenticated() && resource.data.ownerId == getCurrentUserId() &&
          request.resource.data.ownerId == resource.data.ownerId &&
-         (request.resource.data.status == resource.data.status ||
-          request.resource.data.status in ['REQUESTED', 'RESCHEDULED', 'CANCELLED'])));
+         isOwnerBookingChange()));
       allow delete: if isOwnerAdmin();
     }
 

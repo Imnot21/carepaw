@@ -11,12 +11,24 @@ abstract class QueueEvent extends Equatable {
 
 /// Load current queue for the user (pet owner view)
 class QueueLoadRequested extends QueueEvent {
-  const QueueLoadRequested();
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const QueueLoadRequested({this.silent = false});
+
+  @override
+  List<Object?> get props => [silent];
 }
 
 /// Load current queue for staff view (all patients)
 class QueueStaffLoadRequested extends QueueEvent {
-  const QueueStaffLoadRequested();
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const QueueStaffLoadRequested({this.silent = false});
+
+  @override
+  List<Object?> get props => [silent];
 }
 
 /// Watch current queue for real-time updates

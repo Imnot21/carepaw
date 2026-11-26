@@ -8,13 +8,15 @@ import 'package:carepaw/features/notifications/presentation/bloc/notification_ev
 import 'package:carepaw/features/notifications/presentation/bloc/notification_state.dart'
     as states;
 import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/utils/live_reload.dart';
 
 /// Notification BLoC for the notification list.
 ///
 /// Preferences live in `NotificationPreferencesCubit`: this bloc holds one
 /// state at a time, so a preferences state here replaced the list.
 class NotificationBloc
-    extends Bloc<events.NotificationEvent, states.NotificationState> {
+    extends Bloc<events.NotificationEvent, states.NotificationState>
+    with LiveReload<events.NotificationEvent, states.NotificationState> {
   final NotificationRepository _notificationRepository;
 
   NotificationBloc({required this._notificationRepository})
@@ -45,7 +47,7 @@ class NotificationBloc
     events.LoadNotifications event,
     Emitter<states.NotificationState> emit,
   ) async {
-    emit(const states.NotificationLoading());
+    if (!event.silent) emit(const states.NotificationLoading());
     try {
       final notifications = await _notificationRepository.findByUser(
         event.userId ?? _currentUserId,
@@ -57,11 +59,24 @@ class NotificationBloc
           hasReachedMax: notifications.length < (event.limit ?? 20),
         ),
       );
+      watchLive(
+        'notifications',
+        (live) => live.notifications(),
+        () => add(
+          events.LoadNotifications(
+            userId: event.userId,
+            limit: event.limit,
+            silent: true,
+          ),
+        ),
+      );
     } on Failure catch (failure) {
-      emit(states.NotificationError(failure));
+      if (!event.silent) emit(states.NotificationError(failure));
     } catch (e) {
       debugPrint('[notification_bloc] unexpected: $e');
-      emit(states.NotificationError(const UnexpectedFailure()));
+      if (!event.silent) {
+        emit(states.NotificationError(const UnexpectedFailure()));
+      }
     }
   }
 

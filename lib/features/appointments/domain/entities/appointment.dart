@@ -64,6 +64,10 @@ class Appointment extends Equatable {
       status == AppointmentStatus.confirmed ||
       status == AppointmentStatus.rescheduled;
 
+  /// Whether the clinic can check this booking in right now: it is approved
+  /// and today is the day of the visit.
+  bool get canCheckInNow => canCheckIn && isToday;
+
   /// Check if appointment can be started
   bool get canStart => status == AppointmentStatus.checkedIn;
 

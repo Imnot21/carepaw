@@ -13,10 +13,13 @@ abstract class PetEvent extends Equatable {
 class LoadPets extends PetEvent {
   final int ownerId;
 
-  const LoadPets({required this.ownerId});
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const LoadPets({required this.ownerId, this.silent = false});
 
   @override
-  List<Object?> get props => [ownerId];
+  List<Object?> get props => [ownerId, silent];
 }
 
 /// Create a new pet.
@@ -83,10 +86,13 @@ class LoadPetsById extends PetEvent {
 
 /// Load all pets (for staff/admin).
 class LoadAllPets extends PetEvent {
-  const LoadAllPets();
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const LoadAllPets({this.silent = false});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [silent];
 }
 
 /// Search all pets by name (for staff/admin).

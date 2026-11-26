@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carepaw/core/di/dependency_injection.dart';
+import 'package:carepaw/core/utils/live_reload.dart';
 import 'package:carepaw/features/notifications/domain/services/clinic_notifier.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_event.dart';
 import 'package:carepaw/features/queue/presentation/bloc/queue_state.dart';
@@ -11,7 +12,8 @@ import 'package:carepaw/features/authentication/presentation/bloc/auth_bloc.dart
 import 'package:carepaw/features/authentication/presentation/bloc/auth_state.dart';
 
 /// Queue BLoC for managing queue state
-class QueueBloc extends Bloc<QueueEvent, QueueState> {
+class QueueBloc extends Bloc<QueueEvent, QueueState>
+    with LiveReload<QueueEvent, QueueState> {
   final QueueRepository _repository;
   final AuthBloc _authBloc;
   final ClinicNotifier? _notifier;
@@ -46,7 +48,7 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     QueueLoadRequested event,
     Emitter<QueueState> emit,
   ) async {
-    emit(QueueLoading());
+    if (!event.silent) emit(QueueLoading());
     try {
       final authState = _authBloc.state;
       if (authState is! AuthAuthenticated) {
@@ -86,8 +88,14 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
           higherPriorityAhead: higherPriorityAhead,
         ),
       );
+      // The owner's line position moves as the clinic works the queue.
+      watchLive(
+        'queue-owner',
+        (live) => live.queue(),
+        () => add(const QueueLoadRequested(silent: true)),
+      );
     } catch (e) {
-      emit(QueueError('Failed to load queue: $e'));
+      if (!event.silent) emit(QueueError('Failed to load queue: $e'));
     }
   }
 
@@ -96,12 +104,17 @@ class QueueBloc extends Bloc<QueueEvent, QueueState> {
     QueueStaffLoadRequested event,
     Emitter<QueueState> emit,
   ) async {
-    emit(QueueLoading());
+    if (!event.silent) emit(QueueLoading());
     try {
       final queueEntries = await _repository.getCurrentQueue();
       _calculateStaffStats(queueEntries, emit);
+      watchLive(
+        'queue-staff',
+        (live) => live.queue(),
+        () => add(const QueueStaffLoadRequested(silent: true)),
+      );
     } catch (e) {
-      emit(QueueError('Failed to load queue: $e'));
+      if (!event.silent) emit(QueueError('Failed to load queue: $e'));
     }
   }
 

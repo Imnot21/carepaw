@@ -6,12 +6,15 @@ import 'package:carepaw/features/medical_records/presentation/bloc/medical_recor
 import 'package:carepaw/features/medical_records/presentation/bloc/medical_record_state.dart'
     as states;
 import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/utils/live_reload.dart';
+import 'package:carepaw/features/medical_records/domain/entities/medical_record.dart';
 
 /// Medical Record BLoC for managing medical record state.
 ///
 /// Handles loading, creating medical records, and filtering by type.
 class MedicalRecordBloc
-    extends Bloc<events.MedicalRecordEvent, states.MedicalRecordState> {
+    extends Bloc<events.MedicalRecordEvent, states.MedicalRecordState>
+    with LiveReload<events.MedicalRecordEvent, states.MedicalRecordState> {
   final MedicalRecordRepository _medicalRecordRepository;
 
   MedicalRecordBloc({required this._medicalRecordRepository})
@@ -28,20 +31,39 @@ class MedicalRecordBloc
     on<events.LoadRecentRecords>(_onLoadRecentRecords);
   }
 
+  /// The list this bloc last showed, so a live update reloads the same view.
+  MedicalRecordType? _filter;
+
+  /// Reload the shown pet's records whenever one of them is added.
+  void _watchRecords(int petId) {
+    watchLive('records-$petId', (live) => live.medicalRecords(petId), () {
+      final filter = _filter;
+      add(
+        filter == null
+            ? events.LoadMedicalRecords(petId, silent: true)
+            : events.LoadMedicalRecordsByType(petId, filter, silent: true),
+      );
+    });
+  }
+
   /// Load all medical records for a pet
   Future<void> _onLoadMedicalRecords(
     events.LoadMedicalRecords event,
     Emitter<states.MedicalRecordState> emit,
   ) async {
-    emit(const states.MedicalRecordLoading());
+    _filter = null;
+    if (!event.silent) emit(const states.MedicalRecordLoading());
     try {
       final records = await _medicalRecordRepository.findByPet(event.petId);
       emit(states.MedicalRecordsLoaded(records));
+      _watchRecords(event.petId);
     } on Failure catch (failure) {
-      emit(states.MedicalRecordError(failure));
+      if (!event.silent) emit(states.MedicalRecordError(failure));
     } catch (e) {
       debugPrint('[medical_record_bloc] unexpected: $e');
-      emit(states.MedicalRecordError(const UnexpectedFailure()));
+      if (!event.silent) {
+        emit(states.MedicalRecordError(const UnexpectedFailure()));
+      }
     }
   }
 
@@ -50,18 +72,22 @@ class MedicalRecordBloc
     events.LoadMedicalRecordsByType event,
     Emitter<states.MedicalRecordState> emit,
   ) async {
-    emit(const states.MedicalRecordLoading());
+    _filter = event.recordType;
+    if (!event.silent) emit(const states.MedicalRecordLoading());
     try {
       final records = await _medicalRecordRepository.findByType(
         event.petId,
         event.recordType,
       );
       emit(states.MedicalRecordsByTypeLoaded(records, event.recordType));
+      _watchRecords(event.petId);
     } on Failure catch (failure) {
-      emit(states.MedicalRecordError(failure));
+      if (!event.silent) emit(states.MedicalRecordError(failure));
     } catch (e) {
       debugPrint('[medical_record_bloc] unexpected: $e');
-      emit(states.MedicalRecordError(const UnexpectedFailure()));
+      if (!event.silent) {
+        emit(states.MedicalRecordError(const UnexpectedFailure()));
+      }
     }
   }
 

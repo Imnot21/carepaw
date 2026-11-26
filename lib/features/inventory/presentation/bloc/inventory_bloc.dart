@@ -8,11 +8,13 @@ import 'package:carepaw/features/inventory/presentation/bloc/inventory_event.dar
 import 'package:carepaw/features/inventory/presentation/bloc/inventory_state.dart'
     as states;
 import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/utils/live_reload.dart';
 
 /// Inventory BLoC for managing inventory state.
 ///
 /// Handles loading, creating, updating inventory items, batches, and transactions.
-class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
+class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState>
+    with LiveReload<events.InventoryEvent, states.InventoryState> {
   final InventoryItemRepository _itemRepository;
   final InventoryBatchRepository _batchRepository;
   final InventoryTransactionRepository _transactionRepository;
@@ -73,15 +75,24 @@ class InventoryBloc extends Bloc<events.InventoryEvent, states.InventoryState> {
     events.LoadInventoryItems event,
     Emitter<states.InventoryState> emit,
   ) async {
-    emit(const states.InventoryLoading());
+    // A live update only refreshes the stock list, never another view.
+    if (event.silent && state is! states.InventoryItemsLoaded) return;
+    if (!event.silent) emit(const states.InventoryLoading());
     try {
       final items = await _itemRepository.findAll();
       emit(await _withBatches(items));
+      watchLive(
+        'inventory',
+        (live) => live.inventory(),
+        () => add(const events.LoadInventoryItems(silent: true)),
+      );
     } on Failure catch (failure) {
-      emit(states.InventoryError(failure));
+      if (!event.silent) emit(states.InventoryError(failure));
     } catch (e) {
       debugPrint('[inventory_bloc] unexpected: $e');
-      emit(states.InventoryError(const UnexpectedFailure()));
+      if (!event.silent) {
+        emit(states.InventoryError(const UnexpectedFailure()));
+      }
     }
   }
 

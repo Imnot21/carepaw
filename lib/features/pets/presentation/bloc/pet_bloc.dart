@@ -4,11 +4,13 @@ import 'package:carepaw/features/pets/domain/repositories/pet_repository.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_event.dart';
 import 'package:carepaw/features/pets/presentation/bloc/pet_state.dart';
 import 'package:carepaw/core/errors/failures.dart';
+import 'package:carepaw/core/utils/live_reload.dart';
 
 /// Pet BLoC for managing pet state.
 ///
 /// Handles loading, creating, updating, deleting pets and weight tracking.
-class PetBloc extends Bloc<PetEvent, PetState> {
+class PetBloc extends Bloc<PetEvent, PetState>
+    with LiveReload<PetEvent, PetState> {
   final PetRepository _petRepository;
 
   PetBloc({required this._petRepository})
@@ -25,16 +27,27 @@ class PetBloc extends Bloc<PetEvent, PetState> {
   }
 
   /// Load all pets for the current user.
+  /// True while the screen shows search results; a live update must not
+  /// replace them with the full list.
+  bool _searching = false;
+
   Future<void> _onLoadPets(LoadPets event, Emitter<PetState> emit) async {
-    emit(const PetLoading());
+    if (event.silent && _searching) return;
+    _searching = false;
+    if (!event.silent) emit(const PetLoading());
     try {
       final pets = await _petRepository.findByOwner(event.ownerId);
       emit(PetsLoaded(pets));
+      watchLive(
+        'owner-pets-${event.ownerId}',
+        (live) => live.pets(),
+        () => add(LoadPets(ownerId: event.ownerId, silent: true)),
+      );
     } on Failure catch (failure) {
-      emit(PetError(failure));
+      if (!event.silent) emit(PetError(failure));
     } catch (e) {
       debugPrint('[pet_bloc] unexpected: $e');
-      emit(PetError(const UnexpectedFailure()));
+      if (!event.silent) emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -113,6 +126,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
 
   /// Search pets by name.
   Future<void> _onSearchPets(SearchPets event, Emitter<PetState> emit) async {
+    _searching = event.query.trim().isNotEmpty;
     emit(const PetLoading());
     try {
       final pets = await _petRepository.searchByName(
@@ -151,15 +165,22 @@ class PetBloc extends Bloc<PetEvent, PetState> {
 
   /// Load all pets (for staff/admin).
   Future<void> _onLoadAllPets(LoadAllPets event, Emitter<PetState> emit) async {
-    emit(const PetLoading());
+    if (event.silent && _searching) return;
+    _searching = false;
+    if (!event.silent) emit(const PetLoading());
     try {
       final pets = await _petRepository.findAll();
       emit(PetsLoaded(pets));
+      watchLive(
+        'all-pets',
+        (live) => live.pets(),
+        () => add(const LoadAllPets(silent: true)),
+      );
     } on Failure catch (failure) {
-      emit(PetError(failure));
+      if (!event.silent) emit(PetError(failure));
     } catch (e) {
       debugPrint('[pet_bloc] unexpected: $e');
-      emit(PetError(const UnexpectedFailure()));
+      if (!event.silent) emit(PetError(const UnexpectedFailure()));
     }
   }
 
@@ -168,6 +189,7 @@ class PetBloc extends Bloc<PetEvent, PetState> {
     SearchAllPets event,
     Emitter<PetState> emit,
   ) async {
+    _searching = event.query.trim().isNotEmpty;
     emit(const PetLoading());
     try {
       final pets = await _petRepository.searchAllByName(event.query);

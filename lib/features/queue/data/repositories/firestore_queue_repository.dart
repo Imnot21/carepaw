@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carepaw/core/errors/exceptions.dart' show ValidationException;
 import 'package:carepaw/core/firebase/firestore_id_sequence.dart';
 import 'package:carepaw/core/firebase/firestore_schema.dart';
 import 'package:carepaw/core/repositories/base_repository.dart';
@@ -232,6 +233,11 @@ class FirestoreQueueRepository implements QueueRepository {
     }
     if (appointment.isTerminal) {
       throw Exception('Cannot check in a completed or cancelled appointment');
+    }
+    if (!appointment.isToday) {
+      throw const ValidationException(
+        message: 'Check-in opens on the day of the visit.',
+      );
     }
 
     // Position assignment should be transactional so concurrent check-ins

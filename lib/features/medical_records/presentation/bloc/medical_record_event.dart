@@ -13,10 +13,13 @@ abstract class MedicalRecordEvent extends Equatable {
 class LoadMedicalRecords extends MedicalRecordEvent {
   final int petId;
 
-  const LoadMedicalRecords(this.petId);
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const LoadMedicalRecords(this.petId, {this.silent = false});
 
   @override
-  List<Object?> get props => [petId];
+  List<Object?> get props => [petId, silent];
 }
 
 /// Load medical records filtered by type.
@@ -24,10 +27,17 @@ class LoadMedicalRecordsByType extends MedicalRecordEvent {
   final int petId;
   final MedicalRecordType recordType;
 
-  const LoadMedicalRecordsByType(this.petId, this.recordType);
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const LoadMedicalRecordsByType(
+    this.petId,
+    this.recordType, {
+    this.silent = false,
+  });
 
   @override
-  List<Object?> get props => [petId, recordType];
+  List<Object?> get props => [petId, recordType, silent];
 }
 
 /// Load a single medical record with details.

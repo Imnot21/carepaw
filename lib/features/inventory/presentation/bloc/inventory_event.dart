@@ -12,10 +12,13 @@ abstract class InventoryEvent extends Equatable {
 
 /// Load all inventory items.
 class LoadInventoryItems extends InventoryEvent {
-  const LoadInventoryItems();
+  /// Reload in place (live update): no loading skeleton.
+  final bool silent;
+
+  const LoadInventoryItems({this.silent = false});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [silent];
 }
 
 /// Load inventory items by category.
