@@ -76,3 +76,6 @@ node_modules/
 **/.impeccable/live/deferred-svelte-component-accepts.json
 **/.impeccable/live/*.png
 # impeccable-ignore-end
+brag-output/
+graphify-out/
+lib/graphify-out/
