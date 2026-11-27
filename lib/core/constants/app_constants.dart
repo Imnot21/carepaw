@@ -8,7 +8,7 @@ class AppConstants {
   // ============ App Info ============
 
   static const String appName = 'CarePaw';
-  static const String appVersion = '1.0.9';
+  static const String appVersion = '1.0.10';
 
   /// Version of the in-app privacy notice. Saved on each new profile with
   /// the time the person accepted it (RA 10173 proof of consent). Change it

@@ -296,7 +296,13 @@ class FirestoreQueueRepository implements QueueRepository {
     final targetRoom = room.trim().isEmpty
         ? (existing.room ?? _defaultRoom)
         : room.trim();
-    return save(existing.moveToRoom(targetRoom));
+    final moved = await save(existing.moveToRoom(targetRoom));
+    await _syncAppointment(
+      existing.appointmentId,
+      AppointmentStatus.inProgress,
+      startedAt: DateTime.now(),
+    );
+    return moved;
   }
 
   @override
@@ -307,8 +313,36 @@ class FirestoreQueueRepository implements QueueRepository {
       throw Exception('Queue entry cannot be completed');
     }
     final completed = await save(existing.complete());
+    await _syncAppointment(
+      existing.appointmentId,
+      AppointmentStatus.completed,
+      completedAt: DateTime.now(),
+    );
     await repositionQueue();
     return completed;
+  }
+
+  /// Keeps the booking's status in step with the queue, so a finished visit
+  /// leaves Upcoming for both the owner and the clinic. Non-fatal, like
+  /// check-in: the queue entry stays the source of truth for queue order.
+  Future<void> _syncAppointment(
+    int appointmentId,
+    AppointmentStatus status, {
+    DateTime? startedAt,
+    DateTime? completedAt,
+  }) async {
+    try {
+      final appointment = await _appointmentRepository.findById(appointmentId);
+      if (appointment == null || appointment.isTerminal) return;
+      await _appointmentRepository.updateStatus(
+        appointmentId,
+        status,
+        startedAt: startedAt,
+        completedAt: completedAt,
+      );
+    } on Exception {
+      // Non-fatal: see doc comment.
+    }
   }
 
   @override
